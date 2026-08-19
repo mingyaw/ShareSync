@@ -1,0 +1,100 @@
+# ShareSync Local API Contract
+
+Version: 1  
+Transport: Local HTTPS over Wi-Fi or Android hotspot  
+M0 allowance: HTTP is allowed for prototype only; MVP must use HTTPS plus signed requests.
+
+## Common Headers
+
+All paired requests must include:
+
+```text
+X-ShareSync-Version: 1
+X-Device-Id: <device-id>
+X-Session-Id: <session-id>
+X-Timestamp: <unix-ms>
+X-Nonce: <random-string>
+X-Signature: <base64-signature>
+```
+
+Signature payload:
+
+```text
+METHOD + "\n" +
+PATH + "\n" +
+X-Timestamp + "\n" +
+X-Nonce + "\n" +
+SHA256(body)
+```
+
+## Endpoints
+
+### Health
+
+```http
+GET /v1/health
+```
+
+Returns device and protocol readiness.
+
+### Pairing
+
+```http
+POST /v1/pairing/accept
+Content-Type: application/json
+```
+
+iOS calls this endpoint after scanning the Android QR payload.
+
+### Manifest
+
+```http
+GET /v1/manifest?sinceCursor=<cursor>
+```
+
+Returns media, contacts, and file metadata available for sync.
+
+### Media Download
+
+```http
+GET /v1/media/{assetId}
+Range: bytes=0-
+```
+
+Streams one photo or video. Range support is required for MVP.
+
+### Contacts Export
+
+```http
+GET /v1/contacts/export?ids=<comma-separated-contact-ids>
+```
+
+Returns normalized contacts.
+
+### File Download
+
+```http
+GET /v1/files/{fileId}
+Range: bytes=0-
+```
+
+Streams one document file. Range support is required for MVP.
+
+### Sync Result
+
+```http
+POST /v1/sync/result
+Content-Type: application/json
+```
+
+Target device reports item-level import results back to source device.
+
+## M0 Scope
+
+M0 implements only:
+
+- `GET /v1/health`
+- `GET /v1/manifest`
+- `GET /v1/media/{assetId}`
+- local, unsigned HTTP allowed only for first-device PoC
+

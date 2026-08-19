@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sharesync.local/schemas/sync-result.schema.json",
+  "title": "ShareSync Sync Result",
+  "type": "object",
+  "required": ["syncBatchId", "targetDeviceId", "results"],
+  "properties": {
+    "syncBatchId": { "type": "string" },
+    "targetDeviceId": { "type": "string" },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["itemType", "sourceItemId", "status"],
+        "properties": {
+          "itemType": { "type": "string", "enum": ["media", "contact", "file"] },
+          "sourceItemId": { "type": "string" },
+          "targetItemId": { "type": ["string", "null"] },
+          "status": {
+            "type": "string",
+            "enum": ["synced", "skipped", "failed", "conflicted"]
+          },
+          "errorCode": { "type": ["string", "null"] }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
+

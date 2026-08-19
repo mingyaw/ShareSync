@@ -1,0 +1,10 @@
+ShareSync
+
+Copyright (c) 2026 Mingyao.
+
+All rights reserved unless a separate LICENSE file is added later.
+
+This repository currently contains early product planning, implementation
+specification, shared protocol schemas, and non-runnable Android/iOS scaffold
+code for the M0 photo synchronization proof of concept.
+

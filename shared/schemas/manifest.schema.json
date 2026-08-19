@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sharesync.local/schemas/manifest.schema.json",
+  "title": "ShareSync Manifest",
+  "type": "object",
+  "required": ["version", "sourceDeviceId", "generatedAt", "cursor", "media", "contacts", "files"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "sourceDeviceId": { "type": "string" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "cursor": { "type": "string" },
+    "media": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/mediaAsset" }
+    },
+    "contacts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/contactItem" }
+    },
+    "files": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/fileItem" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "mediaAsset": {
+      "type": "object",
+      "required": ["assetId", "sourceDeviceId", "mediaType", "fileName", "mimeType", "size"],
+      "properties": {
+        "assetId": { "type": "string" },
+        "sourceDeviceId": { "type": "string" },
+        "mediaType": { "type": "string", "enum": ["photo", "video"] },
+        "fileName": { "type": "string" },
+        "mimeType": { "type": "string" },
+        "size": { "type": "integer", "minimum": 0 },
+        "sha256": { "type": ["string", "null"] },
+        "createdAt": { "type": ["string", "null"], "format": "date-time" },
+        "modifiedAt": { "type": ["string", "null"], "format": "date-time" },
+        "takenAt": { "type": ["string", "null"], "format": "date-time" },
+        "width": { "type": ["integer", "null"] },
+        "height": { "type": ["integer", "null"] },
+        "durationMs": { "type": ["integer", "null"] },
+        "relativePath": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "contactItem": {
+      "type": "object",
+      "required": ["contactId", "sourceDeviceId", "displayName", "phones", "emails"],
+      "properties": {
+        "contactId": { "type": "string" },
+        "sourceDeviceId": { "type": "string" },
+        "displayName": { "type": "string" },
+        "givenName": { "type": ["string", "null"] },
+        "familyName": { "type": ["string", "null"] },
+        "phones": { "type": "array" },
+        "emails": { "type": "array" },
+        "organization": { "type": ["string", "null"] },
+        "note": { "type": ["string", "null"] },
+        "sha256": { "type": ["string", "null"] },
+        "modifiedAt": { "type": ["string", "null"], "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+    "fileItem": {
+      "type": "object",
+      "required": ["fileId", "sourceDeviceId", "fileName", "relativePath", "size"],
+      "properties": {
+        "fileId": { "type": "string" },
+        "sourceDeviceId": { "type": "string" },
+        "fileName": { "type": "string" },
+        "relativePath": { "type": "string" },
+        "mimeType": { "type": ["string", "null"] },
+        "size": { "type": "integer", "minimum": 0 },
+        "sha256": { "type": ["string", "null"] },
+        "modifiedAt": { "type": ["string", "null"], "format": "date-time" }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+

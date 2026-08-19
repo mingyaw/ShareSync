@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sharesync.local/schemas/pairing-payload.schema.json",
+  "title": "ShareSync Pairing Payload",
+  "type": "object",
+  "required": [
+    "version",
+    "type",
+    "deviceId",
+    "deviceName",
+    "platform",
+    "publicKey",
+    "ip",
+    "port",
+    "pairingToken",
+    "expiresAt"
+  ],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "type": { "type": "string", "const": "sharesync_pairing" },
+    "deviceId": { "type": "string", "minLength": 1 },
+    "deviceName": { "type": "string", "minLength": 1 },
+    "platform": { "type": "string", "enum": ["android", "ios"] },
+    "publicKey": { "type": "string", "minLength": 1 },
+    "ip": { "type": "string", "minLength": 1 },
+    "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+    "pairingToken": { "type": "string", "minLength": 16 },
+    "expiresAt": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": false
+}
+

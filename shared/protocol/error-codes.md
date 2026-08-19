@@ -1,0 +1,21 @@
+# ShareSync Error Codes
+
+Format:
+
+```text
+SS-{DOMAIN}-{CODE}
+```
+
+| Code | Meaning | User-facing direction |
+|---|---|---|
+| SS-PAIR-001 | QR code expired | Regenerate the pairing code |
+| SS-AUTH-001 | Invalid signature | Re-pair the trusted device |
+| SS-NET-001 | Peer unreachable | Confirm both phones are on the same Wi-Fi |
+| SS-NET-002 | Transfer interrupted | Sync will resume automatically |
+| SS-MEDIA-001 | Hash mismatch | File will be downloaded again |
+| SS-CONTACT-001 | Contacts permission denied | Allow contacts access |
+| SS-FILE-001 | iCloud container unavailable | Enable iCloud Drive |
+| SS-PERM-001 | Photos permission denied | Allow photos access |
+| SS-STORE-001 | Not enough storage | Free storage and retry |
+| SS-IOSBG-001 | iOS background time expired | Open the app to continue |
+
