@@ -2,6 +2,9 @@ package com.sharesync.android
 
 import android.Manifest
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -11,17 +14,22 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.sharesync.android.pairing.PairingPayloadFactory
+import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.transfer.server.LocalSyncServer
 
 class MainActivity : Activity() {
     private lateinit var statusText: TextView
     private lateinit var endpointText: TextView
     private lateinit var permissionText: TextView
+    private lateinit var pairingPayloadText: TextView
     private lateinit var startButton: Button
     private lateinit var stopButton: Button
+    private lateinit var copyPairingButton: Button
 
     private var server: LocalSyncServer? = null
     private var isServerRunning = false
+    private var currentPairingPayloadJson: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,6 +76,7 @@ class MainActivity : Activity() {
         statusText = bodyText(topPadding = 12 * density)
         endpointText = bodyText(topPadding = 12 * density)
         permissionText = bodyText(topPadding = 12 * density)
+        pairingPayloadText = bodyText(topPadding = 12 * density)
 
         val grantButton = Button(this).apply {
             text = getString(R.string.m0_grant_permission)
@@ -84,13 +93,20 @@ class MainActivity : Activity() {
             setOnClickListener { stopServer() }
         }
 
+        copyPairingButton = Button(this).apply {
+            text = getString(R.string.m0_copy_pairing_payload)
+            setOnClickListener { copyPairingPayload() }
+        }
+
         root.addView(title)
         root.addView(statusText)
         root.addView(endpointText)
         root.addView(permissionText)
+        root.addView(pairingPayloadText)
         root.addView(grantButton)
         root.addView(startButton)
         root.addView(stopButton)
+        root.addView(copyPairingButton)
         setContentView(root)
     }
 
@@ -123,9 +139,12 @@ class MainActivity : Activity() {
         } else {
             getString(R.string.m0_permission_missing)
         }
+        pairingPayloadText.text = currentPairingPayloadJson
+            ?: getString(R.string.m0_pairing_payload_unavailable)
 
         startButton.isEnabled = !isServerRunning && hasMediaPermission()
         stopButton.isEnabled = isServerRunning
+        copyPairingButton.isEnabled = currentPairingPayloadJson != null
     }
 
     private fun requestMediaPermission() {
@@ -184,10 +203,12 @@ class MainActivity : Activity() {
                 SuspendBridge.runBlocking { createdServer.start() }
                 server = createdServer
                 isServerRunning = true
+                currentPairingPayloadJson = createPairingPayloadJson()
                 runOnUiThread { refreshUi() }
             } catch (error: Throwable) {
                 server = null
                 isServerRunning = false
+                currentPairingPayloadJson = null
                 runOnUiThread {
                     refreshUi(getString(R.string.m0_status_failed, error.message ?: "unknown error"))
                 }
@@ -199,6 +220,7 @@ class MainActivity : Activity() {
         val currentServer = server ?: return
         server = null
         isServerRunning = false
+        currentPairingPayloadJson = null
 
         Thread {
             try {
@@ -212,6 +234,25 @@ class MainActivity : Activity() {
     private fun deviceId(): String {
         return Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
             ?: "android-device"
+    }
+
+    private fun createPairingPayloadJson(): String? {
+        val ip = LocalNetworkAddresses.firstIpv4Address() ?: return null
+        val payload = PairingPayloadFactory(
+            deviceIdProvider = ::deviceId,
+            deviceNameProvider = { Build.MODEL ?: "Android" },
+            publicKeyProvider = { "m0-public-key-placeholder" },
+            localIpProvider = { ip },
+            portProvider = { M0SyncComponents.defaultPort() },
+        ).createPayload()
+        return ManifestJsonEncoder().encode(payload)
+    }
+
+    private fun copyPairingPayload() {
+        val payload = currentPairingPayloadJson ?: return
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboard.setPrimaryClip(ClipData.newPlainText("ShareSync pairing payload", payload))
+        refreshUi(getString(R.string.m0_pairing_payload_copied))
     }
 
     private companion object {

@@ -50,6 +50,25 @@ struct ContentView: View {
                 .font(.title3)
                 .frame(maxWidth: .infinity, minHeight: 48)
 
+            TextEditor(text: $viewModel.pairingPayloadText)
+                .font(.footnote)
+                .frame(maxWidth: .infinity, minHeight: 96)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
+                }
+
+            Button {
+                viewModel.applyPairingPayload()
+            } label: {
+                Text("Apply Pairing Payload")
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 44)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+            .frame(maxWidth: .infinity)
+
             Button {
                 viewModel.fetchManifest()
             } label: {
@@ -114,6 +133,9 @@ struct ContentView: View {
     private var statusSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             StatusRow(title: "Pairing", value: pairedStatus)
+            if let pairedDevice = viewModel.pairedDevice {
+                StatusRow(title: "Device", value: pairedDevice.deviceName)
+            }
             StatusRow(title: "Manifest", value: manifestStatus)
 
             if let summary = viewModel.summary {

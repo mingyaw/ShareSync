@@ -9,7 +9,10 @@
     <string name="m0_endpoint_unavailable">No local IPv4 address found. Connect to Wi-Fi or hotspot.</string>
     <string name="m0_permission_granted">Media permission: granted.</string>
     <string name="m0_permission_missing">Media permission: required for /v1/manifest and /v1/media.</string>
+    <string name="m0_pairing_payload_unavailable">Pairing payload: start the server to generate a short-lived payload.</string>
+    <string name="m0_pairing_payload_copied">Pairing payload copied. Paste it into the iPhone ShareSync receive screen.</string>
     <string name="m0_grant_permission">Grant media permission</string>
     <string name="m0_start_server">Start M0 server</string>
     <string name="m0_stop_server">Stop M0 server</string>
+    <string name="m0_copy_pairing_payload">Copy pairing payload</string>
 </resources>

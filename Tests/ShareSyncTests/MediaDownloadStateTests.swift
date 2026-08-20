@@ -22,8 +22,13 @@ final class MediaDownloadStateTests: XCTestCase {
         XCTAssertEqual(store.record(for: "media-001")?.localFileURL, fileURL)
         XCTAssertEqual(store.pendingRecords(), [])
 
-        store.markImported(sourceAssetId: "media-001", now: now.addingTimeInterval(3))
+        store.markImported(
+            sourceAssetId: "media-001",
+            photoLocalIdentifier: "photo-local-001",
+            now: now.addingTimeInterval(3)
+        )
         XCTAssertEqual(store.record(for: "media-001")?.status, .imported)
+        XCTAssertEqual(store.record(for: "media-001")?.photoLocalIdentifier, "photo-local-001")
     }
 
     func testCompletedRecordsAreNotRequeued() {
@@ -75,4 +80,3 @@ final class MediaDownloadStateTests: XCTestCase {
         )
     }
 }
-

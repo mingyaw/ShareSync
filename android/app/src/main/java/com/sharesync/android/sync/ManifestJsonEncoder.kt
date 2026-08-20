@@ -1,6 +1,32 @@
 package com.sharesync.android.sync
 
 class ManifestJsonEncoder {
+    fun encode(payload: PairingPayload): String {
+        return buildString {
+            append("{")
+            appendJsonField("version", payload.version)
+            append(",")
+            appendJsonField("type", payload.type)
+            append(",")
+            appendJsonField("deviceId", payload.deviceId)
+            append(",")
+            appendJsonField("deviceName", payload.deviceName)
+            append(",")
+            appendJsonField("platform", payload.platform)
+            append(",")
+            appendJsonField("publicKey", payload.publicKey)
+            append(",")
+            appendJsonField("ip", payload.ip)
+            append(",")
+            appendJsonField("port", payload.port)
+            append(",")
+            appendJsonField("pairingToken", payload.pairingToken)
+            append(",")
+            appendJsonField("expiresAt", payload.expiresAt)
+            append("}")
+        }
+    }
+
     fun encode(manifest: SyncManifest): String {
         return buildString {
             append("{")

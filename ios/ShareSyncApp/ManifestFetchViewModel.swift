@@ -36,15 +36,18 @@ final class ManifestFetchViewModel: ObservableObject {
 
     @Published var host = ""
     @Published var port = "48291"
+    @Published var pairingPayloadText = ""
     @Published private(set) var state: FetchState = .idle
     @Published private(set) var downloadState: DownloadState = .idle
     @Published private(set) var summary: ManifestSummary?
+    @Published private(set) var pairedDevice: TrustedDevice?
 
     private let client: ManifestClient
     private let downloader: MediaDownloader
     private let photoImporter: PhotoImporter
     private let photoAssetPresenceChecker: PhotoAssetPresenceChecking
     private let downloadStateStore: MediaDownloadStateStore
+    private let pairingPayloadParser: PairingPayloadParser
     private var latestManifest: SyncManifest?
 
     init(
@@ -52,12 +55,14 @@ final class ManifestFetchViewModel: ObservableObject {
         downloader: MediaDownloader = MediaDownloader(),
         photoImporter: PhotoImporter = PhotoKitPhotoImporter(),
         photoAssetPresenceChecker: PhotoAssetPresenceChecking = PhotoKitPhotoImporter(),
+        pairingPayloadParser: PairingPayloadParser = PairingPayloadParser(),
         downloadStateStore: MediaDownloadStateStore = FileMediaDownloadStateStore()
     ) {
         self.client = client
         self.downloader = downloader
         self.photoImporter = photoImporter
         self.photoAssetPresenceChecker = photoAssetPresenceChecker
+        self.pairingPayloadParser = pairingPayloadParser
         self.downloadStateStore = downloadStateStore
     }
 
@@ -102,6 +107,34 @@ final class ManifestFetchViewModel: ObservableObject {
                 summary = nil
                 state = .failed(Self.message(for: error))
             }
+        }
+    }
+
+    func applyPairingPayload() {
+        let trimmedPayload = pairingPayloadText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let data = trimmedPayload.data(using: .utf8), !data.isEmpty else {
+            state = .failed("Paste the Android pairing payload.")
+            return
+        }
+
+        do {
+            let payload = try pairingPayloadParser.parse(data)
+            host = payload.ip
+            port = "\(payload.port)"
+            pairedDevice = TrustedDevice(
+                deviceId: payload.deviceId,
+                deviceName: payload.deviceName,
+                platform: payload.platform,
+                publicKey: payload.publicKey,
+                pairedAt: Date(),
+                lastSeenAt: nil,
+                trustStatus: .trusted
+            )
+            state = .idle
+        } catch PairingPayloadParserError.expired {
+            state = .failed("Pairing payload expired. Generate a new one on Android.")
+        } catch {
+            state = .failed("Pairing payload is not valid.")
         }
     }
 
