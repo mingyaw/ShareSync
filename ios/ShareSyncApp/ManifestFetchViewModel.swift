@@ -49,7 +49,7 @@ final class ManifestFetchViewModel: ObservableObject {
         client: ManifestClient = ManifestClient(),
         downloader: MediaDownloader = MediaDownloader(),
         photoImporter: PhotoImporter = PhotoKitPhotoImporter(),
-        downloadStateStore: MediaDownloadStateStore = InMemoryMediaDownloadStateStore()
+        downloadStateStore: MediaDownloadStateStore = FileMediaDownloadStateStore()
     ) {
         self.client = client
         self.downloader = downloader
@@ -62,7 +62,13 @@ final class ManifestFetchViewModel: ObservableObject {
     }
 
     var canDownload: Bool {
-        latestManifest?.media.isEmpty == false && downloadState != .downloading
+        guard let latestManifest else {
+            return false
+        }
+
+        return nextDownloadCandidate(in: latestManifest) != nil
+            && downloadState != .downloading
+            && downloadState != .importing
     }
 
     func fetchManifest() {
@@ -114,7 +120,12 @@ final class ManifestFetchViewModel: ObservableObject {
         downloadState = .downloading
 
         Task {
-            let validationAssets = Array(manifest.media.prefix(1))
+            guard let validationAsset = nextDownloadCandidate(in: manifest) else {
+                downloadState = .failed("No remaining media to download.")
+                return
+            }
+
+            let validationAssets = [validationAsset]
             let results = await downloader.downloadMedia(
                 assets: validationAssets,
                 host: trimmedHost,
@@ -181,6 +192,18 @@ final class ManifestFetchViewModel: ObservableObject {
 
         return error.localizedDescription
     }
+
+    private func nextDownloadCandidate(in manifest: SyncManifest) -> MediaAsset? {
+        manifest.media.first { asset in
+            guard let record = downloadStateStore.record(for: asset.assetId) else {
+                return true
+            }
+
+            return record.status == .queued
+                || record.status == .downloading
+                || record.status == .failed
+        }
+    }
 }
 
 private extension ManifestFetchViewModel.ManifestSummary {
@@ -190,7 +213,13 @@ private extension ManifestFetchViewModel.ManifestSummary {
         photoCount = manifest.media.filter { $0.mediaType == .photo }.count
         videoCount = manifest.media.filter { $0.mediaType == .video }.count
         totalBytes = manifest.media.reduce(0) { $0 + $1.size }
-        validationAssetName = manifest.media.first?.fileName
+        validationAssetName = manifest.media.first { asset in
+            guard let record = stateStore.record(for: asset.assetId) else {
+                return true
+            }
+
+            return record.status != .imported && record.status != .skipped
+        }?.fileName
         downloadedCount = manifest.media.filter { asset in
             stateStore.record(for: asset.assetId)?.status == .downloaded
         }.count

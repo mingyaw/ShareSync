@@ -144,9 +144,9 @@ struct ContentView: View {
         case .importing:
             return "Importing"
         case .completed:
-            return "Test Again"
+            return "Download Next Item"
         default:
-            return "Download First Item"
+            return "Download Next Item"
         }
     }
 
