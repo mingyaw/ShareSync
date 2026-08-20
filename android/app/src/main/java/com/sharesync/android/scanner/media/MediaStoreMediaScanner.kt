@@ -3,6 +3,7 @@ package com.sharesync.android.scanner.media
 import android.content.ContentResolver
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.provider.MediaStore
 import com.sharesync.android.sync.MediaAsset
 import com.sharesync.android.sync.MediaType
@@ -37,14 +38,23 @@ class MediaStoreMediaScanner(
             MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO.toString(),
         )
 
-        val sortOrder = "${MediaStore.Files.FileColumns.DATE_MODIFIED} DESC LIMIT $limit"
-
         val cursor = contentResolver.query(
             collection,
             projection,
-            selection,
-            selectionArgs,
-            sortOrder,
+            Bundle().apply {
+                putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
+                putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs)
+                putStringArray(
+                    ContentResolver.QUERY_ARG_SORT_COLUMNS,
+                    arrayOf(MediaStore.Files.FileColumns.DATE_MODIFIED),
+                )
+                putInt(
+                    ContentResolver.QUERY_ARG_SORT_DIRECTION,
+                    ContentResolver.QUERY_SORT_DIRECTION_DESCENDING,
+                )
+                putInt(ContentResolver.QUERY_ARG_LIMIT, limit)
+            },
+            null,
         ) ?: return emptyList()
 
         return cursor.use {
@@ -189,4 +199,3 @@ private fun android.database.Cursor.millisToIsoInstant(index: Int): String? {
     if (millis <= 0) return null
     return Instant.ofEpochMilli(millis).toString()
 }
-
