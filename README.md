@@ -111,6 +111,15 @@ M0 excludes:
 - Do not add external cloud relay logic.
 - Do not add Apple ID or iCloud password handling.
 
+## Local Checks
+
+Run the lightweight checks that are available before full Android/Xcode projects exist:
+
+```sh
+python3 scripts/validate-fixtures.py
+swift test
+```
+
 ## Rights
 
 All rights reserved unless a separate LICENSE file is added later.

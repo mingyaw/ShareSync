@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "type": "sharesync_pairing",
+  "deviceId": "android-demo-device",
+  "deviceName": "Pixel Demo",
+  "platform": "android",
+  "publicKey": "demo-public-key",
+  "ip": "192.168.1.20",
+  "port": 48291,
+  "pairingToken": "0123456789abcdef0123456789abcdef",
+  "expiresAt": "2099-08-19T06:30:00Z"
+}
+

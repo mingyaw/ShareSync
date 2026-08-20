@@ -16,6 +16,17 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 ## Android Tasks
 
+### Current Android Progress
+
+- [x] Add M0 sync data models.
+- [x] Add pairing payload factory.
+- [x] Add manifest builder.
+- [x] Add manifest JSON encoder.
+- [x] Add local API router core for health, manifest, and media response metadata.
+- [ ] Bind router to a real Android embedded HTTP server.
+- [ ] Implement MediaStore-backed scanner.
+- [ ] Implement media stream opening by asset id.
+
 ### A1. Project Setup
 
 - [ ] Create Android Studio project under `android/`.
@@ -53,9 +64,23 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 ## iOS Tasks
 
+### Current iOS Progress
+
+- [x] Add Swift Package for core testability.
+- [x] Add sync models.
+- [x] Add pairing payload parser.
+- [x] Add manifest client.
+- [x] Add photo importer interface.
+- [x] Add tests for pairing payload parsing.
+- [x] Add tests for manifest decoding.
+- [ ] Implement QR scanner UI.
+- [ ] Implement media downloader.
+- [ ] Implement PhotoKit importer.
+
 ### I1. Project Setup
 
-- [ ] Create Xcode project under `ios/`.
+- [x] Create Swift Package core under `ios/ShareSync`.
+- [ ] Create Xcode app project under `ios/`.
 - [ ] Configure SwiftUI app target.
 - [ ] Add camera permission for QR scanning.
 - [ ] Add Photos permission.
@@ -90,10 +115,13 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 ## Cross-Platform Tasks
 
+- [x] Add shared sample pairing payload fixture.
+- [x] Add shared sample manifest fixture.
+- [x] Add lightweight fixture validation script.
 - [ ] Validate generated manifest against `shared/schemas/manifest.schema.json`.
-- [ ] Keep date encoding ISO-8601.
-- [ ] Keep enum values lowercase.
-- [ ] Align item status values with `sync-result.schema.json`.
+- [x] Keep fixture date encoding ISO-8601.
+- [x] Keep fixture enum values lowercase.
+- [x] Align item status values with `sync-result.schema.json`.
 
 ## Test Matrix
 
@@ -117,3 +145,28 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - Full request signing.
 - App Store release.
 
+## Progress Log
+
+### 2026-08-20
+
+Completed a lightweight implementation slice:
+
+- Shared sample fixtures for pairing payload and manifest.
+- `scripts/validate-fixtures.py` for local JSON/fixture sanity checks.
+- Swift Package setup for iOS core.
+- Swift tests for QR pairing payload parsing and manifest decoding.
+- Android manifest JSON encoder.
+- Android local API router core for `/v1/health`, `/v1/manifest`, and media response metadata.
+
+Verified:
+
+```sh
+python3 scripts/validate-fixtures.py
+swift test
+```
+
+Next implementation slice:
+
+- Bind Android `LocalSyncRouter` to an embedded HTTP server.
+- Implement Android MediaStore scanner.
+- Add iOS media download state tracking.

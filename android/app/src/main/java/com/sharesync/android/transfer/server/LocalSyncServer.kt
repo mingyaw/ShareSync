@@ -14,6 +14,10 @@ interface ManifestProvider {
     suspend fun currentManifest(): SyncManifest
 }
 
+interface LocalServerBinder {
+    suspend fun bind(router: LocalSyncRouter, port: Int): LocalSyncServer
+}
+
 class LocalSyncServerStub(
     override val port: Int,
 ) : LocalSyncServer {
@@ -25,4 +29,3 @@ class LocalSyncServerStub(
         // M0 implementation will stop the embedded HTTP server here.
     }
 }
-

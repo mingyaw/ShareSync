@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "sourceDeviceId": "android-demo-device",
+  "generatedAt": "2026-08-19T06:00:00Z",
+  "cursor": "m0-demo-cursor",
+  "media": [
+    {
+      "assetId": "media-001",
+      "sourceDeviceId": "android-demo-device",
+      "mediaType": "photo",
+      "fileName": "IMG_0001.jpg",
+      "mimeType": "image/jpeg",
+      "size": 3145728,
+      "sha256": "b94d27b9934d3e08a52e52d7da7dabfadead0000000000000000000000000000",
+      "createdAt": "2026-08-18T10:00:00Z",
+      "modifiedAt": "2026-08-18T10:00:10Z",
+      "takenAt": "2026-08-18T09:59:59Z",
+      "width": 4032,
+      "height": 3024,
+      "durationMs": null,
+      "relativePath": "DCIM/Camera"
+    },
+    {
+      "assetId": "media-002",
+      "sourceDeviceId": "android-demo-device",
+      "mediaType": "video",
+      "fileName": "VID_0002.mp4",
+      "mimeType": "video/mp4",
+      "size": 52428800,
+      "sha256": null,
+      "createdAt": "2026-08-18T11:00:00Z",
+      "modifiedAt": "2026-08-18T11:00:10Z",
+      "takenAt": "2026-08-18T10:59:59Z",
+      "width": 3840,
+      "height": 2160,
+      "durationMs": 125000,
+      "relativePath": "DCIM/Camera"
+    }
+  ],
+  "contacts": [],
+  "files": []
+}
+
