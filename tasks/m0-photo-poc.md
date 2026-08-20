@@ -23,9 +23,11 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add manifest builder.
 - [x] Add manifest JSON encoder.
 - [x] Add local API router core for health, manifest, and media response metadata.
+- [x] Add MediaStore-backed scanner.
+- [x] Add MediaStore-backed media lookup provider.
+- [x] Add media stream provider for content URIs.
 - [ ] Bind router to a real Android embedded HTTP server.
-- [ ] Implement MediaStore-backed scanner.
-- [ ] Implement media stream opening by asset id.
+- [ ] Connect media stream provider to real HTTP response bodies.
 
 ### A1. Project Setup
 
@@ -71,8 +73,10 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add pairing payload parser.
 - [x] Add manifest client.
 - [x] Add photo importer interface.
+- [x] Add media download state model and in-memory state store.
 - [x] Add tests for pairing payload parsing.
 - [x] Add tests for manifest decoding.
+- [x] Add tests for media download state transitions.
 - [ ] Implement QR scanner UI.
 - [ ] Implement media downloader.
 - [ ] Implement PhotoKit importer.
@@ -165,7 +169,7 @@ python3 scripts/validate-fixtures.py
 swift test
 ```
 
-Next implementation slice:
+Follow-up target at the time:
 
 - Bind Android `LocalSyncRouter` to an embedded HTTP server.
 - Implement Android MediaStore scanner.
@@ -189,5 +193,31 @@ python3 scripts/validate-fixtures.py
 swift test
 xcodebuild -list -project ios/ShareSync.xcodeproj
 xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
-cd android && gradle :app:assembleDebug
+cd android && ./gradlew :app:assembleDebug
 ```
+
+### 2026-08-20 Media Scan And Download State
+
+Completed another M0 implementation slice:
+
+- Android `MediaStoreMediaScanner` for recent photo/video metadata.
+- Android `MediaProvider` implementation through the scanner.
+- Android `MediaStreamProvider` for opening content URI streams.
+- Internal Android `contentUri` field on `MediaAsset`, intentionally excluded from manifest JSON.
+- iOS `MediaDownloadRecord`, `MediaDownloadStatus`, and `MediaDownloadStateStore`.
+- In-memory iOS download state store for queue/download/import/failure tracking.
+- Swift tests for media download state transitions and requeue behavior.
+
+Verified:
+
+```sh
+cd android && ./gradlew :app:assembleDebug
+swift test
+xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+```
+
+Next implementation slice:
+
+- Bind Android `LocalSyncRouter` to an embedded HTTP server.
+- Pipe `MediaStreamProvider` into `/v1/media/{assetId}` response bodies.
+- Implement iOS media file downloader using the state store.

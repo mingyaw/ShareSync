@@ -14,6 +14,7 @@
 		100000000000000000000005 /* ManifestClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000015 /* ManifestClient.swift */; };
 		100000000000000000000006 /* PhotoImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000016 /* PhotoImporter.swift */; };
 		100000000000000000000007 /* TrustedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000017 /* TrustedDevice.swift */; };
+		100000000000000000000008 /* MediaDownloadState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000018 /* MediaDownloadState.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,6 +26,7 @@
 		100000000000000000000015 /* ManifestClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Transfer/ManifestClient.swift; sourceTree = "<group>"; };
 		100000000000000000000016 /* PhotoImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/ImporterPhotos/PhotoImporter.swift; sourceTree = "<group>"; };
 		100000000000000000000017 /* TrustedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Security/TrustedDevice.swift; sourceTree = "<group>"; };
+		100000000000000000000018 /* MediaDownloadState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Transfer/MediaDownloadState.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,6 +64,7 @@
 				100000000000000000000013 /* SyncModels.swift */,
 				100000000000000000000014 /* PairingPayloadParser.swift */,
 				100000000000000000000015 /* ManifestClient.swift */,
+				100000000000000000000018 /* MediaDownloadState.swift */,
 				100000000000000000000016 /* PhotoImporter.swift */,
 				100000000000000000000017 /* TrustedDevice.swift */,
 			);
@@ -149,6 +152,7 @@
 				100000000000000000000003 /* SyncModels.swift in Sources */,
 				100000000000000000000004 /* PairingPayloadParser.swift in Sources */,
 				100000000000000000000005 /* ManifestClient.swift in Sources */,
+				100000000000000000000008 /* MediaDownloadState.swift in Sources */,
 				100000000000000000000006 /* PhotoImporter.swift in Sources */,
 				100000000000000000000007 /* TrustedDevice.swift in Sources */,
 			);
@@ -335,4 +339,3 @@
 	};
 	rootObject = 100000000000000000000070 /* Project object */;
 }
-

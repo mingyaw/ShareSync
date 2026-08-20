@@ -38,6 +38,7 @@ data class MediaAsset(
     val height: Int? = null,
     val durationMs: Long? = null,
     val relativePath: String? = null,
+    val contentUri: String? = null,
 )
 
 enum class MediaType {
@@ -89,4 +90,3 @@ enum class SyncItemStatus {
     failed,
     conflicted,
 }
-

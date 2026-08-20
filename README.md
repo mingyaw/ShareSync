@@ -128,7 +128,7 @@ Run native project checks:
 
 ```sh
 cd android
-gradle :app:assembleDebug
+./gradlew :app:assembleDebug
 
 xcodebuild -project ios/ShareSync.xcodeproj \
   -scheme ShareSync \
