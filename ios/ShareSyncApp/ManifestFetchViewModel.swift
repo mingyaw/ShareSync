@@ -24,6 +24,7 @@ final class ManifestFetchViewModel: ObservableObject {
         let totalBytes: Int64
         let downloadedCount: Int
         let failedCount: Int
+        let validationAssetName: String?
 
         var totalItems: Int {
             photoCount + videoCount
@@ -88,7 +89,7 @@ final class ManifestFetchViewModel: ObservableObject {
         }
     }
 
-    func downloadMedia() {
+    func downloadFirstMedia() {
         guard let manifest = latestManifest, !manifest.media.isEmpty else {
             downloadState = .failed("Manifest has no media to download.")
             return
@@ -108,8 +109,9 @@ final class ManifestFetchViewModel: ObservableObject {
         downloadState = .downloading
 
         Task {
+            let validationAssets = Array(manifest.media.prefix(1))
             let results = await downloader.downloadMedia(
-                assets: manifest.media,
+                assets: validationAssets,
                 host: trimmedHost,
                 port: portNumber,
                 stateStore: downloadStateStore
@@ -148,6 +150,7 @@ private extension ManifestFetchViewModel.ManifestSummary {
         photoCount = manifest.media.filter { $0.mediaType == .photo }.count
         videoCount = manifest.media.filter { $0.mediaType == .video }.count
         totalBytes = manifest.media.reduce(0) { $0 + $1.size }
+        validationAssetName = manifest.media.first?.fileName
         downloadedCount = manifest.media.filter { asset in
             stateStore.record(for: asset.assetId)?.status == .downloaded
         }.count

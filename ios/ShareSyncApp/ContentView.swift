@@ -54,7 +54,7 @@ struct ContentView: View {
             .disabled(!viewModel.canFetch)
 
             Button {
-                viewModel.downloadMedia()
+                viewModel.downloadFirstMedia()
             } label: {
                 HStack {
                     if case .downloading = viewModel.downloadState {
@@ -79,6 +79,7 @@ struct ContentView: View {
                 StatusRow(title: "Photos", value: "\(summary.photoCount)")
                 StatusRow(title: "Videos", value: "\(summary.videoCount)")
                 StatusRow(title: "Transfer Size", value: ByteCountFormatter.string(fromByteCount: summary.totalBytes, countStyle: .file))
+                StatusRow(title: "Test Item", value: summary.validationAssetName ?? "None")
                 StatusRow(title: "Downloaded", value: "\(summary.downloadedCount)")
                 StatusRow(title: "Failed", value: "\(summary.failedCount)")
                 StatusRow(title: "Cursor", value: summary.cursor)
@@ -118,9 +119,9 @@ struct ContentView: View {
         case .downloading:
             return "Downloading"
         case .completed:
-            return "Download Again"
+            return "Test Again"
         default:
-            return "Download Media"
+            return "Download First Item"
         }
     }
 

@@ -81,7 +81,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add tests for manifest decoding.
 - [x] Add tests for media download state transitions.
 - [x] Add manual Android endpoint form for manifest fetch.
-- [x] Implement media downloader.
+- [x] Implement single-item media downloader validation path.
 - [ ] Implement QR scanner UI.
 - [ ] Implement PhotoKit importer.
 
@@ -108,9 +108,10 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 ### I4. Media Download
 
-- [x] Download photo files to app temp directory.
+- [x] Download one photo/video file to app temp directory for validation.
 - [x] Verify SHA-256 when available.
 - [x] Track per-asset download state.
+- [ ] Expand UI action from single-item validation to batch download.
 - [ ] Resume or skip completed items after restart.
 
 ### I5. Photos Import
@@ -322,15 +323,16 @@ Next implementation slice:
 - Add Android-to-iOS physical-device manual manifest test notes after the next device run.
 - Implement iOS PhotoKit importer for downloaded files.
 
-### 2026-08-20 iOS Media Downloader
+### 2026-08-20 iOS Single-Item Media Downloader
 
-Completed the iOS media download slice:
+Completed the first iOS media download validation slice:
 
 - `MediaDownloader` for `GET /v1/media/{assetId}` downloads.
 - Local file writes into the app temp download directory.
 - Optional SHA-256 verification when Android manifest provides a hash.
 - State-store integration for queued, downloading, downloaded, and failed records.
-- SwiftUI receive screen action to download media after manifest fetch.
+- SwiftUI receive screen action to download only the first manifest media item.
+- Test item filename display for physical-device validation.
 - Downloaded and failed counts on the receive screen.
 - Unit tests for successful file write and checksum mismatch failure.
 
@@ -343,5 +345,6 @@ xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulat
 
 Next implementation slice:
 
-- Implement iOS PhotoKit importer for downloaded files.
+- Validate single Android-to-iOS media download on physical devices.
+- Expand to selectable or batch media download after single-item validation passes.
 - Persist download/import state across app restarts.
