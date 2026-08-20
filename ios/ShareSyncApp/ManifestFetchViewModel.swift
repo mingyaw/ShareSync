@@ -101,6 +101,14 @@ final class ManifestFetchViewModel: ObservableObject {
     }
 
     func downloadFirstMedia() {
+        downloadNextMediaBatch(limit: 1)
+    }
+
+    func downloadSmallMediaBatch() {
+        downloadNextMediaBatch(limit: 5)
+    }
+
+    private func downloadNextMediaBatch(limit: Int) {
         guard let manifest = latestManifest, !manifest.media.isEmpty else {
             downloadState = .failed("Manifest has no media to download.")
             return
@@ -120,12 +128,12 @@ final class ManifestFetchViewModel: ObservableObject {
         downloadState = .downloading
 
         Task {
-            guard let validationAsset = nextDownloadCandidate(in: manifest) else {
+            let validationAssets = nextDownloadCandidates(in: manifest, limit: limit)
+            guard !validationAssets.isEmpty else {
                 downloadState = .failed("No remaining media to download.")
                 return
             }
 
-            let validationAssets = [validationAsset]
             let results = await downloader.downloadMedia(
                 assets: validationAssets,
                 host: trimmedHost,
@@ -194,15 +202,23 @@ final class ManifestFetchViewModel: ObservableObject {
     }
 
     private func nextDownloadCandidate(in manifest: SyncManifest) -> MediaAsset? {
-        manifest.media.first { asset in
-            guard let record = downloadStateStore.record(for: asset.assetId) else {
+        nextDownloadCandidates(in: manifest, limit: 1).first
+    }
+
+    private func nextDownloadCandidates(in manifest: SyncManifest, limit: Int) -> [MediaAsset] {
+        guard limit > 0 else {
+            return []
+        }
+
+        return Array(manifest.media.lazy.filter { asset in
+            guard let record = self.downloadStateStore.record(for: asset.assetId) else {
                 return true
             }
 
             return record.status == .queued
                 || record.status == .downloading
                 || record.status == .failed
-        }
+        }.prefix(limit))
     }
 }
 

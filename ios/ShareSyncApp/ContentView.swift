@@ -86,6 +86,26 @@ struct ContentView: View {
             .controlSize(.large)
             .frame(maxWidth: .infinity)
             .disabled(!viewModel.canDownload)
+
+            Button {
+                viewModel.downloadSmallMediaBatch()
+            } label: {
+                HStack {
+                    if case .downloading = viewModel.downloadState {
+                        ProgressView()
+                    }
+                    if case .importing = viewModel.downloadState {
+                        ProgressView()
+                    }
+                    Text(batchDownloadButtonTitle)
+                        .frame(maxWidth: .infinity)
+                }
+                .frame(minHeight: 44)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+            .frame(maxWidth: .infinity)
+            .disabled(!viewModel.canDownload)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.bottom, 24)
@@ -147,6 +167,17 @@ struct ContentView: View {
             return "Download Next Item"
         default:
             return "Download Next Item"
+        }
+    }
+
+    private var batchDownloadButtonTitle: String {
+        switch viewModel.downloadState {
+        case .downloading:
+            return "Downloading"
+        case .importing:
+            return "Importing"
+        default:
+            return "Download 5 Items"
         }
     }
 
