@@ -6,38 +6,47 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("ShareSync")
-                        .font(.largeTitle)
-                        .fontWeight(.semibold)
+                VStack(alignment: .leading, spacing: 0) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("ShareSync")
+                            .font(.largeTitle)
+                            .fontWeight(.semibold)
 
-                    Text("Receive Android media over your local network.")
-                        .font(.body)
-                        .foregroundStyle(.secondary)
+                        Text("Receive Android media over your local network.")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.bottom, 20)
+
+                    endpointForm
+
+                    statusSection
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.bottom, 16)
-
-                endpointForm
-
-                statusSection
             }
-            .contentMargins(24, for: .scrollContent)
+            .contentMargins(.horizontal, 16, for: .scrollContent)
+            .contentMargins(.vertical, 20, for: .scrollContent)
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Receive")
         }
     }
 
     private var endpointForm: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 16) {
             TextField("Android IP", text: $viewModel.host)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .keyboardType(.numbersAndPunctuation)
                 .textFieldStyle(.roundedBorder)
+                .font(.title3)
+                .frame(maxWidth: .infinity, minHeight: 48)
 
             TextField("Port", text: $viewModel.port)
                 .keyboardType(.numberPad)
                 .textFieldStyle(.roundedBorder)
+                .font(.title3)
+                .frame(maxWidth: .infinity, minHeight: 48)
 
             Button {
                 viewModel.fetchManifest()
@@ -49,8 +58,10 @@ struct ContentView: View {
                     Text(buttonTitle)
                         .frame(maxWidth: .infinity)
                 }
+                .frame(minHeight: 44)
             }
             .buttonStyle(.borderedProminent)
+            .controlSize(.large)
             .disabled(!viewModel.canFetch)
 
             Button {
@@ -66,11 +77,14 @@ struct ContentView: View {
                     Text(downloadButtonTitle)
                         .frame(maxWidth: .infinity)
                 }
+                .frame(minHeight: 44)
             }
             .buttonStyle(.bordered)
+            .controlSize(.large)
             .disabled(!viewModel.canDownload)
         }
-        .padding(.bottom, 20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.bottom, 24)
     }
 
     private var statusSection: some View {
@@ -107,6 +121,7 @@ struct ContentView: View {
                     .padding(.top, 4)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var buttonTitle: String {
