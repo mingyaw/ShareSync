@@ -5,29 +5,31 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("ShareSync")
-                            .font(.largeTitle)
-                            .fontWeight(.semibold)
+            GeometryReader { geometry in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("ShareSync")
+                                .font(.largeTitle)
+                                .fontWeight(.semibold)
 
-                        Text("Receive Android media over your local network.")
-                            .font(.body)
-                            .foregroundStyle(.secondary)
+                            Text("Receive Android media over your local network.")
+                                .font(.body)
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.bottom, 20)
+
+                        endpointForm
+
+                        statusSection
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.bottom, 20)
-
-                    endpointForm
-
-                    statusSection
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 20)
+                    .frame(width: max(0, geometry.size.width - 32), alignment: .leading)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .scrollDismissesKeyboard(.interactively)
             }
-            .contentMargins(.horizontal, 16, for: .scrollContent)
-            .contentMargins(.vertical, 20, for: .scrollContent)
-            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Receive")
         }
     }
@@ -62,6 +64,7 @@ struct ContentView: View {
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
+            .frame(maxWidth: .infinity)
             .disabled(!viewModel.canFetch)
 
             Button {
@@ -81,6 +84,7 @@ struct ContentView: View {
             }
             .buttonStyle(.bordered)
             .controlSize(.large)
+            .frame(maxWidth: .infinity)
             .disabled(!viewModel.canDownload)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
