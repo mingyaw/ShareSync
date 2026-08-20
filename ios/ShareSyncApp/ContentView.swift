@@ -52,6 +52,20 @@ struct ContentView: View {
             }
             .buttonStyle(.borderedProminent)
             .disabled(!viewModel.canFetch)
+
+            Button {
+                viewModel.downloadMedia()
+            } label: {
+                HStack {
+                    if case .downloading = viewModel.downloadState {
+                        ProgressView()
+                    }
+                    Text(downloadButtonTitle)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .buttonStyle(.bordered)
+            .disabled(!viewModel.canDownload)
         }
         .padding(.bottom, 20)
     }
@@ -65,12 +79,22 @@ struct ContentView: View {
                 StatusRow(title: "Photos", value: "\(summary.photoCount)")
                 StatusRow(title: "Videos", value: "\(summary.videoCount)")
                 StatusRow(title: "Transfer Size", value: ByteCountFormatter.string(fromByteCount: summary.totalBytes, countStyle: .file))
+                StatusRow(title: "Downloaded", value: "\(summary.downloadedCount)")
+                StatusRow(title: "Failed", value: "\(summary.failedCount)")
                 StatusRow(title: "Cursor", value: summary.cursor)
             } else {
                 StatusRow(title: "Photos", value: "Waiting")
             }
 
             if case .failed(let message) = viewModel.state {
+                Text(message)
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 4)
+            }
+
+            if case .failed(let message) = viewModel.downloadState {
                 Text(message)
                     .font(.footnote)
                     .foregroundStyle(.red)
@@ -86,6 +110,17 @@ struct ContentView: View {
             return "Fetching"
         default:
             return "Fetch Manifest"
+        }
+    }
+
+    private var downloadButtonTitle: String {
+        switch viewModel.downloadState {
+        case .downloading:
+            return "Downloading"
+        case .completed:
+            return "Download Again"
+        default:
+            return "Download Media"
         }
     }
 

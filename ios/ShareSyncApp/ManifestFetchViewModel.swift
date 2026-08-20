@@ -9,12 +9,21 @@ final class ManifestFetchViewModel: ObservableObject {
         case failed(String)
     }
 
+    enum DownloadState: Equatable {
+        case idle
+        case downloading
+        case completed
+        case failed(String)
+    }
+
     struct ManifestSummary: Equatable {
         let sourceDeviceId: String
         let cursor: String
         let photoCount: Int
         let videoCount: Int
         let totalBytes: Int64
+        let downloadedCount: Int
+        let failedCount: Int
 
         var totalItems: Int {
             photoCount + videoCount
@@ -24,16 +33,30 @@ final class ManifestFetchViewModel: ObservableObject {
     @Published var host = ""
     @Published var port = "48291"
     @Published private(set) var state: FetchState = .idle
+    @Published private(set) var downloadState: DownloadState = .idle
     @Published private(set) var summary: ManifestSummary?
 
     private let client: ManifestClient
+    private let downloader: MediaDownloader
+    private let downloadStateStore: MediaDownloadStateStore
+    private var latestManifest: SyncManifest?
 
-    init(client: ManifestClient = ManifestClient()) {
+    init(
+        client: ManifestClient = ManifestClient(),
+        downloader: MediaDownloader = MediaDownloader(),
+        downloadStateStore: MediaDownloadStateStore = InMemoryMediaDownloadStateStore()
+    ) {
         self.client = client
+        self.downloader = downloader
+        self.downloadStateStore = downloadStateStore
     }
 
     var canFetch: Bool {
         !host.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && Int(port) != nil && state != .loading
+    }
+
+    var canDownload: Bool {
+        latestManifest?.media.isEmpty == false && downloadState != .downloading
     }
 
     func fetchManifest() {
@@ -53,12 +76,46 @@ final class ManifestFetchViewModel: ObservableObject {
         Task {
             do {
                 let manifest = try await client.fetchManifest(from: trimmedHost, port: portNumber)
-                summary = ManifestSummary(manifest: manifest)
+                latestManifest = manifest
+                summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
+                downloadState = .idle
                 state = .loaded
             } catch {
+                latestManifest = nil
                 summary = nil
                 state = .failed(Self.message(for: error))
             }
+        }
+    }
+
+    func downloadMedia() {
+        guard let manifest = latestManifest, !manifest.media.isEmpty else {
+            downloadState = .failed("Manifest has no media to download.")
+            return
+        }
+
+        guard let portNumber = Int(port), (1...65535).contains(portNumber) else {
+            downloadState = .failed("Enter a valid port.")
+            return
+        }
+
+        let trimmedHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedHost.isEmpty else {
+            downloadState = .failed("Enter Android IP address.")
+            return
+        }
+
+        downloadState = .downloading
+
+        Task {
+            let results = await downloader.downloadMedia(
+                assets: manifest.media,
+                host: trimmedHost,
+                port: portNumber,
+                stateStore: downloadStateStore
+            )
+            summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
+            downloadState = results.isEmpty ? .failed("No media downloaded.") : .completed
         }
     }
 
@@ -85,11 +142,17 @@ final class ManifestFetchViewModel: ObservableObject {
 }
 
 private extension ManifestFetchViewModel.ManifestSummary {
-    init(manifest: SyncManifest) {
+    init(manifest: SyncManifest, stateStore: MediaDownloadStateStore) {
         sourceDeviceId = manifest.sourceDeviceId
         cursor = manifest.cursor
         photoCount = manifest.media.filter { $0.mediaType == .photo }.count
         videoCount = manifest.media.filter { $0.mediaType == .video }.count
         totalBytes = manifest.media.reduce(0) { $0 + $1.size }
+        downloadedCount = manifest.media.filter { asset in
+            stateStore.record(for: asset.assetId)?.status == .downloaded
+        }.count
+        failedCount = manifest.media.filter { asset in
+            stateStore.record(for: asset.assetId)?.status == .failed
+        }.count
     }
 }

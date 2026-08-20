@@ -81,8 +81,8 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add tests for manifest decoding.
 - [x] Add tests for media download state transitions.
 - [x] Add manual Android endpoint form for manifest fetch.
+- [x] Implement media downloader.
 - [ ] Implement QR scanner UI.
-- [ ] Implement media downloader.
 - [ ] Implement PhotoKit importer.
 
 ### I1. Project Setup
@@ -108,9 +108,9 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 ### I4. Media Download
 
-- [ ] Download photo files to app temp directory.
-- [ ] Verify SHA-256 when available.
-- [ ] Track per-asset download state.
+- [x] Download photo files to app temp directory.
+- [x] Verify SHA-256 when available.
+- [x] Track per-asset download state.
 - [ ] Resume or skip completed items after restart.
 
 ### I5. Photos Import
@@ -254,8 +254,8 @@ xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulat
 
 Next implementation slice:
 
-- Add Android UI controls to request media permission and start/stop server.
-- Implement iOS media file downloader using the state store.
+- Add Android-to-iOS physical-device manual manifest test notes after the next device run.
+- Implement iOS PhotoKit importer for downloaded files.
 
 ### 2026-08-20 Embedded Android HTTP Server
 
@@ -281,8 +281,8 @@ xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulat
 
 Next implementation slice:
 
-- Implement iOS media file downloader using the existing state store.
-- Add iOS manual endpoint form to fetch Android `/v1/manifest`.
+- Add Android-to-iOS physical-device manual manifest test notes after the next device run.
+- Implement iOS PhotoKit importer for downloaded files.
 
 ### 2026-08-20 Android M0 Server Controls
 
@@ -319,5 +319,29 @@ xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulat
 
 Next implementation slice:
 
-- Implement iOS media file downloader using the existing state store.
 - Add Android-to-iOS physical-device manual manifest test notes after the next device run.
+- Implement iOS PhotoKit importer for downloaded files.
+
+### 2026-08-20 iOS Media Downloader
+
+Completed the iOS media download slice:
+
+- `MediaDownloader` for `GET /v1/media/{assetId}` downloads.
+- Local file writes into the app temp download directory.
+- Optional SHA-256 verification when Android manifest provides a hash.
+- State-store integration for queued, downloading, downloaded, and failed records.
+- SwiftUI receive screen action to download media after manifest fetch.
+- Downloaded and failed counts on the receive screen.
+- Unit tests for successful file write and checksum mismatch failure.
+
+Verified:
+
+```sh
+swift test
+xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+```
+
+Next implementation slice:
+
+- Implement iOS PhotoKit importer for downloaded files.
+- Persist download/import state across app restarts.
