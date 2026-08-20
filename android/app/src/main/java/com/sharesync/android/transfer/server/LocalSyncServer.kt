@@ -15,7 +15,25 @@ interface ManifestProvider {
 }
 
 interface LocalServerBinder {
-    suspend fun bind(router: LocalSyncRouter, port: Int): LocalSyncServer
+    suspend fun bind(
+        router: LocalSyncRouter,
+        mediaStreamProvider: com.sharesync.android.scanner.media.MediaStreamProvider,
+        port: Int,
+    ): LocalSyncServer
+}
+
+class EmbeddedLocalServerBinder : LocalServerBinder {
+    override suspend fun bind(
+        router: LocalSyncRouter,
+        mediaStreamProvider: com.sharesync.android.scanner.media.MediaStreamProvider,
+        port: Int,
+    ): LocalSyncServer {
+        return EmbeddedLocalSyncServer(
+            port = port,
+            router = router,
+            mediaStreamProvider = mediaStreamProvider,
+        )
+    }
 }
 
 class LocalSyncServerStub(

@@ -31,7 +31,7 @@ class MainActivity : Activity() {
         }
 
         val status = TextView(this).apply {
-            text = getString(R.string.m0_status)
+            text = getString(R.string.m0_status, M0SyncComponents.defaultPort())
             textSize = 16f
             setTextColor(getColor(android.R.color.darker_gray))
             setPadding(0, (12 * density).toInt(), 0, 0)
@@ -42,4 +42,3 @@ class MainActivity : Activity() {
         setContentView(root)
     }
 }
-

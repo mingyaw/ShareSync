@@ -26,8 +26,10 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add MediaStore-backed scanner.
 - [x] Add MediaStore-backed media lookup provider.
 - [x] Add media stream provider for content URIs.
-- [ ] Bind router to a real Android embedded HTTP server.
-- [ ] Connect media stream provider to real HTTP response bodies.
+- [x] Bind router to a real Android embedded HTTP server.
+- [x] Connect media stream provider to real HTTP response bodies.
+- [x] Add app-level M0 sync component factory.
+- [ ] Add Android UI controls to request media permission and start/stop server.
 
 ### A1. Project Setup
 
@@ -218,6 +220,33 @@ xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulat
 
 Next implementation slice:
 
-- Bind Android `LocalSyncRouter` to an embedded HTTP server.
-- Pipe `MediaStreamProvider` into `/v1/media/{assetId}` response bodies.
+- Add Android UI controls to request media permission and start/stop server.
 - Implement iOS media file downloader using the state store.
+
+### 2026-08-20 Embedded Android HTTP Server
+
+Completed another M0 implementation slice:
+
+- Android `EmbeddedLocalSyncServer` using `ServerSocket`.
+- `GET /v1/health` response path.
+- `GET /v1/manifest` response path.
+- `GET /v1/media/{assetId}` response path with range support.
+- Media response body streaming from `MediaStreamProvider`.
+- Basic JSON error responses for missing media and unsupported methods.
+- `EmbeddedLocalServerBinder` to create server instances.
+- `M0SyncComponents` factory to wire MediaStore scanner, manifest builder, router, stream provider, and server binder.
+
+Verified:
+
+```sh
+cd android && ./gradlew :app:assembleDebug
+python3 scripts/validate-fixtures.py
+swift test
+xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+```
+
+Next implementation slice:
+
+- Add Android UI controls to request media permission and start/stop server.
+- Show Android local IP/port for iOS manual manifest testing.
+- Implement iOS media file downloader using the existing state store.
