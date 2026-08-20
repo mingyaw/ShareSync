@@ -123,6 +123,7 @@ struct ContentView: View {
                 StatusRow(title: "Test Item", value: summary.validationAssetName ?? "None")
                 StatusRow(title: "Downloaded", value: "\(summary.downloadedCount)")
                 StatusRow(title: "Imported", value: "\(summary.importedCount)")
+                StatusRow(title: "Missing", value: "\(summary.missingCount)")
                 StatusRow(title: "Failed", value: "\(summary.failedCount)")
                 StatusRow(title: "Cursor", value: summary.cursor)
             } else {

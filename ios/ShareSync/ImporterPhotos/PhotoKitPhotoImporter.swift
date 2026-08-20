@@ -8,7 +8,7 @@ enum PhotoKitPhotoImporterError: Error {
     case albumCreationFailed
 }
 
-final class PhotoKitPhotoImporter: PhotoImporter {
+final class PhotoKitPhotoImporter: PhotoImporter, PhotoAssetPresenceChecking {
     private let albumTitle: String
     private let library: PHPhotoLibrary
 
@@ -31,6 +31,12 @@ final class PhotoKitPhotoImporter: PhotoImporter {
             }
             return results
         }
+    }
+
+    func assetExists(localIdentifier: String) async throws -> Bool {
+        try await ensurePhotoPermission()
+        let result = PHAsset.fetchAssets(withLocalIdentifiers: [localIdentifier], options: nil)
+        return result.firstObject != nil
     }
 
     private func importOne(_ request: PhotoImportRequest) async -> PhotoImportResult {

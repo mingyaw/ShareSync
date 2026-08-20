@@ -18,6 +18,10 @@ protocol PhotoImporter {
     func importBatch(_ requests: [PhotoImportRequest]) async -> [PhotoImportResult]
 }
 
+protocol PhotoAssetPresenceChecking {
+    func assetExists(localIdentifier: String) async throws -> Bool
+}
+
 final class PhotoImporterStub: PhotoImporter {
     func importBatch(_ requests: [PhotoImportRequest]) async -> [PhotoImportResult] {
         requests.map {
@@ -31,3 +35,8 @@ final class PhotoImporterStub: PhotoImporter {
     }
 }
 
+final class PhotoAssetPresenceCheckerStub: PhotoAssetPresenceChecking {
+    func assetExists(localIdentifier: String) async throws -> Bool {
+        false
+    }
+}

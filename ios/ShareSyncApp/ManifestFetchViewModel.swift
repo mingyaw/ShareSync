@@ -25,6 +25,7 @@ final class ManifestFetchViewModel: ObservableObject {
         let totalBytes: Int64
         let downloadedCount: Int
         let importedCount: Int
+        let missingCount: Int
         let failedCount: Int
         let validationAssetName: String?
 
@@ -42,6 +43,7 @@ final class ManifestFetchViewModel: ObservableObject {
     private let client: ManifestClient
     private let downloader: MediaDownloader
     private let photoImporter: PhotoImporter
+    private let photoAssetPresenceChecker: PhotoAssetPresenceChecking
     private let downloadStateStore: MediaDownloadStateStore
     private var latestManifest: SyncManifest?
 
@@ -49,11 +51,13 @@ final class ManifestFetchViewModel: ObservableObject {
         client: ManifestClient = ManifestClient(),
         downloader: MediaDownloader = MediaDownloader(),
         photoImporter: PhotoImporter = PhotoKitPhotoImporter(),
+        photoAssetPresenceChecker: PhotoAssetPresenceChecking = PhotoKitPhotoImporter(),
         downloadStateStore: MediaDownloadStateStore = FileMediaDownloadStateStore()
     ) {
         self.client = client
         self.downloader = downloader
         self.photoImporter = photoImporter
+        self.photoAssetPresenceChecker = photoAssetPresenceChecker
         self.downloadStateStore = downloadStateStore
     }
 
@@ -89,6 +93,7 @@ final class ManifestFetchViewModel: ObservableObject {
             do {
                 let manifest = try await client.fetchManifest(from: trimmedHost, port: portNumber)
                 latestManifest = manifest
+                await reconcileMissingPhotoAssets(in: manifest)
                 summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
                 downloadState = .idle
                 state = .loaded
@@ -163,7 +168,11 @@ final class ManifestFetchViewModel: ObservableObject {
 
             for importResult in importResults {
                 if importResult.status == .synced {
-                    downloadStateStore.markImported(sourceAssetId: importResult.sourceAssetId, now: Date())
+                    downloadStateStore.markImported(
+                        sourceAssetId: importResult.sourceAssetId,
+                        photoLocalIdentifier: importResult.localIdentifier,
+                        now: Date()
+                    )
                 } else {
                     downloadStateStore.markFailed(
                         sourceAssetId: importResult.sourceAssetId,
@@ -220,6 +229,26 @@ final class ManifestFetchViewModel: ObservableObject {
                 || record.status == .failed
         }.prefix(limit))
     }
+
+    private func reconcileMissingPhotoAssets(in manifest: SyncManifest) async {
+        for asset in manifest.media {
+            guard let record = downloadStateStore.record(for: asset.assetId),
+                  record.status == .imported,
+                  let photoLocalIdentifier = record.photoLocalIdentifier,
+                  !photoLocalIdentifier.isEmpty else {
+                continue
+            }
+
+            do {
+                let exists = try await photoAssetPresenceChecker.assetExists(localIdentifier: photoLocalIdentifier)
+                if !exists {
+                    downloadStateStore.markMissing(sourceAssetId: asset.assetId, now: Date())
+                }
+            } catch {
+                continue
+            }
+        }
+    }
 }
 
 private extension ManifestFetchViewModel.ManifestSummary {
@@ -241,6 +270,9 @@ private extension ManifestFetchViewModel.ManifestSummary {
         }.count
         importedCount = manifest.media.filter { asset in
             stateStore.record(for: asset.assetId)?.status == .imported
+        }.count
+        missingCount = manifest.media.filter { asset in
+            stateStore.record(for: asset.assetId)?.status == .missing
         }.count
         failedCount = manifest.media.filter { asset in
             stateStore.record(for: asset.assetId)?.status == .failed

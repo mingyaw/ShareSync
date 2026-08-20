@@ -7,6 +7,7 @@ struct MediaDownloadRecord: Codable, Equatable, Identifiable {
     let sourceHash: String?
     var status: MediaDownloadStatus
     var localFileURL: URL?
+    var photoLocalIdentifier: String?
     var downloadedBytes: Int64
     var totalBytes: Int64
     var attemptCount: Int
@@ -19,6 +20,7 @@ enum MediaDownloadStatus: String, Codable {
     case downloading
     case downloaded
     case imported
+    case missing
     case skipped
     case failed
 }
@@ -28,7 +30,8 @@ protocol MediaDownloadStateStore {
     func upsertQueued(asset: MediaAsset, now: Date)
     func markDownloading(sourceAssetId: String, downloadedBytes: Int64, now: Date)
     func markDownloaded(sourceAssetId: String, localFileURL: URL, downloadedBytes: Int64, now: Date)
-    func markImported(sourceAssetId: String, now: Date)
+    func markImported(sourceAssetId: String, photoLocalIdentifier: String?, now: Date)
+    func markMissing(sourceAssetId: String, now: Date)
     func markSkipped(sourceAssetId: String, now: Date)
     func markFailed(sourceAssetId: String, errorCode: String, now: Date)
     func pendingRecords() -> [MediaDownloadRecord]
@@ -52,6 +55,7 @@ final class InMemoryMediaDownloadStateStore: MediaDownloadStateStore {
             sourceHash: asset.sha256,
             status: .queued,
             localFileURL: nil,
+            photoLocalIdentifier: nil,
             downloadedBytes: 0,
             totalBytes: asset.size,
             attemptCount: records[asset.assetId]?.attemptCount ?? 0,
@@ -76,9 +80,16 @@ final class InMemoryMediaDownloadStateStore: MediaDownloadStateStore {
         }
     }
 
-    func markImported(sourceAssetId: String, now: Date = Date()) {
+    func markImported(sourceAssetId: String, photoLocalIdentifier: String?, now: Date = Date()) {
         mutate(sourceAssetId: sourceAssetId, now: now) { record in
             record.status = .imported
+            record.photoLocalIdentifier = photoLocalIdentifier
+        }
+    }
+
+    func markMissing(sourceAssetId: String, now: Date = Date()) {
+        mutate(sourceAssetId: sourceAssetId, now: now) { record in
+            record.status = .missing
         }
     }
 
@@ -146,6 +157,7 @@ final class FileMediaDownloadStateStore: MediaDownloadStateStore {
             sourceHash: asset.sha256,
             status: .queued,
             localFileURL: nil,
+            photoLocalIdentifier: nil,
             downloadedBytes: 0,
             totalBytes: asset.size,
             attemptCount: records[asset.assetId]?.attemptCount ?? 0,
@@ -171,9 +183,16 @@ final class FileMediaDownloadStateStore: MediaDownloadStateStore {
         }
     }
 
-    func markImported(sourceAssetId: String, now: Date = Date()) {
+    func markImported(sourceAssetId: String, photoLocalIdentifier: String?, now: Date = Date()) {
         mutate(sourceAssetId: sourceAssetId, now: now) { record in
             record.status = .imported
+            record.photoLocalIdentifier = photoLocalIdentifier
+        }
+    }
+
+    func markMissing(sourceAssetId: String, now: Date = Date()) {
+        mutate(sourceAssetId: sourceAssetId, now: now) { record in
+            record.status = .missing
         }
     }
 
