@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var viewModel = ManifestFetchViewModel()
+    @State private var isShowingPairingScanner = false
 
     var body: some View {
         NavigationStack {
@@ -31,6 +32,12 @@ struct ContentView: View {
                 .scrollDismissesKeyboard(.interactively)
             }
             .navigationTitle("Receive")
+            .fullScreenCover(isPresented: $isShowingPairingScanner) {
+                QRCodeScannerView { payload in
+                    viewModel.pairingPayloadText = payload
+                    viewModel.applyPairingPayload()
+                }
+            }
         }
     }
 
@@ -57,6 +64,17 @@ struct ContentView: View {
                     RoundedRectangle(cornerRadius: 8)
                         .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
                 }
+
+            Button {
+                isShowingPairingScanner = true
+            } label: {
+                Text("Scan Pairing QR")
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 44)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+            .frame(maxWidth: .infinity)
 
             Button {
                 viewModel.applyPairingPayload()

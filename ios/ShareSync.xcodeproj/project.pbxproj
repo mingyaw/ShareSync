@@ -18,6 +18,7 @@
 		100000000000000000000009 /* ManifestFetchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000019 /* ManifestFetchViewModel.swift */; };
 		10000000000000000000000A /* ShareSync/Transfer/MediaDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000001A /* ShareSync/Transfer/MediaDownloader.swift */; };
 		10000000000000000000000B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000001B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift */; };
+		10000000000000000000000C /* QRCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000001C /* QRCodeScannerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,6 +34,7 @@
 		100000000000000000000019 /* ManifestFetchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManifestFetchViewModel.swift; sourceTree = "<group>"; };
 		10000000000000000000001A /* ShareSync/Transfer/MediaDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Transfer/MediaDownloader.swift; sourceTree = "<group>"; };
 		10000000000000000000001B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift; sourceTree = "<group>"; };
+		10000000000000000000001C /* QRCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeScannerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +63,7 @@
 				100000000000000000000011 /* ShareSyncApp.swift */,
 				100000000000000000000012 /* ContentView.swift */,
 				100000000000000000000019 /* ManifestFetchViewModel.swift */,
+				10000000000000000000001C /* QRCodeScannerView.swift */,
 			);
 			path = ShareSyncApp;
 			sourceTree = "<group>";
@@ -159,6 +162,7 @@
 				100000000000000000000001 /* ShareSyncApp.swift in Sources */,
 				100000000000000000000002 /* ContentView.swift in Sources */,
 				100000000000000000000009 /* ManifestFetchViewModel.swift in Sources */,
+				10000000000000000000000C /* QRCodeScannerView.swift in Sources */,
 				100000000000000000000003 /* ShareSync/Sync/SyncModels.swift in Sources */,
 				100000000000000000000004 /* ShareSync/Pairing/PairingPayloadParser.swift in Sources */,
 				100000000000000000000005 /* ShareSync/Transfer/ManifestClient.swift in Sources */,

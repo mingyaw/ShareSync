@@ -83,7 +83,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add manual Android endpoint form for manifest fetch.
 - [x] Implement single-item media downloader validation path.
 - [x] Implement single-item PhotoKit import path.
-- [ ] Implement QR scanner UI.
+- [x] Implement QR scanner UI.
 
 ### I1. Project Setup
 
@@ -96,7 +96,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 ### I2. QR Pairing
 
-- [ ] Implement QR scanner.
+- [x] Implement QR scanner.
 - [x] Parse payload using `PairingPayloadParser`.
 - [x] Show paired Android device.
 
