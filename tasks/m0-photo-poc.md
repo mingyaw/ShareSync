@@ -29,10 +29,10 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 ### A1. Project Setup
 
-- [ ] Create Android Studio project under `android/`.
-- [ ] Configure Kotlin.
-- [ ] Add app id, min SDK, target SDK.
-- [ ] Add local network and media permissions.
+- [x] Create Android Studio project under `android/`.
+- [x] Configure Kotlin.
+- [x] Add app id, min SDK, target SDK.
+- [x] Add local network and media permissions.
 
 ### A2. Device Identity
 
@@ -80,11 +80,11 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 ### I1. Project Setup
 
 - [x] Create Swift Package core under `ios/ShareSync`.
-- [ ] Create Xcode app project under `ios/`.
-- [ ] Configure SwiftUI app target.
-- [ ] Add camera permission for QR scanning.
-- [ ] Add Photos permission.
-- [ ] Add local network permission.
+- [x] Create Xcode app project under `ios/`.
+- [x] Configure SwiftUI app target.
+- [x] Add camera permission for QR scanning.
+- [x] Add Photos permission.
+- [x] Add local network permission.
 
 ### I2. QR Pairing
 
@@ -170,3 +170,24 @@ Next implementation slice:
 - Bind Android `LocalSyncRouter` to an embedded HTTP server.
 - Implement Android MediaStore scanner.
 - Add iOS media download state tracking.
+
+### 2026-08-20 Project Shells
+
+Completed native IDE project shells:
+
+- Android Studio project under `android/`.
+- Minimal Android `MainActivity`.
+- Android app resources, manifest, and Gradle build files.
+- Xcode app project at `ios/ShareSync.xcodeproj`.
+- Minimal SwiftUI app shell under `ios/ShareSyncApp`.
+- Xcode app target includes existing iOS core files.
+
+Verified:
+
+```sh
+python3 scripts/validate-fixtures.py
+swift test
+xcodebuild -list -project ios/ShareSync.xcodeproj
+xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+cd android && gradle :app:assembleDebug
+```

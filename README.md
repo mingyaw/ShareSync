@@ -27,10 +27,14 @@ The current codebase contains:
 
 It does not yet contain:
 
-- A generated Android Studio project.
-- A generated Xcode project.
 - A runnable local transfer server.
 - A runnable Photos import flow.
+
+It now contains:
+
+- An Android Studio project under `android/`.
+- An Xcode iOS app project at `ios/ShareSync.xcodeproj`.
+- A Swift Package core at the repository root for fast iOS core tests.
 
 M0 validates the riskiest path:
 
@@ -113,12 +117,48 @@ M0 excludes:
 
 ## Local Checks
 
-Run the lightweight checks that are available before full Android/Xcode projects exist:
+Run lightweight shared/core checks:
 
 ```sh
 python3 scripts/validate-fixtures.py
 swift test
 ```
+
+Run native project checks:
+
+```sh
+cd android
+gradle :app:assembleDebug
+
+xcodebuild -project ios/ShareSync.xcodeproj \
+  -scheme ShareSync \
+  -sdk iphonesimulator \
+  -configuration Debug \
+  CODE_SIGNING_ALLOWED=NO \
+  build
+```
+
+If Gradle cannot find the Android SDK, create an untracked `android/local.properties`:
+
+```properties
+sdk.dir=/Users/mingyao/Library/Android/sdk
+```
+
+## Opening Projects
+
+Android:
+
+- Open the `android/` directory in Android Studio.
+- Select the `app` run configuration.
+
+iOS:
+
+- Open `ios/ShareSync.xcodeproj` in Xcode.
+- Select the `ShareSync` scheme.
+
+Swift Package core:
+
+- Open `Package.swift` in Xcode, or run `swift test`.
 
 ## Rights
 
