@@ -80,6 +80,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add tests for pairing payload parsing.
 - [x] Add tests for manifest decoding.
 - [x] Add tests for media download state transitions.
+- [x] Add manual Android endpoint form for manifest fetch.
 - [ ] Implement QR scanner UI.
 - [ ] Implement media downloader.
 - [ ] Implement PhotoKit importer.
@@ -101,9 +102,9 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 ### I3. Manifest Client
 
-- [ ] Use `ManifestClient` to fetch Android manifest.
-- [ ] Show total photo count and total byte size.
-- [ ] Store latest cursor.
+- [x] Use `ManifestClient` to fetch Android manifest.
+- [x] Show total photo count and total byte size.
+- [x] Show latest cursor in the M0 receive screen.
 
 ### I4. Media Download
 
@@ -219,6 +220,38 @@ swift test
 xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
 ```
 
+### 2026-08-20 Android Local Server Controls
+
+Completed the Android app-level M0 server controls:
+
+- Runtime media permission request.
+- Local IPv4 detection.
+- Start/stop controls for the embedded Android local sync server.
+- Health endpoint display for manual same-Wi-Fi testing.
+- App-level sync component factory used by `MainActivity`.
+
+Verified:
+
+```sh
+cd android && ./gradlew :app:assembleDebug
+```
+
+### 2026-08-20 iOS Manual Manifest Fetch
+
+Completed the first iOS-to-Android app integration slice:
+
+- Manual Android IP and port entry on the iOS receive screen.
+- `ManifestFetchViewModel` wrapper around `ManifestClient`.
+- Manifest fetch status, item counts, total byte size, and cursor display.
+- M0 local HTTP allowance in the generated iOS app Info.plist settings.
+
+Verified:
+
+```sh
+swift test
+xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+```
+
 Next implementation slice:
 
 - Add Android UI controls to request media permission and start/stop server.
@@ -286,5 +319,5 @@ xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulat
 
 Next implementation slice:
 
-- Implement iOS manual endpoint form to fetch Android `/v1/manifest`.
 - Implement iOS media file downloader using the existing state store.
+- Add Android-to-iOS physical-device manual manifest test notes after the next device run.

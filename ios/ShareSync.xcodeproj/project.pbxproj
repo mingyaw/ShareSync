@@ -15,6 +15,7 @@
 		100000000000000000000006 /* PhotoImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000016 /* PhotoImporter.swift */; };
 		100000000000000000000007 /* TrustedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000017 /* TrustedDevice.swift */; };
 		100000000000000000000008 /* MediaDownloadState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000018 /* MediaDownloadState.swift */; };
+		100000000000000000000009 /* ManifestFetchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000019 /* ManifestFetchViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		100000000000000000000016 /* PhotoImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/ImporterPhotos/PhotoImporter.swift; sourceTree = "<group>"; };
 		100000000000000000000017 /* TrustedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Security/TrustedDevice.swift; sourceTree = "<group>"; };
 		100000000000000000000018 /* MediaDownloadState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Transfer/MediaDownloadState.swift; sourceTree = "<group>"; };
+		100000000000000000000019 /* ManifestFetchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManifestFetchViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,6 +56,7 @@
 			children = (
 				100000000000000000000011 /* ShareSyncApp.swift */,
 				100000000000000000000012 /* ContentView.swift */,
+				100000000000000000000019 /* ManifestFetchViewModel.swift */,
 			);
 			path = ShareSyncApp;
 			sourceTree = "<group>";
@@ -149,6 +152,7 @@
 			files = (
 				100000000000000000000001 /* ShareSyncApp.swift in Sources */,
 				100000000000000000000002 /* ContentView.swift in Sources */,
+				100000000000000000000009 /* ManifestFetchViewModel.swift in Sources */,
 				100000000000000000000003 /* SyncModels.swift in Sources */,
 				100000000000000000000004 /* PairingPayloadParser.swift in Sources */,
 				100000000000000000000005 /* ManifestClient.swift in Sources */,
@@ -170,6 +174,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = ShareSync;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "ShareSync uses the camera to scan the Android pairing code.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "ShareSync connects to your paired Android phone on the local network.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "ShareSync imports Android photos into your iPhone photo library.";
@@ -191,6 +196,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = ShareSync;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "ShareSync uses the camera to scan the Android pairing code.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "ShareSync connects to your paired Android phone on the local network.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "ShareSync imports Android photos into your iPhone photo library.";

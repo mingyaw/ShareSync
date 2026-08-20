@@ -1,29 +1,108 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var viewModel = ManifestFetchViewModel()
+
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 20) {
+            ScrollView {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("ShareSync")
                         .font(.largeTitle)
                         .fontWeight(.semibold)
 
-                    Text("M0 scaffold: iPhone gateway app shell is ready.")
+                    Text("Receive Android media over your local network.")
                         .font(.body)
                         .foregroundStyle(.secondary)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.bottom, 16)
 
-                VStack(alignment: .leading, spacing: 12) {
-                    StatusRow(title: "Pairing", value: "Waiting for Android QR")
-                    StatusRow(title: "Manifest", value: "Core decoder tested")
-                    StatusRow(title: "Photos", value: "Importer interface ready")
-                }
+                endpointForm
 
-                Spacer()
+                statusSection
             }
-            .padding(24)
+            .contentMargins(24, for: .scrollContent)
             .navigationTitle("Receive")
+        }
+    }
+
+    private var endpointForm: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            TextField("Android IP", text: $viewModel.host)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .keyboardType(.numbersAndPunctuation)
+                .textFieldStyle(.roundedBorder)
+
+            TextField("Port", text: $viewModel.port)
+                .keyboardType(.numberPad)
+                .textFieldStyle(.roundedBorder)
+
+            Button {
+                viewModel.fetchManifest()
+            } label: {
+                HStack {
+                    if case .loading = viewModel.state {
+                        ProgressView()
+                    }
+                    Text(buttonTitle)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(!viewModel.canFetch)
+        }
+        .padding(.bottom, 20)
+    }
+
+    private var statusSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            StatusRow(title: "Pairing", value: pairedStatus)
+            StatusRow(title: "Manifest", value: manifestStatus)
+
+            if let summary = viewModel.summary {
+                StatusRow(title: "Photos", value: "\(summary.photoCount)")
+                StatusRow(title: "Videos", value: "\(summary.videoCount)")
+                StatusRow(title: "Transfer Size", value: ByteCountFormatter.string(fromByteCount: summary.totalBytes, countStyle: .file))
+                StatusRow(title: "Cursor", value: summary.cursor)
+            } else {
+                StatusRow(title: "Photos", value: "Waiting")
+            }
+
+            if case .failed(let message) = viewModel.state {
+                Text(message)
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 4)
+            }
+        }
+    }
+
+    private var buttonTitle: String {
+        switch viewModel.state {
+        case .loading:
+            return "Fetching"
+        default:
+            return "Fetch Manifest"
+        }
+    }
+
+    private var pairedStatus: String {
+        viewModel.host.isEmpty ? "Manual" : "\(viewModel.host):\(viewModel.port)"
+    }
+
+    private var manifestStatus: String {
+        switch viewModel.state {
+        case .idle:
+            return "Ready"
+        case .loading:
+            return "Loading"
+        case .loaded:
+            return "\(viewModel.summary?.totalItems ?? 0) items"
+        case .failed:
+            return "Failed"
         }
     }
 }
@@ -36,9 +115,13 @@ private struct StatusRow: View {
         HStack {
             Text(title)
                 .fontWeight(.medium)
+                .lineLimit(1)
             Spacer()
             Text(value)
                 .foregroundStyle(.secondary)
+                .multilineTextAlignment(.trailing)
+                .lineLimit(2)
+                .minimumScaleFactor(0.75)
         }
         .padding(.vertical, 12)
         .overlay(alignment: .bottom) {
@@ -52,4 +135,3 @@ private struct StatusRow: View {
 #Preview {
     ContentView()
 }
-

@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 planning and scaffold. This is not a runnable Android or iOS app yet.
+Status: M0 implementation. Android can expose a local media manifest, and iOS can manually fetch it on the same local network.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -22,19 +22,16 @@ The current codebase contains:
 
 - Product and engineering documents.
 - Shared protocol schemas.
-- Android Kotlin skeleton classes.
-- iOS Swift skeleton classes.
-
-It does not yet contain:
-
-- A runnable local transfer server.
-- A runnable Photos import flow.
-
-It now contains:
-
 - An Android Studio project under `android/`.
 - An Xcode iOS app project at `ios/ShareSync.xcodeproj`.
 - A Swift Package core at the repository root for fast iOS core tests.
+- An embedded Android local HTTP server for M0 health, manifest, and media endpoints.
+- An iOS receive screen that can manually fetch the Android manifest.
+
+It does not yet contain:
+
+- QR pairing UI.
+- A complete iOS media download and Photos import flow.
 
 M0 validates the riskiest path:
 
@@ -137,6 +134,23 @@ xcodebuild -project ios/ShareSync.xcodeproj \
   CODE_SIGNING_ALLOWED=NO \
   build
 ```
+
+## M0 Manual Test
+
+Android:
+
+- Open `android/` in Android Studio.
+- Run the `app` configuration on a physical Android phone.
+- Grant media permission.
+- Tap `Start Server`.
+- Note the displayed `http://<android-ip>:48291/v1/health` endpoint.
+
+iOS:
+
+- Open `ios/ShareSync.xcodeproj` in Xcode.
+- Run the `ShareSync` scheme on iPhone or Simulator connected to the same network.
+- Enter the Android IP and port `48291`.
+- Tap `Fetch Manifest`.
 
 If Gradle cannot find the Android SDK, create an untracked `android/local.properties`:
 
