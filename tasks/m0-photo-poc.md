@@ -82,8 +82,8 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add tests for media download state transitions.
 - [x] Add manual Android endpoint form for manifest fetch.
 - [x] Implement single-item media downloader validation path.
+- [x] Implement single-item PhotoKit import path.
 - [ ] Implement QR scanner UI.
-- [ ] Implement PhotoKit importer.
 
 ### I1. Project Setup
 
@@ -116,9 +116,9 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 ### I5. Photos Import
 
-- [ ] Request Photos add permission.
-- [ ] Create `ShareSync Backup` album.
-- [ ] Import downloaded photos.
+- [x] Request Photos permission.
+- [x] Create `ShareSync Backup` album.
+- [x] Import one downloaded photo/video for validation.
 - [ ] Store Android asset id to iOS local identifier mapping.
 - [ ] Prevent duplicate imports.
 
@@ -348,3 +348,26 @@ Next implementation slice:
 - Validate single Android-to-iOS media download on physical devices.
 - Expand to selectable or batch media download after single-item validation passes.
 - Persist download/import state across app restarts.
+
+### 2026-08-20 iOS Single-Item Photo Import
+
+Completed the first Photos import validation slice:
+
+- `PhotoKitPhotoImporter` implementation behind the existing `PhotoImporter` protocol.
+- Photos read/write permission request for album management.
+- `ShareSync Backup` album creation or reuse.
+- Single downloaded photo/video import into the backup album.
+- Receive screen state updates for importing and imported counts.
+- Import success marks the single validation asset as imported in the state store.
+
+Verified:
+
+```sh
+swift test
+xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+```
+
+Next implementation slice:
+
+- Validate single Android-to-iOS download and Photos import on physical devices.
+- Store Android asset id to iOS local identifier mapping for duplicate prevention.

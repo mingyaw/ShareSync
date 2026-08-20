@@ -17,6 +17,7 @@
 		100000000000000000000008 /* ShareSync/Transfer/MediaDownloadState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000018 /* ShareSync/Transfer/MediaDownloadState.swift */; };
 		100000000000000000000009 /* ManifestFetchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000019 /* ManifestFetchViewModel.swift */; };
 		10000000000000000000000A /* ShareSync/Transfer/MediaDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000001A /* ShareSync/Transfer/MediaDownloader.swift */; };
+		10000000000000000000000B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000001B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +32,7 @@
 		100000000000000000000018 /* ShareSync/Transfer/MediaDownloadState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Transfer/MediaDownloadState.swift; sourceTree = "<group>"; };
 		100000000000000000000019 /* ManifestFetchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManifestFetchViewModel.swift; sourceTree = "<group>"; };
 		10000000000000000000001A /* ShareSync/Transfer/MediaDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Transfer/MediaDownloader.swift; sourceTree = "<group>"; };
+		10000000000000000000001B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +74,7 @@
 				100000000000000000000018 /* ShareSync/Transfer/MediaDownloadState.swift */,
 				10000000000000000000001A /* ShareSync/Transfer/MediaDownloader.swift */,
 				100000000000000000000016 /* ShareSync/ImporterPhotos/PhotoImporter.swift */,
+				10000000000000000000001B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift */,
 				100000000000000000000017 /* ShareSync/Security/TrustedDevice.swift */,
 			);
 			name = ShareSyncCore;
@@ -162,6 +165,7 @@
 				100000000000000000000008 /* ShareSync/Transfer/MediaDownloadState.swift in Sources */,
 				10000000000000000000000A /* ShareSync/Transfer/MediaDownloader.swift in Sources */,
 				100000000000000000000006 /* ShareSync/ImporterPhotos/PhotoImporter.swift in Sources */,
+				10000000000000000000000B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift in Sources */,
 				100000000000000000000007 /* ShareSync/Security/TrustedDevice.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -183,6 +187,7 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "ShareSync uses the camera to scan the Android pairing code.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "ShareSync connects to your paired Android phone on the local network.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "ShareSync imports Android photos into your iPhone photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "ShareSync creates a backup album and imports Android media into your photo library.";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sharesync.ios;
@@ -206,6 +211,7 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "ShareSync uses the camera to scan the Android pairing code.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "ShareSync connects to your paired Android phone on the local network.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "ShareSync imports Android photos into your iPhone photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "ShareSync creates a backup album and imports Android media into your photo library.";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sharesync.ios;

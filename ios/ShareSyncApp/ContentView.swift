@@ -60,6 +60,9 @@ struct ContentView: View {
                     if case .downloading = viewModel.downloadState {
                         ProgressView()
                     }
+                    if case .importing = viewModel.downloadState {
+                        ProgressView()
+                    }
                     Text(downloadButtonTitle)
                         .frame(maxWidth: .infinity)
                 }
@@ -81,6 +84,7 @@ struct ContentView: View {
                 StatusRow(title: "Transfer Size", value: ByteCountFormatter.string(fromByteCount: summary.totalBytes, countStyle: .file))
                 StatusRow(title: "Test Item", value: summary.validationAssetName ?? "None")
                 StatusRow(title: "Downloaded", value: "\(summary.downloadedCount)")
+                StatusRow(title: "Imported", value: "\(summary.importedCount)")
                 StatusRow(title: "Failed", value: "\(summary.failedCount)")
                 StatusRow(title: "Cursor", value: summary.cursor)
             } else {
@@ -118,6 +122,8 @@ struct ContentView: View {
         switch viewModel.downloadState {
         case .downloading:
             return "Downloading"
+        case .importing:
+            return "Importing"
         case .completed:
             return "Test Again"
         default:

@@ -12,6 +12,7 @@ final class ManifestFetchViewModel: ObservableObject {
     enum DownloadState: Equatable {
         case idle
         case downloading
+        case importing
         case completed
         case failed(String)
     }
@@ -23,6 +24,7 @@ final class ManifestFetchViewModel: ObservableObject {
         let videoCount: Int
         let totalBytes: Int64
         let downloadedCount: Int
+        let importedCount: Int
         let failedCount: Int
         let validationAssetName: String?
 
@@ -39,16 +41,19 @@ final class ManifestFetchViewModel: ObservableObject {
 
     private let client: ManifestClient
     private let downloader: MediaDownloader
+    private let photoImporter: PhotoImporter
     private let downloadStateStore: MediaDownloadStateStore
     private var latestManifest: SyncManifest?
 
     init(
         client: ManifestClient = ManifestClient(),
         downloader: MediaDownloader = MediaDownloader(),
+        photoImporter: PhotoImporter = PhotoKitPhotoImporter(),
         downloadStateStore: MediaDownloadStateStore = InMemoryMediaDownloadStateStore()
     ) {
         self.client = client
         self.downloader = downloader
+        self.photoImporter = photoImporter
         self.downloadStateStore = downloadStateStore
     }
 
@@ -117,7 +122,42 @@ final class ManifestFetchViewModel: ObservableObject {
                 stateStore: downloadStateStore
             )
             summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
-            downloadState = results.isEmpty ? .failed("No media downloaded.") : .completed
+            guard !results.isEmpty else {
+                downloadState = .failed("No media downloaded.")
+                return
+            }
+
+            downloadState = .importing
+            let importResults = await photoImporter.importBatch(
+                results.compactMap { result in
+                    guard let asset = validationAssets.first(where: { $0.assetId == result.assetId }) else {
+                        return nil
+                    }
+                    return PhotoImportRequest(
+                        sourceAssetId: asset.assetId,
+                        sourceHash: asset.sha256,
+                        localFileURL: result.localFileURL,
+                        mediaType: asset.mediaType
+                    )
+                }
+            )
+
+            for importResult in importResults {
+                if importResult.status == .synced {
+                    downloadStateStore.markImported(sourceAssetId: importResult.sourceAssetId, now: Date())
+                } else {
+                    downloadStateStore.markFailed(
+                        sourceAssetId: importResult.sourceAssetId,
+                        errorCode: importResult.errorCode ?? "SS-PHOTO-002",
+                        now: Date()
+                    )
+                }
+            }
+
+            summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
+            downloadState = importResults.contains { $0.status == .synced }
+                ? .completed
+                : .failed("Downloaded, but photo import failed.")
         }
     }
 
@@ -153,6 +193,9 @@ private extension ManifestFetchViewModel.ManifestSummary {
         validationAssetName = manifest.media.first?.fileName
         downloadedCount = manifest.media.filter { asset in
             stateStore.record(for: asset.assetId)?.status == .downloaded
+        }.count
+        importedCount = manifest.media.filter { asset in
+            stateStore.record(for: asset.assetId)?.status == .imported
         }.count
         failedCount = manifest.media.filter { asset in
             stateStore.record(for: asset.assetId)?.status == .failed
