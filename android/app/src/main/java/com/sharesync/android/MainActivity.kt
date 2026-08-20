@@ -12,9 +12,11 @@ import android.provider.Settings
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.sharesync.android.pairing.PairingPayloadFactory
+import com.sharesync.android.pairing.QrCodeBitmapFactory
 import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.transfer.server.LocalSyncServer
 
@@ -23,6 +25,7 @@ class MainActivity : Activity() {
     private lateinit var endpointText: TextView
     private lateinit var permissionText: TextView
     private lateinit var pairingPayloadText: TextView
+    private lateinit var pairingQrImage: ImageView
     private lateinit var startButton: Button
     private lateinit var stopButton: Button
     private lateinit var copyPairingButton: Button
@@ -77,6 +80,18 @@ class MainActivity : Activity() {
         endpointText = bodyText(topPadding = 12 * density)
         permissionText = bodyText(topPadding = 12 * density)
         pairingPayloadText = bodyText(topPadding = 12 * density)
+        pairingQrImage = ImageView(this).apply {
+            adjustViewBounds = true
+            setBackgroundColor(getColor(android.R.color.white))
+            setPadding(8, 8, 8, 8)
+            visibility = ImageView.GONE
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                topMargin = (16 * density).toInt()
+            }
+        }
 
         val grantButton = Button(this).apply {
             text = getString(R.string.m0_grant_permission)
@@ -102,6 +117,7 @@ class MainActivity : Activity() {
         root.addView(statusText)
         root.addView(endpointText)
         root.addView(permissionText)
+        root.addView(pairingQrImage)
         root.addView(pairingPayloadText)
         root.addView(grantButton)
         root.addView(startButton)
@@ -141,6 +157,7 @@ class MainActivity : Activity() {
         }
         pairingPayloadText.text = currentPairingPayloadJson
             ?: getString(R.string.m0_pairing_payload_unavailable)
+        refreshPairingQr()
 
         startButton.isEnabled = !isServerRunning && hasMediaPermission()
         stopButton.isEnabled = isServerRunning
@@ -246,6 +263,20 @@ class MainActivity : Activity() {
             portProvider = { M0SyncComponents.defaultPort() },
         ).createPayload()
         return ManifestJsonEncoder().encode(payload)
+    }
+
+    private fun refreshPairingQr() {
+        val payload = currentPairingPayloadJson
+        if (payload == null) {
+            pairingQrImage.setImageDrawable(null)
+            pairingQrImage.visibility = ImageView.GONE
+            return
+        }
+
+        val size = (resources.displayMetrics.widthPixels - (64 * resources.displayMetrics.density)).toInt()
+            .coerceAtLeast((220 * resources.displayMetrics.density).toInt())
+        pairingQrImage.setImageBitmap(QrCodeBitmapFactory().create(payload, size))
+        pairingQrImage.visibility = ImageView.VISIBLE
     }
 
     private fun copyPairingPayload() {

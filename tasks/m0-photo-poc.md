@@ -47,10 +47,10 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 ### A3. Pairing Payload
 
-- [ ] Resolve current local IP.
+- [x] Resolve current local IP.
 - [ ] Start local server on available port.
-- [ ] Generate QR payload from `PairingPayloadFactory`.
-- [ ] Render QR code in Android UI.
+- [x] Generate QR payload from `PairingPayloadFactory`.
+- [x] Render QR code in Android UI.
 
 ### A4. Media Scanner
 
@@ -97,8 +97,8 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 ### I2. QR Pairing
 
 - [ ] Implement QR scanner.
-- [ ] Parse payload using `PairingPayloadParser`.
-- [ ] Show paired Android device.
+- [x] Parse payload using `PairingPayloadParser`.
+- [x] Show paired Android device.
 
 ### I3. Manifest Client
 
