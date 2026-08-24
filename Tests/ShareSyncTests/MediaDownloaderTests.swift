@@ -177,6 +177,33 @@ final class MediaDownloaderTests: XCTestCase {
         XCTAssertEqual(progressEvents.last?.currentAssetId, "mediastore-1-46")
     }
 
+    func testCancellationLeavesItemRetryableWithoutFailure() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let asset = makeAsset(
+            assetId: "mediastore-1-47",
+            fileName: "IMG_0047.jpg",
+            size: 10,
+            sha256: nil
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        let session = StubThrowingMediaDataSession(error: CancellationError())
+        let downloader = MediaDownloader(session: session, downloadDirectory: directory)
+
+        let results = await downloader.downloadMedia(
+            assets: [asset],
+            host: "192.168.1.10",
+            port: 48291,
+            stateStore: store
+        )
+
+        XCTAssertTrue(results.isEmpty)
+        XCTAssertEqual(store.record(for: "mediastore-1-47")?.status, .downloading)
+        XCTAssertNil(store.record(for: "mediastore-1-47")?.lastErrorCode)
+    }
+
     private func makeAsset(assetId: String, fileName: String, size: Int64, sha256: String?) -> MediaAsset {
         MediaAsset(
             assetId: assetId,
@@ -232,5 +259,17 @@ private final class StubSequenceMediaDataSession: MediaDataSession {
         }
 
         return responses.removeFirst()
+    }
+}
+
+private final class StubThrowingMediaDataSession: MediaDataSession {
+    private let error: Error
+
+    init(error: Error) {
+        self.error = error
+    }
+
+    func data(from url: URL) async throws -> (Data, URLResponse) {
+        throw error
     }
 }

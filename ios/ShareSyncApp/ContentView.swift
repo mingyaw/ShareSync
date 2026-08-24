@@ -163,6 +163,18 @@ struct ContentView: View {
             .controlSize(.large)
             .frame(maxWidth: .infinity)
             .disabled(!viewModel.canDownload)
+
+            Button(role: .cancel) {
+                viewModel.cancelDownload()
+            } label: {
+                Text("Stop Transfer")
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 44)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+            .frame(maxWidth: .infinity)
+            .disabled(!viewModel.canCancelDownload)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.bottom, 24)
@@ -207,6 +219,14 @@ struct ContentView: View {
                 StatusRow(title: "Result Failed", value: "\(syncResultSummary.failedCount)")
             }
 
+            if case .cancelled = viewModel.downloadState {
+                Text("Transfer stopped. Completed items are kept; remaining items can be retried.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 4)
+            }
+
             if case .failed(let message) = viewModel.state {
                 Text(message)
                     .font(.footnote)
@@ -241,6 +261,8 @@ struct ContentView: View {
             return "Downloading"
         case .importing:
             return "Importing"
+        case .cancelled:
+            return "Download Next Item"
         case .completed:
             return "Download Next Item"
         default:
@@ -254,6 +276,8 @@ struct ContentView: View {
             return "Downloading"
         case .importing:
             return "Importing"
+        case .cancelled:
+            return "Download 5 Items"
         default:
             return "Download 5 Items"
         }
@@ -265,6 +289,8 @@ struct ContentView: View {
             return "Downloading"
         case .importing:
             return "Importing"
+        case .cancelled:
+            return "Download Remaining"
         default:
             return "Download Remaining"
         }

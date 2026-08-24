@@ -14,6 +14,7 @@ final class ManifestFetchViewModel: ObservableObject {
         case downloading
         case importing
         case completed
+        case cancelled
         case failed(String)
     }
 
@@ -73,6 +74,7 @@ final class ManifestFetchViewModel: ObservableObject {
     private let syncResultClient: SyncResultClient
     private let pairingPayloadParser: PairingPayloadParser
     private var latestManifest: SyncManifest?
+    private var activeDownloadTask: Task<Void, Never>?
 
     init(
         client: ManifestClient = ManifestClient(),
@@ -106,6 +108,10 @@ final class ManifestFetchViewModel: ObservableObject {
         return nextTransferCandidate(in: latestManifest) != nil
             && downloadState != .downloading
             && downloadState != .importing
+    }
+
+    var canCancelDownload: Bool {
+        downloadState == .downloading
     }
 
     func fetchManifest() {
@@ -191,6 +197,15 @@ final class ManifestFetchViewModel: ObservableObject {
         downloadNextMediaBatch(limit: manifest.media.count)
     }
 
+    func cancelDownload() {
+        activeDownloadTask?.cancel()
+        activeDownloadTask = nil
+        downloadState = .cancelled
+        if let latestManifest {
+            summary = ManifestSummary(manifest: latestManifest, stateStore: downloadStateStore)
+        }
+    }
+
     private func downloadNextMediaBatch(limit: Int) {
         guard let manifest = latestManifest, !manifest.media.isEmpty else {
             downloadState = .failed("Manifest has no media to download.")
@@ -210,11 +225,13 @@ final class ManifestFetchViewModel: ObservableObject {
 
         downloadState = .downloading
         downloadProgressSummary = nil
+        activeDownloadTask?.cancel()
 
-        Task {
+        activeDownloadTask = Task {
             let transferAssets = nextTransferCandidates(in: manifest, limit: limit)
             guard !transferAssets.isEmpty else {
                 downloadState = .failed("No remaining media to download.")
+                activeDownloadTask = nil
                 return
             }
 
@@ -249,6 +266,12 @@ final class ManifestFetchViewModel: ObservableObject {
                 port: portNumber
             )
 
+            if Task.isCancelled {
+                downloadState = .cancelled
+                activeDownloadTask = nil
+                return
+            }
+
             importRequests.append(
                 contentsOf: results.compactMap { result in
                     guard let asset = transferAssets.first(where: { $0.assetId == result.assetId }) else {
@@ -271,11 +294,24 @@ final class ManifestFetchViewModel: ObservableObject {
                 )
                 downloadProgressSummary = nil
                 downloadState = .failed("No media downloaded.")
+                activeDownloadTask = nil
                 return
             }
 
             downloadState = .importing
             let importResults = await photoImporter.importBatch(importRequests)
+
+            if Task.isCancelled {
+                summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
+                syncResultSummary = await publishSyncResultSummary(
+                    for: manifest,
+                    host: trimmedHost,
+                    port: portNumber
+                )
+                downloadState = .cancelled
+                activeDownloadTask = nil
+                return
+            }
 
             for importResult in importResults {
                 if importResult.status == .synced {
@@ -303,6 +339,7 @@ final class ManifestFetchViewModel: ObservableObject {
             downloadState = importResults.contains { $0.status == .synced }
                 ? .completed
                 : .failed("Downloaded, but photo import failed.")
+            activeDownloadTask = nil
         }
     }
 

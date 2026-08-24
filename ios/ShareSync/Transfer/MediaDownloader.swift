@@ -74,6 +74,10 @@ final class MediaDownloader {
         )
 
         for asset in assets {
+            if Task.isCancelled {
+                break
+            }
+
             guard let record = stateStore.record(for: asset.assetId),
                   record.status == .queued || record.status == .downloading || record.status == .failed else {
                 processedCount += 1
@@ -91,6 +95,10 @@ final class MediaDownloader {
             }
 
             stateStore.markDownloading(sourceAssetId: asset.assetId, downloadedBytes: record.downloadedBytes, now: now())
+            if Task.isCancelled {
+                break
+            }
+
             await progress?(
                 MediaDownloadProgress(
                     totalCount: assets.count,
@@ -112,6 +120,10 @@ final class MediaDownloader {
                 )
                 results.append(result)
             } catch {
+                if Self.isCancellation(error) || Task.isCancelled {
+                    break
+                }
+
                 failedCount += 1
                 stateStore.markFailed(
                     sourceAssetId: asset.assetId,
@@ -133,6 +145,18 @@ final class MediaDownloader {
         }
 
         return results
+    }
+
+    private static func isCancellation(_ error: Error) -> Bool {
+        if error is CancellationError {
+            return true
+        }
+
+        if let urlError = error as? URLError {
+            return urlError.code == .cancelled
+        }
+
+        return false
     }
 
     private func download(asset: MediaAsset, host: String, port: Int) async throws -> MediaDownloadResult {

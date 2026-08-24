@@ -89,6 +89,17 @@ Expected result: QR payload contains the actual bound port, and iOS can fetch `/
 
 Expected result: failed records remain retryable and completed records are not re-imported.
 
+## Manual Stop And Retry
+
+1. Complete the baseline success path setup.
+2. Tap `Download Remaining`.
+3. Wait until `Batch Progress` advances.
+4. Tap `Stop Transfer`.
+5. Tap `Fetch Manifest`.
+6. Tap `Download Next Item`, `Download 5 Items`, or `Download Remaining`.
+
+Expected result: ShareSync shows the transfer stopped message, keeps completed items, and retries remaining or in-progress items without duplicating imported Photos assets.
+
 ## Sync Result JSON
 
 The iOS app persists the latest M0 sync result as app support data:

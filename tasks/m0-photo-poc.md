@@ -119,6 +119,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Expand UI action from single-item validation to batch download.
 - [x] Add all-remaining manifest download action for M0 device validation.
 - [x] Show live foreground batch progress during iOS transfer.
+- [x] Add manual foreground transfer stop and retry support.
 - [x] Resume or skip completed items after restart.
 
 ### I5. Photos Import
@@ -556,6 +557,26 @@ Completed another M0 validation slice:
 - Added iOS receive screen rows for batch progress, batch downloaded count, batch failed count, and current file.
 - Added Swift unit coverage for progress events across a mixed success/failure batch.
 - Updated the foreground full manifest transfer checklist to verify live progress during long transfers.
+
+Verification target:
+
+```sh
+python3 scripts/validate-fixtures.py
+swift test
+cd android && ./gradlew :app:testDebugUnitTest :app:compileDebugKotlin
+xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+```
+
+### 2026-08-24 iOS Manual Transfer Stop
+
+Completed another M0 interrupted-transfer slice:
+
+- Added cancellation-aware behavior to the iOS media downloader.
+- Cancellation keeps completed downloads and leaves in-progress items retryable instead of marking them as failed.
+- Added a `Stop Transfer` control on the iOS receive screen.
+- Added an explicit stopped state message for M0 validation.
+- Added Swift unit coverage for cancellation leaving an item retryable.
+- Updated the M0 validation checklist with a manual stop and retry scenario.
 
 Verification target:
 
