@@ -88,5 +88,5 @@ Expected result: errors are visible and the user can recover by granting permiss
 ## Current M0 Gaps
 
 - Android SHA-256 is calculated lazily before full media transfers and returned in `X-ShareSync-SHA256`.
-- iOS duplicate prevention survives app restarts, but deleting the iOS app removes the app-local mapping.
+- iOS duplicate prevention uses the app-local Android asset id to Photos local identifier mapping; deleting the iOS app removes that mapping.
 - Full no-cloud relay privacy goal is preserved; no cloud intermediary is used by this flow.

@@ -119,8 +119,8 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Request Photos permission.
 - [x] Create `ShareSync Backup` album.
 - [x] Import one downloaded photo/video for validation.
-- [ ] Store Android asset id to iOS local identifier mapping.
-- [ ] Prevent duplicate imports.
+- [x] Store Android asset id to iOS local identifier mapping.
+- [x] Prevent duplicate imports.
 
 ## Cross-Platform Tasks
 

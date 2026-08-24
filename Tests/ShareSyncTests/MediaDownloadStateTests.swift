@@ -29,6 +29,18 @@ final class MediaDownloadStateTests: XCTestCase {
         )
         XCTAssertEqual(store.record(for: "media-001")?.status, .imported)
         XCTAssertEqual(store.record(for: "media-001")?.photoLocalIdentifier, "photo-local-001")
+        XCTAssertEqual(
+            store.importedMappings(),
+            [
+                MediaImportMapping(
+                    sourceDeviceId: "android-demo-device",
+                    sourceAssetId: "media-001",
+                    sourceHash: nil,
+                    photoLocalIdentifier: "photo-local-001",
+                    importedAt: now.addingTimeInterval(3)
+                )
+            ]
+        )
     }
 
     func testCompletedRecordsAreNotRequeued() {
@@ -46,6 +58,53 @@ final class MediaDownloadStateTests: XCTestCase {
         store.upsertQueued(asset: asset, now: Date(timeIntervalSince1970: 3))
 
         XCTAssertEqual(store.record(for: "media-001")?.status, .downloaded)
+    }
+
+    func testImportedRecordsAreNotRequeued() {
+        let store = InMemoryMediaDownloadStateStore()
+        let asset = makeAsset(assetId: "media-001", size: 2048)
+
+        store.upsertQueued(asset: asset, now: Date(timeIntervalSince1970: 1))
+        store.markImported(
+            sourceAssetId: "media-001",
+            photoLocalIdentifier: "photo-local-001",
+            now: Date(timeIntervalSince1970: 2)
+        )
+
+        store.upsertQueued(asset: asset, now: Date(timeIntervalSince1970: 3))
+
+        XCTAssertEqual(store.record(for: "media-001")?.status, .imported)
+        XCTAssertEqual(store.importedMappings().map(\.sourceAssetId), ["media-001"])
+    }
+
+    func testFileStorePersistsImportedMappings() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncStateTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let fileURL = directory.appendingPathComponent("media-download-state.json")
+        let asset = makeAsset(assetId: "media-001", size: 2048)
+
+        let store = FileMediaDownloadStateStore(fileURL: fileURL)
+        store.upsertQueued(asset: asset, now: Date(timeIntervalSince1970: 1))
+        store.markImported(
+            sourceAssetId: "media-001",
+            photoLocalIdentifier: "photo-local-001",
+            now: Date(timeIntervalSince1970: 2)
+        )
+
+        let reloadedStore = FileMediaDownloadStateStore(fileURL: fileURL)
+        XCTAssertEqual(
+            reloadedStore.importedMappings(),
+            [
+                MediaImportMapping(
+                    sourceDeviceId: "android-demo-device",
+                    sourceAssetId: "media-001",
+                    sourceHash: nil,
+                    photoLocalIdentifier: "photo-local-001",
+                    importedAt: Date(timeIntervalSince1970: 2)
+                )
+            ]
+        )
     }
 
     func testFailedRecordsRemainPendingWithAttemptCount() {

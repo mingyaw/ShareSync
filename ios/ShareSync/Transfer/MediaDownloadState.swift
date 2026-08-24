@@ -3,6 +3,7 @@ import Foundation
 struct MediaDownloadRecord: Codable, Equatable, Identifiable {
     var id: String { sourceAssetId }
 
+    var sourceDeviceId: String?
     let sourceAssetId: String
     let sourceHash: String?
     var status: MediaDownloadStatus
@@ -25,6 +26,14 @@ enum MediaDownloadStatus: String, Codable {
     case failed
 }
 
+struct MediaImportMapping: Equatable {
+    let sourceDeviceId: String?
+    let sourceAssetId: String
+    let sourceHash: String?
+    let photoLocalIdentifier: String
+    let importedAt: Date
+}
+
 protocol MediaDownloadStateStore {
     func record(for sourceAssetId: String) -> MediaDownloadRecord?
     func upsertQueued(asset: MediaAsset, now: Date)
@@ -35,6 +44,7 @@ protocol MediaDownloadStateStore {
     func markSkipped(sourceAssetId: String, now: Date)
     func markFailed(sourceAssetId: String, errorCode: String, now: Date)
     func pendingRecords() -> [MediaDownloadRecord]
+    func importedMappings() -> [MediaImportMapping]
 }
 
 final class InMemoryMediaDownloadStateStore: MediaDownloadStateStore {
@@ -51,6 +61,7 @@ final class InMemoryMediaDownloadStateStore: MediaDownloadStateStore {
         }
 
         records[asset.assetId] = MediaDownloadRecord(
+            sourceDeviceId: asset.sourceDeviceId,
             sourceAssetId: asset.assetId,
             sourceHash: asset.sha256,
             status: .queued,
@@ -117,6 +128,14 @@ final class InMemoryMediaDownloadStateStore: MediaDownloadStateStore {
             }
     }
 
+    func importedMappings() -> [MediaImportMapping] {
+        records.values
+            .compactMap(MediaImportMapping.init(record:))
+            .sorted { lhs, rhs in
+                lhs.importedAt < rhs.importedAt
+            }
+    }
+
     private func mutate(
         sourceAssetId: String,
         now: Date,
@@ -153,6 +172,7 @@ final class FileMediaDownloadStateStore: MediaDownloadStateStore {
         }
 
         records[asset.assetId] = MediaDownloadRecord(
+            sourceDeviceId: asset.sourceDeviceId,
             sourceAssetId: asset.assetId,
             sourceHash: asset.sha256,
             status: .queued,
@@ -217,6 +237,14 @@ final class FileMediaDownloadStateStore: MediaDownloadStateStore {
             }
             .sorted { lhs, rhs in
                 lhs.updatedAt < rhs.updatedAt
+            }
+    }
+
+    func importedMappings() -> [MediaImportMapping] {
+        records.values
+            .compactMap(MediaImportMapping.init(record:))
+            .sorted { lhs, rhs in
+                lhs.importedAt < rhs.importedAt
             }
     }
 
@@ -280,5 +308,23 @@ private extension JSONDecoder {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         return decoder
+    }
+}
+
+private extension MediaImportMapping {
+    init?(record: MediaDownloadRecord) {
+        guard record.status == .imported,
+              let photoLocalIdentifier = record.photoLocalIdentifier,
+              !photoLocalIdentifier.isEmpty else {
+            return nil
+        }
+
+        self.init(
+            sourceDeviceId: record.sourceDeviceId,
+            sourceAssetId: record.sourceAssetId,
+            sourceHash: record.sourceHash,
+            photoLocalIdentifier: photoLocalIdentifier,
+            importedAt: record.updatedAt
+        )
     }
 }
