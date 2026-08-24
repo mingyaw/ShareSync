@@ -170,6 +170,13 @@ struct ContentView: View {
                 StatusRow(title: "Photos", value: "Waiting")
             }
 
+            if let syncResultSummary = viewModel.syncResultSummary {
+                StatusRow(title: "Sync Batch", value: syncResultSummary.syncBatchId)
+                StatusRow(title: "Synced", value: "\(syncResultSummary.syncedCount)")
+                StatusRow(title: "Skipped", value: "\(syncResultSummary.skippedCount)")
+                StatusRow(title: "Result Failed", value: "\(syncResultSummary.failedCount)")
+            }
+
             if case .failed(let message) = viewModel.state {
                 Text(message)
                     .font(.footnote)

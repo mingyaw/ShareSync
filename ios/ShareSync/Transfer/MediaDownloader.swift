@@ -152,7 +152,7 @@ final class MediaDownloader {
             case .unacceptableStatusCode:
                 return "SS-NET-002"
             case .checksumMismatch:
-                return "SS-DATA-001"
+                return "SS-MEDIA-001"
             }
         }
 
@@ -160,6 +160,6 @@ final class MediaDownloader {
             return "SS-NET-002"
         }
 
-        return "SS-DATA-002"
+        return "SS-MEDIA-999"
     }
 }

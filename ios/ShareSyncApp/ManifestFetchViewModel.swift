@@ -34,12 +34,20 @@ final class ManifestFetchViewModel: ObservableObject {
         }
     }
 
+    struct SyncResultSummary: Equatable {
+        let syncBatchId: String
+        let syncedCount: Int
+        let skippedCount: Int
+        let failedCount: Int
+    }
+
     @Published var host = ""
     @Published var port = "48291"
     @Published var pairingPayloadText = ""
     @Published private(set) var state: FetchState = .idle
     @Published private(set) var downloadState: DownloadState = .idle
     @Published private(set) var summary: ManifestSummary?
+    @Published private(set) var syncResultSummary: SyncResultSummary?
     @Published private(set) var pairedDevice: TrustedDevice?
 
     private let client: ManifestClient
@@ -100,11 +108,13 @@ final class ManifestFetchViewModel: ObservableObject {
                 latestManifest = manifest
                 await reconcileMissingPhotoAssets(in: manifest)
                 summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
+                syncResultSummary = makeSyncResultSummary(for: manifest)
                 downloadState = .idle
                 state = .loaded
             } catch {
                 latestManifest = nil
                 summary = nil
+                syncResultSummary = nil
                 state = .failed(Self.message(for: error))
             }
         }
@@ -192,6 +202,7 @@ final class ManifestFetchViewModel: ObservableObject {
                     stateStore: downloadStateStore
                 )
             summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
+            syncResultSummary = makeSyncResultSummary(for: manifest)
 
             importRequests.append(
                 contentsOf: results.compactMap { result in
@@ -208,6 +219,7 @@ final class ManifestFetchViewModel: ObservableObject {
             )
 
             guard !importRequests.isEmpty else {
+                syncResultSummary = makeSyncResultSummary(for: manifest)
                 downloadState = .failed("No media downloaded.")
                 return
             }
@@ -225,13 +237,14 @@ final class ManifestFetchViewModel: ObservableObject {
                 } else {
                     downloadStateStore.markFailed(
                         sourceAssetId: importResult.sourceAssetId,
-                        errorCode: importResult.errorCode ?? "SS-PHOTO-002",
+                        errorCode: importResult.errorCode ?? "SS-MEDIA-999",
                         now: Date()
                     )
                 }
             }
 
             summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
+            syncResultSummary = makeSyncResultSummary(for: manifest)
             downloadState = importResults.contains { $0.status == .synced }
                 ? .completed
                 : .failed("Downloaded, but photo import failed.")
@@ -322,6 +335,31 @@ final class ManifestFetchViewModel: ObservableObject {
                 continue
             }
         }
+    }
+
+    private func makeSyncResultSummary(for manifest: SyncManifest) -> SyncResultSummary {
+        let result = SyncResultBuilder().buildMediaResult(
+            syncBatchId: "m0-\(manifest.cursor)",
+            targetDeviceId: "ios-local",
+            records: records(for: manifest)
+        )
+        return SyncResultSummary(result: result)
+    }
+
+    private func records(for manifest: SyncManifest) -> [MediaDownloadRecord] {
+        let sourceAssetIds = Set(manifest.media.map(\.assetId))
+        return downloadStateStore.allRecords().filter { record in
+            sourceAssetIds.contains(record.sourceAssetId)
+        }
+    }
+}
+
+private extension ManifestFetchViewModel.SyncResultSummary {
+    init(result: SyncResult) {
+        syncBatchId = result.syncBatchId
+        syncedCount = result.results.filter { $0.status == .synced }.count
+        skippedCount = result.results.filter { $0.status == .skipped }.count
+        failedCount = result.results.filter { $0.status == .failed }.count
     }
 }
 

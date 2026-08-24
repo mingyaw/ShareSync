@@ -1,0 +1,20 @@
+{
+  "results": [
+    {
+      "errorCode": null,
+      "itemType": "media",
+      "sourceItemId": "mediastore-1-43",
+      "status": "synced",
+      "targetItemId": "photo-local-001"
+    },
+    {
+      "errorCode": "SS-NET-002",
+      "itemType": "media",
+      "sourceItemId": "mediastore-1-44",
+      "status": "failed",
+      "targetItemId": null
+    }
+  ],
+  "syncBatchId": "batch-20260824-001",
+  "targetDeviceId": "ios-demo-device"
+}

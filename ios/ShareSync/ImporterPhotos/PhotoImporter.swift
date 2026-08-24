@@ -29,7 +29,7 @@ final class PhotoImporterStub: PhotoImporter {
                 sourceAssetId: $0.sourceAssetId,
                 localIdentifier: nil,
                 status: .failed,
-                errorCode: "SS-MEDIA-POC"
+                errorCode: "SS-MEDIA-999"
             )
         }
     }

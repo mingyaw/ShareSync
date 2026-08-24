@@ -178,10 +178,32 @@ def validate_manifest():
     print("ok fixture: shared/fixtures/sample-manifest.json")
 
 
+def validate_sync_result():
+    result = load_json(FIXTURES / "sample-sync-result.json")
+    require_keys(
+        "sample-sync-result",
+        result,
+        ["syncBatchId", "targetDeviceId", "results"],
+    )
+    assert isinstance(result["results"], list)
+    for index, item in enumerate(result["results"]):
+        require_keys(
+            f"sample-sync-result.results[{index}]",
+            item,
+            ["itemType", "sourceItemId", "status"],
+        )
+        assert item["itemType"] in ("media", "contact", "file")
+        assert item["status"] in ("synced", "skipped", "failed", "conflicted")
+
+    validate_fixture_against_schema("sample-sync-result.json", "sync-result.schema.json")
+    print("ok fixture: shared/fixtures/sample-sync-result.json")
+
+
 def main():
     validate_schema_files()
     validate_pairing_payload()
     validate_manifest()
+    validate_sync_result()
 
 
 if __name__ == "__main__":

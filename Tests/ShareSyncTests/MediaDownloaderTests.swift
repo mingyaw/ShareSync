@@ -79,7 +79,7 @@ final class MediaDownloaderTests: XCTestCase {
 
         XCTAssertTrue(results.isEmpty)
         XCTAssertEqual(store.record(for: "mediastore-1-43")?.status, .failed)
-        XCTAssertEqual(store.record(for: "mediastore-1-43")?.lastErrorCode, "SS-DATA-001")
+        XCTAssertEqual(store.record(for: "mediastore-1-43")?.lastErrorCode, "SS-MEDIA-001")
     }
 
     func testResponseChecksumHeaderIsUsedWhenManifestHashIsMissing() async throws {

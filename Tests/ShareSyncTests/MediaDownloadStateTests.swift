@@ -10,6 +10,7 @@ final class MediaDownloadStateTests: XCTestCase {
 
         store.upsertQueued(asset: asset, now: now)
         XCTAssertEqual(store.record(for: "media-001")?.status, .queued)
+        XCTAssertEqual(store.allRecords().map(\.sourceAssetId), ["media-001"])
         XCTAssertEqual(store.pendingRecords().map(\.sourceAssetId), ["media-001"])
 
         store.markDownloading(sourceAssetId: "media-001", downloadedBytes: 512, now: now.addingTimeInterval(1))

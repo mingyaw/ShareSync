@@ -36,6 +36,7 @@ struct MediaImportMapping: Equatable {
 
 protocol MediaDownloadStateStore {
     func record(for sourceAssetId: String) -> MediaDownloadRecord?
+    func allRecords() -> [MediaDownloadRecord]
     func upsertQueued(asset: MediaAsset, now: Date)
     func markDownloading(sourceAssetId: String, downloadedBytes: Int64, now: Date)
     func markDownloaded(sourceAssetId: String, localFileURL: URL, downloadedBytes: Int64, now: Date)
@@ -52,6 +53,12 @@ final class InMemoryMediaDownloadStateStore: MediaDownloadStateStore {
 
     func record(for sourceAssetId: String) -> MediaDownloadRecord? {
         records[sourceAssetId]
+    }
+
+    func allRecords() -> [MediaDownloadRecord] {
+        records.values.sorted { lhs, rhs in
+            lhs.updatedAt < rhs.updatedAt
+        }
     }
 
     func upsertQueued(asset: MediaAsset, now: Date = Date()) {
@@ -163,6 +170,12 @@ final class FileMediaDownloadStateStore: MediaDownloadStateStore {
 
     func record(for sourceAssetId: String) -> MediaDownloadRecord? {
         records[sourceAssetId]
+    }
+
+    func allRecords() -> [MediaDownloadRecord] {
+        records.values.sorted { lhs, rhs in
+            lhs.updatedAt < rhs.updatedAt
+        }
     }
 
     func upsertQueued(asset: MediaAsset, now: Date = Date()) {

@@ -166,14 +166,14 @@ final class PhotoKitPhotoImporter: PhotoImporter, PhotoAssetPresenceChecking {
         if let importerError = error as? PhotoKitPhotoImporterError {
             switch importerError {
             case .photoPermissionDenied:
-                return "SS-PHOTO-001"
+                return "SS-PERM-001"
             case .unsupportedMediaType:
                 return "SS-MEDIA-001"
             case .missingPlaceholder, .albumCreationFailed:
-                return "SS-PHOTO-002"
+                return "SS-MEDIA-999"
             }
         }
 
-        return "SS-PHOTO-002"
+        return "SS-MEDIA-999"
     }
 }

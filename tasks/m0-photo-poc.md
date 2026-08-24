@@ -404,3 +404,23 @@ Next implementation slice:
 
 - Run the full `docs/m0-device-validation.md` checklist on physical Android/iPhone devices.
 - Record any device-only failures before moving to product branches such as contacts, files, BLE discovery, or background scheduling.
+
+### 2026-08-24 iOS Sync Result Summary
+
+Completed a validation/reporting slice for the M0 main path:
+
+- Added iOS `SyncResultBuilder` to convert terminal media download/import records into shared `SyncResult`.
+- Added iOS receive-screen sync result counts for synced, skipped, and failed records.
+- Added a shared `sample-sync-result.json` fixture and schema validation.
+- Aligned iOS media/import error codes with `shared/protocol/error-codes.md`.
+- Added protocol entries for Android local media server error responses.
+- Fixed the Xcode project source reference for the new sync result builder without breaking QR scanner compilation.
+
+Verified:
+
+```sh
+python3 scripts/validate-fixtures.py
+swift test
+cd android && ./gradlew :app:compileDebugKotlin
+xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+```
