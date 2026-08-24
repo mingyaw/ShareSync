@@ -36,9 +36,10 @@ Expected result: one Android media item is visible in iOS Photos and iCloud Phot
 2. Tap `Fetch Manifest`.
 3. Tap `Download Remaining`.
 4. Keep the iOS app foregrounded until transfer and import finish.
-5. Open iOS Photos.
-6. Confirm imported media appears in the `ShareSync Backup` album.
-7. Tap `Fetch Manifest` again.
+5. Confirm iOS updates `Batch Progress`, `Batch Downloaded`, `Batch Failed`, and `Current File` while downloading.
+6. Open iOS Photos.
+7. Confirm imported media appears in the `ShareSync Backup` album.
+8. Tap `Fetch Manifest` again.
 
 Expected result: iOS imports every remaining manifest item it can download, the receive screen remaining count reaches `0`, and the next Android manifest excludes media reported as `synced` or `skipped`.
 

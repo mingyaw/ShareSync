@@ -42,6 +42,18 @@ final class ManifestFetchViewModel: ObservableObject {
         let failedCount: Int
     }
 
+    struct DownloadProgressSummary: Equatable {
+        let totalCount: Int
+        let processedCount: Int
+        let downloadedCount: Int
+        let failedCount: Int
+        let currentFileName: String?
+
+        var progressText: String {
+            "\(processedCount)/\(totalCount)"
+        }
+    }
+
     @Published var host = ""
     @Published var port = "48291"
     @Published var pairingPayloadText = ""
@@ -49,6 +61,7 @@ final class ManifestFetchViewModel: ObservableObject {
     @Published private(set) var downloadState: DownloadState = .idle
     @Published private(set) var summary: ManifestSummary?
     @Published private(set) var syncResultSummary: SyncResultSummary?
+    @Published private(set) var downloadProgressSummary: DownloadProgressSummary?
     @Published private(set) var pairedDevice: TrustedDevice?
 
     private let client: ManifestClient
@@ -120,12 +133,14 @@ final class ManifestFetchViewModel: ObservableObject {
                     host: trimmedHost,
                     port: portNumber
                 )
+                downloadProgressSummary = nil
                 downloadState = .idle
                 state = .loaded
             } catch {
                 latestManifest = nil
                 summary = nil
                 syncResultSummary = nil
+                downloadProgressSummary = nil
                 state = .failed(Self.message(for: error))
             }
         }
@@ -194,6 +209,7 @@ final class ManifestFetchViewModel: ObservableObject {
         }
 
         downloadState = .downloading
+        downloadProgressSummary = nil
 
         Task {
             let transferAssets = nextTransferCandidates(in: manifest, limit: limit)
@@ -219,7 +235,12 @@ final class ManifestFetchViewModel: ObservableObject {
                     assets: assetsToDownload,
                     host: trimmedHost,
                     port: portNumber,
-                    stateStore: downloadStateStore
+                    stateStore: downloadStateStore,
+                    progress: { [weak self] progress in
+                        await MainActor.run {
+                            self?.downloadProgressSummary = DownloadProgressSummary(progress: progress)
+                        }
+                    }
                 )
             summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
             syncResultSummary = await publishSyncResultSummary(
@@ -248,6 +269,7 @@ final class ManifestFetchViewModel: ObservableObject {
                     host: trimmedHost,
                     port: portNumber
                 )
+                downloadProgressSummary = nil
                 downloadState = .failed("No media downloaded.")
                 return
             }
@@ -277,6 +299,7 @@ final class ManifestFetchViewModel: ObservableObject {
                 host: trimmedHost,
                 port: portNumber
             )
+            downloadProgressSummary = nil
             downloadState = importResults.contains { $0.status == .synced }
                 ? .completed
                 : .failed("Downloaded, but photo import failed.")
@@ -386,6 +409,16 @@ final class ManifestFetchViewModel: ObservableObject {
         return downloadStateStore.allRecords().filter { record in
             sourceAssetIds.contains(record.sourceAssetId)
         }
+    }
+}
+
+private extension ManifestFetchViewModel.DownloadProgressSummary {
+    init(progress: MediaDownloadProgress) {
+        totalCount = progress.totalCount
+        processedCount = progress.processedCount
+        downloadedCount = progress.downloadedCount
+        failedCount = progress.failedCount
+        currentFileName = progress.currentFileName
     }
 }
 

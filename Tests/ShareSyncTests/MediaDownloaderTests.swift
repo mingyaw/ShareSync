@@ -117,6 +117,66 @@ final class MediaDownloaderTests: XCTestCase {
         XCTAssertEqual(store.record(for: "mediastore-1-44")?.status, .downloaded)
     }
 
+    func testDownloadMediaReportsBatchProgress() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let firstData = Data("first-photo".utf8)
+        let firstAsset = makeAsset(
+            assetId: "mediastore-1-45",
+            fileName: "IMG_0045.jpg",
+            size: Int64(firstData.count),
+            sha256: sha256(firstData)
+        )
+        let secondAsset = makeAsset(
+            assetId: "mediastore-1-46",
+            fileName: "IMG_0046.jpg",
+            size: 10,
+            sha256: String(repeating: "0", count: 64)
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        let session = StubSequenceMediaDataSession(responses: [
+            (
+                data: firstData,
+                response: HTTPURLResponse(
+                    url: URL(string: "http://192.168.1.10:48291/v1/media/mediastore-1-45")!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!
+            ),
+            (
+                data: Data("different".utf8),
+                response: HTTPURLResponse(
+                    url: URL(string: "http://192.168.1.10:48291/v1/media/mediastore-1-46")!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!
+            ),
+        ])
+        let downloader = MediaDownloader(session: session, downloadDirectory: directory)
+
+        var progressEvents: [MediaDownloadProgress] = []
+        let results = await downloader.downloadMedia(
+            assets: [firstAsset, secondAsset],
+            host: "192.168.1.10",
+            port: 48291,
+            stateStore: store,
+            progress: { progress in
+                progressEvents.append(progress)
+            }
+        )
+
+        XCTAssertEqual(results.map(\.assetId), ["mediastore-1-45"])
+        XCTAssertEqual(progressEvents.last?.totalCount, 2)
+        XCTAssertEqual(progressEvents.last?.processedCount, 2)
+        XCTAssertEqual(progressEvents.last?.downloadedCount, 1)
+        XCTAssertEqual(progressEvents.last?.failedCount, 1)
+        XCTAssertEqual(progressEvents.last?.currentAssetId, "mediastore-1-46")
+    }
+
     private func makeAsset(assetId: String, fileName: String, size: Int64, sha256: String?) -> MediaAsset {
         MediaAsset(
             assetId: assetId,
@@ -156,5 +216,21 @@ private final class StubMediaDataSession: MediaDataSession {
     func data(from url: URL) async throws -> (Data, URLResponse) {
         requestedURLs.append(url)
         return (data, response)
+    }
+}
+
+private final class StubSequenceMediaDataSession: MediaDataSession {
+    private var responses: [(data: Data, response: URLResponse)]
+
+    init(responses: [(data: Data, response: URLResponse)]) {
+        self.responses = responses
+    }
+
+    func data(from url: URL) async throws -> (Data, URLResponse) {
+        guard !responses.isEmpty else {
+            throw URLError(.badServerResponse)
+        }
+
+        return responses.removeFirst()
     }
 }

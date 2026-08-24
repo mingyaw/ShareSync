@@ -118,6 +118,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Track per-asset download state.
 - [x] Expand UI action from single-item validation to batch download.
 - [x] Add all-remaining manifest download action for M0 device validation.
+- [x] Show live foreground batch progress during iOS transfer.
 - [x] Resume or skip completed items after restart.
 
 ### I5. Photos Import
@@ -537,6 +538,24 @@ Completed another M0 validation slice:
 - Added an iOS remaining item count to the receive screen.
 - Made imported Photos assets marked as `missing` retryable by the next iOS transfer pass.
 - Updated M0 manual flow notes for the all-remaining foreground transfer validation.
+
+Verification target:
+
+```sh
+python3 scripts/validate-fixtures.py
+swift test
+cd android && ./gradlew :app:testDebugUnitTest :app:compileDebugKotlin
+xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+```
+
+### 2026-08-24 iOS Foreground Batch Progress
+
+Completed another M0 validation slice:
+
+- Added per-batch progress reporting to the iOS media downloader.
+- Added iOS receive screen rows for batch progress, batch downloaded count, batch failed count, and current file.
+- Added Swift unit coverage for progress events across a mixed success/failure batch.
+- Updated the foreground full manifest transfer checklist to verify live progress during long transfers.
 
 Verification target:
 

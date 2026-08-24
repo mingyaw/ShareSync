@@ -14,6 +14,15 @@ struct MediaDownloadResult: Equatable {
     let downloadedBytes: Int64
 }
 
+struct MediaDownloadProgress: Equatable {
+    let totalCount: Int
+    let processedCount: Int
+    let downloadedCount: Int
+    let failedCount: Int
+    let currentAssetId: String?
+    let currentFileName: String?
+}
+
 protocol MediaDataSession {
     func data(from url: URL) async throws -> (Data, URLResponse)
 }
@@ -43,20 +52,55 @@ final class MediaDownloader {
         assets: [MediaAsset],
         host: String,
         port: Int,
-        stateStore: MediaDownloadStateStore
+        stateStore: MediaDownloadStateStore,
+        progress: ((MediaDownloadProgress) async -> Void)? = nil
     ) async -> [MediaDownloadResult] {
         for asset in assets {
             stateStore.upsertQueued(asset: asset, now: now())
         }
 
         var results: [MediaDownloadResult] = []
+        var processedCount = 0
+        var failedCount = 0
+        await progress?(
+            MediaDownloadProgress(
+                totalCount: assets.count,
+                processedCount: processedCount,
+                downloadedCount: results.count,
+                failedCount: failedCount,
+                currentAssetId: nil,
+                currentFileName: nil
+            )
+        )
+
         for asset in assets {
             guard let record = stateStore.record(for: asset.assetId),
                   record.status == .queued || record.status == .downloading || record.status == .failed else {
+                processedCount += 1
+                await progress?(
+                    MediaDownloadProgress(
+                        totalCount: assets.count,
+                        processedCount: processedCount,
+                        downloadedCount: results.count,
+                        failedCount: failedCount,
+                        currentAssetId: asset.assetId,
+                        currentFileName: asset.fileName
+                    )
+                )
                 continue
             }
 
             stateStore.markDownloading(sourceAssetId: asset.assetId, downloadedBytes: record.downloadedBytes, now: now())
+            await progress?(
+                MediaDownloadProgress(
+                    totalCount: assets.count,
+                    processedCount: processedCount,
+                    downloadedCount: results.count,
+                    failedCount: failedCount,
+                    currentAssetId: asset.assetId,
+                    currentFileName: asset.fileName
+                )
+            )
 
             do {
                 let result = try await download(asset: asset, host: host, port: port)
@@ -68,12 +112,24 @@ final class MediaDownloader {
                 )
                 results.append(result)
             } catch {
+                failedCount += 1
                 stateStore.markFailed(
                     sourceAssetId: asset.assetId,
                     errorCode: errorCode(for: error),
                     now: now()
                 )
             }
+            processedCount += 1
+            await progress?(
+                MediaDownloadProgress(
+                    totalCount: assets.count,
+                    processedCount: processedCount,
+                    downloadedCount: results.count,
+                    failedCount: failedCount,
+                    currentAssetId: asset.assetId,
+                    currentFileName: asset.fileName
+                )
+            )
         }
 
         return results

@@ -191,6 +191,15 @@ struct ContentView: View {
                 StatusRow(title: "Photos", value: "Waiting")
             }
 
+            if let progress = viewModel.downloadProgressSummary {
+                StatusRow(title: "Batch Progress", value: progress.progressText)
+                StatusRow(title: "Batch Downloaded", value: "\(progress.downloadedCount)")
+                StatusRow(title: "Batch Failed", value: "\(progress.failedCount)")
+                if let currentFileName = progress.currentFileName {
+                    StatusRow(title: "Current File", value: currentFileName)
+                }
+            }
+
             if let syncResultSummary = viewModel.syncResultSummary {
                 StatusRow(title: "Sync Batch", value: syncResultSummary.syncBatchId)
                 StatusRow(title: "Synced", value: "\(syncResultSummary.syncedCount)")
