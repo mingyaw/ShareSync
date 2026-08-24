@@ -67,6 +67,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Implement `POST /v1/sync/result`.
 - [x] Persist latest sync result on Android.
 - [x] Show latest sync result summary on Android M0 screen.
+- [x] Exclude latest synced/skipped media results from Android manifest.
 - [x] Add range request support.
 - [x] Add basic error responses.
 
@@ -485,5 +486,24 @@ Verified:
 python3 scripts/validate-fixtures.py
 swift test
 cd android && ./gradlew :app:compileDebugKotlin
+xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+```
+
+### 2026-08-24 Android Manifest Completion Filtering
+
+Completed the first Android-side use of returned sync results:
+
+- Android manifest builder reads latest sync result state.
+- Media reported as `synced` or `skipped` is excluded from the next M0 manifest.
+- Media reported as `failed` remains in the manifest so iOS can retry.
+- Manifest scanning now looks beyond the requested return limit before filtering completed items.
+- Added Android JVM unit tests for completion filtering behavior.
+
+Verified:
+
+```sh
+python3 scripts/validate-fixtures.py
+swift test
+cd android && ./gradlew :app:testDebugUnitTest :app:compileDebugKotlin
 xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
 ```

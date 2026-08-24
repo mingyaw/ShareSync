@@ -5,6 +5,18 @@ import java.io.File
 interface SyncResultStore {
     suspend fun save(result: SyncResult)
     suspend fun latest(): SyncResult?
+
+    suspend fun completedMediaAssetIds(): Set<String> {
+        return latest()
+            ?.results
+            .orEmpty()
+            .filter { item ->
+                item.itemType == SyncItemType.media &&
+                    (item.status == SyncItemStatus.synced || item.status == SyncItemStatus.skipped)
+            }
+            .map { item -> item.sourceItemId }
+            .toSet()
+    }
 }
 
 class InMemorySyncResultStore : SyncResultStore {

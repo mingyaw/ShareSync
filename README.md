@@ -33,6 +33,7 @@ The current codebase contains:
 - iOS latest sync result JSON persistence for M0 validation.
 - iOS to Android sync result return path over the local M0 server.
 - Android latest sync result persistence and M0 screen summary.
+- Android manifest filtering for media already reported as synced or skipped.
 
 M0 validates the riskiest path:
 
@@ -103,6 +104,7 @@ M0 includes only:
 - latest sync result JSON persistence
 - local sync result return to Android
 - Android latest sync result display for validation
+- Android manifest excludes completed media from latest sync result
 
 M0 excludes:
 

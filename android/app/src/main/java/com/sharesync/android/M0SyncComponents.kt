@@ -30,17 +30,18 @@ class M0SyncComponents private constructor(
                 contentResolver = contentResolver,
                 sourceDeviceId = deviceId,
             )
+            val syncResultStore = FileSyncResultStore(
+                file = FileSyncResultStore.defaultFile(context.applicationContext.filesDir),
+            )
             val manifestBuilder = ManifestBuilder(
                 sourceDeviceId = deviceId,
                 mediaScanner = mediaScanner,
+                syncResultStore = syncResultStore,
             )
 
             val manifestProvider = object : ManifestProvider {
                 override suspend fun currentManifest() = manifestBuilder.buildM0Manifest()
             }
-            val syncResultStore = FileSyncResultStore(
-                file = FileSyncResultStore.defaultFile(context.applicationContext.filesDir),
-            )
 
             return M0SyncComponents(
                 mediaScanner = mediaScanner,
