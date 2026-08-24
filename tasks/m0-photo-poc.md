@@ -127,7 +127,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add shared sample pairing payload fixture.
 - [x] Add shared sample manifest fixture.
 - [x] Add lightweight fixture validation script.
-- [ ] Validate generated manifest against `shared/schemas/manifest.schema.json`.
+- [x] Validate generated manifest against `shared/schemas/manifest.schema.json`.
 - [x] Keep fixture date encoding ISO-8601.
 - [x] Keep fixture enum values lowercase.
 - [x] Align item status values with `sync-result.schema.json`.
