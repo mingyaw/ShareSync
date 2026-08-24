@@ -54,18 +54,18 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 ### A4. Media Scanner
 
-- [ ] Implement `MediaScanner` using MediaStore.
-- [ ] Query latest 100 images from DCIM/Camera.
-- [ ] Map rows into `MediaAsset`.
+- [x] Implement `MediaScanner` using MediaStore.
+- [x] Query latest 100 images/videos from MediaStore.
+- [x] Map rows into `MediaAsset`.
 - [ ] Add lazy SHA-256 calculation before transfer.
 
 ### A5. Local Server
 
-- [ ] Implement `GET /v1/health`.
-- [ ] Implement `GET /v1/manifest`.
-- [ ] Implement `GET /v1/media/{assetId}`.
-- [ ] Add range request support.
-- [ ] Add basic error responses.
+- [x] Implement `GET /v1/health`.
+- [x] Implement `GET /v1/manifest`.
+- [x] Implement `GET /v1/media/{assetId}`.
+- [x] Add range request support.
+- [x] Add basic error responses.
 
 ## iOS Tasks
 
@@ -143,6 +143,10 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [ ] Repeat sync.
 - [ ] No Photos permission.
 - [ ] iPhone storage low.
+
+## Manual M0 Device Validation
+
+Run the full checklist in `docs/m0-device-validation.md` before calling M0 complete.
 
 ## Out of Scope for M0
 
