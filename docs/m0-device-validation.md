@@ -91,7 +91,7 @@ The iOS app also attempts to post the same result to Android:
 POST /v1/sync/result
 ```
 
-Expected result: Android accepts valid M0 sync result JSON with HTTP `202 Accepted`. Android persistence is currently in-memory for the running M0 server session.
+Expected result: Android accepts valid M0 sync result JSON with HTTP `202 Accepted`, persists the latest result under app files data, and shows the latest batch summary on the Android M0 screen.
 
 ## Permission Negative Cases
 

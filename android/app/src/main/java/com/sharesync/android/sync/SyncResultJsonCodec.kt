@@ -25,9 +25,9 @@ class SyncResultJsonCodec {
                             JSONObject()
                                 .put("itemType", item.itemType.name)
                                 .put("sourceItemId", item.sourceItemId)
-                                .put("targetItemId", item.targetItemId)
+                                .put("targetItemId", item.targetItemId ?: JSONObject.NULL)
                                 .put("status", item.status.name)
-                                .put("errorCode", item.errorCode)
+                                .put("errorCode", item.errorCode ?: JSONObject.NULL)
                         )
                     }
                 },

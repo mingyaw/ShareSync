@@ -3,8 +3,9 @@ package com.sharesync.android
 import android.content.Context
 import com.sharesync.android.scanner.media.MediaStoreMediaScanner
 import com.sharesync.android.scanner.media.MediaStreamProvider
-import com.sharesync.android.sync.InMemorySyncResultStore
+import com.sharesync.android.sync.FileSyncResultStore
 import com.sharesync.android.sync.ManifestBuilder
+import com.sharesync.android.sync.SyncResultStore
 import com.sharesync.android.transfer.server.EmbeddedLocalServerBinder
 import com.sharesync.android.transfer.server.LocalSyncRouter
 import com.sharesync.android.transfer.server.ManifestProvider
@@ -12,6 +13,7 @@ import com.sharesync.android.transfer.server.ManifestProvider
 class M0SyncComponents private constructor(
     val mediaScanner: MediaStoreMediaScanner,
     val mediaStreamProvider: MediaStreamProvider,
+    val syncResultStore: SyncResultStore,
     val router: LocalSyncRouter,
     val serverBinder: EmbeddedLocalServerBinder,
 ) {
@@ -36,11 +38,14 @@ class M0SyncComponents private constructor(
             val manifestProvider = object : ManifestProvider {
                 override suspend fun currentManifest() = manifestBuilder.buildM0Manifest()
             }
-            val syncResultStore = InMemorySyncResultStore()
+            val syncResultStore = FileSyncResultStore(
+                file = FileSyncResultStore.defaultFile(context.applicationContext.filesDir),
+            )
 
             return M0SyncComponents(
                 mediaScanner = mediaScanner,
                 mediaStreamProvider = MediaStreamProvider(contentResolver),
+                syncResultStore = syncResultStore,
                 router = LocalSyncRouter(
                     deviceId = deviceId,
                     appVersion = appVersion,

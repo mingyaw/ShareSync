@@ -65,6 +65,8 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Implement `GET /v1/manifest`.
 - [x] Implement `GET /v1/media/{assetId}`.
 - [x] Implement `POST /v1/sync/result`.
+- [x] Persist latest sync result on Android.
+- [x] Show latest sync result summary on Android M0 screen.
 - [x] Add range request support.
 - [x] Add basic error responses.
 
@@ -457,6 +459,25 @@ Completed the first local return path for M0:
 - Added iOS `SyncResultClient` to POST saved results back to Android.
 - Wired iOS result publishing after manifest/download/import state updates.
 - Updated local API contract and device validation checklist.
+
+Verified:
+
+```sh
+python3 scripts/validate-fixtures.py
+swift test
+cd android && ./gradlew :app:compileDebugKotlin
+xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+```
+
+### 2026-08-24 Android Sync Result Persistence
+
+Completed the Android-side validation visibility slice:
+
+- Added `FileSyncResultStore` for Android latest sync result persistence.
+- Switched M0 Android components from in-memory sync result storage to app file storage.
+- Added Android M0 screen summary for latest sync batch, synced count, skipped count, and failed count.
+- Added short polling after server start so the Android screen reflects iOS result posts during manual validation.
+- Kept shared sync result JSON fields explicit when values are `null`.
 
 Verified:
 

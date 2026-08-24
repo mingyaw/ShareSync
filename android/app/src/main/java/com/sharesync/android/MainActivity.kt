@@ -20,6 +20,9 @@ import com.sharesync.android.security.DeviceIdentity
 import com.sharesync.android.security.DeviceIdentityStore
 import com.sharesync.android.security.SharedPreferencesDeviceIdentityStore
 import com.sharesync.android.sync.ManifestJsonEncoder
+import com.sharesync.android.sync.SyncItemStatus
+import com.sharesync.android.sync.SyncResult
+import com.sharesync.android.sync.SyncResultStore
 import com.sharesync.android.scanner.media.MediaStreamProvider
 import com.sharesync.android.transfer.server.LocalServerBinder
 import com.sharesync.android.transfer.server.LocalSyncRouter
@@ -30,6 +33,7 @@ class MainActivity : Activity() {
     private lateinit var statusText: TextView
     private lateinit var endpointText: TextView
     private lateinit var permissionText: TextView
+    private lateinit var syncResultText: TextView
     private lateinit var pairingPayloadText: TextView
     private lateinit var pairingQrImage: ImageView
     private lateinit var startButton: Button
@@ -39,6 +43,8 @@ class MainActivity : Activity() {
     private var server: LocalSyncServer? = null
     private var isServerRunning = false
     private var currentPairingPayloadJson: String? = null
+    private var currentSyncResult: SyncResult? = null
+    private var syncResultStore: SyncResultStore? = null
     private lateinit var deviceIdentityStore: DeviceIdentityStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,6 +93,7 @@ class MainActivity : Activity() {
         statusText = bodyText(topPadding = 12 * density)
         endpointText = bodyText(topPadding = 12 * density)
         permissionText = bodyText(topPadding = 12 * density)
+        syncResultText = bodyText(topPadding = 12 * density)
         pairingPayloadText = bodyText(topPadding = 12 * density)
         pairingQrImage = ImageView(this).apply {
             adjustViewBounds = true
@@ -125,6 +132,7 @@ class MainActivity : Activity() {
         root.addView(statusText)
         root.addView(endpointText)
         root.addView(permissionText)
+        root.addView(syncResultText)
         root.addView(pairingQrImage)
         root.addView(pairingPayloadText)
         root.addView(grantButton)
@@ -166,6 +174,8 @@ class MainActivity : Activity() {
         }
         pairingPayloadText.text = currentPairingPayloadJson
             ?: getString(R.string.m0_pairing_payload_unavailable)
+        syncResultText.text = currentSyncResult?.let(::formatSyncResult)
+            ?: getString(R.string.m0_sync_result_unavailable)
         refreshPairingQr()
 
         startButton.isEnabled = !isServerRunning && hasMediaPermission()
@@ -228,14 +238,18 @@ class MainActivity : Activity() {
                     mediaStreamProvider = components.mediaStreamProvider,
                 )
                 server = createdServer
+                syncResultStore = components.syncResultStore
+                currentSyncResult = SuspendBridge.runBlocking { components.syncResultStore.latest() }
                 isServerRunning = true
                 currentPairingPayloadJson = createPairingPayloadJson(
                     identity = identity,
                     port = createdServer.port,
                 )
                 runOnUiThread { refreshUi() }
+                pollSyncResultUpdates(components.syncResultStore)
             } catch (error: Throwable) {
                 server = null
+                syncResultStore = null
                 isServerRunning = false
                 currentPairingPayloadJson = null
                 runOnUiThread {
@@ -287,6 +301,7 @@ class MainActivity : Activity() {
     private fun stopServer() {
         val currentServer = server ?: return
         server = null
+        syncResultStore = null
         isServerRunning = false
         currentPairingPayloadJson = null
 
@@ -332,8 +347,33 @@ class MainActivity : Activity() {
         refreshUi(getString(R.string.m0_pairing_payload_copied))
     }
 
+    private fun pollSyncResultUpdates(store: SyncResultStore) {
+        Thread {
+            repeat(SYNC_RESULT_POLL_COUNT) {
+                Thread.sleep(SYNC_RESULT_POLL_INTERVAL_MS)
+                currentSyncResult = SuspendBridge.runBlocking { store.latest() }
+                runOnUiThread { refreshUi() }
+            }
+        }.start()
+    }
+
+    private fun formatSyncResult(result: SyncResult): String {
+        val syncedCount = result.results.count { it.status == SyncItemStatus.synced }
+        val skippedCount = result.results.count { it.status == SyncItemStatus.skipped }
+        val failedCount = result.results.count { it.status == SyncItemStatus.failed }
+        return getString(
+            R.string.m0_sync_result_summary,
+            result.syncBatchId,
+            syncedCount,
+            skippedCount,
+            failedCount,
+        )
+    }
+
     private companion object {
         const val REQUEST_MEDIA_PERMISSION = 1001
         const val AVAILABLE_PORT = 0
+        const val SYNC_RESULT_POLL_COUNT = 30
+        const val SYNC_RESULT_POLL_INTERVAL_MS = 2_000L
     }
 }

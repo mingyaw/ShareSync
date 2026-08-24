@@ -32,6 +32,7 @@ The current codebase contains:
 - iOS local download/import state, duplicate prevention, restart resume, and deleted-photo reconciliation.
 - iOS latest sync result JSON persistence for M0 validation.
 - iOS to Android sync result return path over the local M0 server.
+- Android latest sync result persistence and M0 screen summary.
 
 M0 validates the riskiest path:
 
@@ -101,6 +102,7 @@ M0 includes only:
 - app-local imported photo reconciliation
 - latest sync result JSON persistence
 - local sync result return to Android
+- Android latest sync result display for validation
 
 M0 excludes:
 
