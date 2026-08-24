@@ -111,8 +111,8 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Download one photo/video file to app temp directory for validation.
 - [x] Verify SHA-256 when available.
 - [x] Track per-asset download state.
-- [ ] Expand UI action from single-item validation to batch download.
-- [ ] Resume or skip completed items after restart.
+- [x] Expand UI action from single-item validation to batch download.
+- [x] Resume or skip completed items after restart.
 
 ### I5. Photos Import
 

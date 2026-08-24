@@ -75,7 +75,7 @@ final class ManifestFetchViewModel: ObservableObject {
             return false
         }
 
-        return nextDownloadCandidate(in: latestManifest) != nil
+        return nextTransferCandidate(in: latestManifest) != nil
             && downloadState != .downloading
             && downloadState != .importing
     }
@@ -166,28 +166,36 @@ final class ManifestFetchViewModel: ObservableObject {
         downloadState = .downloading
 
         Task {
-            let validationAssets = nextDownloadCandidates(in: manifest, limit: limit)
-            guard !validationAssets.isEmpty else {
+            let transferAssets = nextTransferCandidates(in: manifest, limit: limit)
+            guard !transferAssets.isEmpty else {
                 downloadState = .failed("No remaining media to download.")
                 return
             }
 
-            let results = await downloader.downloadMedia(
-                assets: validationAssets,
-                host: trimmedHost,
-                port: portNumber,
-                stateStore: downloadStateStore
-            )
-            summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
-            guard !results.isEmpty else {
-                downloadState = .failed("No media downloaded.")
-                return
+            var importRequests: [PhotoImportRequest] = []
+            var assetsToDownload: [MediaAsset] = []
+
+            for asset in transferAssets {
+                if let downloadedRequest = downloadedImportRequest(for: asset) {
+                    importRequests.append(downloadedRequest)
+                } else {
+                    assetsToDownload.append(asset)
+                }
             }
 
-            downloadState = .importing
-            let importResults = await photoImporter.importBatch(
-                results.compactMap { result in
-                    guard let asset = validationAssets.first(where: { $0.assetId == result.assetId }) else {
+            let results = assetsToDownload.isEmpty
+                ? []
+                : await downloader.downloadMedia(
+                    assets: assetsToDownload,
+                    host: trimmedHost,
+                    port: portNumber,
+                    stateStore: downloadStateStore
+                )
+            summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
+
+            importRequests.append(
+                contentsOf: results.compactMap { result in
+                    guard let asset = transferAssets.first(where: { $0.assetId == result.assetId }) else {
                         return nil
                     }
                     return PhotoImportRequest(
@@ -198,6 +206,14 @@ final class ManifestFetchViewModel: ObservableObject {
                     )
                 }
             )
+
+            guard !importRequests.isEmpty else {
+                downloadState = .failed("No media downloaded.")
+                return
+            }
+
+            downloadState = .importing
+            let importResults = await photoImporter.importBatch(importRequests)
 
             for importResult in importResults {
                 if importResult.status == .synced {
@@ -243,11 +259,11 @@ final class ManifestFetchViewModel: ObservableObject {
         return error.localizedDescription
     }
 
-    private func nextDownloadCandidate(in manifest: SyncManifest) -> MediaAsset? {
-        nextDownloadCandidates(in: manifest, limit: 1).first
+    private func nextTransferCandidate(in manifest: SyncManifest) -> MediaAsset? {
+        nextTransferCandidates(in: manifest, limit: 1).first
     }
 
-    private func nextDownloadCandidates(in manifest: SyncManifest, limit: Int) -> [MediaAsset] {
+    private func nextTransferCandidates(in manifest: SyncManifest, limit: Int) -> [MediaAsset] {
         guard limit > 0 else {
             return []
         }
@@ -259,8 +275,33 @@ final class ManifestFetchViewModel: ObservableObject {
 
             return record.status == .queued
                 || record.status == .downloading
+                || record.status == .downloaded
                 || record.status == .failed
         }.prefix(limit))
+    }
+
+    private func downloadedImportRequest(for asset: MediaAsset) -> PhotoImportRequest? {
+        guard let record = downloadStateStore.record(for: asset.assetId),
+              record.status == .downloaded else {
+            return nil
+        }
+
+        guard let localFileURL = record.localFileURL,
+              FileManager.default.fileExists(atPath: localFileURL.path) else {
+            downloadStateStore.markFailed(
+                sourceAssetId: asset.assetId,
+                errorCode: "SS-NET-002",
+                now: Date()
+            )
+            return nil
+        }
+
+        return PhotoImportRequest(
+            sourceAssetId: asset.assetId,
+            sourceHash: asset.sha256,
+            localFileURL: localFileURL,
+            mediaType: asset.mediaType
+        )
     }
 
     private func reconcileMissingPhotoAssets(in manifest: SyncManifest) async {
