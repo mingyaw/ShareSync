@@ -29,7 +29,7 @@ class EmbeddedLocalServerBinder : LocalServerBinder {
         port: Int,
     ): LocalSyncServer {
         return EmbeddedLocalSyncServer(
-            port = port,
+            requestedPort = port,
             router = router,
             mediaStreamProvider = mediaStreamProvider,
         )

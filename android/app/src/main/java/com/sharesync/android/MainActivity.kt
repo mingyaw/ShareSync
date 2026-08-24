@@ -20,7 +20,11 @@ import com.sharesync.android.security.DeviceIdentity
 import com.sharesync.android.security.DeviceIdentityStore
 import com.sharesync.android.security.SharedPreferencesDeviceIdentityStore
 import com.sharesync.android.sync.ManifestJsonEncoder
+import com.sharesync.android.scanner.media.MediaStreamProvider
+import com.sharesync.android.transfer.server.LocalServerBinder
+import com.sharesync.android.transfer.server.LocalSyncRouter
 import com.sharesync.android.transfer.server.LocalSyncServer
+import java.net.BindException
 
 class MainActivity : Activity() {
     private lateinit var statusText: TextView
@@ -140,10 +144,11 @@ class MainActivity : Activity() {
 
     private fun refreshUi(message: String? = null) {
         val ip = LocalNetworkAddresses.firstIpv4Address()
+        val displayPort = server?.port ?: M0SyncComponents.defaultPort()
         val endpoint = if (ip == null) {
             getString(R.string.m0_endpoint_unavailable)
         } else {
-            getString(R.string.m0_endpoint, ip, M0SyncComponents.defaultPort())
+            getString(R.string.m0_endpoint, ip, displayPort)
         }
 
         val status = when {
@@ -217,17 +222,17 @@ class MainActivity : Activity() {
                     deviceId = identity.deviceId,
                     appVersion = "0.1.0",
                 )
-                val createdServer = SuspendBridge.runBlocking {
-                    components.serverBinder.bind(
-                        router = components.router,
-                        mediaStreamProvider = components.mediaStreamProvider,
-                        port = M0SyncComponents.defaultPort(),
-                    )
-                }
-                SuspendBridge.runBlocking { createdServer.start() }
+                val createdServer = startLocalServer(
+                    serverBinder = components.serverBinder,
+                    router = components.router,
+                    mediaStreamProvider = components.mediaStreamProvider,
+                )
                 server = createdServer
                 isServerRunning = true
-                currentPairingPayloadJson = createPairingPayloadJson(identity)
+                currentPairingPayloadJson = createPairingPayloadJson(
+                    identity = identity,
+                    port = createdServer.port,
+                )
                 runOnUiThread { refreshUi() }
             } catch (error: Throwable) {
                 server = null
@@ -238,6 +243,45 @@ class MainActivity : Activity() {
                 }
             }
         }.start()
+    }
+
+    private fun startLocalServer(
+        serverBinder: LocalServerBinder,
+        router: LocalSyncRouter,
+        mediaStreamProvider: MediaStreamProvider,
+    ): LocalSyncServer {
+        return try {
+            bindAndStartServer(
+                serverBinder = serverBinder,
+                router = router,
+                mediaStreamProvider = mediaStreamProvider,
+                port = M0SyncComponents.defaultPort(),
+            )
+        } catch (error: BindException) {
+            bindAndStartServer(
+                serverBinder = serverBinder,
+                router = router,
+                mediaStreamProvider = mediaStreamProvider,
+                port = AVAILABLE_PORT,
+            )
+        }
+    }
+
+    private fun bindAndStartServer(
+        serverBinder: LocalServerBinder,
+        router: LocalSyncRouter,
+        mediaStreamProvider: MediaStreamProvider,
+        port: Int,
+    ): LocalSyncServer {
+        val createdServer = SuspendBridge.runBlocking {
+            serverBinder.bind(
+                router = router,
+                mediaStreamProvider = mediaStreamProvider,
+                port = port,
+            )
+        }
+        SuspendBridge.runBlocking { createdServer.start() }
+        return createdServer
     }
 
     private fun stopServer() {
@@ -255,14 +299,14 @@ class MainActivity : Activity() {
         }.start()
     }
 
-    private fun createPairingPayloadJson(identity: DeviceIdentity): String? {
+    private fun createPairingPayloadJson(identity: DeviceIdentity, port: Int): String? {
         val ip = LocalNetworkAddresses.firstIpv4Address() ?: return null
         val payload = PairingPayloadFactory(
             deviceIdProvider = { identity.deviceId },
             deviceNameProvider = { identity.deviceName },
             publicKeyProvider = { identity.publicKey },
             localIpProvider = { ip },
-            portProvider = { M0SyncComponents.defaultPort() },
+            portProvider = { port },
         ).createPayload()
         return ManifestJsonEncoder().encode(payload)
     }
@@ -290,5 +334,6 @@ class MainActivity : Activity() {
 
     private companion object {
         const val REQUEST_MEDIA_PERMISSION = 1001
+        const val AVAILABLE_PORT = 0
     }
 }

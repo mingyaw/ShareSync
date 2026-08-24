@@ -18,10 +18,13 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.startCoroutine
 
 class EmbeddedLocalSyncServer(
-    override val port: Int,
+    requestedPort: Int,
     private val router: LocalSyncRouter,
     private val mediaStreamProvider: MediaStreamProvider,
 ) : LocalSyncServer {
+    override var port: Int = requestedPort
+        private set
+
     @Volatile
     private var running = false
 
@@ -32,6 +35,7 @@ class EmbeddedLocalSyncServer(
         if (running) return
 
         val socket = ServerSocket(port)
+        port = socket.localPort
         serverSocket = socket
         running = true
 

@@ -48,7 +48,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 ### A3. Pairing Payload
 
 - [x] Resolve current local IP.
-- [ ] Start local server on available port.
+- [x] Start local server on available port.
 - [x] Generate QR payload from `PairingPayloadFactory`.
 - [x] Render QR code in Android UI.
 
