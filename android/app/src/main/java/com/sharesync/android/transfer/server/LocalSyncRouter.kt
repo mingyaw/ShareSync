@@ -2,13 +2,18 @@ package com.sharesync.android.transfer.server
 
 import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.sync.MediaAsset
+import com.sharesync.android.sync.SyncResultJsonCodec
+import com.sharesync.android.sync.SyncResultStore
+import org.json.JSONException
 
 class LocalSyncRouter(
     private val deviceId: String,
     private val appVersion: String,
     private val manifestProvider: ManifestProvider,
     private val mediaProvider: MediaProvider,
+    private val syncResultStore: SyncResultStore,
     private val manifestJsonEncoder: ManifestJsonEncoder = ManifestJsonEncoder(),
+    private val syncResultJsonCodec: SyncResultJsonCodec = SyncResultJsonCodec(),
 ) {
     suspend fun health(): LocalApiResponse {
         return LocalApiResponse.json(
@@ -39,6 +44,27 @@ class LocalSyncRouter(
             range = range,
         )
     }
+
+    suspend fun syncResult(body: String): LocalApiResponse {
+        return try {
+            val result = syncResultJsonCodec.decode(body)
+            syncResultStore.save(result)
+            LocalApiResponse.json(
+                statusCode = 202,
+                body = """
+                    {
+                      "status": "accepted",
+                      "syncBatchId": "${result.syncBatchId.escapeJson()}",
+                      "resultCount": ${result.results.size}
+                    }
+                """.trimIndent()
+            )
+        } catch (_: JSONException) {
+            LocalApiResponse.jsonError(statusCode = 400, errorCode = "SS-REQ-001")
+        } catch (_: IllegalArgumentException) {
+            LocalApiResponse.jsonError(statusCode = 400, errorCode = "SS-REQ-001")
+        }
+    }
 }
 
 interface MediaProvider {
@@ -56,6 +82,13 @@ data class LocalApiResponse(
                 statusCode = statusCode,
                 headers = mapOf("Content-Type" to "application/json; charset=utf-8"),
                 body = body,
+            )
+        }
+
+        fun jsonError(statusCode: Int, errorCode: String): LocalApiResponse {
+            return json(
+                statusCode = statusCode,
+                body = """{"errorCode":"${errorCode.escapeJson()}"}""",
             )
         }
     }
@@ -151,4 +184,3 @@ private fun String.escapeJson(): String {
         }
     }
 }
-

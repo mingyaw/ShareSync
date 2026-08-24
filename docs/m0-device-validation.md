@@ -83,7 +83,15 @@ The iOS app persists the latest M0 sync result as app support data:
 ShareSync/latest-sync-result.json
 ```
 
-Expected result: terminal media records are written as shared `SyncResult` JSON with `synced`, `skipped`, or `failed` statuses. This is currently a local validation/export artifact and is not yet posted back to Android.
+Expected result: terminal media records are written as shared `SyncResult` JSON with `synced`, `skipped`, or `failed` statuses.
+
+The iOS app also attempts to post the same result to Android:
+
+```http
+POST /v1/sync/result
+```
+
+Expected result: Android accepts valid M0 sync result JSON with HTTP `202 Accepted`. Android persistence is currently in-memory for the running M0 server session.
 
 ## Permission Negative Cases
 

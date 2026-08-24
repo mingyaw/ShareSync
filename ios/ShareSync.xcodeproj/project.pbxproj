@@ -20,6 +20,7 @@
 		10000000000000000000000B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000001B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift */; };
 		10000000000000000000000D /* ShareSync/Sync/SyncResultBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000001D /* ShareSync/Sync/SyncResultBuilder.swift */; };
 		10000000000000000000000E /* ShareSync/Sync/SyncResultStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000001E /* ShareSync/Sync/SyncResultStore.swift */; };
+		10000000000000000000000F /* ShareSync/Sync/SyncResultClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000001F /* ShareSync/Sync/SyncResultClient.swift */; };
 		10000000000000000000000C /* QRCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000001C /* QRCodeScannerView.swift */; };
 /* End PBXBuildFile section */
 
@@ -38,6 +39,7 @@
 		10000000000000000000001B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift; sourceTree = "<group>"; };
 		10000000000000000000001D /* ShareSync/Sync/SyncResultBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Sync/SyncResultBuilder.swift; sourceTree = "<group>"; };
 		10000000000000000000001E /* ShareSync/Sync/SyncResultStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Sync/SyncResultStore.swift; sourceTree = "<group>"; };
+		10000000000000000000001F /* ShareSync/Sync/SyncResultClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Sync/SyncResultClient.swift; sourceTree = "<group>"; };
 		10000000000000000000001C /* QRCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeScannerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -78,6 +80,7 @@
 				100000000000000000000013 /* ShareSync/Sync/SyncModels.swift */,
 				10000000000000000000001D /* ShareSync/Sync/SyncResultBuilder.swift */,
 				10000000000000000000001E /* ShareSync/Sync/SyncResultStore.swift */,
+				10000000000000000000001F /* ShareSync/Sync/SyncResultClient.swift */,
 				100000000000000000000014 /* ShareSync/Pairing/PairingPayloadParser.swift */,
 				100000000000000000000015 /* ShareSync/Transfer/ManifestClient.swift */,
 				100000000000000000000018 /* ShareSync/Transfer/MediaDownloadState.swift */,
@@ -172,6 +175,7 @@
 				100000000000000000000003 /* ShareSync/Sync/SyncModels.swift in Sources */,
 				10000000000000000000000D /* ShareSync/Sync/SyncResultBuilder.swift in Sources */,
 				10000000000000000000000E /* ShareSync/Sync/SyncResultStore.swift in Sources */,
+				10000000000000000000000F /* ShareSync/Sync/SyncResultClient.swift in Sources */,
 				100000000000000000000004 /* ShareSync/Pairing/PairingPayloadParser.swift in Sources */,
 				100000000000000000000005 /* ShareSync/Transfer/ManifestClient.swift in Sources */,
 				100000000000000000000008 /* ShareSync/Transfer/MediaDownloadState.swift in Sources */,

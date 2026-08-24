@@ -96,5 +96,5 @@ M0 implements only:
 - `GET /v1/health`
 - `GET /v1/manifest`
 - `GET /v1/media/{assetId}`
+- `POST /v1/sync/result`
 - local, unsigned HTTP allowed only for first-device PoC
-

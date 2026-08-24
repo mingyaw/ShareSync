@@ -56,6 +56,7 @@ final class ManifestFetchViewModel: ObservableObject {
     private let photoAssetPresenceChecker: PhotoAssetPresenceChecking
     private let downloadStateStore: MediaDownloadStateStore
     private let syncResultStore: SyncResultStore
+    private let syncResultClient: SyncResultClient
     private let pairingPayloadParser: PairingPayloadParser
     private var latestManifest: SyncManifest?
 
@@ -66,7 +67,8 @@ final class ManifestFetchViewModel: ObservableObject {
         photoAssetPresenceChecker: PhotoAssetPresenceChecking = PhotoKitPhotoImporter(),
         pairingPayloadParser: PairingPayloadParser = PairingPayloadParser(),
         downloadStateStore: MediaDownloadStateStore = FileMediaDownloadStateStore(),
-        syncResultStore: SyncResultStore = FileSyncResultStore()
+        syncResultStore: SyncResultStore = FileSyncResultStore(),
+        syncResultClient: SyncResultClient = SyncResultClient()
     ) {
         self.client = client
         self.downloader = downloader
@@ -75,6 +77,7 @@ final class ManifestFetchViewModel: ObservableObject {
         self.pairingPayloadParser = pairingPayloadParser
         self.downloadStateStore = downloadStateStore
         self.syncResultStore = syncResultStore
+        self.syncResultClient = syncResultClient
     }
 
     var canFetch: Bool {
@@ -111,7 +114,11 @@ final class ManifestFetchViewModel: ObservableObject {
                 latestManifest = manifest
                 await reconcileMissingPhotoAssets(in: manifest)
                 summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
-                syncResultSummary = persistSyncResultSummary(for: manifest)
+                syncResultSummary = await publishSyncResultSummary(
+                    for: manifest,
+                    host: trimmedHost,
+                    port: portNumber
+                )
                 downloadState = .idle
                 state = .loaded
             } catch {
@@ -205,7 +212,11 @@ final class ManifestFetchViewModel: ObservableObject {
                     stateStore: downloadStateStore
                 )
             summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
-            syncResultSummary = persistSyncResultSummary(for: manifest)
+            syncResultSummary = await publishSyncResultSummary(
+                for: manifest,
+                host: trimmedHost,
+                port: portNumber
+            )
 
             importRequests.append(
                 contentsOf: results.compactMap { result in
@@ -222,7 +233,11 @@ final class ManifestFetchViewModel: ObservableObject {
             )
 
             guard !importRequests.isEmpty else {
-                syncResultSummary = persistSyncResultSummary(for: manifest)
+                syncResultSummary = await publishSyncResultSummary(
+                    for: manifest,
+                    host: trimmedHost,
+                    port: portNumber
+                )
                 downloadState = .failed("No media downloaded.")
                 return
             }
@@ -247,7 +262,11 @@ final class ManifestFetchViewModel: ObservableObject {
             }
 
             summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
-            syncResultSummary = persistSyncResultSummary(for: manifest)
+            syncResultSummary = await publishSyncResultSummary(
+                for: manifest,
+                host: trimmedHost,
+                port: portNumber
+            )
             downloadState = importResults.contains { $0.status == .synced }
                 ? .completed
                 : .failed("Downloaded, but photo import failed.")
@@ -340,13 +359,14 @@ final class ManifestFetchViewModel: ObservableObject {
         }
     }
 
-    private func persistSyncResultSummary(for manifest: SyncManifest) -> SyncResultSummary {
+    private func publishSyncResultSummary(for manifest: SyncManifest, host: String, port: Int) async -> SyncResultSummary {
         let result = SyncResultBuilder().buildMediaResult(
             syncBatchId: "m0-\(manifest.cursor)",
             targetDeviceId: "ios-local",
             records: records(for: manifest)
         )
         try? syncResultStore.save(result)
+        try? await syncResultClient.postSyncResult(result, to: host, port: port)
         return SyncResultSummary(result: result)
     }
 

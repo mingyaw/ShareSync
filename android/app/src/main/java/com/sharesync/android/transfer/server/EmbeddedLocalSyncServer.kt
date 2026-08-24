@@ -69,10 +69,22 @@ class EmbeddedLocalSyncServer(
         val request = HttpRequest.parse(requestLine, reader) ?: return writeNotFound(socket.getOutputStream())
 
         when {
-            request.method != "GET" -> writeJsonError(socket.getOutputStream(), 405, "SS-NET-405")
-            request.path == "/v1/health" -> writeApiResponse(socket.getOutputStream(), runBlocking { router.health() })
-            request.path == "/v1/manifest" -> writeApiResponse(socket.getOutputStream(), runBlocking { router.manifest() })
-            request.path.startsWith("/v1/media/") -> writeMediaResponse(socket.getOutputStream(), request)
+            request.method == "GET" && request.path == "/v1/health" -> {
+                writeApiResponse(socket.getOutputStream(), runBlocking { router.health() })
+            }
+            request.method == "GET" && request.path == "/v1/manifest" -> {
+                writeApiResponse(socket.getOutputStream(), runBlocking { router.manifest() })
+            }
+            request.method == "GET" && request.path.startsWith("/v1/media/") -> {
+                writeMediaResponse(socket.getOutputStream(), request)
+            }
+            request.method == "POST" && request.path == "/v1/sync/result" -> {
+                writeApiResponse(
+                    socket.getOutputStream(),
+                    runBlocking { router.syncResult(request.body) },
+                )
+            }
+            request.method != "GET" && request.method != "POST" -> writeJsonError(socket.getOutputStream(), 405, "SS-NET-405")
             else -> writeNotFound(socket.getOutputStream())
         }
     }
@@ -189,6 +201,8 @@ class EmbeddedLocalSyncServer(
     private fun statusText(statusCode: Int): String {
         return when (statusCode) {
             200 -> "OK"
+            202 -> "Accepted"
+            400 -> "Bad Request"
             206 -> "Partial Content"
             404 -> "Not Found"
             405 -> "Method Not Allowed"
@@ -200,6 +214,7 @@ class EmbeddedLocalSyncServer(
         val method: String,
         val path: String,
         val headers: Map<String, String>,
+        val body: String,
     ) {
         companion object {
             fun parse(requestLine: String, reader: BufferedReader): HttpRequest? {
@@ -218,10 +233,25 @@ class EmbeddedLocalSyncServer(
                 }
 
                 val rawPath = parts[1].substringBefore("?")
+                val contentLength = headers["content-length"]?.toIntOrNull()?.coerceAtLeast(0) ?: 0
+                val body = if (contentLength > 0) {
+                    val chars = CharArray(contentLength)
+                    var offset = 0
+                    while (offset < contentLength) {
+                        val read = reader.read(chars, offset, contentLength - offset)
+                        if (read < 0) break
+                        offset += read
+                    }
+                    String(chars, 0, offset)
+                } else {
+                    ""
+                }
+
                 return HttpRequest(
                     method = parts[0].uppercase(Locale.US),
                     path = rawPath,
                     headers = headers,
+                    body = body,
                 )
             }
         }

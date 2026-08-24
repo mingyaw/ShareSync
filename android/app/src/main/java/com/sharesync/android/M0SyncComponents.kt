@@ -3,6 +3,7 @@ package com.sharesync.android
 import android.content.Context
 import com.sharesync.android.scanner.media.MediaStoreMediaScanner
 import com.sharesync.android.scanner.media.MediaStreamProvider
+import com.sharesync.android.sync.InMemorySyncResultStore
 import com.sharesync.android.sync.ManifestBuilder
 import com.sharesync.android.transfer.server.EmbeddedLocalServerBinder
 import com.sharesync.android.transfer.server.LocalSyncRouter
@@ -35,6 +36,7 @@ class M0SyncComponents private constructor(
             val manifestProvider = object : ManifestProvider {
                 override suspend fun currentManifest() = manifestBuilder.buildM0Manifest()
             }
+            val syncResultStore = InMemorySyncResultStore()
 
             return M0SyncComponents(
                 mediaScanner = mediaScanner,
@@ -44,6 +46,7 @@ class M0SyncComponents private constructor(
                     appVersion = appVersion,
                     manifestProvider = manifestProvider,
                     mediaProvider = mediaScanner,
+                    syncResultStore = syncResultStore,
                 ),
                 serverBinder = EmbeddedLocalServerBinder(),
             )
@@ -52,4 +55,3 @@ class M0SyncComponents private constructor(
         fun defaultPort(): Int = M0_SERVER_PORT
     }
 }
-

@@ -64,6 +64,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Implement `GET /v1/health`.
 - [x] Implement `GET /v1/manifest`.
 - [x] Implement `GET /v1/media/{assetId}`.
+- [x] Implement `POST /v1/sync/result`.
 - [x] Add range request support.
 - [x] Add basic error responses.
 
@@ -121,6 +122,8 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Import one downloaded photo/video for validation.
 - [x] Store Android asset id to iOS local identifier mapping.
 - [x] Prevent duplicate imports.
+- [x] Persist latest shared `SyncResult` JSON.
+- [x] POST latest `SyncResult` back to Android M0 server.
 
 ## Cross-Platform Tasks
 
@@ -131,6 +134,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Keep fixture date encoding ISO-8601.
 - [x] Keep fixture enum values lowercase.
 - [x] Align item status values with `sync-result.schema.json`.
+- [x] Validate sample sync result fixture against `shared/schemas/sync-result.schema.json`.
 
 ## Test Matrix
 
@@ -433,6 +437,26 @@ Completed a persistence slice for M0 validation:
 - Wired iOS manifest/download/import state updates to save the latest sync result.
 - Added unit tests for latest sync result save, load, and overwrite behavior.
 - Documented the validation artifact path in `docs/m0-device-validation.md`.
+
+Verified:
+
+```sh
+python3 scripts/validate-fixtures.py
+swift test
+cd android && ./gradlew :app:compileDebugKotlin
+xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+```
+
+### 2026-08-24 Sync Result Return Path
+
+Completed the first local return path for M0:
+
+- Added Android `SyncResultJsonCodec` for shared sync result JSON.
+- Added Android `SyncResultStore` and M0 in-memory latest-result storage.
+- Added Android `POST /v1/sync/result` handling with `202 Accepted` response for valid results.
+- Added iOS `SyncResultClient` to POST saved results back to Android.
+- Wired iOS result publishing after manifest/download/import state updates.
+- Updated local API contract and device validation checklist.
 
 Verified:
 
