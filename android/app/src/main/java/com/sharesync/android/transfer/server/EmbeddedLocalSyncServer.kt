@@ -95,8 +95,13 @@ class EmbeddedLocalSyncServer(
                     return
                 }
 
+                val headers = response.headers.withSha256Header(
+                    contentUri = contentUri,
+                    range = response.range,
+                )
+
                 stream.use {
-                    writeHeaders(output, response.statusCode, response.headers)
+                    writeHeaders(output, response.statusCode, headers)
                     copyRange(it, output, response.range)
                 }
             }
@@ -140,6 +145,18 @@ class EmbeddedLocalSyncServer(
             output.write("$name: $value\r\n".toByteArray(StandardCharsets.UTF_8))
         }
         output.write("\r\n".toByteArray(StandardCharsets.UTF_8))
+    }
+
+    private fun Map<String, String>.withSha256Header(
+        contentUri: String,
+        range: ByteRange,
+    ): Map<String, String> {
+        if (containsKey("X-ShareSync-SHA256") || range.isPartial) {
+            return this
+        }
+
+        val sha256 = mediaStreamProvider.sha256(contentUri) ?: return this
+        return this + ("X-ShareSync-SHA256" to sha256)
     }
 
     private fun copyRange(input: InputStream, output: OutputStream, range: ByteRange) {

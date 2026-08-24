@@ -87,6 +87,6 @@ Expected result: errors are visible and the user can recover by granting permiss
 
 ## Current M0 Gaps
 
-- Android SHA-256 is not yet calculated for live MediaStore assets.
+- Android SHA-256 is calculated lazily before full media transfers and returned in `X-ShareSync-SHA256`.
 - iOS duplicate prevention survives app restarts, but deleting the iOS app removes the app-local mapping.
 - Full no-cloud relay privacy goal is preserved; no cloud intermediary is used by this flow.

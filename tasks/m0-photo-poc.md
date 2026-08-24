@@ -57,7 +57,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Implement `MediaScanner` using MediaStore.
 - [x] Query latest 100 images/videos from MediaStore.
 - [x] Map rows into `MediaAsset`.
-- [ ] Add lazy SHA-256 calculation before transfer.
+- [x] Add lazy SHA-256 calculation before transfer.
 
 ### A5. Local Server
 

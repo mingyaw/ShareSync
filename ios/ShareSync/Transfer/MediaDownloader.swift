@@ -93,7 +93,9 @@ final class MediaDownloader {
             throw MediaDownloaderError.unacceptableStatusCode(httpResponse.statusCode)
         }
 
-        if let expectedHash = asset.sha256, !expectedHash.isEmpty {
+        let responseHash = httpResponse.value(forHTTPHeaderField: "X-ShareSync-SHA256")
+        let expectedHash = firstNonEmpty(asset.sha256, responseHash)
+        if let expectedHash {
             let digest = SHA256.hash(data: data)
                 .map { String(format: "%02x", $0) }
                 .joined()
@@ -129,6 +131,15 @@ final class MediaDownloader {
         }
         let baseName = String(safeAssetId)
         return extensionPart.isEmpty ? baseName : "\(baseName).\(extensionPart)"
+    }
+
+    private func firstNonEmpty(_ values: String?...) -> String? {
+        values.first { value in
+            guard let value else {
+                return false
+            }
+            return !value.isEmpty
+        } ?? nil
     }
 
     private func errorCode(for error: Error) -> String {

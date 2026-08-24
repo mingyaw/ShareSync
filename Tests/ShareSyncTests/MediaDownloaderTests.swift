@@ -82,6 +82,41 @@ final class MediaDownloaderTests: XCTestCase {
         XCTAssertEqual(store.record(for: "mediastore-1-43")?.lastErrorCode, "SS-DATA-001")
     }
 
+    func testResponseChecksumHeaderIsUsedWhenManifestHashIsMissing() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let data = Data("demo-photo-from-header".utf8)
+        let asset = makeAsset(
+            assetId: "mediastore-1-44",
+            fileName: "IMG_0044.jpg",
+            size: Int64(data.count),
+            sha256: nil
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        let session = StubMediaDataSession(
+            data: data,
+            response: HTTPURLResponse(
+                url: URL(string: "http://192.168.1.10:48291/v1/media/mediastore-1-44")!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["X-ShareSync-SHA256": sha256(data)]
+            )!
+        )
+        let downloader = MediaDownloader(session: session, downloadDirectory: directory)
+
+        let results = await downloader.downloadMedia(
+            assets: [asset],
+            host: "192.168.1.10",
+            port: 48291,
+            stateStore: store
+        )
+
+        XCTAssertEqual(results.map(\.assetId), ["mediastore-1-44"])
+        XCTAssertEqual(store.record(for: "mediastore-1-44")?.status, .downloaded)
+    }
+
     private func makeAsset(assetId: String, fileName: String, size: Int64, sha256: String?) -> MediaAsset {
         MediaAsset(
             assetId: assetId,
