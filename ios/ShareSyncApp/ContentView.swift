@@ -143,6 +143,26 @@ struct ContentView: View {
             .controlSize(.large)
             .frame(maxWidth: .infinity)
             .disabled(!viewModel.canDownload)
+
+            Button {
+                viewModel.downloadRemainingMedia()
+            } label: {
+                HStack {
+                    if case .downloading = viewModel.downloadState {
+                        ProgressView()
+                    }
+                    if case .importing = viewModel.downloadState {
+                        ProgressView()
+                    }
+                    Text(remainingDownloadButtonTitle)
+                        .frame(maxWidth: .infinity)
+                }
+                .frame(minHeight: 44)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .frame(maxWidth: .infinity)
+            .disabled(!viewModel.canDownload)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.bottom, 24)
@@ -165,6 +185,7 @@ struct ContentView: View {
                 StatusRow(title: "Imported", value: "\(summary.importedCount)")
                 StatusRow(title: "Missing", value: "\(summary.missingCount)")
                 StatusRow(title: "Failed", value: "\(summary.failedCount)")
+                StatusRow(title: "Remaining", value: "\(summary.remainingCount)")
                 StatusRow(title: "Cursor", value: summary.cursor)
             } else {
                 StatusRow(title: "Photos", value: "Waiting")
@@ -226,6 +247,17 @@ struct ContentView: View {
             return "Importing"
         default:
             return "Download 5 Items"
+        }
+    }
+
+    private var remainingDownloadButtonTitle: String {
+        switch viewModel.downloadState {
+        case .downloading:
+            return "Downloading"
+        case .importing:
+            return "Importing"
+        default:
+            return "Download Remaining"
         }
     }
 

@@ -30,6 +30,18 @@ This checklist validates the current main path: Android exposes recent media ove
 
 Expected result: one Android media item is visible in iOS Photos and iCloud Photos can back it up through the normal iOS Photos pipeline.
 
+## Foreground Full Manifest Transfer
+
+1. Complete the baseline success path setup.
+2. Tap `Fetch Manifest`.
+3. Tap `Download Remaining`.
+4. Keep the iOS app foregrounded until transfer and import finish.
+5. Open iOS Photos.
+6. Confirm imported media appears in the `ShareSync Backup` album.
+7. Tap `Fetch Manifest` again.
+
+Expected result: iOS imports every remaining manifest item it can download, the receive screen remaining count reaches `0`, and the next Android manifest excludes media reported as `synced` or `skipped`.
+
 ## Repeat Sync
 
 1. Keep both apps open.
@@ -43,8 +55,9 @@ Expected result: previously imported items are skipped by local state, and iOS c
 1. Delete one imported ShareSync item from iOS Photos.
 2. Open ShareSync on iOS.
 3. Tap `Fetch Manifest`.
+4. Tap `Download Next Item` or `Download Remaining`.
 
-Expected result: the item count includes `Missing`, and the item is eligible to download/import again.
+Expected result: the item count includes `Missing`, iOS reports that item as failed to Android, and the item is eligible to download/import again.
 
 ## App Restart Resume
 

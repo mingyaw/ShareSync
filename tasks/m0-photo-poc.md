@@ -117,6 +117,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Verify SHA-256 when available.
 - [x] Track per-asset download state.
 - [x] Expand UI action from single-item validation to batch download.
+- [x] Add all-remaining manifest download action for M0 device validation.
 - [x] Resume or skip completed items after restart.
 
 ### I5. Photos Import
@@ -126,6 +127,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Import one downloaded photo/video for validation.
 - [x] Store Android asset id to iOS local identifier mapping.
 - [x] Prevent duplicate imports.
+- [x] Treat missing imported Photos assets as retryable transfer candidates.
 - [x] Persist latest shared `SyncResult` JSON.
 - [x] POST latest `SyncResult` back to Android M0 server.
 
@@ -519,6 +521,24 @@ Completed the multi-batch result merge behavior:
 - Added Android JVM unit tests for in-memory and file-backed merge behavior.
 
 Verified:
+
+```sh
+python3 scripts/validate-fixtures.py
+swift test
+cd android && ./gradlew :app:testDebugUnitTest :app:compileDebugKotlin
+xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+```
+
+### 2026-08-24 iOS Remaining Batch Validation Control
+
+Completed another M0 validation slice:
+
+- Added an iOS `Download Remaining` action to transfer every remaining item in the current manifest.
+- Added an iOS remaining item count to the receive screen.
+- Made imported Photos assets marked as `missing` retryable by the next iOS transfer pass.
+- Updated M0 manual flow notes for the all-remaining foreground transfer validation.
+
+Verification target:
 
 ```sh
 python3 scripts/validate-fixtures.py

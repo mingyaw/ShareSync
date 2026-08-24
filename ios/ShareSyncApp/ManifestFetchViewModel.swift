@@ -27,6 +27,7 @@ final class ManifestFetchViewModel: ObservableObject {
         let importedCount: Int
         let missingCount: Int
         let failedCount: Int
+        let remainingCount: Int
         let validationAssetName: String?
 
         var totalItems: Int {
@@ -164,6 +165,15 @@ final class ManifestFetchViewModel: ObservableObject {
 
     func downloadSmallMediaBatch() {
         downloadNextMediaBatch(limit: 5)
+    }
+
+    func downloadRemainingMedia() {
+        guard let manifest = latestManifest else {
+            downloadState = .failed("Fetch manifest before downloading.")
+            return
+        }
+
+        downloadNextMediaBatch(limit: manifest.media.count)
     }
 
     private func downloadNextMediaBatch(limit: Int) {
@@ -311,6 +321,7 @@ final class ManifestFetchViewModel: ObservableObject {
             return record.status == .queued
                 || record.status == .downloading
                 || record.status == .downloaded
+                || record.status == .missing
                 || record.status == .failed
         }.prefix(limit))
     }
@@ -412,6 +423,17 @@ private extension ManifestFetchViewModel.ManifestSummary {
         }.count
         failedCount = manifest.media.filter { asset in
             stateStore.record(for: asset.assetId)?.status == .failed
+        }.count
+        remainingCount = manifest.media.filter { asset in
+            guard let record = stateStore.record(for: asset.assetId) else {
+                return true
+            }
+
+            return record.status == .queued
+                || record.status == .downloading
+                || record.status == .downloaded
+                || record.status == .failed
+                || record.status == .missing
         }.count
     }
 }

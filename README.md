@@ -29,6 +29,7 @@ The current codebase contains:
 - Android QR pairing payload UI with stable local device identity and actual bound port.
 - iOS QR scanner and manual pairing fallback.
 - iOS receive screen that fetches the Android manifest, downloads one or more items, verifies checksums when available, and imports into the `ShareSync Backup` Photos album.
+- iOS receive screen can download the next item, a small batch, or all remaining manifest items for M0 device validation.
 - iOS local download/import state, duplicate prevention, restart resume, and deleted-photo reconciliation.
 - iOS latest sync result JSON persistence for M0 validation.
 - iOS to Android sync result return path over the local M0 server.
@@ -101,6 +102,7 @@ M0 includes only:
 - iOS Photos import
 - duplicate prevention
 - interrupted sync resume
+- all-remaining foreground batch transfer for device validation
 - app-local imported photo reconciliation
 - latest sync result JSON persistence
 - local sync result return to Android
@@ -169,6 +171,7 @@ iOS:
 - Scan the Android QR code, or paste the manual pairing payload.
 - Tap `Fetch Manifest`.
 - Tap `Download Next Item` or `Download 5 Items`.
+- Tap `Download Remaining` for the 100-item foreground transfer validation.
 - Open Photos and confirm imported media appears in the `ShareSync Backup` album.
 
 Use [docs/m0-device-validation.md](docs/m0-device-validation.md) as the real-device acceptance checklist before calling M0 complete.
