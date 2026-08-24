@@ -55,6 +55,7 @@ final class ManifestFetchViewModel: ObservableObject {
     private let photoImporter: PhotoImporter
     private let photoAssetPresenceChecker: PhotoAssetPresenceChecking
     private let downloadStateStore: MediaDownloadStateStore
+    private let syncResultStore: SyncResultStore
     private let pairingPayloadParser: PairingPayloadParser
     private var latestManifest: SyncManifest?
 
@@ -64,7 +65,8 @@ final class ManifestFetchViewModel: ObservableObject {
         photoImporter: PhotoImporter = PhotoKitPhotoImporter(),
         photoAssetPresenceChecker: PhotoAssetPresenceChecking = PhotoKitPhotoImporter(),
         pairingPayloadParser: PairingPayloadParser = PairingPayloadParser(),
-        downloadStateStore: MediaDownloadStateStore = FileMediaDownloadStateStore()
+        downloadStateStore: MediaDownloadStateStore = FileMediaDownloadStateStore(),
+        syncResultStore: SyncResultStore = FileSyncResultStore()
     ) {
         self.client = client
         self.downloader = downloader
@@ -72,6 +74,7 @@ final class ManifestFetchViewModel: ObservableObject {
         self.photoAssetPresenceChecker = photoAssetPresenceChecker
         self.pairingPayloadParser = pairingPayloadParser
         self.downloadStateStore = downloadStateStore
+        self.syncResultStore = syncResultStore
     }
 
     var canFetch: Bool {
@@ -108,7 +111,7 @@ final class ManifestFetchViewModel: ObservableObject {
                 latestManifest = manifest
                 await reconcileMissingPhotoAssets(in: manifest)
                 summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
-                syncResultSummary = makeSyncResultSummary(for: manifest)
+                syncResultSummary = persistSyncResultSummary(for: manifest)
                 downloadState = .idle
                 state = .loaded
             } catch {
@@ -202,7 +205,7 @@ final class ManifestFetchViewModel: ObservableObject {
                     stateStore: downloadStateStore
                 )
             summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
-            syncResultSummary = makeSyncResultSummary(for: manifest)
+            syncResultSummary = persistSyncResultSummary(for: manifest)
 
             importRequests.append(
                 contentsOf: results.compactMap { result in
@@ -219,7 +222,7 @@ final class ManifestFetchViewModel: ObservableObject {
             )
 
             guard !importRequests.isEmpty else {
-                syncResultSummary = makeSyncResultSummary(for: manifest)
+                syncResultSummary = persistSyncResultSummary(for: manifest)
                 downloadState = .failed("No media downloaded.")
                 return
             }
@@ -244,7 +247,7 @@ final class ManifestFetchViewModel: ObservableObject {
             }
 
             summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
-            syncResultSummary = makeSyncResultSummary(for: manifest)
+            syncResultSummary = persistSyncResultSummary(for: manifest)
             downloadState = importResults.contains { $0.status == .synced }
                 ? .completed
                 : .failed("Downloaded, but photo import failed.")
@@ -337,12 +340,13 @@ final class ManifestFetchViewModel: ObservableObject {
         }
     }
 
-    private func makeSyncResultSummary(for manifest: SyncManifest) -> SyncResultSummary {
+    private func persistSyncResultSummary(for manifest: SyncManifest) -> SyncResultSummary {
         let result = SyncResultBuilder().buildMediaResult(
             syncBatchId: "m0-\(manifest.cursor)",
             targetDeviceId: "ios-local",
             records: records(for: manifest)
         )
+        try? syncResultStore.save(result)
         return SyncResultSummary(result: result)
     }
 

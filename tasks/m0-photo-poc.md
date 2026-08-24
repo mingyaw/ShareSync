@@ -424,3 +424,21 @@ swift test
 cd android && ./gradlew :app:compileDebugKotlin
 xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
 ```
+
+### 2026-08-24 iOS Latest Sync Result Persistence
+
+Completed a persistence slice for M0 validation:
+
+- Added `FileSyncResultStore` to persist the latest shared `SyncResult` JSON under app support data.
+- Wired iOS manifest/download/import state updates to save the latest sync result.
+- Added unit tests for latest sync result save, load, and overwrite behavior.
+- Documented the validation artifact path in `docs/m0-device-validation.md`.
+
+Verified:
+
+```sh
+python3 scripts/validate-fixtures.py
+swift test
+cd android && ./gradlew :app:compileDebugKotlin
+xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+```

@@ -30,6 +30,7 @@ The current codebase contains:
 - iOS QR scanner and manual pairing fallback.
 - iOS receive screen that fetches the Android manifest, downloads one or more items, verifies checksums when available, and imports into the `ShareSync Backup` Photos album.
 - iOS local download/import state, duplicate prevention, restart resume, and deleted-photo reconciliation.
+- iOS latest sync result JSON persistence for M0 validation.
 
 M0 validates the riskiest path:
 
@@ -97,6 +98,7 @@ M0 includes only:
 - duplicate prevention
 - interrupted sync resume
 - app-local imported photo reconciliation
+- latest sync result JSON persistence
 
 M0 excludes:
 

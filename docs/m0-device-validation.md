@@ -26,6 +26,7 @@ This checklist validates the current main path: Android exposes recent media ove
 12. Confirm status reaches completed/imported.
 13. Open iOS Photos.
 14. Confirm the item appears in the `ShareSync Backup` album.
+15. Confirm the iOS ShareSync screen shows updated `Synced`, `Skipped`, and `Result Failed` counts.
 
 Expected result: one Android media item is visible in iOS Photos and iCloud Photos can back it up through the normal iOS Photos pipeline.
 
@@ -73,6 +74,16 @@ Expected result: QR payload contains the actual bound port, and iOS can fetch `/
 5. Tap `Download Next Item` or `Download 5 Items`.
 
 Expected result: failed records remain retryable and completed records are not re-imported.
+
+## Sync Result JSON
+
+The iOS app persists the latest M0 sync result as app support data:
+
+```text
+ShareSync/latest-sync-result.json
+```
+
+Expected result: terminal media records are written as shared `SyncResult` JSON with `synced`, `skipped`, or `failed` statuses. This is currently a local validation/export artifact and is not yet posted back to Android.
 
 ## Permission Negative Cases
 
