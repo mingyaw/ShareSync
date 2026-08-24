@@ -68,6 +68,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Persist latest sync result on Android.
 - [x] Show latest sync result summary on Android M0 screen.
 - [x] Exclude latest synced/skipped media results from Android manifest.
+- [x] Merge Android sync results across multiple M0 batches.
 - [x] Add range request support.
 - [x] Add basic error responses.
 
@@ -498,6 +499,24 @@ Completed the first Android-side use of returned sync results:
 - Media reported as `failed` remains in the manifest so iOS can retry.
 - Manifest scanning now looks beyond the requested return limit before filtering completed items.
 - Added Android JVM unit tests for completion filtering behavior.
+
+Verified:
+
+```sh
+python3 scripts/validate-fixtures.py
+swift test
+cd android && ./gradlew :app:testDebugUnitTest :app:compileDebugKotlin
+xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+```
+
+### 2026-08-24 Android Multi-Batch Sync Result Merge
+
+Completed the multi-batch result merge behavior:
+
+- Android sync result store now merges incoming batches instead of replacing all previous results.
+- Completed media from earlier batches remains available for manifest filtering.
+- Later results for the same item replace earlier item status.
+- Added Android JVM unit tests for in-memory and file-backed merge behavior.
 
 Verified:
 

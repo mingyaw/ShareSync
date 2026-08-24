@@ -93,6 +93,10 @@ POST /v1/sync/result
 
 Expected result: Android accepts valid M0 sync result JSON with HTTP `202 Accepted`, persists the latest result under app files data, and shows the latest batch summary on the Android M0 screen.
 
+Post two sync result batches with different media ids.
+
+Expected result: Android keeps completed media from both batches. If the same media id appears in a later batch, the later status replaces the earlier status.
+
 After Android receives a sync result, fetch `/v1/manifest` again.
 
 Expected result: media reported as `synced` or `skipped` does not appear in the next Android manifest. Media reported as `failed` remains eligible for retry.

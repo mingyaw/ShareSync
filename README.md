@@ -34,6 +34,7 @@ The current codebase contains:
 - iOS to Android sync result return path over the local M0 server.
 - Android latest sync result persistence and M0 screen summary.
 - Android manifest filtering for media already reported as synced or skipped.
+- Android merged sync result history across M0 batches.
 
 M0 validates the riskiest path:
 
@@ -105,6 +106,7 @@ M0 includes only:
 - local sync result return to Android
 - Android latest sync result display for validation
 - Android manifest excludes completed media from latest sync result
+- Android latest sync result merges multiple reported batches
 
 M0 excludes:
 
