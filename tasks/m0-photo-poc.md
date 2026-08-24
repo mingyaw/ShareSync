@@ -375,3 +375,32 @@ Next implementation slice:
 
 - Validate single Android-to-iOS download and Photos import on physical devices.
 - Store Android asset id to iOS local identifier mapping for duplicate prevention.
+
+### 2026-08-24 M0 Main Path Ready For Device Validation
+
+Completed the main implementation path needed before broad real-device testing:
+
+- Android stable device identity persisted locally.
+- Android M0 server fallback to an available port when `48291` is occupied.
+- Android lazy SHA-256 calculation returned through `X-ShareSync-SHA256` for full media downloads.
+- iOS QR pairing flow and manual pairing fallback.
+- iOS batch download action for the next pending items.
+- iOS file-backed download/import state store.
+- iOS imported Photos mapping with source device id, source asset id, source hash, and Photos local identifier.
+- iOS deleted-photo reconciliation that makes removed Photos imports eligible for re-sync.
+- Shared fixture validation against schema files.
+- Manual real-device acceptance checklist in `docs/m0-device-validation.md`.
+
+Verified:
+
+```sh
+python3 scripts/validate-fixtures.py
+cd android && ./gradlew :app:compileDebugKotlin
+swift test
+xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+```
+
+Next implementation slice:
+
+- Run the full `docs/m0-device-validation.md` checklist on physical Android/iPhone devices.
+- Record any device-only failures before moving to product branches such as contacts, files, BLE discovery, or background scheduling.
