@@ -41,9 +41,9 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 ### A2. Device Identity
 
-- [ ] Generate stable device id.
-- [ ] Generate key pair placeholder for M0.
-- [ ] Store identity locally.
+- [x] Generate stable device id.
+- [x] Generate key pair placeholder for M0.
+- [x] Store identity locally.
 
 ### A3. Pairing Payload
 

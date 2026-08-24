@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.Button
@@ -17,6 +16,9 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.sharesync.android.pairing.PairingPayloadFactory
 import com.sharesync.android.pairing.QrCodeBitmapFactory
+import com.sharesync.android.security.DeviceIdentity
+import com.sharesync.android.security.DeviceIdentityStore
+import com.sharesync.android.security.SharedPreferencesDeviceIdentityStore
 import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.transfer.server.LocalSyncServer
 
@@ -33,9 +35,11 @@ class MainActivity : Activity() {
     private var server: LocalSyncServer? = null
     private var isServerRunning = false
     private var currentPairingPayloadJson: String? = null
+    private lateinit var deviceIdentityStore: DeviceIdentityStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        deviceIdentityStore = SharedPreferencesDeviceIdentityStore(this)
         renderContent()
         refreshUi()
     }
@@ -205,9 +209,12 @@ class MainActivity : Activity() {
 
         Thread {
             try {
+                val identity = SuspendBridge.runBlocking {
+                    deviceIdentityStore.getOrCreate()
+                }
                 val components = M0SyncComponents.create(
                     context = this,
-                    deviceId = deviceId(),
+                    deviceId = identity.deviceId,
                     appVersion = "0.1.0",
                 )
                 val createdServer = SuspendBridge.runBlocking {
@@ -220,7 +227,7 @@ class MainActivity : Activity() {
                 SuspendBridge.runBlocking { createdServer.start() }
                 server = createdServer
                 isServerRunning = true
-                currentPairingPayloadJson = createPairingPayloadJson()
+                currentPairingPayloadJson = createPairingPayloadJson(identity)
                 runOnUiThread { refreshUi() }
             } catch (error: Throwable) {
                 server = null
@@ -248,17 +255,12 @@ class MainActivity : Activity() {
         }.start()
     }
 
-    private fun deviceId(): String {
-        return Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-            ?: "android-device"
-    }
-
-    private fun createPairingPayloadJson(): String? {
+    private fun createPairingPayloadJson(identity: DeviceIdentity): String? {
         val ip = LocalNetworkAddresses.firstIpv4Address() ?: return null
         val payload = PairingPayloadFactory(
-            deviceIdProvider = ::deviceId,
-            deviceNameProvider = { Build.MODEL ?: "Android" },
-            publicKeyProvider = { "m0-public-key-placeholder" },
+            deviceIdProvider = { identity.deviceId },
+            deviceNameProvider = { identity.deviceName },
+            publicKeyProvider = { identity.publicKey },
             localIpProvider = { ip },
             portProvider = { M0SyncComponents.defaultPort() },
         ).createPayload()
