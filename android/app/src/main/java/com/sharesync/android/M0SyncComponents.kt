@@ -13,6 +13,7 @@ import com.sharesync.android.transfer.server.ManifestProvider
 class M0SyncComponents private constructor(
     val mediaScanner: MediaStoreMediaScanner,
     val mediaStreamProvider: MediaStreamProvider,
+    val manifestBuilder: ManifestBuilder,
     val syncResultStore: SyncResultStore,
     val router: LocalSyncRouter,
     val serverBinder: EmbeddedLocalServerBinder,
@@ -47,6 +48,7 @@ class M0SyncComponents private constructor(
             return M0SyncComponents(
                 mediaScanner = mediaScanner,
                 mediaStreamProvider = MediaStreamProvider(contentResolver),
+                manifestBuilder = manifestBuilder,
                 syncResultStore = syncResultStore,
                 router = LocalSyncRouter(
                     deviceId = deviceId,

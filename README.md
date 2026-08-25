@@ -37,6 +37,7 @@ The current codebase contains:
 - iOS latest sync result JSON persistence for M0 validation.
 - iOS to Android sync result return path over the local M0 server.
 - Android latest sync result persistence and M0 screen summary.
+- Android M0 screen shows pending manifest photo count and latest failed sync result code.
 - Android manifest filtering for media already reported as synced or skipped.
 - Android merged sync result history across M0 batches.
 

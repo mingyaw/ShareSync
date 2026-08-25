@@ -32,6 +32,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add app-level M0 sync component factory.
 - [x] Add Android UI controls to request photos permission and start/stop server.
 - [x] Show Android local IP/port for manual testing.
+- [x] Show Android pending manifest photo count for manual validation.
 
 ### A1. Project Setup
 
@@ -69,6 +70,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Enforce pairing-token header on protected M0 endpoints.
 - [x] Persist latest sync result on Android.
 - [x] Show latest sync result summary on Android M0 screen.
+- [x] Show latest failed result code on Android M0 screen.
 - [x] Exclude latest synced/skipped media results from Android manifest.
 - [x] Merge Android sync results across multiple M0 batches.
 - [x] Add range request support.
@@ -637,3 +639,12 @@ Improved real-device validation feedback:
 - Receive screen shows `Last Failure` when a manifest item is in failed state.
 - Download empty-state messages now use photo-specific wording.
 - Device validation checklist now asks testers to confirm `Last Failure` during endpoint errors.
+
+### 2026-08-25 Android M0 Validation Visibility
+
+Improved Android-side manual validation:
+
+- Android M0 screen now shows the current pending manifest photo count after server start.
+- Android polling refreshes the pending count after iPhone sync result posts, so manifest filtering can be checked without leaving the app.
+- Android sync result summary now includes the latest failed error code when available.
+- Android M0 screen is scrollable so QR, payload, and validation rows stay reachable on smaller phones.

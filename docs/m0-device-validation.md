@@ -22,11 +22,13 @@ This checklist validates the current main path: Android exposes recent photos ov
 8. Confirm iOS shows the Android host and port under `Pairing`.
 9. Tap `Fetch Manifest`.
 10. Confirm iOS shows a photo count and a cursor.
-11. Tap `Download Next Item`.
-12. Confirm status reaches completed/imported.
-13. Open iOS Photos.
-14. Confirm the item appears in the `ShareSync Backup` album.
-15. Confirm the iOS ShareSync screen shows updated `Synced`, `Skipped`, and `Result Failed` counts.
+11. Confirm Android shows `Manifest photos` with the current pending photo count.
+12. Tap `Download Next Item`.
+13. Confirm status reaches completed/imported.
+14. Open iOS Photos.
+15. Confirm the item appears in the `ShareSync Backup` album.
+16. Confirm the iOS ShareSync screen shows updated `Synced`, `Skipped`, and `Result Failed` counts.
+17. Confirm Android shows the latest sync result summary.
 
 Expected result: one Android photo is visible in iOS Photos and iCloud Photos can back it up through the normal iOS Photos pipeline.
 
@@ -119,6 +121,7 @@ POST /v1/sync/result
 ```
 
 Expected result: Android accepts valid M0 sync result JSON with HTTP `202 Accepted`, persists the latest result under app files data, and shows the latest batch summary on the Android M0 screen.
+If a failed result is present, Android should show the latest failed error code in the sync result summary.
 
 Post two sync result batches with different media ids.
 

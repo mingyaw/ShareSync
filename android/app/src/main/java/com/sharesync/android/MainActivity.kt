@@ -13,12 +13,14 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import com.sharesync.android.pairing.PairingPayloadFactory
 import com.sharesync.android.pairing.QrCodeBitmapFactory
 import com.sharesync.android.security.DeviceIdentity
 import com.sharesync.android.security.DeviceIdentityStore
 import com.sharesync.android.security.SharedPreferencesDeviceIdentityStore
+import com.sharesync.android.sync.ManifestBuilder
 import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.sync.SyncItemStatus
 import com.sharesync.android.sync.SyncResult
@@ -34,6 +36,7 @@ class MainActivity : Activity() {
     private lateinit var statusText: TextView
     private lateinit var endpointText: TextView
     private lateinit var permissionText: TextView
+    private lateinit var manifestSummaryText: TextView
     private lateinit var syncResultText: TextView
     private lateinit var pairingPayloadText: TextView
     private lateinit var pairingQrImage: ImageView
@@ -44,8 +47,10 @@ class MainActivity : Activity() {
     private var server: LocalSyncServer? = null
     private var isServerRunning = false
     private var currentPairingPayloadJson: String? = null
+    private var currentManifestPhotoCount: Int? = null
     private var currentSyncResult: SyncResult? = null
     private var syncResultStore: SyncResultStore? = null
+    private var manifestBuilder: ManifestBuilder? = null
     private lateinit var deviceIdentityStore: DeviceIdentityStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,13 +80,21 @@ class MainActivity : Activity() {
         val density = resources.displayMetrics.density
         val padding = (24 * density).toInt()
 
+        val scrollView = ScrollView(this).apply {
+            isFillViewport = true
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+            )
+        }
+
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER_VERTICAL
+            gravity = Gravity.TOP
             setPadding(padding, padding, padding, padding)
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
             )
         }
 
@@ -94,6 +107,7 @@ class MainActivity : Activity() {
         statusText = bodyText(topPadding = 12 * density)
         endpointText = bodyText(topPadding = 12 * density)
         permissionText = bodyText(topPadding = 12 * density)
+        manifestSummaryText = bodyText(topPadding = 12 * density)
         syncResultText = bodyText(topPadding = 12 * density)
         pairingPayloadText = bodyText(topPadding = 12 * density)
         pairingQrImage = ImageView(this).apply {
@@ -133,6 +147,7 @@ class MainActivity : Activity() {
         root.addView(statusText)
         root.addView(endpointText)
         root.addView(permissionText)
+        root.addView(manifestSummaryText)
         root.addView(syncResultText)
         root.addView(pairingQrImage)
         root.addView(pairingPayloadText)
@@ -140,7 +155,8 @@ class MainActivity : Activity() {
         root.addView(startButton)
         root.addView(stopButton)
         root.addView(copyPairingButton)
-        setContentView(root)
+        scrollView.addView(root)
+        setContentView(scrollView)
     }
 
     private fun bodyText(topPadding: Float): TextView {
@@ -175,6 +191,9 @@ class MainActivity : Activity() {
         }
         pairingPayloadText.text = currentPairingPayloadJson
             ?: getString(R.string.m0_pairing_payload_unavailable)
+        manifestSummaryText.text = currentManifestPhotoCount?.let { count ->
+            getString(R.string.m0_manifest_summary, count)
+        } ?: getString(R.string.m0_manifest_unavailable)
         syncResultText.text = currentSyncResult?.let(::formatSyncResult)
             ?: getString(R.string.m0_sync_result_unavailable)
         refreshPairingQr()
@@ -239,7 +258,11 @@ class MainActivity : Activity() {
                 )
                 server = createdServer
                 syncResultStore = components.syncResultStore
+                manifestBuilder = components.manifestBuilder
                 currentSyncResult = SuspendBridge.runBlocking { components.syncResultStore.latest() }
+                currentManifestPhotoCount = SuspendBridge.runBlocking {
+                    components.manifestBuilder.buildM0Manifest().media.size
+                }
                 isServerRunning = true
                 currentPairingPayloadJson = createPairingPayloadJson(
                     identity = identity,
@@ -251,6 +274,8 @@ class MainActivity : Activity() {
             } catch (error: Throwable) {
                 server = null
                 syncResultStore = null
+                manifestBuilder = null
+                currentManifestPhotoCount = null
                 isServerRunning = false
                 currentPairingPayloadJson = null
                 runOnUiThread {
@@ -303,6 +328,8 @@ class MainActivity : Activity() {
         val currentServer = server ?: return
         server = null
         syncResultStore = null
+        manifestBuilder = null
+        currentManifestPhotoCount = null
         isServerRunning = false
         currentPairingPayloadJson = null
 
@@ -357,7 +384,13 @@ class MainActivity : Activity() {
         Thread {
             repeat(SYNC_RESULT_POLL_COUNT) {
                 Thread.sleep(SYNC_RESULT_POLL_INTERVAL_MS)
+                if (!isServerRunning) {
+                    return@Thread
+                }
                 currentSyncResult = SuspendBridge.runBlocking { store.latest() }
+                currentManifestPhotoCount = manifestBuilder?.let { builder ->
+                    SuspendBridge.runBlocking { builder.buildM0Manifest().media.size }
+                }
                 runOnUiThread { refreshUi() }
             }
         }.start()
@@ -367,12 +400,17 @@ class MainActivity : Activity() {
         val syncedCount = result.results.count { it.status == SyncItemStatus.synced }
         val skippedCount = result.results.count { it.status == SyncItemStatus.skipped }
         val failedCount = result.results.count { it.status == SyncItemStatus.failed }
+        val latestFailureCode = result.results
+            .lastOrNull { it.status == SyncItemStatus.failed }
+            ?.errorCode
+            ?: getString(R.string.m0_sync_result_no_failure)
         return getString(
             R.string.m0_sync_result_summary,
             result.syncBatchId,
             syncedCount,
             skippedCount,
             failedCount,
+            latestFailureCode,
         )
     }
 
