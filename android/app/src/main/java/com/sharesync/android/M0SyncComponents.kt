@@ -24,6 +24,7 @@ class M0SyncComponents private constructor(
             context: Context,
             deviceId: String,
             appVersion: String,
+            pairingToken: String,
         ): M0SyncComponents {
             val contentResolver = context.applicationContext.contentResolver
             val mediaScanner = MediaStoreMediaScanner(
@@ -50,6 +51,7 @@ class M0SyncComponents private constructor(
                 router = LocalSyncRouter(
                     deviceId = deviceId,
                     appVersion = appVersion,
+                    pairingToken = pairingToken,
                     manifestProvider = manifestProvider,
                     mediaProvider = mediaScanner,
                     syncResultStore = syncResultStore,

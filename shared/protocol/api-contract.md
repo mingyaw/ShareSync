@@ -17,6 +17,12 @@ X-Nonce: <random-string>
 X-Signature: <base64-signature>
 ```
 
+M0 currently enforces this lightweight pairing header for protected endpoints:
+
+```text
+X-ShareSync-Pairing-Token: <pairing-token-from-qr-payload>
+```
+
 Signature payload:
 
 ```text
@@ -97,4 +103,6 @@ M0 implements only:
 - `GET /v1/manifest`
 - `GET /v1/media/{assetId}`
 - `POST /v1/sync/result`
-- local, unsigned HTTP allowed only for first-device PoC
+- local HTTP allowed only for first-device PoC
+- lightweight pairing-token header enforcement on protected endpoints
+- full HTTPS and signed requests remain required before MVP release

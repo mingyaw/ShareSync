@@ -28,6 +28,7 @@ import com.sharesync.android.transfer.server.LocalServerBinder
 import com.sharesync.android.transfer.server.LocalSyncRouter
 import com.sharesync.android.transfer.server.LocalSyncServer
 import java.net.BindException
+import java.util.UUID
 
 class MainActivity : Activity() {
     private lateinit var statusText: TextView
@@ -227,10 +228,12 @@ class MainActivity : Activity() {
                 val identity = SuspendBridge.runBlocking {
                     deviceIdentityStore.getOrCreate()
                 }
+                val pairingToken = UUID.randomUUID().toString().replace("-", "")
                 val components = M0SyncComponents.create(
                     context = this,
                     deviceId = identity.deviceId,
                     appVersion = "0.1.0",
+                    pairingToken = pairingToken,
                 )
                 val createdServer = startLocalServer(
                     serverBinder = components.serverBinder,
@@ -244,6 +247,7 @@ class MainActivity : Activity() {
                 currentPairingPayloadJson = createPairingPayloadJson(
                     identity = identity,
                     port = createdServer.port,
+                    pairingToken = pairingToken,
                 )
                 runOnUiThread { refreshUi() }
                 pollSyncResultUpdates(components.syncResultStore)
@@ -314,7 +318,11 @@ class MainActivity : Activity() {
         }.start()
     }
 
-    private fun createPairingPayloadJson(identity: DeviceIdentity, port: Int): String? {
+    private fun createPairingPayloadJson(
+        identity: DeviceIdentity,
+        port: Int,
+        pairingToken: String,
+    ): String? {
         val ip = LocalNetworkAddresses.firstIpv4Address() ?: return null
         val payload = PairingPayloadFactory(
             deviceIdProvider = { identity.deviceId },
@@ -322,6 +330,7 @@ class MainActivity : Activity() {
             publicKeyProvider = { identity.publicKey },
             localIpProvider = { ip },
             portProvider = { port },
+            pairingTokenProvider = { pairingToken },
         ).createPayload()
         return ManifestJsonEncoder().encode(payload)
     }

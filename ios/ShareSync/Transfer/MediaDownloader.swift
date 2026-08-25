@@ -24,7 +24,7 @@ struct MediaDownloadProgress: Equatable {
 }
 
 protocol MediaDataSession {
-    func data(from url: URL) async throws -> (Data, URLResponse)
+    func data(for request: URLRequest) async throws -> (Data, URLResponse)
 }
 
 extension URLSession: MediaDataSession {}
@@ -53,6 +53,7 @@ final class MediaDownloader {
         host: String,
         port: Int,
         stateStore: MediaDownloadStateStore,
+        pairingToken: String? = nil,
         progress: ((MediaDownloadProgress) async -> Void)? = nil
     ) async -> [MediaDownloadResult] {
         for asset in assets {
@@ -111,7 +112,12 @@ final class MediaDownloader {
             )
 
             do {
-                let result = try await download(asset: asset, host: host, port: port)
+                let result = try await download(
+                    asset: asset,
+                    host: host,
+                    port: port,
+                    pairingToken: pairingToken
+                )
                 stateStore.markDownloaded(
                     sourceAssetId: asset.assetId,
                     localFileURL: result.localFileURL,
@@ -159,12 +165,22 @@ final class MediaDownloader {
         return false
     }
 
-    private func download(asset: MediaAsset, host: String, port: Int) async throws -> MediaDownloadResult {
+    private func download(
+        asset: MediaAsset,
+        host: String,
+        port: Int,
+        pairingToken: String?
+    ) async throws -> MediaDownloadResult {
         guard let url = mediaURL(assetId: asset.assetId, host: host, port: port) else {
             throw MediaDownloaderError.invalidMediaURL
         }
 
-        let (data, response) = try await session.data(from: url)
+        var request = URLRequest(url: url)
+        if let pairingToken, !pairingToken.isEmpty {
+            request.setValue(pairingToken, forHTTPHeaderField: "X-ShareSync-Pairing-Token")
+        }
+
+        let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse else {
             throw MediaDownloaderError.nonHTTPResponse
         }

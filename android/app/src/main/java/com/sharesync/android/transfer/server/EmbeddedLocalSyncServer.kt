@@ -73,7 +73,7 @@ class EmbeddedLocalSyncServer(
                 writeApiResponse(socket.getOutputStream(), runBlocking { router.health() })
             }
             request.method == "GET" && request.path == "/v1/manifest" -> {
-                writeApiResponse(socket.getOutputStream(), runBlocking { router.manifest() })
+                writeApiResponse(socket.getOutputStream(), runBlocking { router.manifest(request.headers) })
             }
             request.method == "GET" && request.path.startsWith("/v1/media/") -> {
                 writeMediaResponse(socket.getOutputStream(), request)
@@ -81,7 +81,7 @@ class EmbeddedLocalSyncServer(
             request.method == "POST" && request.path == "/v1/sync/result" -> {
                 writeApiResponse(
                     socket.getOutputStream(),
-                    runBlocking { router.syncResult(request.body) },
+                    runBlocking { router.syncResult(request.body, request.headers) },
                 )
             }
             request.method != "GET" && request.method != "POST" -> writeJsonError(socket.getOutputStream(), 405, "SS-NET-405")
@@ -91,7 +91,13 @@ class EmbeddedLocalSyncServer(
 
     private fun writeMediaResponse(output: OutputStream, request: HttpRequest) {
         val assetId = request.path.removePrefix("/v1/media/").urlDecode()
-        val response = runBlocking { router.media(assetId, request.headers["range"]) }
+        val response = runBlocking {
+            router.media(
+                assetId = assetId,
+                rangeHeader = request.headers["range"],
+                headers = request.headers,
+            )
+        }
 
         when (response) {
             is LocalMediaResponse.Found -> {
@@ -118,6 +124,9 @@ class EmbeddedLocalSyncServer(
                 }
             }
             is LocalMediaResponse.NotFound -> {
+                writeJsonError(output, response.statusCode, response.errorCode)
+            }
+            is LocalMediaResponse.Unauthorized -> {
                 writeJsonError(output, response.statusCode, response.errorCode)
             }
         }
@@ -203,6 +212,7 @@ class EmbeddedLocalSyncServer(
             200 -> "OK"
             202 -> "Accepted"
             400 -> "Bad Request"
+            401 -> "Unauthorized"
             206 -> "Partial Content"
             404 -> "Not Found"
             405 -> "Method Not Allowed"

@@ -8,12 +8,21 @@ final class SyncResultClientTests: XCTestCase {
         let client = SyncResultClient(session: session)
         let result = makeResult()
 
-        try await client.postSyncResult(result, to: "192.168.1.10", port: 48291)
+        try await client.postSyncResult(
+            result,
+            to: "192.168.1.10",
+            port: 48291,
+            pairingToken: "pairing-token-001"
+        )
 
         let request = try XCTUnwrap(session.requests.first)
         XCTAssertEqual(request.url?.absoluteString, "http://192.168.1.10:48291/v1/sync/result")
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/json")
+        XCTAssertEqual(
+            request.value(forHTTPHeaderField: "X-ShareSync-Pairing-Token"),
+            "pairing-token-001"
+        )
 
         let body = try XCTUnwrap(request.httpBody)
         let decoded = try JSONDecoder().decode(SyncResult.self, from: body)

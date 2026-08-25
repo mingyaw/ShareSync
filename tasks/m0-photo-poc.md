@@ -65,6 +65,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Implement `GET /v1/manifest`.
 - [x] Implement `GET /v1/media/{assetId}`.
 - [x] Implement `POST /v1/sync/result`.
+- [x] Enforce pairing-token header on protected M0 endpoints.
 - [x] Persist latest sync result on Android.
 - [x] Show latest sync result summary on Android M0 screen.
 - [x] Exclude latest synced/skipped media results from Android manifest.
@@ -577,6 +578,26 @@ Completed another M0 interrupted-transfer slice:
 - Added an explicit stopped state message for M0 validation.
 - Added Swift unit coverage for cancellation leaving an item retryable.
 - Updated the M0 validation checklist with a manual stop and retry scenario.
+
+Verification target:
+
+```sh
+python3 scripts/validate-fixtures.py
+swift test
+cd android && ./gradlew :app:testDebugUnitTest :app:compileDebugKotlin
+xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+```
+
+### 2026-08-25 M0 Pairing Token Enforcement
+
+Completed a lightweight security bridge toward the photo-only MVP:
+
+- Android M0 server now requires `X-ShareSync-Pairing-Token` for manifest, media, and sync result endpoints.
+- Android keeps `/v1/health` public for local connectivity diagnostics.
+- Android QR payload and protected endpoint validator share the same short-lived server token.
+- iOS stores the token from the pairing payload and sends it with manifest, media download, and sync result requests.
+- iOS manifest fetch now reports token rejection as a re-pairing action instead of a generic decode failure.
+- Added Android router tests and Swift client tests for pairing-token headers.
 
 Verification target:
 

@@ -28,6 +28,7 @@ The current codebase contains:
 - An embedded Android local HTTP server for M0 health, manifest, and media endpoints.
 - Android QR pairing payload UI with stable local device identity and actual bound port.
 - iOS QR scanner and manual pairing fallback.
+- M0 protected endpoints require the QR pairing token header for manifest, media, and sync result requests.
 - iOS receive screen that fetches the Android manifest, downloads one or more items, verifies checksums when available, and imports into the `ShareSync Backup` Photos album.
 - iOS receive screen can download the next item, a small batch, or all remaining manifest items for M0 device validation.
 - iOS receive screen shows live batch progress, downloaded count, failed count, and current file during foreground transfer.
@@ -95,6 +96,7 @@ M0 may use plain local HTTP to reduce setup cost. MVP must upgrade to local HTTP
 M0 includes only:
 
 - QR pairing payload structure
+- pairing-token header enforcement for protected local endpoints
 - QR pairing scanner/manual fallback
 - Android media manifest
 - Android media download endpoint

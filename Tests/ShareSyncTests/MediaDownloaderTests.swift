@@ -44,7 +44,45 @@ final class MediaDownloaderTests: XCTestCase {
         XCTAssertEqual(record.status, .downloaded)
         XCTAssertEqual(record.downloadedBytes, Int64(data.count))
         XCTAssertEqual(try Data(contentsOf: XCTUnwrap(record.localFileURL)), data)
-        XCTAssertEqual(session.requestedURLs.map(\.path), ["/v1/media/mediastore-1-42"])
+        XCTAssertEqual(session.requests.map { $0.url?.path }, ["/v1/media/mediastore-1-42"])
+    }
+
+    func testDownloadMediaSendsPairingTokenHeader() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let data = Data("demo-photo".utf8)
+        let asset = makeAsset(
+            assetId: "mediastore-1-48",
+            fileName: "IMG_0048.jpg",
+            size: Int64(data.count),
+            sha256: sha256(data)
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        let session = StubMediaDataSession(
+            data: data,
+            response: HTTPURLResponse(
+                url: URL(string: "http://192.168.1.10:48291/v1/media/mediastore-1-48")!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+        )
+        let downloader = MediaDownloader(session: session, downloadDirectory: directory)
+
+        _ = await downloader.downloadMedia(
+            assets: [asset],
+            host: "192.168.1.10",
+            port: 48291,
+            stateStore: store,
+            pairingToken: "pairing-token-001"
+        )
+
+        XCTAssertEqual(
+            session.requests.first?.value(forHTTPHeaderField: "X-ShareSync-Pairing-Token"),
+            "pairing-token-001"
+        )
     }
 
     func testChecksumMismatchMarksFailed() async throws {
@@ -233,15 +271,15 @@ final class MediaDownloaderTests: XCTestCase {
 private final class StubMediaDataSession: MediaDataSession {
     private let data: Data
     private let response: URLResponse
-    private(set) var requestedURLs: [URL] = []
+    private(set) var requests: [URLRequest] = []
 
     init(data: Data, response: URLResponse) {
         self.data = data
         self.response = response
     }
 
-    func data(from url: URL) async throws -> (Data, URLResponse) {
-        requestedURLs.append(url)
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        requests.append(request)
         return (data, response)
     }
 }
@@ -253,7 +291,7 @@ private final class StubSequenceMediaDataSession: MediaDataSession {
         self.responses = responses
     }
 
-    func data(from url: URL) async throws -> (Data, URLResponse) {
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
         guard !responses.isEmpty else {
             throw URLError(.badServerResponse)
         }
@@ -269,7 +307,7 @@ private final class StubThrowingMediaDataSession: MediaDataSession {
         self.error = error
     }
 
-    func data(from url: URL) async throws -> (Data, URLResponse) {
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
         throw error
     }
 }

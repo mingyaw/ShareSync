@@ -9,6 +9,7 @@ import org.json.JSONException
 class LocalSyncRouter(
     private val deviceId: String,
     private val appVersion: String,
+    private val pairingToken: String,
     private val manifestProvider: ManifestProvider,
     private val mediaProvider: MediaProvider,
     private val syncResultStore: SyncResultStore,
@@ -28,13 +29,25 @@ class LocalSyncRouter(
         )
     }
 
-    suspend fun manifest(): LocalApiResponse {
+    suspend fun manifest(headers: Map<String, String> = emptyMap()): LocalApiResponse {
+        if (!isAuthorized(headers)) {
+            return LocalApiResponse.jsonError(statusCode = 401, errorCode = "SS-AUTH-001")
+        }
+
         return LocalApiResponse.json(
             body = manifestJsonEncoder.encode(manifestProvider.currentManifest())
         )
     }
 
-    suspend fun media(assetId: String, rangeHeader: String? = null): LocalMediaResponse {
+    suspend fun media(
+        assetId: String,
+        rangeHeader: String? = null,
+        headers: Map<String, String> = emptyMap(),
+    ): LocalMediaResponse {
+        if (!isAuthorized(headers)) {
+            return LocalMediaResponse.unauthorized("SS-AUTH-001")
+        }
+
         val asset = mediaProvider.findMedia(assetId)
             ?: return LocalMediaResponse.notFound("SS-MEDIA-404")
 
@@ -45,7 +58,11 @@ class LocalSyncRouter(
         )
     }
 
-    suspend fun syncResult(body: String): LocalApiResponse {
+    suspend fun syncResult(body: String, headers: Map<String, String> = emptyMap()): LocalApiResponse {
+        if (!isAuthorized(headers)) {
+            return LocalApiResponse.jsonError(statusCode = 401, errorCode = "SS-AUTH-001")
+        }
+
         return try {
             val result = syncResultJsonCodec.decode(body)
             syncResultStore.save(result)
@@ -64,6 +81,16 @@ class LocalSyncRouter(
         } catch (_: IllegalArgumentException) {
             LocalApiResponse.jsonError(statusCode = 400, errorCode = "SS-REQ-001")
         }
+    }
+
+    private fun isAuthorized(headers: Map<String, String>): Boolean {
+        return headers.any { (name, value) ->
+            name.equals(PAIRING_TOKEN_HEADER, ignoreCase = true) && value == pairingToken
+        }
+    }
+
+    companion object {
+        const val PAIRING_TOKEN_HEADER = "X-ShareSync-Pairing-Token"
     }
 }
 
@@ -107,6 +134,11 @@ sealed class LocalMediaResponse {
         val errorCode: String,
     ) : LocalMediaResponse()
 
+    data class Unauthorized(
+        val statusCode: Int,
+        val errorCode: String,
+    ) : LocalMediaResponse()
+
     companion object {
         fun found(asset: MediaAsset, range: ByteRange): LocalMediaResponse {
             val contentLength = range.endInclusive - range.start + 1
@@ -132,6 +164,10 @@ sealed class LocalMediaResponse {
 
         fun notFound(errorCode: String): LocalMediaResponse {
             return NotFound(statusCode = 404, errorCode = errorCode)
+        }
+
+        fun unauthorized(errorCode: String): LocalMediaResponse {
+            return Unauthorized(statusCode = 401, errorCode = errorCode)
         }
     }
 }

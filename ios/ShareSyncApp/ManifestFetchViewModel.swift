@@ -64,6 +64,7 @@ final class ManifestFetchViewModel: ObservableObject {
     @Published private(set) var syncResultSummary: SyncResultSummary?
     @Published private(set) var downloadProgressSummary: DownloadProgressSummary?
     @Published private(set) var pairedDevice: TrustedDevice?
+    @Published private(set) var pairingToken: String?
 
     private let client: ManifestClient
     private let downloader: MediaDownloader
@@ -130,7 +131,11 @@ final class ManifestFetchViewModel: ObservableObject {
 
         Task {
             do {
-                let manifest = try await client.fetchManifest(from: trimmedHost, port: portNumber)
+                let manifest = try await client.fetchManifest(
+                    from: trimmedHost,
+                    port: portNumber,
+                    pairingToken: pairingToken
+                )
                 latestManifest = manifest
                 await reconcileMissingPhotoAssets(in: manifest)
                 summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
@@ -168,10 +173,12 @@ final class ManifestFetchViewModel: ObservableObject {
                 deviceName: payload.deviceName,
                 platform: payload.platform,
                 publicKey: payload.publicKey,
+                pairingToken: payload.pairingToken,
                 pairedAt: Date(),
                 lastSeenAt: nil,
                 trustStatus: .trusted
             )
+            pairingToken = payload.pairingToken
             state = .idle
         } catch PairingPayloadParserError.expired {
             state = .failed("Pairing payload expired. Generate a new one on Android.")
@@ -253,6 +260,7 @@ final class ManifestFetchViewModel: ObservableObject {
                     host: trimmedHost,
                     port: portNumber,
                     stateStore: downloadStateStore,
+                    pairingToken: pairingToken,
                     progress: { [weak self] progress in
                         await MainActor.run {
                             self?.downloadProgressSummary = DownloadProgressSummary(progress: progress)
@@ -361,6 +369,19 @@ final class ManifestFetchViewModel: ObservableObject {
             return "Android manifest format is not supported."
         }
 
+        if let manifestError = error as? ManifestClientError {
+            switch manifestError {
+            case .invalidBaseURL:
+                return "Android endpoint is not valid."
+            case .nonHTTPResponse:
+                return "Android did not return a valid local response."
+            case .unacceptableStatusCode(401):
+                return "Pairing token was rejected. Scan the Android QR code again."
+            case .unacceptableStatusCode:
+                return "Android rejected the manifest request."
+            }
+        }
+
         return error.localizedDescription
     }
 
@@ -437,7 +458,12 @@ final class ManifestFetchViewModel: ObservableObject {
             records: records(for: manifest)
         )
         try? syncResultStore.save(result)
-        try? await syncResultClient.postSyncResult(result, to: host, port: port)
+        try? await syncResultClient.postSyncResult(
+            result,
+            to: host,
+            port: port,
+            pairingToken: pairingToken
+        )
         return SyncResultSummary(result: result)
     }
 

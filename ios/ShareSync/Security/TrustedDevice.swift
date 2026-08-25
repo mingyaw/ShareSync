@@ -7,6 +7,7 @@ struct TrustedDevice: Codable, Equatable, Identifiable {
     let deviceName: String
     let platform: String
     let publicKey: String
+    let pairingToken: String
     let pairedAt: Date
     let lastSeenAt: Date?
     let trustStatus: TrustStatus
@@ -16,4 +17,3 @@ enum TrustStatus: String, Codable {
     case trusted
     case revoked
 }
-

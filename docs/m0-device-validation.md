@@ -30,6 +30,8 @@ This checklist validates the current main path: Android exposes recent media ove
 
 Expected result: one Android media item is visible in iOS Photos and iCloud Photos can back it up through the normal iOS Photos pipeline.
 
+Note: `Fetch Manifest`, media downloads, and sync result return require the pairing token from the Android QR/payload. Re-scan or paste a fresh payload if iOS shows a token rejection message.
+
 ## Foreground Full Manifest Transfer
 
 1. Complete the baseline success path setup.

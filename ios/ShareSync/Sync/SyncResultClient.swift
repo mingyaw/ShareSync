@@ -21,7 +21,12 @@ final class SyncResultClient {
         self.encoder = JSONEncoder()
     }
 
-    func postSyncResult(_ result: SyncResult, to host: String, port: Int) async throws {
+    func postSyncResult(
+        _ result: SyncResult,
+        to host: String,
+        port: Int,
+        pairingToken: String? = nil
+    ) async throws {
         var components = URLComponents()
         components.scheme = "http"
         components.host = host
@@ -35,6 +40,9 @@ final class SyncResultClient {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let pairingToken, !pairingToken.isEmpty {
+            request.setValue(pairingToken, forHTTPHeaderField: "X-ShareSync-Pairing-Token")
+        }
         request.httpBody = try encoder.encode(result)
 
         let (_, response) = try await session.data(for: request)

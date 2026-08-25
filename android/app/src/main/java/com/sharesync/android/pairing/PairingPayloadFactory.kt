@@ -11,6 +11,7 @@ class PairingPayloadFactory(
     private val publicKeyProvider: () -> String,
     private val localIpProvider: () -> String,
     private val portProvider: () -> Int,
+    private val pairingTokenProvider: () -> String = { UUID.randomUUID().toString().replace("-", "") },
 ) {
     fun createPayload(now: Instant = Instant.now()): PairingPayload {
         return PairingPayload(
@@ -19,9 +20,8 @@ class PairingPayloadFactory(
             publicKey = publicKeyProvider(),
             ip = localIpProvider(),
             port = portProvider(),
-            pairingToken = UUID.randomUUID().toString().replace("-", ""),
+            pairingToken = pairingTokenProvider(),
             expiresAt = now.plus(10, ChronoUnit.MINUTES).toString(),
         )
     }
 }
-
