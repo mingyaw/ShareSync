@@ -29,6 +29,8 @@ final class ManifestFetchViewModel: ObservableObject {
         let failedCount: Int
         let remainingCount: Int
         let validationAssetName: String?
+        let lastFailureCode: String?
+        let lastFailureFileName: String?
 
     }
 
@@ -211,7 +213,7 @@ final class ManifestFetchViewModel: ObservableObject {
 
     private func downloadNextMediaBatch(limit: Int) {
         guard let manifest = latestManifest, !manifest.media.isEmpty else {
-            downloadState = .failed("Manifest has no media to download.")
+            downloadState = .failed("Manifest has no photos to download.")
             return
         }
 
@@ -233,7 +235,7 @@ final class ManifestFetchViewModel: ObservableObject {
         activeDownloadTask = Task {
             let transferAssets = nextTransferCandidates(in: manifest, limit: limit)
             guard !transferAssets.isEmpty else {
-                downloadState = .failed("No remaining media to download.")
+                downloadState = .failed("No remaining photos to download.")
                 activeDownloadTask = nil
                 return
             }
@@ -297,7 +299,7 @@ final class ManifestFetchViewModel: ObservableObject {
                     port: portNumber
                 )
                 downloadProgressSummary = nil
-                downloadState = .failed("No media downloaded.")
+                downloadState = .failed("No photos downloaded.")
                 activeDownloadTask = nil
                 return
             }
@@ -515,6 +517,17 @@ private extension ManifestFetchViewModel.ManifestSummary {
         failedCount = manifest.media.filter { asset in
             stateStore.record(for: asset.assetId)?.status == .failed
         }.count
+        let latestFailedRecord = manifest.media
+            .compactMap { asset -> (asset: MediaAsset, record: MediaDownloadRecord)? in
+                guard let record = stateStore.record(for: asset.assetId),
+                      record.status == .failed else {
+                    return nil
+                }
+                return (asset, record)
+            }
+            .max { lhs, rhs in lhs.record.updatedAt < rhs.record.updatedAt }
+        lastFailureCode = latestFailedRecord?.record.lastErrorCode
+        lastFailureFileName = latestFailedRecord?.asset.fileName
         remainingCount = manifest.media.filter { asset in
             guard let record = stateStore.record(for: asset.assetId) else {
                 return true

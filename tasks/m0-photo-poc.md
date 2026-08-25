@@ -628,3 +628,12 @@ Improved M0 photo transfer diagnostics:
 - Failed photo records preserve server error codes such as `SS-AUTH-001` and `SS-MEDIA-404`.
 - Sync result reporting can now return more precise failed-item reasons to Android.
 - Added Swift tests for unauthorized and missing media download responses.
+
+### 2026-08-25 Receive Screen Failure Visibility
+
+Improved real-device validation feedback:
+
+- iOS manifest summary now tracks the latest failed photo code and file name.
+- Receive screen shows `Last Failure` when a manifest item is in failed state.
+- Download empty-state messages now use photo-specific wording.
+- Device validation checklist now asks testers to confirm `Last Failure` during endpoint errors.

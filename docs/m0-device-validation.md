@@ -89,7 +89,7 @@ Expected result: QR payload contains the actual bound port, and iOS can fetch `/
 4. Tap `Fetch Manifest`.
 5. Tap `Download Next Item` or `Download 5 Items`.
 
-Expected result: failed records remain retryable and completed records are not re-imported.
+Expected result: failed records remain retryable, completed records are not re-imported, and iOS shows the latest failed code in `Last Failure`.
 
 ## Manual Stop And Retry
 
@@ -138,6 +138,8 @@ Expected result: photos reported as `synced` or `skipped` do not appear in the n
 6. Confirm manual pairing payload remains available as fallback.
 
 Expected result: errors are visible and the user can recover by granting permissions.
+
+When a media endpoint fails, confirm the iOS receive screen shows `Last Failure` with the server error code and file name.
 
 ## Current M0 Gaps
 

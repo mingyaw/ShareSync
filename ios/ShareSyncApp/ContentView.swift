@@ -196,6 +196,9 @@ struct ContentView: View {
                 StatusRow(title: "Imported", value: "\(summary.importedCount)")
                 StatusRow(title: "Missing", value: "\(summary.missingCount)")
                 StatusRow(title: "Failed", value: "\(summary.failedCount)")
+                if let lastFailureCode = summary.lastFailureCode {
+                    StatusRow(title: "Last Failure", value: lastFailureText(code: lastFailureCode, fileName: summary.lastFailureFileName))
+                }
                 StatusRow(title: "Remaining", value: "\(summary.remainingCount)")
                 StatusRow(title: "Cursor", value: summary.cursor)
             } else {
@@ -310,6 +313,13 @@ struct ContentView: View {
         case .failed:
             return "Failed"
         }
+    }
+
+    private func lastFailureText(code: String, fileName: String?) -> String {
+        guard let fileName, !fileName.isEmpty else {
+            return code
+        }
+        return "\(code) - \(fileName)"
     }
 }
 
