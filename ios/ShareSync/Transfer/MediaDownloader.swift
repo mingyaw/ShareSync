@@ -4,7 +4,7 @@ import Foundation
 enum MediaDownloaderError: Error, Equatable {
     case invalidMediaURL
     case nonHTTPResponse
-    case unacceptableStatusCode(Int)
+    case unacceptableStatusCode(Int, String?)
     case checksumMismatch
 }
 
@@ -186,7 +186,10 @@ final class MediaDownloader {
         }
 
         guard (200...299).contains(httpResponse.statusCode) else {
-            throw MediaDownloaderError.unacceptableStatusCode(httpResponse.statusCode)
+            throw MediaDownloaderError.unacceptableStatusCode(
+                httpResponse.statusCode,
+                serverErrorCode(from: data)
+            )
         }
 
         let responseHash = httpResponse.value(forHTTPHeaderField: "X-ShareSync-SHA256")
@@ -245,7 +248,16 @@ final class MediaDownloader {
                 return "SS-REQ-001"
             case .nonHTTPResponse:
                 return "SS-NET-001"
-            case .unacceptableStatusCode:
+            case .unacceptableStatusCode(let statusCode, let serverErrorCode):
+                if let serverErrorCode, !serverErrorCode.isEmpty {
+                    return serverErrorCode
+                }
+                if statusCode == 404 {
+                    return "SS-MEDIA-404"
+                }
+                if statusCode == 401 {
+                    return "SS-AUTH-001"
+                }
                 return "SS-NET-002"
             case .checksumMismatch:
                 return "SS-MEDIA-001"
@@ -258,4 +270,12 @@ final class MediaDownloader {
 
         return "SS-MEDIA-999"
     }
+
+    private func serverErrorCode(from data: Data) -> String? {
+        try? JSONDecoder().decode(ServerErrorEnvelope.self, from: data).errorCode
+    }
+}
+
+private struct ServerErrorEnvelope: Decodable {
+    let errorCode: String
 }

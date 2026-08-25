@@ -619,3 +619,12 @@ Aligned the active M0/MVP path with the product decision to ship photos first:
 - Removed MediaStore query-bundle `QUERY_ARG_LIMIT` usage and takes the first N rows in app code to avoid provider `Invalid token LIMIT` failures.
 - iOS receive-screen copy and manifest status now present the flow as Android photo transfer.
 - Updated M0 validation notes and project docs to distinguish the active photo MVP from later video/contact/file expansion.
+
+### 2026-08-25 Download Error Code Preservation
+
+Improved M0 photo transfer diagnostics:
+
+- iOS media downloader now decodes Android JSON error responses from failed media downloads.
+- Failed photo records preserve server error codes such as `SS-AUTH-001` and `SS-MEDIA-404`.
+- Sync result reporting can now return more precise failed-item reasons to Android.
+- Added Swift tests for unauthorized and missing media download responses.

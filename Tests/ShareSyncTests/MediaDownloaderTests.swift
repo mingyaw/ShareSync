@@ -120,6 +120,76 @@ final class MediaDownloaderTests: XCTestCase {
         XCTAssertEqual(store.record(for: "mediastore-1-43")?.lastErrorCode, "SS-MEDIA-001")
     }
 
+    func testUnauthorizedResponseUsesServerErrorCode() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let asset = makeAsset(
+            assetId: "mediastore-1-49",
+            fileName: "IMG_0049.jpg",
+            size: 10,
+            sha256: nil
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        let session = StubMediaDataSession(
+            data: Data(#"{"errorCode":"SS-AUTH-001"}"#.utf8),
+            response: HTTPURLResponse(
+                url: URL(string: "http://192.168.1.10:48291/v1/media/mediastore-1-49")!,
+                statusCode: 401,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            )!
+        )
+        let downloader = MediaDownloader(session: session, downloadDirectory: directory)
+
+        let results = await downloader.downloadMedia(
+            assets: [asset],
+            host: "192.168.1.10",
+            port: 48291,
+            stateStore: store
+        )
+
+        XCTAssertTrue(results.isEmpty)
+        XCTAssertEqual(store.record(for: "mediastore-1-49")?.status, .failed)
+        XCTAssertEqual(store.record(for: "mediastore-1-49")?.lastErrorCode, "SS-AUTH-001")
+    }
+
+    func testNotFoundResponseUsesServerErrorCode() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let asset = makeAsset(
+            assetId: "mediastore-1-50",
+            fileName: "IMG_0050.jpg",
+            size: 10,
+            sha256: nil
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        let session = StubMediaDataSession(
+            data: Data(#"{"errorCode":"SS-MEDIA-404"}"#.utf8),
+            response: HTTPURLResponse(
+                url: URL(string: "http://192.168.1.10:48291/v1/media/mediastore-1-50")!,
+                statusCode: 404,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            )!
+        )
+        let downloader = MediaDownloader(session: session, downloadDirectory: directory)
+
+        let results = await downloader.downloadMedia(
+            assets: [asset],
+            host: "192.168.1.10",
+            port: 48291,
+            stateStore: store
+        )
+
+        XCTAssertTrue(results.isEmpty)
+        XCTAssertEqual(store.record(for: "mediastore-1-50")?.status, .failed)
+        XCTAssertEqual(store.record(for: "mediastore-1-50")?.lastErrorCode, "SS-MEDIA-404")
+    }
+
     func testResponseChecksumHeaderIsUsedWhenManifestHashIsMissing() async throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
