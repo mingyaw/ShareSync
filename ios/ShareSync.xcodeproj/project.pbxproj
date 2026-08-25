@@ -203,7 +203,7 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "ShareSync uses the camera to scan the Android pairing code.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "ShareSync connects to your paired Android phone on the local network.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "ShareSync imports Android photos into your iPhone photo library.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "ShareSync creates a backup album and imports Android media into your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "ShareSync creates a backup album and imports Android photos into your photo library.";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 0.1.0;
@@ -228,7 +228,7 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "ShareSync uses the camera to scan the Android pairing code.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "ShareSync connects to your paired Android phone on the local network.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "ShareSync imports Android photos into your iPhone photo library.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "ShareSync creates a backup album and imports Android media into your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "ShareSync creates a backup album and imports Android photos into your photo library.";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 0.1.0;

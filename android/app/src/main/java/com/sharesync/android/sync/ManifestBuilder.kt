@@ -13,6 +13,7 @@ class ManifestBuilder(
         val scanLimit = (limit * 5).coerceIn(limit, 500)
         val pendingMedia = mediaScanner
             .scanRecent(scanLimit)
+            .filter { asset -> asset.mediaType == MediaType.photo }
             .filterNot { asset -> asset.assetId in completedMediaAssetIds }
             .take(limit)
 

@@ -3,7 +3,6 @@ package com.sharesync.android.scanner.media
 import android.content.ContentResolver
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
 import android.provider.MediaStore
 import com.sharesync.android.sync.MediaAsset
 import com.sharesync.android.sync.MediaType
@@ -32,34 +31,22 @@ class MediaStoreMediaScanner(
     }
 
     private fun queryRecent(collection: Uri, limit: Int): List<MediaAsset> {
-        val selection = "${MediaStore.Files.FileColumns.MEDIA_TYPE} IN (?, ?)"
+        val selection = "${MediaStore.Files.FileColumns.MEDIA_TYPE} = ?"
         val selectionArgs = arrayOf(
             MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE.toString(),
-            MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO.toString(),
         )
 
         val cursor = contentResolver.query(
             collection,
             projection,
-            Bundle().apply {
-                putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
-                putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs)
-                putStringArray(
-                    ContentResolver.QUERY_ARG_SORT_COLUMNS,
-                    arrayOf(MediaStore.Files.FileColumns.DATE_MODIFIED),
-                )
-                putInt(
-                    ContentResolver.QUERY_ARG_SORT_DIRECTION,
-                    ContentResolver.QUERY_SORT_DIRECTION_DESCENDING,
-                )
-                putInt(ContentResolver.QUERY_ARG_LIMIT, limit)
-            },
-            null,
+            selection,
+            selectionArgs,
+            "${MediaStore.Files.FileColumns.DATE_MODIFIED} DESC",
         ) ?: return emptyList()
 
         return cursor.use {
             buildList {
-                while (it.moveToNext()) {
+                while (size < limit && it.moveToNext()) {
                     rowToMediaAsset(it)?.let(::add)
                 }
             }
@@ -67,6 +54,10 @@ class MediaStoreMediaScanner(
     }
 
     private fun queryById(parsed: MediaStoreAssetId): MediaAsset? {
+        if (parsed.mediaStoreType != MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) {
+            return null
+        }
+
         val collection = MediaStore.Files.getContentUri("external")
         val cursor = contentResolver.query(
             collection,

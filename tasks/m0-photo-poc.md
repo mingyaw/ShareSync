@@ -24,12 +24,13 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add manifest JSON encoder.
 - [x] Add local API router core for health, manifest, and media response metadata.
 - [x] Add MediaStore-backed scanner.
+- [x] Restrict active M0 scope to Android photos only.
 - [x] Add MediaStore-backed media lookup provider.
 - [x] Add media stream provider for content URIs.
 - [x] Bind router to a real Android embedded HTTP server.
 - [x] Connect media stream provider to real HTTP response bodies.
 - [x] Add app-level M0 sync component factory.
-- [x] Add Android UI controls to request media permission and start/stop server.
+- [x] Add Android UI controls to request photos permission and start/stop server.
 - [x] Show Android local IP/port for manual testing.
 
 ### A1. Project Setup
@@ -37,7 +38,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Create Android Studio project under `android/`.
 - [x] Configure Kotlin.
 - [x] Add app id, min SDK, target SDK.
-- [x] Add local network and media permissions.
+- [x] Add local network and photos permissions.
 
 ### A2. Device Identity
 
@@ -55,7 +56,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 ### A4. Media Scanner
 
 - [x] Implement `MediaScanner` using MediaStore.
-- [x] Query latest 100 images/videos from MediaStore.
+- [x] Query latest 100 images from MediaStore.
 - [x] Map rows into `MediaAsset`.
 - [x] Add lazy SHA-256 calculation before transfer.
 
@@ -114,7 +115,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 ### I4. Media Download
 
-- [x] Download one photo/video file to app temp directory for validation.
+- [x] Download one photo file to app temp directory for validation.
 - [x] Verify SHA-256 when available.
 - [x] Track per-asset download state.
 - [x] Expand UI action from single-item validation to batch download.
@@ -127,7 +128,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 - [x] Request Photos permission.
 - [x] Create `ShareSync Backup` album.
-- [x] Import one downloaded photo/video for validation.
+- [x] Import one downloaded photo for validation.
 - [x] Store Android asset id to iOS local identifier mapping.
 - [x] Prevent duplicate imports.
 - [x] Treat missing imported Photos assets as retryable transfer candidates.
@@ -222,7 +223,7 @@ cd android && ./gradlew :app:assembleDebug
 
 Completed another M0 implementation slice:
 
-- Android `MediaStoreMediaScanner` for recent photo/video metadata.
+- Android `MediaStoreMediaScanner` for recent photo metadata.
 - Android `MediaProvider` implementation through the scanner.
 - Android `MediaStreamProvider` for opening content URI streams.
 - Internal Android `contentUri` field on `MediaAsset`, intentionally excluded from manifest JSON.
@@ -242,7 +243,7 @@ xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulat
 
 Completed the Android app-level M0 server controls:
 
-- Runtime media permission request.
+- Runtime photos permission request.
 - Local IPv4 detection.
 - Start/stop controls for the embedded Android local sync server.
 - Health endpoint display for manual same-Wi-Fi testing.
@@ -306,7 +307,7 @@ Next implementation slice:
 
 Completed another M0 implementation slice:
 
-- Android media permission request flow.
+- Android photos permission request flow.
 - Local IPv4 discovery helper.
 - Android M0 control panel with:
   - permission status
@@ -320,10 +321,10 @@ Completed another M0 implementation slice:
 Manual test path after installing the Android app:
 
 ```text
-1. Grant media permission.
+1. Grant photos permission.
 2. Tap Start M0 server.
 3. Open the displayed http://<android-ip>:48291/v1/health endpoint from another device on the same Wi-Fi.
-4. Test http://<android-ip>:48291/v1/manifest after media permission is granted.
+4. Test http://<android-ip>:48291/v1/manifest after photos permission is granted.
 ```
 
 Verified:
@@ -348,7 +349,7 @@ Completed the first iOS media download validation slice:
 - Local file writes into the app temp download directory.
 - Optional SHA-256 verification when Android manifest provides a hash.
 - State-store integration for queued, downloading, downloaded, and failed records.
-- SwiftUI receive screen action to download only the first manifest media item.
+- SwiftUI receive screen action to download only the first manifest photo.
 - Test item filename display for physical-device validation.
 - Downloaded and failed counts on the receive screen.
 - Unit tests for successful file write and checksum mismatch failure.
@@ -373,7 +374,7 @@ Completed the first Photos import validation slice:
 - `PhotoKitPhotoImporter` implementation behind the existing `PhotoImporter` protocol.
 - Photos read/write permission request for album management.
 - `ShareSync Backup` album creation or reuse.
-- Single downloaded photo/video import into the backup album.
+- Single downloaded photo import into the backup album.
 - Receive screen state updates for importing and imported counts.
 - Import success marks the single validation asset as imported in the state store.
 
@@ -607,3 +608,14 @@ swift test
 cd android && ./gradlew :app:testDebugUnitTest :app:compileDebugKotlin
 xcodebuild -project ios/ShareSync.xcodeproj -scheme ShareSync -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
 ```
+
+### 2026-08-25 Photo-Only MVP Scope
+
+Aligned the active M0/MVP path with the product decision to ship photos first:
+
+- Android M0 manifest now includes `MediaType.photo` only.
+- Android MediaStore scanner queries images only and rejects direct video lookups for M0 media endpoints.
+- Android 13+ runtime permission now requests `READ_MEDIA_IMAGES` without `READ_MEDIA_VIDEO`.
+- Removed MediaStore query-bundle `QUERY_ARG_LIMIT` usage and takes the first N rows in app code to avoid provider `Invalid token LIMIT` failures.
+- iOS receive-screen copy and manifest status now present the flow as Android photo transfer.
+- Updated M0 validation notes and project docs to distinguish the active photo MVP from later video/contact/file expansion.

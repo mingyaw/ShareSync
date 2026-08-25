@@ -1,19 +1,19 @@
 # M0 Device Validation
 
-This checklist validates the current main path: Android exposes recent media over the local network, iOS pairs by QR, fetches the manifest, downloads media, and imports it into Photos.
+This checklist validates the current main path: Android exposes recent photos over the local network, iOS pairs by QR, fetches the manifest, downloads photos, and imports them into Photos.
 
 ## Devices
 
 - Android primary phone with ShareSync debug build installed.
 - iPhone with ShareSync debug build installed.
 - Both devices on the same Wi-Fi network or Android hotspot.
-- Android media permission granted.
+- Android photos permission granted.
 - iOS camera, local network, and Photos permissions granted when prompted.
 
 ## Baseline Success Path
 
 1. Open ShareSync on Android.
-2. Tap `Grant media permission` if permission is missing.
+2. Tap `Grant photos permission` if permission is missing.
 3. Tap `Start M0 server`.
 4. Confirm Android shows a manual endpoint and a QR code.
 5. Open ShareSync on iPhone.
@@ -21,14 +21,14 @@ This checklist validates the current main path: Android exposes recent media ove
 7. Scan the Android QR code.
 8. Confirm iOS shows the Android host and port under `Pairing`.
 9. Tap `Fetch Manifest`.
-10. Confirm iOS shows photo/video counts and a cursor.
+10. Confirm iOS shows a photo count and a cursor.
 11. Tap `Download Next Item`.
 12. Confirm status reaches completed/imported.
 13. Open iOS Photos.
 14. Confirm the item appears in the `ShareSync Backup` album.
 15. Confirm the iOS ShareSync screen shows updated `Synced`, `Skipped`, and `Result Failed` counts.
 
-Expected result: one Android media item is visible in iOS Photos and iCloud Photos can back it up through the normal iOS Photos pipeline.
+Expected result: one Android photo is visible in iOS Photos and iCloud Photos can back it up through the normal iOS Photos pipeline.
 
 Note: `Fetch Manifest`, media downloads, and sync result return require the pairing token from the Android QR/payload. Re-scan or paste a fresh payload if iOS shows a token rejection message.
 
@@ -40,10 +40,10 @@ Note: `Fetch Manifest`, media downloads, and sync result return require the pair
 4. Keep the iOS app foregrounded until transfer and import finish.
 5. Confirm iOS updates `Batch Progress`, `Batch Downloaded`, `Batch Failed`, and `Current File` while downloading.
 6. Open iOS Photos.
-7. Confirm imported media appears in the `ShareSync Backup` album.
+7. Confirm imported photos appear in the `ShareSync Backup` album.
 8. Tap `Fetch Manifest` again.
 
-Expected result: iOS imports every remaining manifest item it can download, the receive screen remaining count reaches `0`, and the next Android manifest excludes media reported as `synced` or `skipped`.
+Expected result: iOS imports every remaining manifest photo it can download, the receive screen remaining count reaches `0`, and the next Android manifest excludes photos reported as `synced` or `skipped`.
 
 ## Repeat Sync
 
@@ -126,11 +126,11 @@ Expected result: Android keeps completed media from both batches. If the same me
 
 After Android receives a sync result, fetch `/v1/manifest` again.
 
-Expected result: media reported as `synced` or `skipped` does not appear in the next Android manifest. Media reported as `failed` remains eligible for retry.
+Expected result: photos reported as `synced` or `skipped` do not appear in the next Android manifest. Photos reported as `failed` remain eligible for retry.
 
 ## Permission Negative Cases
 
-1. Deny Android media permission.
+1. Deny Android photos permission.
 2. Confirm Android cannot start a useful media server until permission is granted.
 3. Deny iOS Photos permission.
 4. Confirm iOS surfaces a failed import state.

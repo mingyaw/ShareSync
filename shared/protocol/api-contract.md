@@ -58,7 +58,7 @@ iOS calls this endpoint after scanning the Android QR payload.
 GET /v1/manifest?sinceCursor=<cursor>
 ```
 
-Returns media, contacts, and file metadata available for sync.
+Returns metadata available for sync. M0 currently returns photo media only.
 
 ### Media Download
 
@@ -67,7 +67,7 @@ GET /v1/media/{assetId}
 Range: bytes=0-
 ```
 
-Streams one photo or video. Range support is required for MVP.
+Streams one photo for M0. Range support is required for MVP.
 
 ### Contacts Export
 
@@ -105,4 +105,5 @@ M0 implements only:
 - `POST /v1/sync/result`
 - local HTTP allowed only for first-device PoC
 - lightweight pairing-token header enforcement on protected endpoints
+- photo media only
 - full HTTPS and signed requests remain required before MVP release

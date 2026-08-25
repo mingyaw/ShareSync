@@ -43,6 +43,8 @@ Android 端負責自動掃描資料、建立同步清單、發起傳輸與排程
 
 MVP 需完成以下能力：
 
+目前第一版 MVP 切片先只完成 Android 照片到 iOS Photos；影片、聯絡人與文件放入後續擴充。
+
 1. Android 與 iPhone 首次安全配對。
 2. Android 掃描照片、影片、聯絡人與指定文件資料夾。
 3. Android 與 iPhone 在本地網路中傳輸資料。
@@ -1191,7 +1193,7 @@ Phase 0：PoC
   Android → iPhone 照片本地同步
 
 Phase 1：MVP
-  照片/影片 + 聯絡人 + 文件
+  照片優先，影片 + 聯絡人 + 文件後續擴充
 
 Phase 2：反向同步
   iPhone → Android 備份
@@ -1211,7 +1213,7 @@ ShareSync 的方向具備可行性與差異化，但必須尊重 iOS 背景限�
 - iOS 端盡可能背景接收，但提供低摩擦確認保底。
 - 資料只在兩台手機本地傳輸。
 - iPhone 作為 iCloud gateway。
-- MVP 聚焦照片、影片、聯絡人與文件。
+- 第一版 MVP 聚焦照片；影片、聯絡人與文件作為後續擴充。
 
 使用 Kotlin 與 Swift 原生開發是合理且必要的選擇。這個產品的核心價值不是跨平台 UI，而是穩定使用 Android 與 iOS 的底層能力完成私密同步。
 

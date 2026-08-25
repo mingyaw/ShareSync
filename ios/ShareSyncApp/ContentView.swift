@@ -14,7 +14,7 @@ struct ContentView: View {
                                 .font(.largeTitle)
                                 .fontWeight(.semibold)
 
-                            Text("Receive Android media over your local network.")
+                            Text("Receive Android photos over your local network.")
                                 .font(.body)
                                 .foregroundStyle(.secondary)
                         }
@@ -190,7 +190,6 @@ struct ContentView: View {
 
             if let summary = viewModel.summary {
                 StatusRow(title: "Photos", value: "\(summary.photoCount)")
-                StatusRow(title: "Videos", value: "\(summary.videoCount)")
                 StatusRow(title: "Transfer Size", value: ByteCountFormatter.string(fromByteCount: summary.totalBytes, countStyle: .file))
                 StatusRow(title: "Test Item", value: summary.validationAssetName ?? "None")
                 StatusRow(title: "Downloaded", value: "\(summary.downloadedCount)")
@@ -307,7 +306,7 @@ struct ContentView: View {
         case .loading:
             return "Loading"
         case .loaded:
-            return "\(viewModel.summary?.totalItems ?? 0) items"
+            return "\(viewModel.summary?.photoCount ?? 0) photos"
         case .failed:
             return "Failed"
         }

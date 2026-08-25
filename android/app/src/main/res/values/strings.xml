@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">ShareSync</string>
-    <string name="m0_status_ready">M0 server is stopped. Grant media permission, then start the local sync server on port %1$d.</string>
+    <string name="m0_status_ready">M0 server is stopped. Grant photos permission, then start the local sync server on port %1$d.</string>
     <string name="m0_status_starting">Starting local sync server...</string>
     <string name="m0_status_running">M0 local sync server is running.</string>
     <string name="m0_status_failed">Server failed: %1$s</string>
     <string name="m0_endpoint">Manual test endpoint: http://%1$s:%2$d/v1/health</string>
     <string name="m0_endpoint_unavailable">No local IPv4 address found. Connect to Wi-Fi or hotspot.</string>
-    <string name="m0_permission_granted">Media permission: granted.</string>
-    <string name="m0_permission_missing">Media permission: required for /v1/manifest and /v1/media.</string>
+    <string name="m0_permission_granted">Photos permission: granted.</string>
+    <string name="m0_permission_missing">Photos permission: required for /v1/manifest and /v1/media.</string>
     <string name="m0_sync_result_unavailable">Sync result: waiting for iPhone report.</string>
     <string name="m0_sync_result_summary">Sync result: %1$s, synced %2$d, skipped %3$d, failed %4$d.</string>
     <string name="m0_pairing_payload_unavailable">Pairing payload: start the server to generate a short-lived payload.</string>
     <string name="m0_pairing_payload_copied">Pairing payload copied. Paste it into the iPhone ShareSync receive screen.</string>
-    <string name="m0_grant_permission">Grant media permission</string>
+    <string name="m0_grant_permission">Grant photos permission</string>
     <string name="m0_start_server">Start M0 server</string>
     <string name="m0_stop_server">Stop M0 server</string>
     <string name="m0_copy_pairing_payload">Copy pairing payload</string>

@@ -74,6 +74,29 @@ class ManifestBuilderTest {
         assertEquals(listOf("media-new-1", "media-new-2"), manifest.media.map { it.assetId })
     }
 
+    @Test
+    fun buildM0ManifestIncludesPhotosOnly() {
+        val scanner = FakeMediaScanner(
+            assets = listOf(
+                mediaAsset("photo-001", mediaType = MediaType.photo),
+                mediaAsset("video-001", mediaType = MediaType.video),
+                mediaAsset("photo-002", mediaType = MediaType.photo),
+            )
+        )
+        val store = InMemorySyncResultStore()
+
+        val manifest = SuspendBridge.runBlocking {
+            ManifestBuilder(
+                sourceDeviceId = "android-device-001",
+                mediaScanner = scanner,
+                syncResultStore = store,
+            ).buildM0Manifest(limit = 100)
+        }
+
+        assertEquals(listOf("photo-001", "photo-002"), manifest.media.map { it.assetId })
+        assertEquals(listOf(MediaType.photo, MediaType.photo), manifest.media.map { it.mediaType })
+    }
+
     private fun syncItem(sourceItemId: String, status: SyncItemStatus): SyncItemResult {
         return SyncItemResult(
             itemType = SyncItemType.media,
@@ -84,13 +107,15 @@ class ManifestBuilderTest {
         )
     }
 
-    private fun mediaAsset(assetId: String): MediaAsset {
+    private fun mediaAsset(assetId: String, mediaType: MediaType = MediaType.photo): MediaAsset {
+        val extension = if (mediaType == MediaType.photo) "jpg" else "mp4"
+        val mimeType = if (mediaType == MediaType.photo) "image/jpeg" else "video/mp4"
         return MediaAsset(
             assetId = assetId,
             sourceDeviceId = "android-device-001",
-            mediaType = MediaType.photo,
-            fileName = "$assetId.jpg",
-            mimeType = "image/jpeg",
+            mediaType = mediaType,
+            fileName = "$assetId.$extension",
+            mimeType = mimeType,
             size = 1024,
         )
     }

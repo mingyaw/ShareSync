@@ -22,7 +22,6 @@ final class ManifestFetchViewModel: ObservableObject {
         let sourceDeviceId: String
         let cursor: String
         let photoCount: Int
-        let videoCount: Int
         let totalBytes: Int64
         let downloadedCount: Int
         let importedCount: Int
@@ -31,9 +30,6 @@ final class ManifestFetchViewModel: ObservableObject {
         let remainingCount: Int
         let validationAssetName: String?
 
-        var totalItems: Int {
-            photoCount + videoCount
-        }
     }
 
     struct SyncResultSummary: Equatable {
@@ -499,7 +495,6 @@ private extension ManifestFetchViewModel.ManifestSummary {
         sourceDeviceId = manifest.sourceDeviceId
         cursor = manifest.cursor
         photoCount = manifest.media.filter { $0.mediaType == .photo }.count
-        videoCount = manifest.media.filter { $0.mediaType == .video }.count
         totalBytes = manifest.media.reduce(0) { $0 + $1.size }
         validationAssetName = manifest.media.first { asset in
             guard let record = stateStore.record(for: asset.assetId) else {

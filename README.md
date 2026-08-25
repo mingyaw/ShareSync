@@ -1,13 +1,13 @@
 # ShareSync
 
-Status: M0 implementation ready for real-device validation. Android can expose local media endpoints, and iOS can pair, fetch, download, verify, and import Android media into Photos on the same local network.
+Status: M0 implementation ready for real-device validation. Android can expose local photo endpoints, and iOS can pair, fetch, download, verify, and import Android photos into Photos on the same local network.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
 - Android is the primary phone and sync controller.
 - iPhone is the iCloud gateway.
 - Data transfers locally between the two phones without a cloud relay.
-- iPhone imports received photos and videos into Photos, allowing iCloud Photos to back them up through Apple's normal Photos pipeline.
+- iPhone imports received photos into Photos, allowing iCloud Photos to back them up through Apple's normal Photos pipeline.
 
 The project intentionally uses native implementation:
 
@@ -29,7 +29,7 @@ The current codebase contains:
 - Android QR pairing payload UI with stable local device identity and actual bound port.
 - iOS QR scanner and manual pairing fallback.
 - M0 protected endpoints require the QR pairing token header for manifest, media, and sync result requests.
-- iOS receive screen that fetches the Android manifest, downloads one or more items, verifies checksums when available, and imports into the `ShareSync Backup` Photos album.
+- iOS receive screen that fetches the Android photo manifest, downloads one or more photos, verifies checksums when available, and imports into the `ShareSync Backup` Photos album.
 - iOS receive screen can download the next item, a small batch, or all remaining manifest items for M0 device validation.
 - iOS receive screen shows live batch progress, downloaded count, failed count, and current file during foreground transfer.
 - iOS receive screen can stop an active foreground transfer while keeping completed items retry-safe.
@@ -43,7 +43,7 @@ The current codebase contains:
 M0 validates the riskiest path:
 
 ```text
-Android MediaStore -> local manifest/server -> iOS client -> Photos import
+Android MediaStore photos -> local manifest/server -> iOS client -> Photos import
 ```
 
 ## Repository Layout
@@ -98,11 +98,11 @@ M0 includes only:
 - QR pairing payload structure
 - pairing-token header enforcement for protected local endpoints
 - QR pairing scanner/manual fallback
-- Android media manifest
-- Android media download endpoint
+- Android photo manifest
+- Android photo download endpoint
 - lazy media checksum header for full downloads
 - iOS manifest fetch
-- iOS media download
+- iOS photo download
 - iOS Photos import
 - duplicate prevention
 - interrupted sync resume
@@ -133,7 +133,7 @@ M0 excludes:
 - Do not add external cloud relay logic.
 - Do not add Apple ID or iCloud password handling.
 - iOS must remain foreground during current M0 validation.
-- Deleting the iOS app deletes its local sync mapping and can make previously imported Android media eligible again.
+- Deleting the iOS app deletes its local sync mapping and can make previously imported Android photos eligible again.
 
 ## Local Checks
 
@@ -165,7 +165,7 @@ Android:
 
 - Open `android/` in Android Studio.
 - Run the `app` configuration on a physical Android phone.
-- Grant media permission.
+- Grant photos permission.
 - Tap `Start M0 server`.
 - Confirm the screen shows a manual endpoint and QR code.
 - If port `48291` is busy, Android falls back to an available port and displays that actual port.
@@ -178,7 +178,7 @@ iOS:
 - Tap `Fetch Manifest`.
 - Tap `Download Next Item` or `Download 5 Items`.
 - Tap `Download Remaining` for the 100-item foreground transfer validation.
-- Open Photos and confirm imported media appears in the `ShareSync Backup` album.
+- Open Photos and confirm imported photos appear in the `ShareSync Backup` album.
 
 Use [docs/m0-device-validation.md](docs/m0-device-validation.md) as the real-device acceptance checklist before calling M0 complete.
 
