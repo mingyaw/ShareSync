@@ -27,7 +27,7 @@ This checklist validates the current main path: Android exposes recent photos ov
 13. Confirm iOS shows `Android Peer` as ready.
 14. Confirm iOS shows a photo count and a cursor.
 15. Confirm iOS shows `Transfer` as `Ready` for pending photos.
-16. Confirm Android shows `Manifest photos` with the current pending photo count.
+16. Confirm Android shows `Manifest photos` with the current pending photo count and `Ready` status.
 17. Tap `Download Next Item`.
 18. Confirm status reaches completed/imported.
 19. Open iOS Photos.
@@ -79,6 +79,8 @@ Expected result: iOS keeps the foreground transfer awake, imports every remainin
 Keep the Android M0 screen open during the transfer and confirm Android `Screen lock` remains paused.
 
 Expected result: Android continues updating the sync result summary even when the transfer takes longer than one minute.
+
+After the next manifest refresh, confirm Android `Manifest photos` reaches `0 pending, Complete` when all exposed photos were reported as synced or skipped.
 
 ## Repeat Sync
 

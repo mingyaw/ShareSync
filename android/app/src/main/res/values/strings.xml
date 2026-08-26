@@ -13,7 +13,10 @@
     <string name="m0_screen_lock_normal">Screen lock: normal.</string>
     <string name="m0_screen_lock_paused">Screen lock: paused while M0 server is running.</string>
     <string name="m0_manifest_unavailable">Manifest photos: start the server to scan.</string>
-    <string name="m0_manifest_summary">Manifest photos: %1$d pending.</string>
+    <string name="m0_manifest_summary">Manifest photos: %1$d pending, %2$s.</string>
+    <string name="m0_manifest_status_ready">Ready</string>
+    <string name="m0_manifest_status_complete">Complete</string>
+    <string name="m0_manifest_status_needs_retry">Needs retry</string>
     <string name="m0_sync_result_unavailable">Sync result: waiting for iPhone report.</string>
     <string name="m0_sync_result_summary">Sync result: %1$s, synced %2$d, skipped %3$d, failed %4$d, last failure %5$s.</string>
     <string name="m0_sync_result_no_failure">none</string>

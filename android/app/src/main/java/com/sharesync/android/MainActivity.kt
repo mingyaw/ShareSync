@@ -224,7 +224,7 @@ class MainActivity : Activity() {
         pairingPayloadText.text = currentPairingPayloadJson
             ?: getString(R.string.m0_pairing_payload_unavailable)
         manifestSummaryText.text = currentManifestPhotoCount?.let { count ->
-            getString(R.string.m0_manifest_summary, count)
+            getString(R.string.m0_manifest_summary, count, manifestTransferStatus(count))
         } ?: getString(R.string.m0_manifest_unavailable)
         syncResultText.text = currentSyncResult?.let(::formatSyncResult)
             ?: getString(R.string.m0_sync_result_unavailable)
@@ -513,6 +513,16 @@ class MainActivity : Activity() {
             failedCount,
             latestFailureCode,
         )
+    }
+
+    private fun manifestTransferStatus(pendingPhotoCount: Int): String {
+        val result = currentSyncResult
+        val hasFailedResult = result?.results?.any { it.status == SyncItemStatus.failed } == true
+        return when {
+            pendingPhotoCount == 0 -> getString(R.string.m0_manifest_status_complete)
+            hasFailedResult -> getString(R.string.m0_manifest_status_needs_retry)
+            else -> getString(R.string.m0_manifest_status_ready)
+        }
     }
 
     private companion object {
