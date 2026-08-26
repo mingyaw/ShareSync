@@ -52,6 +52,7 @@ class LocalSyncRouter(
             ?: return LocalMediaResponse.notFound("SS-MEDIA-404")
 
         val range = ByteRange.parse(rangeHeader, asset.size)
+            ?: return LocalMediaResponse.rangeNotSatisfiable("SS-REQ-416", asset.size)
         return LocalMediaResponse.found(
             asset = asset,
             range = range,
@@ -139,9 +140,15 @@ sealed class LocalMediaResponse {
         val errorCode: String,
     ) : LocalMediaResponse()
 
+    data class RangeNotSatisfiable(
+        val statusCode: Int,
+        val errorCode: String,
+        val headers: Map<String, String>,
+    ) : LocalMediaResponse()
+
     companion object {
         fun found(asset: MediaAsset, range: ByteRange): LocalMediaResponse {
-            val contentLength = range.endInclusive - range.start + 1
+            val contentLength = (range.endInclusive - range.start + 1).coerceAtLeast(0)
             val statusCode = if (range.isPartial) 206 else 200
             val headers = buildMap {
                 put("Content-Type", asset.mimeType)
@@ -169,6 +176,14 @@ sealed class LocalMediaResponse {
         fun unauthorized(errorCode: String): LocalMediaResponse {
             return Unauthorized(statusCode = 401, errorCode = errorCode)
         }
+
+        fun rangeNotSatisfiable(errorCode: String, totalSize: Long): LocalMediaResponse {
+            return RangeNotSatisfiable(
+                statusCode = 416,
+                errorCode = errorCode,
+                headers = mapOf("Content-Range" to "bytes */${totalSize.coerceAtLeast(0)}"),
+            )
+        }
     }
 }
 
@@ -179,7 +194,7 @@ data class ByteRange(
     val isPartial: Boolean,
 ) {
     companion object {
-        fun parse(rangeHeader: String?, totalSize: Long): ByteRange {
+        fun parse(rangeHeader: String?, totalSize: Long): ByteRange? {
             if (rangeHeader.isNullOrBlank() || !rangeHeader.startsWith("bytes=")) {
                 return ByteRange(
                     start = 0,
@@ -189,12 +204,40 @@ data class ByteRange(
                 )
             }
 
-            val range = rangeHeader.removePrefix("bytes=").substringBefore(",")
+            if (totalSize <= 0) {
+                return null
+            }
+
+            val range = rangeHeader.removePrefix("bytes=").substringBefore(",").trim()
+            if (!range.contains("-")) {
+                return null
+            }
+
             val startText = range.substringBefore("-")
             val endText = range.substringAfter("-", missingDelimiterValue = "")
-            val start = startText.toLongOrNull()?.coerceAtLeast(0) ?: 0
-            val requestedEnd = endText.toLongOrNull() ?: (totalSize - 1)
-            val end = requestedEnd.coerceAtMost(totalSize - 1).coerceAtLeast(start)
+            val start = if (startText.isEmpty()) {
+                val suffixLength = endText.toLongOrNull() ?: return null
+                if (suffixLength <= 0) {
+                    return null
+                }
+                (totalSize - suffixLength).coerceAtLeast(0)
+            } else {
+                startText.toLongOrNull()?.coerceAtLeast(0) ?: return null
+            }
+            if (start >= totalSize) {
+                return null
+            }
+
+            val requestedEnd = if (startText.isEmpty()) {
+                totalSize - 1
+            } else {
+                endText.toLongOrNull() ?: (totalSize - 1)
+            }
+            if (requestedEnd < start) {
+                return null
+            }
+
+            val end = requestedEnd.coerceAtMost(totalSize - 1)
 
             return ByteRange(
                 start = start,

@@ -78,6 +78,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Merge Android sync results across multiple M0 batches.
 - [x] Add Android validation control to clear persisted M0 sync result state.
 - [x] Add range request support.
+- [x] Return `416 Range Not Satisfiable` for invalid Android media ranges.
 - [x] Add basic error responses.
 
 ## iOS Tasks
@@ -819,6 +820,22 @@ Completed a media retry foundation for interrupted photo transfers:
 - `206 Partial Content` responses are combined with the local prefix before checksum validation and final file write.
 - If Android ignores the range and returns `200 OK`, iOS treats the response as a full replacement to keep compatibility.
 - Added Swift coverage for partial range resume and full-response fallback behavior.
+
+Verification target:
+
+```sh
+./scripts/check-m0.sh
+```
+
+### 2026-08-26 Android Media Range Validation
+
+Completed the Android side of the media range contract:
+
+- Android media routing now returns `416 Range Not Satisfiable` for invalid or unsatisfiable byte ranges.
+- `416` responses include `Content-Range: bytes */<totalSize>` and shared error code `SS-REQ-416`.
+- Android range parsing supports `bytes=<start>-`, `bytes=<start>-<end>`, and `bytes=-<suffixLength>`.
+- Added Android router coverage for partial range metadata, suffix ranges, and unsatisfiable ranges.
+- Updated the shared local API contract and device validation checklist.
 
 Verification target:
 

@@ -11,6 +11,7 @@ SS-{DOMAIN}-{CODE}
 | SS-PAIR-001 | QR code expired | Regenerate the pairing code |
 | SS-AUTH-001 | Invalid signature | Re-pair the trusted device |
 | SS-REQ-001 | Invalid request | Refresh pairing and retry |
+| SS-REQ-416 | Requested byte range is not available | Refresh the manifest and retry |
 | SS-NET-001 | Peer unreachable | Confirm both phones are on the same Wi-Fi |
 | SS-NET-002 | Transfer interrupted | Sync will resume automatically |
 | SS-NET-404 | Local endpoint not found | Refresh pairing and retry |

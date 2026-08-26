@@ -40,6 +40,58 @@ class LocalSyncRouterTest {
         assertEquals(LocalMediaResponse.Unauthorized(401, "SS-AUTH-001"), response)
     }
 
+    @Test
+    fun mediaReturnsPartialRangeMetadata() {
+        val response = SuspendBridge.runBlocking {
+            router().media(
+                assetId = "media-001",
+                rangeHeader = "bytes=100-199",
+                headers = pairingHeaders(),
+            )
+        } as LocalMediaResponse.Found
+
+        assertEquals(206, response.statusCode)
+        assertEquals(ByteRange(start = 100, endInclusive = 199, totalSize = 1024, isPartial = true), response.range)
+        assertEquals("100", response.headers["Content-Length"])
+        assertEquals("bytes 100-199/1024", response.headers["Content-Range"])
+    }
+
+    @Test
+    fun mediaSupportsSuffixRangeMetadata() {
+        val response = SuspendBridge.runBlocking {
+            router().media(
+                assetId = "media-001",
+                rangeHeader = "bytes=-24",
+                headers = pairingHeaders(),
+            )
+        } as LocalMediaResponse.Found
+
+        assertEquals(206, response.statusCode)
+        assertEquals(ByteRange(start = 1000, endInclusive = 1023, totalSize = 1024, isPartial = true), response.range)
+        assertEquals("24", response.headers["Content-Length"])
+        assertEquals("bytes 1000-1023/1024", response.headers["Content-Range"])
+    }
+
+    @Test
+    fun mediaRejectsUnsatisfiableRange() {
+        val response = SuspendBridge.runBlocking {
+            router().media(
+                assetId = "media-001",
+                rangeHeader = "bytes=2048-4096",
+                headers = pairingHeaders(),
+            )
+        }
+
+        assertEquals(
+            LocalMediaResponse.RangeNotSatisfiable(
+                statusCode = 416,
+                errorCode = "SS-REQ-416",
+                headers = mapOf("Content-Range" to "bytes */1024"),
+            ),
+            response,
+        )
+    }
+
     private fun router(): LocalSyncRouter {
         return LocalSyncRouter(
             deviceId = "android-device-001",

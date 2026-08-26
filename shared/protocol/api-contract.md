@@ -69,6 +69,14 @@ Range: bytes=0-
 
 Streams one photo for M0. Range support is required for MVP.
 
+Supported M0 range forms:
+
+- `bytes=<start>-`
+- `bytes=<start>-<end>`
+- `bytes=-<suffixLength>`
+
+Successful partial responses return `206 Partial Content` with `Content-Range`. Unsatisfiable ranges return `416 Range Not Satisfiable`, `Content-Range: bytes */<totalSize>`, and `SS-REQ-416`.
+
 ### Contacts Export
 
 ```http

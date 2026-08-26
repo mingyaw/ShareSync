@@ -129,6 +129,9 @@ class EmbeddedLocalSyncServer(
             is LocalMediaResponse.Unauthorized -> {
                 writeJsonError(output, response.statusCode, response.errorCode)
             }
+            is LocalMediaResponse.RangeNotSatisfiable -> {
+                writeJsonError(output, response.statusCode, response.errorCode, response.headers)
+            }
         }
     }
 
@@ -146,12 +149,17 @@ class EmbeddedLocalSyncServer(
         writeJsonError(output, 404, "SS-NET-404")
     }
 
-    private fun writeJsonError(output: OutputStream, statusCode: Int, errorCode: String) {
+    private fun writeJsonError(
+        output: OutputStream,
+        statusCode: Int,
+        errorCode: String,
+        headers: Map<String, String> = emptyMap(),
+    ) {
         val body = """{"errorCode":"$errorCode"}""".toByteArray(StandardCharsets.UTF_8)
         writeHeaders(
             output = output,
             statusCode = statusCode,
-            headers = mapOf(
+            headers = headers + mapOf(
                 "Content-Type" to "application/json; charset=utf-8",
                 "Content-Length" to body.size.toString(),
             ),
@@ -216,6 +224,7 @@ class EmbeddedLocalSyncServer(
             206 -> "Partial Content"
             404 -> "Not Found"
             405 -> "Method Not Allowed"
+            416 -> "Range Not Satisfiable"
             else -> "Error"
         }
     }

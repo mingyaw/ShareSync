@@ -132,6 +132,10 @@ For development builds with a persisted partial media file, confirm the next req
 
 Expected result: Android returns `206 Partial Content`, iOS combines the partial file with the response body, verifies the final checksum, and imports only the completed photo.
 
+During Android local API validation, request an invalid range such as `bytes=999999999-` for a smaller media item.
+
+Expected result: Android returns `416 Range Not Satisfiable`, includes `Content-Range: bytes */<totalSize>`, and returns `SS-REQ-416`.
+
 ## iOS Foreground Interruption
 
 1. Start a `Download Remaining` transfer on iOS.
