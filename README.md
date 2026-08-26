@@ -97,6 +97,7 @@ tasks/
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Local API Contract](shared/protocol/api-contract.md)
 - [M0 Device Validation Checklist](docs/m0-device-validation.md)
+- [M0 Validation Results](docs/m0-validation-results.md)
 - [M0 Photo PoC](tasks/m0-photo-poc.md)
 
 ## M0 Rules
@@ -209,7 +210,7 @@ Resetting test state:
 - iOS `Reset Local Sync State` removes ShareSync download/import mappings and latest result JSON. Photos already imported into the `ShareSync Backup` album remain in Photos.
 - iOS `Clear Pairing` removes only the saved Android endpoint, device metadata, pairing token, and pasted payload. It does not clear download/import mappings.
 
-Use [docs/m0-device-validation.md](docs/m0-device-validation.md) as the real-device acceptance checklist before calling M0 complete.
+Use [docs/m0-device-validation.md](docs/m0-device-validation.md) as the real-device acceptance checklist, and record pass/fail evidence in [docs/m0-validation-results.md](docs/m0-validation-results.md), before calling M0 complete.
 
 If Gradle cannot find the Android SDK, create an untracked `android/local.properties`:
 

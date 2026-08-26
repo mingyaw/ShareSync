@@ -185,7 +185,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 ## Manual M0 Device Validation
 
-Run the full checklist in `docs/m0-device-validation.md` before calling M0 complete.
+Run the full checklist in `docs/m0-device-validation.md` and record real-device results in `docs/m0-validation-results.md` before calling M0 complete.
 
 ## Out of Scope for M0
 
@@ -206,6 +206,20 @@ Completed a small M0 reliability slice:
 - Added an iOS `Clear Pairing` action for stale Android M0 endpoint/token recovery.
 - Kept pairing reset separate from local download/import/result state reset.
 - Documented the stale-pairing validation path and reset semantics.
+
+Verified:
+
+```sh
+./scripts/check-m0.sh
+```
+
+### 2026-08-26 M0 Validation Results Tracking
+
+Completed an M0 completion-readiness slice:
+
+- Added a real-device validation results tracker.
+- Defined pass/fail/blocking statuses for each M0 scenario.
+- Linked M0 completion to recorded validation evidence.
 
 Verified:
 
