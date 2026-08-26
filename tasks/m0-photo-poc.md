@@ -71,6 +71,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Persist latest sync result on Android.
 - [x] Show latest sync result summary on Android M0 screen.
 - [x] Show latest failed result code on Android M0 screen.
+- [x] Keep Android sync result polling active while the M0 server is running.
 - [x] Exclude latest synced/skipped media results from Android manifest.
 - [x] Merge Android sync results across multiple M0 batches.
 - [x] Add range request support.
@@ -715,3 +716,11 @@ Completed the temporary download cleanup slice:
 - Imported media records no longer retain app temp file URLs.
 - Downloaded-but-not-imported records still retain their temp file URLs so restart resume can continue import.
 - Added Swift coverage for imported records clearing local temp file references.
+
+### 2026-08-26 Android Sync Result Polling
+
+Completed the Android sync result polling slice:
+
+- Android now keeps polling the latest iOS sync result while the M0 server is running.
+- Stopping the M0 server interrupts the polling thread and clears server-scoped UI state.
+- This keeps the Android receive summary useful during longer full-manifest photo transfers.

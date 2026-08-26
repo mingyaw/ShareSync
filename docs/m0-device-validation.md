@@ -31,7 +31,7 @@ This checklist validates the current main path: Android exposes recent photos ov
 17. Confirm the iOS ShareSync screen shows updated `Synced`, `Skipped`, and `Result Failed` counts.
 18. Confirm Android shows the latest sync result summary.
 
-Expected result: one Android photo is visible in iOS Photos and iCloud Photos can back it up through the normal iOS Photos pipeline.
+Expected result: one Android photo is visible in iOS Photos, Android keeps showing the latest iOS sync result while the M0 server is running, and iCloud Photos can back it up through the normal iOS Photos pipeline.
 
 Note: `Fetch Manifest`, media downloads, and sync result return require the pairing token from the Android QR/payload. Re-scan or paste a fresh payload if iOS shows a token rejection message.
 
@@ -48,6 +48,10 @@ Note: `Fetch Manifest`, media downloads, and sync result return require the pair
 9. Tap `Fetch Manifest` again.
 
 Expected result: iOS keeps the foreground transfer awake, imports every remaining manifest photo it can download, the receive screen remaining count reaches `0`, and the next Android manifest excludes photos reported as `synced` or `skipped`.
+
+Keep the Android M0 screen open during the transfer.
+
+Expected result: Android continues updating the sync result summary even when the transfer takes longer than one minute.
 
 ## Repeat Sync
 

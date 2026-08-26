@@ -45,7 +45,10 @@ class MainActivity : Activity() {
     private lateinit var copyPairingButton: Button
 
     private var server: LocalSyncServer? = null
+    @Volatile
     private var isServerRunning = false
+    @Volatile
+    private var syncResultPollThread: Thread? = null
     private var currentPairingPayloadJson: String? = null
     private var currentManifestPhotoCount: Int? = null
     private var currentSyncResult: SyncResult? = null
@@ -332,6 +335,8 @@ class MainActivity : Activity() {
         currentManifestPhotoCount = null
         isServerRunning = false
         currentPairingPayloadJson = null
+        syncResultPollThread?.interrupt()
+        syncResultPollThread = null
 
         Thread {
             try {
@@ -381,9 +386,18 @@ class MainActivity : Activity() {
     }
 
     private fun pollSyncResultUpdates(store: SyncResultStore) {
-        Thread {
-            repeat(SYNC_RESULT_POLL_COUNT) {
-                Thread.sleep(SYNC_RESULT_POLL_INTERVAL_MS)
+        if (syncResultPollThread?.isAlive == true) {
+            return
+        }
+
+        syncResultPollThread = Thread {
+            while (isServerRunning) {
+                try {
+                    Thread.sleep(SYNC_RESULT_POLL_INTERVAL_MS)
+                } catch (_: InterruptedException) {
+                    return@Thread
+                }
+
                 if (!isServerRunning) {
                     return@Thread
                 }
@@ -393,7 +407,9 @@ class MainActivity : Activity() {
                 }
                 runOnUiThread { refreshUi() }
             }
-        }.start()
+        }.also { thread ->
+            thread.start()
+        }
     }
 
     private fun formatSyncResult(result: SyncResult): String {
@@ -417,7 +433,6 @@ class MainActivity : Activity() {
     private companion object {
         const val REQUEST_MEDIA_PERMISSION = 1001
         const val AVAILABLE_PORT = 0
-        const val SYNC_RESULT_POLL_COUNT = 30
         const val SYNC_RESULT_POLL_INTERVAL_MS = 2_000L
     }
 }
