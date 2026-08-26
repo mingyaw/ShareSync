@@ -306,6 +306,79 @@ final class MediaDownloaderTests: XCTestCase {
         XCTAssertEqual(try Data(contentsOf: XCTUnwrap(store.record(for: asset.assetId)?.localFileURL)), fullData)
     }
 
+    func testPartialDownloadRejectsMissingContentRange() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+
+        let asset = makeAsset(assetId: "mediastore-1-57", fileName: "IMG_0057.jpg", size: 12, sha256: nil)
+        let partialURL = directory.appendingPathComponent("partial-media.jpg")
+        try Data("partial".utf8).write(to: partialURL)
+        let store = InMemoryMediaDownloadStateStore()
+        store.upsertQueued(asset: asset, now: Date(timeIntervalSince1970: 1))
+        store.markDownloaded(sourceAssetId: asset.assetId, localFileURL: partialURL, downloadedBytes: 7, now: Date(timeIntervalSince1970: 2))
+        store.markFailed(sourceAssetId: asset.assetId, errorCode: "SS-NET-002", now: Date(timeIntervalSince1970: 3))
+        let session = StubMediaDataSession(
+            data: Data("-tail".utf8),
+            response: HTTPURLResponse(
+                url: URL(string: "http://192.168.1.10:48291/v1/media/mediastore-1-57")!,
+                statusCode: 206,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+        )
+        let downloader = MediaDownloader(session: session, downloadDirectory: directory)
+
+        let results = await downloader.downloadMedia(
+            assets: [asset],
+            host: "192.168.1.10",
+            port: 48291,
+            stateStore: store
+        )
+
+        XCTAssertTrue(results.isEmpty)
+        XCTAssertEqual(session.requests.first?.value(forHTTPHeaderField: "Range"), "bytes=7-")
+        XCTAssertEqual(store.record(for: asset.assetId)?.status, .failed)
+        XCTAssertEqual(store.record(for: asset.assetId)?.lastErrorCode, "SS-MEDIA-003")
+    }
+
+    func testPartialDownloadRejectsMismatchedContentRangeStart() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+
+        let asset = makeAsset(assetId: "mediastore-1-58", fileName: "IMG_0058.jpg", size: 12, sha256: nil)
+        let partialURL = directory.appendingPathComponent("partial-media.jpg")
+        try Data("partial".utf8).write(to: partialURL)
+        let store = InMemoryMediaDownloadStateStore()
+        store.upsertQueued(asset: asset, now: Date(timeIntervalSince1970: 1))
+        store.markDownloaded(sourceAssetId: asset.assetId, localFileURL: partialURL, downloadedBytes: 7, now: Date(timeIntervalSince1970: 2))
+        store.markFailed(sourceAssetId: asset.assetId, errorCode: "SS-NET-002", now: Date(timeIntervalSince1970: 3))
+        let session = StubMediaDataSession(
+            data: Data("-tail".utf8),
+            response: HTTPURLResponse(
+                url: URL(string: "http://192.168.1.10:48291/v1/media/mediastore-1-58")!,
+                statusCode: 206,
+                httpVersion: nil,
+                headerFields: ["Content-Range": "bytes 6-11/12"]
+            )!
+        )
+        let downloader = MediaDownloader(session: session, downloadDirectory: directory)
+
+        let results = await downloader.downloadMedia(
+            assets: [asset],
+            host: "192.168.1.10",
+            port: 48291,
+            stateStore: store
+        )
+
+        XCTAssertTrue(results.isEmpty)
+        XCTAssertEqual(store.record(for: asset.assetId)?.status, .failed)
+        XCTAssertEqual(store.record(for: asset.assetId)?.lastErrorCode, "SS-MEDIA-003")
+    }
+
     func testCancelledNetworkErrorDoesNotRetry() async throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)

@@ -17,6 +17,7 @@ SS-{DOMAIN}-{CODE}
 | SS-NET-404 | Local endpoint not found | Refresh pairing and retry |
 | SS-NET-405 | HTTP method not allowed | Update the app and retry |
 | SS-MEDIA-001 | Hash mismatch | File will be downloaded again |
+| SS-MEDIA-003 | Invalid partial media response | Refresh the manifest and retry |
 | SS-MEDIA-404 | Media item not found | Refresh the manifest and retry |
 | SS-MEDIA-URI | Media URI unavailable | Refresh the manifest and retry |
 | SS-MEDIA-STREAM | Media stream unavailable | Refresh the manifest and retry |

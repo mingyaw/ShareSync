@@ -6,6 +6,7 @@ enum MediaDownloaderError: Error, Equatable {
     case nonHTTPResponse
     case unacceptableStatusCode(Int, String?)
     case checksumMismatch
+    case invalidPartialResponse
     case insufficientStorage
 }
 
@@ -202,10 +203,14 @@ final class MediaDownloader {
             )
         }
 
-        let finalData = if resume.downloadedBytes > 0 && httpResponse.statusCode == 206 {
-            resume.data + data
+        let finalData: Data
+        if resume.downloadedBytes > 0 && httpResponse.statusCode == 206 {
+            guard partialResponseMatchesResume(httpResponse, resumeOffset: resume.downloadedBytes, totalBytes: asset.size) else {
+                throw MediaDownloaderError.invalidPartialResponse
+            }
+            finalData = resume.data + data
         } else {
-            data
+            finalData = data
         }
         let responseHash = httpResponse.value(forHTTPHeaderField: "X-ShareSync-SHA256")
         let expectedHash = firstNonEmpty(asset.sha256, responseHash)
@@ -338,6 +343,8 @@ final class MediaDownloader {
                 return "SS-NET-002"
             case .checksumMismatch:
                 return "SS-MEDIA-001"
+            case .invalidPartialResponse:
+                return "SS-MEDIA-003"
             case .insufficientStorage:
                 return "SS-STORE-001"
             }
@@ -352,6 +359,19 @@ final class MediaDownloader {
 
     private func serverErrorCode(from data: Data) -> String? {
         try? JSONDecoder().decode(ServerErrorEnvelope.self, from: data).errorCode
+    }
+
+    private func partialResponseMatchesResume(
+        _ response: HTTPURLResponse,
+        resumeOffset: Int64,
+        totalBytes: Int64
+    ) -> Bool {
+        guard let contentRange = response.value(forHTTPHeaderField: "Content-Range"),
+              let parsed = ContentRange(contentRange) else {
+            return false
+        }
+
+        return parsed.start == resumeOffset && parsed.totalBytes == totalBytes
     }
 
     private func ensureEnoughStorage(for bytes: Int, at destination: URL) throws {
@@ -374,4 +394,37 @@ final class MediaDownloader {
 
 private struct ServerErrorEnvelope: Decodable {
     let errorCode: String
+}
+
+private struct ContentRange {
+    let start: Int64
+    let endInclusive: Int64
+    let totalBytes: Int64
+
+    init?(_ value: String) {
+        guard value.hasPrefix("bytes ") else {
+            return nil
+        }
+
+        let rangeAndTotal = value.dropFirst("bytes ".count)
+        let parts = rangeAndTotal.split(separator: "/", maxSplits: 1)
+        guard parts.count == 2,
+              let totalBytes = Int64(parts[1]) else {
+            return nil
+        }
+
+        let rangeParts = parts[0].split(separator: "-", maxSplits: 1)
+        guard rangeParts.count == 2,
+              let start = Int64(rangeParts[0]),
+              let endInclusive = Int64(rangeParts[1]),
+              start <= endInclusive,
+              totalBytes > 0,
+              endInclusive < totalBytes else {
+            return nil
+        }
+
+        self.start = start
+        self.endInclusive = endInclusive
+        self.totalBytes = totalBytes
+    }
 }

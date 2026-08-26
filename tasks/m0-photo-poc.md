@@ -818,8 +818,24 @@ Completed a media retry foundation for interrupted photo transfers:
 - iOS preserves partial local file metadata when a failed record is requeued.
 - `MediaDownloader` sends `Range: bytes=<downloadedBytes>-` when persisted partial bytes are available.
 - `206 Partial Content` responses are combined with the local prefix before checksum validation and final file write.
+- iOS rejects missing or mismatched `Content-Range` metadata with `SS-MEDIA-003`.
 - If Android ignores the range and returns `200 OK`, iOS treats the response as a full replacement to keep compatibility.
 - Added Swift coverage for partial range resume and full-response fallback behavior.
+
+Verification target:
+
+```sh
+./scripts/check-m0.sh
+```
+
+### 2026-08-26 iOS Partial Response Validation
+
+Completed a defensive validation slice for media resume:
+
+- iOS now requires `206 Partial Content` responses to include a `Content-Range` whose start matches the persisted local offset.
+- Partial responses with missing or mismatched `Content-Range` are rejected before bytes are combined.
+- Added shared error code `SS-MEDIA-003` for invalid partial media responses.
+- Added Swift coverage for missing and mismatched `Content-Range` metadata.
 
 Verification target:
 

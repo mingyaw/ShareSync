@@ -35,6 +35,7 @@ The current codebase contains:
 - iOS receive screen can download the next item, a small batch, or all remaining manifest items for M0 device validation.
 - iOS receive screen shows live batch progress, downloaded count, failed count, and current file during foreground transfer.
 - iOS media download can issue `Range` requests from a persisted partial offset and combine `206 Partial Content` responses.
+- iOS validates `206 Partial Content` `Content-Range` metadata before combining partial media bytes.
 - iOS receive screen can stop an active foreground transfer while keeping completed items retry-safe.
 - iOS pauses active foreground transfers when the app leaves the foreground, keeping completed items retry-safe.
 - iOS local download/import state, duplicate prevention, restart resume, and deleted-photo reconciliation.
@@ -114,6 +115,7 @@ M0 includes only:
 - duplicate prevention
 - interrupted sync resume
 - partial media range retry foundation
+- partial response range validation
 - all-remaining foreground batch transfer for device validation
 - foreground batch progress visibility
 - foreground transfer stop and retry
