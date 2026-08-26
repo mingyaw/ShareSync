@@ -116,7 +116,7 @@ final class MediaDownloader {
             )
 
             do {
-                let result = try await download(
+                let result = try await downloadWithRetry(
                     asset: asset,
                     host: host,
                     port: port,
@@ -217,6 +217,29 @@ final class MediaDownloader {
             localFileURL: destination,
             downloadedBytes: Int64(data.count)
         )
+    }
+
+    private func downloadWithRetry(
+        asset: MediaAsset,
+        host: String,
+        port: Int,
+        pairingToken: String?
+    ) async throws -> MediaDownloadResult {
+        do {
+            return try await download(
+                asset: asset,
+                host: host,
+                port: port,
+                pairingToken: pairingToken
+            )
+        } catch MediaDownloaderError.checksumMismatch {
+            return try await download(
+                asset: asset,
+                host: host,
+                port: port,
+                pairingToken: pairingToken
+            )
+        }
     }
 
     private func mediaURL(assetId: String, host: String, port: Int) -> URL? {

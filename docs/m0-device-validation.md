@@ -93,6 +93,14 @@ Expected result: QR payload contains the actual bound port, and iOS can fetch `/
 
 Expected result: failed records remain retryable, completed records are not re-imported, and iOS shows the latest failed code in `Last Failure`.
 
+## Hash Mismatch Retry
+
+1. During development, simulate or force a bad first response body for one photo while keeping the manifest hash unchanged.
+2. Let the next response return the correct photo bytes.
+3. Start the iOS download.
+
+Expected result: iOS retries the checksum mismatch once, imports the photo if the retry matches, and does not mark the item failed.
+
 ## Manual Stop And Retry
 
 1. Complete the baseline success path setup.

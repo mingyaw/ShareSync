@@ -120,6 +120,54 @@ final class MediaDownloaderTests: XCTestCase {
         XCTAssertEqual(store.record(for: "mediastore-1-43")?.lastErrorCode, "SS-MEDIA-001")
     }
 
+    func testChecksumMismatchRetriesOnceAndCanRecover() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let expectedData = Data("correct-photo".utf8)
+        let asset = makeAsset(
+            assetId: "mediastore-1-52",
+            fileName: "IMG_0052.jpg",
+            size: Int64(expectedData.count),
+            sha256: sha256(expectedData)
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        let session = StubSequenceMediaDataSession(responses: [
+            (
+                data: Data("wrong-photo".utf8),
+                response: HTTPURLResponse(
+                    url: URL(string: "http://192.168.1.10:48291/v1/media/mediastore-1-52")!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!
+            ),
+            (
+                data: expectedData,
+                response: HTTPURLResponse(
+                    url: URL(string: "http://192.168.1.10:48291/v1/media/mediastore-1-52")!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!
+            ),
+        ])
+        let downloader = MediaDownloader(session: session, downloadDirectory: directory)
+
+        let results = await downloader.downloadMedia(
+            assets: [asset],
+            host: "192.168.1.10",
+            port: 48291,
+            stateStore: store
+        )
+
+        XCTAssertEqual(results.map(\.assetId), ["mediastore-1-52"])
+        XCTAssertEqual(store.record(for: "mediastore-1-52")?.status, .downloaded)
+        XCTAssertEqual(session.requests.count, 2)
+        XCTAssertEqual(try Data(contentsOf: XCTUnwrap(store.record(for: "mediastore-1-52")?.localFileURL)), expectedData)
+    }
+
     func testUnauthorizedResponseUsesServerErrorCode() async throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
@@ -397,12 +445,14 @@ private final class StubMediaDataSession: MediaDataSession {
 
 private final class StubSequenceMediaDataSession: MediaDataSession {
     private var responses: [(data: Data, response: URLResponse)]
+    private(set) var requests: [URLRequest] = []
 
     init(responses: [(data: Data, response: URLResponse)]) {
         self.responses = responses
     }
 
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        requests.append(request)
         guard !responses.isEmpty else {
             throw URLError(.badServerResponse)
         }

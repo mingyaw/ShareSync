@@ -657,3 +657,13 @@ Completed the low-storage handling slice:
 - Insufficient space marks the item failed with `SS-STORE-001`.
 - Added Swift coverage to confirm low storage does not write a partial local file.
 - Added a low-storage validation scenario to the M0 device checklist.
+
+### 2026-08-26 Checksum Mismatch Retry
+
+Completed the hash mismatch retry slice:
+
+- iOS media downloader now retries one time after a checksum mismatch.
+- A successful retry marks the photo downloaded and avoids a false failed record.
+- Repeated checksum mismatch still fails with `SS-MEDIA-001`.
+- Added Swift coverage for a bad first response followed by a valid retry.
+- Added a development validation scenario for hash mismatch retry.
