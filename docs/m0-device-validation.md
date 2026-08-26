@@ -41,12 +41,13 @@ Note: `Fetch Manifest`, media downloads, and sync result return require the pair
 2. Tap `Fetch Manifest`.
 3. Tap `Download Remaining`.
 4. Keep the iOS app foregrounded until transfer and import finish.
-5. Confirm iOS updates `Batch Progress`, `Batch Downloaded`, `Batch Failed`, and `Current File` while downloading.
-6. Open iOS Photos.
-7. Confirm imported photos appear in the `ShareSync Backup` album.
-8. Tap `Fetch Manifest` again.
+5. Confirm iOS shows `Screen Lock` as paused while transfer is active.
+6. Confirm iOS updates `Batch Progress`, `Batch Downloaded`, `Batch Failed`, and `Current File` while downloading.
+7. Open iOS Photos.
+8. Confirm imported photos appear in the `ShareSync Backup` album.
+9. Tap `Fetch Manifest` again.
 
-Expected result: iOS imports every remaining manifest photo it can download, the receive screen remaining count reaches `0`, and the next Android manifest excludes photos reported as `synced` or `skipped`.
+Expected result: iOS keeps the foreground transfer awake, imports every remaining manifest photo it can download, the receive screen remaining count reaches `0`, and the next Android manifest excludes photos reported as `synced` or `skipped`.
 
 ## Repeat Sync
 

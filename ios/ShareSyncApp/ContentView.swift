@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct ContentView: View {
     @StateObject private var viewModel = ManifestFetchViewModel()
@@ -37,6 +38,12 @@ struct ContentView: View {
                     viewModel.pairingPayloadText = payload
                     viewModel.applyPairingPayload()
                 }
+            }
+            .onChange(of: viewModel.downloadState) { _, newState in
+                updateIdleTimer(for: newState)
+            }
+            .onDisappear {
+                UIApplication.shared.isIdleTimerDisabled = false
             }
         }
     }
@@ -184,6 +191,7 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 12) {
             StatusRow(title: "Pairing", value: pairedStatus)
             StatusRow(title: "Photos Access", value: photosAccessStatus)
+            StatusRow(title: "Screen Lock", value: screenLockStatus)
             if let pairedDevice = viewModel.pairedDevice {
                 StatusRow(title: "Device", value: pairedDevice.deviceName)
             }
@@ -336,6 +344,10 @@ struct ContentView: View {
         }
     }
 
+    private var screenLockStatus: String {
+        shouldKeepScreenAwake(for: viewModel.downloadState) ? "Paused" : "Normal"
+    }
+
     private func lastFailureText(code: String, fileName: String?) -> String {
         guard let fileName, !fileName.isEmpty else {
             return code
@@ -345,6 +357,14 @@ struct ContentView: View {
 
     private func androidPeerText(_ health: LocalPeerHealth) -> String {
         "Ready - \(health.deviceId) - v\(health.protocolVersion)"
+    }
+
+    private func updateIdleTimer(for state: ManifestFetchViewModel.DownloadState) {
+        UIApplication.shared.isIdleTimerDisabled = shouldKeepScreenAwake(for: state)
+    }
+
+    private func shouldKeepScreenAwake(for state: ManifestFetchViewModel.DownloadState) -> Bool {
+        state == .downloading || state == .importing
     }
 }
 

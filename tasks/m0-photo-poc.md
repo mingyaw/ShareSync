@@ -124,6 +124,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Expand UI action from single-item validation to batch download.
 - [x] Add all-remaining manifest download action for M0 device validation.
 - [x] Show live foreground batch progress during iOS transfer.
+- [x] Keep iPhone screen awake during active foreground transfer.
 - [x] Add manual foreground transfer stop and retry support.
 - [x] Resume or skip completed items after restart.
 - [x] Retry one transient network download failure before marking a photo failed.
@@ -696,3 +697,11 @@ Completed the local network health preflight slice:
 - iOS now checks Android peer health before fetching the protected manifest endpoint.
 - Receive screen shows a ready Android peer with device id and protocol version after a successful health check.
 - Added Swift coverage for health decode, non-successful responses, and non-ready peer status.
+
+### 2026-08-26 iOS Foreground Awake Guard
+
+Completed the foreground awake guard slice:
+
+- iOS disables the idle timer while photo download or Photos import is active.
+- iOS restores normal screen locking when transfer stops, completes, fails, or the receive screen disappears.
+- Receive screen shows `Screen Lock` as paused during active foreground transfer for device validation.
