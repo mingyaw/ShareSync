@@ -61,6 +61,7 @@ final class ManifestFetchViewModel: ObservableObject {
     @Published private(set) var summary: ManifestSummary?
     @Published private(set) var syncResultSummary: SyncResultSummary?
     @Published private(set) var downloadProgressSummary: DownloadProgressSummary?
+    @Published private(set) var cancellationMessage: String?
     @Published private(set) var pairedDevice: TrustedDevice?
     @Published private(set) var pairingToken: String?
     @Published private(set) var photoLibraryPermissionStatus: PhotoLibraryPermissionStatus = .unknown
@@ -120,6 +121,10 @@ final class ManifestFetchViewModel: ObservableObject {
 
     var canCancelDownload: Bool {
         downloadState == .downloading
+    }
+
+    var isTransferActive: Bool {
+        downloadState == .downloading || downloadState == .importing
     }
 
     func fetchManifest() {
@@ -215,9 +220,22 @@ final class ManifestFetchViewModel: ObservableObject {
     }
 
     func cancelDownload() {
+        cancelDownload(reason: "Transfer stopped. Completed items are kept; remaining items can be retried.")
+    }
+
+    func cancelDownloadForBackground() {
+        guard isTransferActive else {
+            return
+        }
+
+        cancelDownload(reason: "Transfer paused because ShareSync left the foreground. Completed items are kept; retry remaining photos when you return.")
+    }
+
+    private func cancelDownload(reason: String) {
         activeDownloadTask?.cancel()
         activeDownloadTask = nil
         downloadState = .cancelled
+        cancellationMessage = reason
         if let latestManifest {
             summary = ManifestSummary(manifest: latestManifest, stateStore: downloadStateStore)
         }
@@ -241,6 +259,7 @@ final class ManifestFetchViewModel: ObservableObject {
         }
 
         downloadState = .downloading
+        cancellationMessage = nil
         downloadProgressSummary = nil
         activeDownloadTask?.cancel()
 

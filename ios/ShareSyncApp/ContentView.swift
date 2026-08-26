@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var viewModel = ManifestFetchViewModel()
     @State private var isShowingPairingScanner = false
 
@@ -41,6 +42,11 @@ struct ContentView: View {
             }
             .onChange(of: viewModel.downloadState) { _, newState in
                 updateIdleTimer(for: newState)
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase != .active {
+                    viewModel.cancelDownloadForBackground()
+                }
             }
             .onDisappear {
                 UIApplication.shared.isIdleTimerDisabled = false
@@ -234,7 +240,7 @@ struct ContentView: View {
             }
 
             if case .cancelled = viewModel.downloadState {
-                Text("Transfer stopped. Completed items are kept; remaining items can be retried.")
+                Text(viewModel.cancellationMessage ?? "Transfer stopped. Completed items are kept; remaining items can be retried.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)

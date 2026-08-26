@@ -128,6 +128,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add all-remaining manifest download action for M0 device validation.
 - [x] Show live foreground batch progress during iOS transfer.
 - [x] Keep iPhone screen awake during active foreground transfer.
+- [x] Pause iOS foreground transfer when the app leaves the foreground.
 - [x] Add manual foreground transfer stop and retry support.
 - [x] Resume or skip completed items after restart.
 - [x] Retry one transient network download failure before marking a photo failed.
@@ -742,3 +743,11 @@ Completed the Android endpoint copy slice:
 - Android M0 screen now has a `Copy endpoint` action for the current `/v1/health` URL.
 - The copied endpoint uses the actual bound port, including fallback ports.
 - Updated README and device validation notes for same-network and hotspot checks.
+
+### 2026-08-26 iOS Background Pause
+
+Completed the iOS background pause slice:
+
+- iOS now cancels active foreground photo transfer when ShareSync leaves the foreground.
+- The receive screen shows a background-specific pause message.
+- Completed items are kept and remaining photos stay retryable when the user returns.

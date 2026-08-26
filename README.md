@@ -34,6 +34,7 @@ The current codebase contains:
 - iOS receive screen can download the next item, a small batch, or all remaining manifest items for M0 device validation.
 - iOS receive screen shows live batch progress, downloaded count, failed count, and current file during foreground transfer.
 - iOS receive screen can stop an active foreground transfer while keeping completed items retry-safe.
+- iOS pauses active foreground transfers when the app leaves the foreground, keeping completed items retry-safe.
 - iOS local download/import state, duplicate prevention, restart resume, and deleted-photo reconciliation.
 - iOS latest sync result JSON persistence for M0 validation.
 - iOS to Android sync result return path over the local M0 server.
@@ -111,6 +112,7 @@ M0 includes only:
 - all-remaining foreground batch transfer for device validation
 - foreground batch progress visibility
 - foreground transfer stop and retry
+- foreground transfer pause on iOS backgrounding
 - app-local imported photo reconciliation
 - latest sync result JSON persistence
 - local sync result return to Android
@@ -135,7 +137,7 @@ M0 excludes:
 - Treat iOS as the receiver/iCloud gateway for MVP.
 - Do not add external cloud relay logic.
 - Do not add Apple ID or iCloud password handling.
-- iOS must remain foreground during current M0 validation.
+- iOS foreground transfer is guarded: the screen stays awake while active, and leaving the foreground pauses the transfer for retry.
 - Deleting the iOS app deletes its local sync mapping and can make previously imported Android photos eligible again.
 
 ## Local Checks

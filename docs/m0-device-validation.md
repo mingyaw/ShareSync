@@ -107,6 +107,17 @@ Expected result: QR payload contains the actual bound port, and iOS shows `Andro
 
 Expected result: iOS retries one transient download interruption automatically. If the connection is still unavailable, failed records remain retryable, completed records are not re-imported, and iOS shows `SS-NET-002` in `Last Failure`.
 
+## iOS Foreground Interruption
+
+1. Start a `Download Remaining` transfer on iOS.
+2. Press the Home indicator/button or lock the iPhone manually while transfer is active.
+3. Reopen ShareSync.
+4. Confirm the receive screen shows a paused transfer message.
+5. Tap `Fetch Manifest`.
+6. Tap `Download Next Item`, `Download 5 Items`, or `Download Remaining`.
+
+Expected result: ShareSync pauses foreground-only transfer when iOS leaves the foreground, keeps completed items, and retries remaining items without duplicating imported Photos assets.
+
 ## Hash Mismatch Retry
 
 1. During development, simulate or force a bad first response body for one photo while keeping the manifest hash unchanged.
