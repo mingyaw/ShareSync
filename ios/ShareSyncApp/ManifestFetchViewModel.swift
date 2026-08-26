@@ -29,6 +29,7 @@ final class ManifestFetchViewModel: ObservableObject {
         let failedCount: Int
         let partialCount: Int
         let remainingCount: Int
+        let transferStatus: String
         let validationAssetName: String?
         let lastFailureCode: String?
         let lastFailureFileName: String?
@@ -671,5 +672,14 @@ private extension ManifestFetchViewModel.ManifestSummary {
                 || record.status == .failed
                 || record.status == .missing
         }.count
+        if photoCount == 0 {
+            transferStatus = "No Photos"
+        } else if remainingCount == 0 {
+            transferStatus = "Complete"
+        } else if failedCount > 0 || missingCount > 0 || partialCount > 0 {
+            transferStatus = "Needs Retry"
+        } else {
+            transferStatus = "Ready"
+        }
     }
 }

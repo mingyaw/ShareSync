@@ -26,13 +26,14 @@ This checklist validates the current main path: Android exposes recent photos ov
 12. Tap `Fetch Manifest`.
 13. Confirm iOS shows `Android Peer` as ready.
 14. Confirm iOS shows a photo count and a cursor.
-15. Confirm Android shows `Manifest photos` with the current pending photo count.
-16. Tap `Download Next Item`.
-17. Confirm status reaches completed/imported.
-18. Open iOS Photos.
-19. Confirm the item appears in the `ShareSync Backup` album.
-20. Confirm the iOS ShareSync screen shows updated `Synced`, `Skipped`, and `Result Failed` counts.
-21. Confirm Android shows the latest sync result summary.
+15. Confirm iOS shows `Transfer` as `Ready` for pending photos.
+16. Confirm Android shows `Manifest photos` with the current pending photo count.
+17. Tap `Download Next Item`.
+18. Confirm status reaches completed/imported.
+19. Open iOS Photos.
+20. Confirm the item appears in the `ShareSync Backup` album.
+21. Confirm the iOS ShareSync screen shows updated `Synced`, `Skipped`, and `Result Failed` counts.
+22. Confirm Android shows the latest sync result summary.
 
 Expected result: one Android photo is visible in iOS Photos, Android keeps showing the latest iOS sync result while the M0 server is running, and iCloud Photos can back it up through the normal iOS Photos pipeline.
 
@@ -82,7 +83,8 @@ Expected result: Android continues updating the sync result summary even when th
 
 1. Keep both apps open.
 2. Tap `Fetch Manifest` again on iOS.
-3. Tap `Download Next Item`.
+3. Confirm iOS shows `Transfer` as `Complete` when no pending photos remain, or `Ready` when Android still exposes new photos.
+4. Tap `Download Next Item` only if the manifest still has remaining photos.
 
 Expected result: previously imported items are skipped by local state, and iOS chooses the next pending item.
 

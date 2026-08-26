@@ -232,6 +232,7 @@ struct ContentView: View {
 
             if let summary = viewModel.summary {
                 StatusRow(title: "Photos", value: "\(summary.photoCount)")
+                StatusRow(title: "Transfer", value: summary.transferStatus)
                 StatusRow(title: "Transfer Size", value: ByteCountFormatter.string(fromByteCount: summary.totalBytes, countStyle: .file))
                 StatusRow(title: "Test Item", value: summary.validationAssetName ?? "None")
                 StatusRow(title: "Downloaded", value: "\(summary.downloadedCount)")

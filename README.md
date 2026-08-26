@@ -33,6 +33,7 @@ The current codebase contains:
 - iOS receive screen that fetches the Android photo manifest, downloads one or more photos, verifies checksums when available, and imports into the `ShareSync Backup` Photos album.
 - iOS local-network requests use explicit timeouts: short for health/manifest/result posts and longer for photo media transfers.
 - iOS receive screen can download the next item, a small batch, or all remaining manifest items for M0 device validation.
+- iOS receive screen shows a manifest transfer status for ready, retry, complete, or no-photo validation.
 - iOS receive screen shows live batch progress, downloaded count, failed count, and current file during foreground transfer.
 - iOS receive screen shows resumable partial photo count for interrupted-transfer validation.
 - iOS media download can issue `Range` requests from a persisted partial offset and combine `206 Partial Content` responses.
