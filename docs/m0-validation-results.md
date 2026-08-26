@@ -48,6 +48,7 @@ Scenarios:
 Result:
 Blocking issues:
 Notes:
+Sync result JSON:
 ```
 
 ## M0 Completion Gate

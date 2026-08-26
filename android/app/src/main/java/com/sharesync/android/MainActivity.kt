@@ -26,6 +26,7 @@ import com.sharesync.android.sync.ManifestBuilder
 import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.sync.SyncItemStatus
 import com.sharesync.android.sync.SyncResult
+import com.sharesync.android.sync.SyncResultJsonCodec
 import com.sharesync.android.sync.SyncResultStore
 import com.sharesync.android.scanner.media.MediaStreamProvider
 import com.sharesync.android.transfer.server.LocalServerBinder
@@ -47,6 +48,7 @@ class MainActivity : Activity() {
     private lateinit var stopButton: Button
     private lateinit var copyEndpointButton: Button
     private lateinit var copyPairingButton: Button
+    private lateinit var copySyncResultButton: Button
     private lateinit var clearSyncStateButton: Button
 
     private var server: LocalSyncServer? = null
@@ -158,6 +160,11 @@ class MainActivity : Activity() {
             setOnClickListener { copyPairingPayload() }
         }
 
+        copySyncResultButton = Button(this).apply {
+            text = getString(R.string.m0_copy_sync_result)
+            setOnClickListener { copySyncResult() }
+        }
+
         clearSyncStateButton = Button(this).apply {
             text = getString(R.string.m0_clear_sync_state)
             setOnClickListener { clearSyncState() }
@@ -177,6 +184,7 @@ class MainActivity : Activity() {
         root.addView(stopButton)
         root.addView(copyEndpointButton)
         root.addView(copyPairingButton)
+        root.addView(copySyncResultButton)
         root.addView(clearSyncStateButton)
         scrollView.addView(root)
         setContentView(scrollView)
@@ -226,6 +234,7 @@ class MainActivity : Activity() {
         stopButton.isEnabled = isServerRunning
         copyEndpointButton.isEnabled = endpointUrl != null
         copyPairingButton.isEnabled = currentPairingPayloadJson != null
+        copySyncResultButton.isEnabled = currentSyncResult != null
         clearSyncStateButton.isEnabled = currentSyncResult != null
         updateKeepScreenAwake()
     }
@@ -405,16 +414,26 @@ class MainActivity : Activity() {
 
     private fun copyPairingPayload() {
         val payload = currentPairingPayloadJson ?: return
-        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        clipboard.setPrimaryClip(ClipData.newPlainText("ShareSync pairing payload", payload))
+        copyText(label = "ShareSync pairing payload", text = payload)
         refreshUi(getString(R.string.m0_pairing_payload_copied))
     }
 
     private fun copyEndpoint() {
         val endpointUrl = currentEndpointUrl() ?: return
-        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        clipboard.setPrimaryClip(ClipData.newPlainText("ShareSync health endpoint", endpointUrl))
+        copyText(label = "ShareSync health endpoint", text = endpointUrl)
         refreshUi(getString(R.string.m0_endpoint_copied))
+    }
+
+    private fun copySyncResult() {
+        val result = currentSyncResult ?: return
+        val json = SyncResultJsonCodec().encode(result)
+        copyText(label = "ShareSync sync result", text = json)
+        refreshUi(getString(R.string.m0_sync_result_copied))
+    }
+
+    private fun copyText(label: String, text: String) {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboard.setPrimaryClip(ClipData.newPlainText(label, text))
     }
 
     private fun clearSyncState() {

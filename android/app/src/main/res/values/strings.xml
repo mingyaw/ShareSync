@@ -17,6 +17,7 @@
     <string name="m0_sync_result_unavailable">Sync result: waiting for iPhone report.</string>
     <string name="m0_sync_result_summary">Sync result: %1$s, synced %2$d, skipped %3$d, failed %4$d, last failure %5$s.</string>
     <string name="m0_sync_result_no_failure">none</string>
+    <string name="m0_sync_result_copied">Sync result JSON copied.</string>
     <string name="m0_sync_state_cleared">Local M0 sync result cleared. Fetch from iPhone again to rebuild state.</string>
     <string name="m0_pairing_payload_unavailable">Pairing payload: start the server to generate a short-lived payload.</string>
     <string name="m0_pairing_payload_copied">Pairing payload copied. Paste it into the iPhone ShareSync receive screen.</string>
@@ -25,5 +26,6 @@
     <string name="m0_stop_server">Stop M0 server</string>
     <string name="m0_copy_endpoint">Copy endpoint</string>
     <string name="m0_copy_pairing_payload">Copy pairing payload</string>
+    <string name="m0_copy_sync_result">Copy sync result</string>
     <string name="m0_clear_sync_state">Clear sync result</string>
 </resources>

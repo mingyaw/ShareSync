@@ -74,6 +74,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Show latest sync result summary on Android M0 screen.
 - [x] Show latest failed result code on Android M0 screen.
 - [x] Restore latest Android sync result summary on app launch.
+- [x] Add Android copy action for latest sync result JSON.
 - [x] Keep Android sync result polling active while the M0 server is running.
 - [x] Exclude latest synced/skipped media results from Android manifest.
 - [x] Merge Android sync results across multiple M0 batches.
@@ -235,6 +236,20 @@ Completed an M0 receive-screen validation slice:
 - Added a manifest-level `Transfer` status on iOS.
 - Made repeat-sync validation easier to read with `Ready`, `Needs Retry`, `Complete`, and `No Photos` states.
 - Updated M0 validation steps to check the transfer status during baseline and repeat sync.
+
+Verified:
+
+```sh
+./scripts/check-m0.sh
+```
+
+### 2026-08-26 Android Sync Result Copy
+
+Completed an Android M0 validation aid:
+
+- Added `Copy sync result` for the latest Android-persisted iOS report JSON.
+- Kept the action disabled until Android has a sync result.
+- Updated validation steps and run-log template to capture sync result evidence.
 
 Verified:
 

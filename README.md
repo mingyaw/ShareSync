@@ -46,6 +46,7 @@ The current codebase contains:
 - Android latest sync result persistence and M0 screen summary.
 - Android restores the latest persisted sync result on app launch for validation.
 - Android M0 screen shows pending manifest photo count and latest failed sync result code.
+- Android can copy the latest sync result JSON for real-device validation records.
 - Android manifest filtering for media already reported as synced or skipped.
 - Android merged sync result history across M0 batches.
 - iOS paired Android host, port, device metadata, and M0 pairing token persistence across app restarts.
@@ -208,6 +209,7 @@ iOS:
 Resetting test state:
 
 - Android `Clear sync result` removes the locally stored iOS result report so Android can rebuild manifest filtering from future reports.
+- Android `Copy sync result` copies the latest persisted iOS result JSON for validation notes or issue reports.
 - iOS `Reset Local Sync State` removes ShareSync download/import mappings and latest result JSON. Photos already imported into the `ShareSync Backup` album remain in Photos.
 - iOS `Clear Pairing` removes only the saved Android endpoint, device metadata, pairing token, and pasted payload. It does not clear download/import mappings.
 
