@@ -16,20 +16,21 @@ This checklist validates the current main path: Android exposes recent photos ov
 2. Tap `Grant photos permission` if permission is missing.
 3. Tap `Start M0 server`.
 4. Confirm Android shows a manual endpoint and a QR code.
-5. Open ShareSync on iPhone.
-6. Tap `Scan Pairing QR`.
-7. Scan the Android QR code.
-8. Confirm iOS shows the Android host and port under `Pairing`.
-9. Tap `Fetch Manifest`.
-10. Confirm iOS shows `Android Peer` as ready.
-11. Confirm iOS shows a photo count and a cursor.
-12. Confirm Android shows `Manifest photos` with the current pending photo count.
-13. Tap `Download Next Item`.
-14. Confirm status reaches completed/imported.
-15. Open iOS Photos.
-16. Confirm the item appears in the `ShareSync Backup` album.
-17. Confirm the iOS ShareSync screen shows updated `Synced`, `Skipped`, and `Result Failed` counts.
-18. Confirm Android shows the latest sync result summary.
+5. Confirm Android shows `Screen lock` as paused while the server is running.
+6. Open ShareSync on iPhone.
+7. Tap `Scan Pairing QR`.
+8. Scan the Android QR code.
+9. Confirm iOS shows the Android host and port under `Pairing`.
+10. Tap `Fetch Manifest`.
+11. Confirm iOS shows `Android Peer` as ready.
+12. Confirm iOS shows a photo count and a cursor.
+13. Confirm Android shows `Manifest photos` with the current pending photo count.
+14. Tap `Download Next Item`.
+15. Confirm status reaches completed/imported.
+16. Open iOS Photos.
+17. Confirm the item appears in the `ShareSync Backup` album.
+18. Confirm the iOS ShareSync screen shows updated `Synced`, `Skipped`, and `Result Failed` counts.
+19. Confirm Android shows the latest sync result summary.
 
 Expected result: one Android photo is visible in iOS Photos, Android keeps showing the latest iOS sync result while the M0 server is running, and iCloud Photos can back it up through the normal iOS Photos pipeline.
 
@@ -49,7 +50,7 @@ Note: `Fetch Manifest`, media downloads, and sync result return require the pair
 
 Expected result: iOS keeps the foreground transfer awake, imports every remaining manifest photo it can download, the receive screen remaining count reaches `0`, and the next Android manifest excludes photos reported as `synced` or `skipped`.
 
-Keep the Android M0 screen open during the transfer.
+Keep the Android M0 screen open during the transfer and confirm Android `Screen lock` remains paused.
 
 Expected result: Android continues updating the sync result summary even when the transfer takes longer than one minute.
 

@@ -33,6 +33,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add Android UI controls to request photos permission and start/stop server.
 - [x] Show Android local IP/port for manual testing.
 - [x] Show Android pending manifest photo count for manual validation.
+- [x] Keep Android screen awake while the M0 server is running.
 
 ### A1. Project Setup
 
@@ -724,3 +725,11 @@ Completed the Android sync result polling slice:
 - Android now keeps polling the latest iOS sync result while the M0 server is running.
 - Stopping the M0 server interrupts the polling thread and clears server-scoped UI state.
 - This keeps the Android receive summary useful during longer full-manifest photo transfers.
+
+### 2026-08-26 Android Foreground Awake Guard
+
+Completed the Android foreground awake guard slice:
+
+- Android applies `FLAG_KEEP_SCREEN_ON` while the M0 server is running.
+- Android clears the keep-awake flag when the server stops.
+- Android M0 screen shows whether screen lock is normal or paused for device validation.

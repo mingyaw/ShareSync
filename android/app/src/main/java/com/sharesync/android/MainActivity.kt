@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
+import android.view.WindowManager
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
@@ -36,6 +37,7 @@ class MainActivity : Activity() {
     private lateinit var statusText: TextView
     private lateinit var endpointText: TextView
     private lateinit var permissionText: TextView
+    private lateinit var screenLockText: TextView
     private lateinit var manifestSummaryText: TextView
     private lateinit var syncResultText: TextView
     private lateinit var pairingPayloadText: TextView
@@ -110,6 +112,7 @@ class MainActivity : Activity() {
         statusText = bodyText(topPadding = 12 * density)
         endpointText = bodyText(topPadding = 12 * density)
         permissionText = bodyText(topPadding = 12 * density)
+        screenLockText = bodyText(topPadding = 12 * density)
         manifestSummaryText = bodyText(topPadding = 12 * density)
         syncResultText = bodyText(topPadding = 12 * density)
         pairingPayloadText = bodyText(topPadding = 12 * density)
@@ -150,6 +153,7 @@ class MainActivity : Activity() {
         root.addView(statusText)
         root.addView(endpointText)
         root.addView(permissionText)
+        root.addView(screenLockText)
         root.addView(manifestSummaryText)
         root.addView(syncResultText)
         root.addView(pairingQrImage)
@@ -192,6 +196,11 @@ class MainActivity : Activity() {
         } else {
             getString(R.string.m0_permission_missing)
         }
+        screenLockText.text = if (isServerRunning) {
+            getString(R.string.m0_screen_lock_paused)
+        } else {
+            getString(R.string.m0_screen_lock_normal)
+        }
         pairingPayloadText.text = currentPairingPayloadJson
             ?: getString(R.string.m0_pairing_payload_unavailable)
         manifestSummaryText.text = currentManifestPhotoCount?.let { count ->
@@ -204,6 +213,7 @@ class MainActivity : Activity() {
         startButton.isEnabled = !isServerRunning && hasMediaPermission()
         stopButton.isEnabled = isServerRunning
         copyPairingButton.isEnabled = currentPairingPayloadJson != null
+        updateKeepScreenAwake()
     }
 
     private fun requestMediaPermission() {
@@ -337,6 +347,7 @@ class MainActivity : Activity() {
         currentPairingPayloadJson = null
         syncResultPollThread?.interrupt()
         syncResultPollThread = null
+        updateKeepScreenAwake()
 
         Thread {
             try {
@@ -383,6 +394,14 @@ class MainActivity : Activity() {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipboard.setPrimaryClip(ClipData.newPlainText("ShareSync pairing payload", payload))
         refreshUi(getString(R.string.m0_pairing_payload_copied))
+    }
+
+    private fun updateKeepScreenAwake() {
+        if (isServerRunning) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
     }
 
     private fun pollSyncResultUpdates(store: SyncResultStore) {

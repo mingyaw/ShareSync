@@ -9,6 +9,8 @@
     <string name="m0_endpoint_unavailable">No local IPv4 address found. Connect to Wi-Fi or hotspot.</string>
     <string name="m0_permission_granted">Photos permission: granted.</string>
     <string name="m0_permission_missing">Photos permission: required for /v1/manifest and /v1/media.</string>
+    <string name="m0_screen_lock_normal">Screen lock: normal.</string>
+    <string name="m0_screen_lock_paused">Screen lock: paused while M0 server is running.</string>
     <string name="m0_manifest_unavailable">Manifest photos: start the server to scan.</string>
     <string name="m0_manifest_summary">Manifest photos: %1$d pending.</string>
     <string name="m0_sync_result_unavailable">Sync result: waiting for iPhone report.</string>
