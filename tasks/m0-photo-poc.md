@@ -152,6 +152,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add shared sample pairing payload fixture.
 - [x] Add shared sample manifest fixture.
 - [x] Add lightweight fixture validation script.
+- [x] Add one-command M0 validation script.
 - [x] Validate generated manifest against `shared/schemas/manifest.schema.json`.
 - [x] Keep fixture date encoding ISO-8601.
 - [x] Keep fixture enum values lowercase.
@@ -762,3 +763,11 @@ Completed the local-network timeout slice:
 - Photo media downloads use longer resource timeouts for larger images.
 - Sessions wait for connectivity and allow hotspot or constrained network paths during M0 validation.
 - Added Swift coverage for timeout configuration.
+
+### 2026-08-26 M0 Check Script
+
+Completed the M0 check script slice:
+
+- Added `scripts/check-m0.sh` as the canonical local validation entry point.
+- The script runs fixture validation, Swift package tests, Android unit tests and Kotlin compile, and iOS app build.
+- Updated README local check instructions to match the commands used for current M0 verification.

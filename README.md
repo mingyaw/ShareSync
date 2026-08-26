@@ -144,25 +144,25 @@ M0 excludes:
 
 ## Local Checks
 
-Run lightweight shared/core checks from the repository root:
+Run the full M0 check suite from the repository root:
+
+```sh
+./scripts/check-m0.sh
+```
+
+Run checks individually when isolating a failure:
 
 ```sh
 python3 scripts/validate-fixtures.py
 swift test
-```
 
-Run native project checks:
-
-```sh
 cd android
-./gradlew :app:compileDebugKotlin
+./gradlew :app:testDebugUnitTest :app:compileDebugKotlin
 cd ..
 
 xcodebuild -project ios/ShareSync.xcodeproj \
   -scheme ShareSync \
-  -sdk iphonesimulator \
-  -configuration Debug \
-  CODE_SIGNING_ALLOWED=NO \
+  -destination 'generic/platform=iOS' \
   build
 ```
 
