@@ -6,6 +6,7 @@ enum MediaDownloaderError: Error, Equatable {
     case nonHTTPResponse
     case unacceptableStatusCode(Int, String?)
     case checksumMismatch
+    case insufficientStorage
 }
 
 struct MediaDownloadResult: Equatable {
@@ -33,18 +34,21 @@ final class MediaDownloader {
     private let session: MediaDataSession
     private let fileManager: FileManager
     private let downloadDirectory: URL
+    private let availableCapacityProvider: (URL) throws -> Int64?
     private let now: () -> Date
 
     init(
         session: MediaDataSession = URLSession.shared,
         fileManager: FileManager = .default,
         downloadDirectory: URL? = nil,
+        availableCapacityProvider: @escaping (URL) throws -> Int64? = MediaDownloader.availableCapacity,
         now: @escaping () -> Date = Date.init
     ) {
         self.session = session
         self.fileManager = fileManager
         self.downloadDirectory = downloadDirectory
             ?? fileManager.temporaryDirectory.appendingPathComponent("ShareSyncDownloads", isDirectory: true)
+        self.availableCapacityProvider = availableCapacityProvider
         self.now = now
     }
 
@@ -205,6 +209,7 @@ final class MediaDownloader {
 
         try fileManager.createDirectory(at: downloadDirectory, withIntermediateDirectories: true)
         let destination = downloadDirectory.appendingPathComponent(localFileName(for: asset), isDirectory: false)
+        try ensureEnoughStorage(for: data.count, at: destination)
         try data.write(to: destination, options: [.atomic])
 
         return MediaDownloadResult(
@@ -261,6 +266,8 @@ final class MediaDownloader {
                 return "SS-NET-002"
             case .checksumMismatch:
                 return "SS-MEDIA-001"
+            case .insufficientStorage:
+                return "SS-STORE-001"
             }
         }
 
@@ -273,6 +280,23 @@ final class MediaDownloader {
 
     private func serverErrorCode(from data: Data) -> String? {
         try? JSONDecoder().decode(ServerErrorEnvelope.self, from: data).errorCode
+    }
+
+    private func ensureEnoughStorage(for bytes: Int, at destination: URL) throws {
+        guard let availableBytes = try availableCapacityProvider(destination) else {
+            return
+        }
+
+        if availableBytes < Int64(bytes) {
+            throw MediaDownloaderError.insufficientStorage
+        }
+    }
+
+    private static func availableCapacity(for destination: URL) throws -> Int64? {
+        let values = try destination.deletingLastPathComponent().resourceValues(
+            forKeys: [.volumeAvailableCapacityForImportantUsageKey]
+        )
+        return values.volumeAvailableCapacityForImportantUsage
     }
 }
 

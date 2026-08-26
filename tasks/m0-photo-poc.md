@@ -158,7 +158,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [ ] Transfer interrupted midway.
 - [ ] Repeat sync.
 - [ ] No Photos permission.
-- [ ] iPhone storage low.
+- [x] iPhone storage low.
 
 ## Manual M0 Device Validation
 
@@ -648,3 +648,12 @@ Improved Android-side manual validation:
 - Android polling refreshes the pending count after iPhone sync result posts, so manifest filtering can be checked without leaving the app.
 - Android sync result summary now includes the latest failed error code when available.
 - Android M0 screen is scrollable so QR, payload, and validation rows stay reachable on smaller phones.
+
+### 2026-08-26 iOS Low Storage Failure Code
+
+Completed the low-storage handling slice:
+
+- iOS media downloader checks available destination volume capacity before writing a downloaded photo.
+- Insufficient space marks the item failed with `SS-STORE-001`.
+- Added Swift coverage to confirm low storage does not write a partial local file.
+- Added a low-storage validation scenario to the M0 device checklist.

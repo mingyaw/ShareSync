@@ -225,6 +225,47 @@ final class MediaDownloaderTests: XCTestCase {
         XCTAssertEqual(store.record(for: "mediastore-1-44")?.status, .downloaded)
     }
 
+    func testInsufficientStorageMarksFailedBeforeWritingFile() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let data = Data("photo-larger-than-available-capacity".utf8)
+        let asset = makeAsset(
+            assetId: "mediastore-1-51",
+            fileName: "IMG_0051.jpg",
+            size: Int64(data.count),
+            sha256: sha256(data)
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        let session = StubMediaDataSession(
+            data: data,
+            response: HTTPURLResponse(
+                url: URL(string: "http://192.168.1.10:48291/v1/media/mediastore-1-51")!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+        )
+        let downloader = MediaDownloader(
+            session: session,
+            downloadDirectory: directory,
+            availableCapacityProvider: { _ in Int64(data.count - 1) }
+        )
+
+        let results = await downloader.downloadMedia(
+            assets: [asset],
+            host: "192.168.1.10",
+            port: 48291,
+            stateStore: store
+        )
+
+        XCTAssertTrue(results.isEmpty)
+        XCTAssertEqual(store.record(for: "mediastore-1-51")?.status, .failed)
+        XCTAssertEqual(store.record(for: "mediastore-1-51")?.lastErrorCode, "SS-STORE-001")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: directory.appendingPathComponent("mediastore-1-51.jpg").path))
+    }
+
     func testDownloadMediaReportsBatchProgress() async throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)

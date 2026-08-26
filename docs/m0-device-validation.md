@@ -144,6 +144,14 @@ Expected result: errors are visible and the user can recover by granting permiss
 
 When a media endpoint fails, confirm the iOS receive screen shows `Last Failure` with the server error code and file name.
 
+## Low Storage
+
+1. Fill the iPhone simulator or device storage close to full, or use a large Android photo set on a low-storage test device.
+2. Tap `Fetch Manifest`.
+3. Tap `Download Next Item` or `Download Remaining`.
+
+Expected result: iOS marks the photo as failed with `SS-STORE-001`, shows that code in `Last Failure`, and reports the failed record back to Android.
+
 ## Current M0 Gaps
 
 - Android SHA-256 is calculated lazily before full media transfers and returned in `X-ShareSync-SHA256`.
