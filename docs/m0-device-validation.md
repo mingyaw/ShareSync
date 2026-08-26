@@ -91,7 +91,7 @@ Expected result: QR payload contains the actual bound port, and iOS can fetch `/
 4. Tap `Fetch Manifest`.
 5. Tap `Download Next Item` or `Download 5 Items`.
 
-Expected result: failed records remain retryable, completed records are not re-imported, and iOS shows the latest failed code in `Last Failure`.
+Expected result: iOS retries one transient download interruption automatically. If the connection is still unavailable, failed records remain retryable, completed records are not re-imported, and iOS shows `SS-NET-002` in `Last Failure`.
 
 ## Hash Mismatch Retry
 

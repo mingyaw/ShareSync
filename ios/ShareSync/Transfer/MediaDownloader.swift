@@ -232,13 +232,29 @@ final class MediaDownloader {
                 port: port,
                 pairingToken: pairingToken
             )
-        } catch MediaDownloaderError.checksumMismatch {
-            return try await download(
-                asset: asset,
-                host: host,
-                port: port,
-                pairingToken: pairingToken
-            )
+        } catch {
+            guard Self.shouldRetryDownload(error) else {
+                throw error
+            }
+
+            return try await download(asset: asset, host: host, port: port, pairingToken: pairingToken)
+        }
+    }
+
+    private static func shouldRetryDownload(_ error: Error) -> Bool {
+        if case MediaDownloaderError.checksumMismatch = error {
+            return true
+        }
+
+        guard let urlError = error as? URLError else {
+            return false
+        }
+
+        switch urlError.code {
+        case .cannotConnectToHost, .networkConnectionLost, .timedOut:
+            return true
+        default:
+            return false
         }
     }
 

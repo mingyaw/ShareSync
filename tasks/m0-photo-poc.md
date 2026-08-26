@@ -125,6 +125,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Show live foreground batch progress during iOS transfer.
 - [x] Add manual foreground transfer stop and retry support.
 - [x] Resume or skip completed items after restart.
+- [x] Retry one transient network download failure before marking a photo failed.
 
 ### I5. Photos Import
 
@@ -667,3 +668,11 @@ Completed the hash mismatch retry slice:
 - Repeated checksum mismatch still fails with `SS-MEDIA-001`.
 - Added Swift coverage for a bad first response followed by a valid retry.
 - Added a development validation scenario for hash mismatch retry.
+
+### 2026-08-26 Transient Download Retry
+
+Completed the transient network retry slice:
+
+- iOS media downloader now retries one time after `networkConnectionLost`, `timedOut`, or `cannotConnectToHost`.
+- User or system cancellation is still treated as a paused retryable item, not a failed photo.
+- Added Swift coverage for network retry recovery and cancelled transfer non-retry behavior.

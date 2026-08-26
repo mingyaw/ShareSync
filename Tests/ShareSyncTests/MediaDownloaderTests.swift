@@ -168,6 +168,76 @@ final class MediaDownloaderTests: XCTestCase {
         XCTAssertEqual(try Data(contentsOf: XCTUnwrap(store.record(for: "mediastore-1-52")?.localFileURL)), expectedData)
     }
 
+    func testTransientNetworkErrorRetriesOnceAndCanRecover() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let data = Data("photo-after-network-retry".utf8)
+        let asset = makeAsset(
+            assetId: "mediastore-1-53",
+            fileName: "IMG_0053.jpg",
+            size: Int64(data.count),
+            sha256: sha256(data)
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        let session = StubScriptedMediaDataSession(steps: [
+            .failure(URLError(.networkConnectionLost)),
+            .success(
+                data: data,
+                response: HTTPURLResponse(
+                    url: URL(string: "http://192.168.1.10:48291/v1/media/mediastore-1-53")!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!
+            ),
+        ])
+        let downloader = MediaDownloader(session: session, downloadDirectory: directory)
+
+        let results = await downloader.downloadMedia(
+            assets: [asset],
+            host: "192.168.1.10",
+            port: 48291,
+            stateStore: store
+        )
+
+        XCTAssertEqual(results.map(\.assetId), ["mediastore-1-53"])
+        XCTAssertEqual(store.record(for: "mediastore-1-53")?.status, .downloaded)
+        XCTAssertEqual(session.requests.count, 2)
+        XCTAssertEqual(try Data(contentsOf: XCTUnwrap(store.record(for: "mediastore-1-53")?.localFileURL)), data)
+    }
+
+    func testCancelledNetworkErrorDoesNotRetry() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let asset = makeAsset(
+            assetId: "mediastore-1-54",
+            fileName: "IMG_0054.jpg",
+            size: 10,
+            sha256: nil
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        let session = StubScriptedMediaDataSession(steps: [
+            .failure(URLError(.cancelled)),
+        ])
+        let downloader = MediaDownloader(session: session, downloadDirectory: directory)
+
+        let results = await downloader.downloadMedia(
+            assets: [asset],
+            host: "192.168.1.10",
+            port: 48291,
+            stateStore: store
+        )
+
+        XCTAssertTrue(results.isEmpty)
+        XCTAssertEqual(store.record(for: "mediastore-1-54")?.status, .downloading)
+        XCTAssertNil(store.record(for: "mediastore-1-54")?.lastErrorCode)
+        XCTAssertEqual(session.requests.count, 1)
+    }
+
     func testUnauthorizedResponseUsesServerErrorCode() async throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
@@ -458,6 +528,34 @@ private final class StubSequenceMediaDataSession: MediaDataSession {
         }
 
         return responses.removeFirst()
+    }
+}
+
+private enum StubMediaStep {
+    case success(data: Data, response: URLResponse)
+    case failure(Error)
+}
+
+private final class StubScriptedMediaDataSession: MediaDataSession {
+    private var steps: [StubMediaStep]
+    private(set) var requests: [URLRequest] = []
+
+    init(steps: [StubMediaStep]) {
+        self.steps = steps
+    }
+
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        requests.append(request)
+        guard !steps.isEmpty else {
+            throw URLError(.badServerResponse)
+        }
+
+        switch steps.removeFirst() {
+        case .success(let data, let response):
+            return (data, response)
+        case .failure(let error):
+            throw error
+        }
     }
 }
 
