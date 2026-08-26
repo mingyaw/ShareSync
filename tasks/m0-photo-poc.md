@@ -32,6 +32,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add app-level M0 sync component factory.
 - [x] Add Android UI controls to request photos permission and start/stop server.
 - [x] Show Android local IP/port for manual testing.
+- [x] Add Android endpoint copy action for same-network validation.
 - [x] Show Android pending manifest photo count for manual validation.
 - [x] Keep Android screen awake while the M0 server is running.
 
@@ -733,3 +734,11 @@ Completed the Android foreground awake guard slice:
 - Android applies `FLAG_KEEP_SCREEN_ON` while the M0 server is running.
 - Android clears the keep-awake flag when the server stops.
 - Android M0 screen shows whether screen lock is normal or paused for device validation.
+
+### 2026-08-26 Android Endpoint Copy
+
+Completed the Android endpoint copy slice:
+
+- Android M0 screen now has a `Copy endpoint` action for the current `/v1/health` URL.
+- The copied endpoint uses the actual bound port, including fallback ports.
+- Updated README and device validation notes for same-network and hotspot checks.

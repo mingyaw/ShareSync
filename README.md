@@ -27,6 +27,7 @@ The current codebase contains:
 - A Swift Package core at the repository root for fast iOS core tests.
 - An embedded Android local HTTP server for M0 health, manifest, and media endpoints.
 - Android QR pairing payload UI with stable local device identity and actual bound port.
+- Android can copy the current health endpoint for same-network or hotspot validation.
 - iOS QR scanner and manual pairing fallback.
 - M0 protected endpoints require the QR pairing token header for manifest, media, and sync result requests.
 - iOS receive screen that fetches the Android photo manifest, downloads one or more photos, verifies checksums when available, and imports into the `ShareSync Backup` Photos album.
@@ -114,6 +115,7 @@ M0 includes only:
 - latest sync result JSON persistence
 - local sync result return to Android
 - Android latest sync result display for validation
+- Android endpoint copy action for local connectivity validation
 - Android manifest excludes completed media from latest sync result
 - Android latest sync result merges multiple reported batches
 
@@ -169,6 +171,7 @@ Android:
 - Grant photos permission.
 - Tap `Start M0 server`.
 - Confirm the screen shows a manual endpoint and QR code.
+- Use `Copy endpoint` if you want to test the health URL from iPhone Safari.
 - If port `48291` is busy, Android falls back to an available port and displays that actual port.
 
 iOS:

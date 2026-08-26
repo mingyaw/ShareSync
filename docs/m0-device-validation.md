@@ -16,21 +16,23 @@ This checklist validates the current main path: Android exposes recent photos ov
 2. Tap `Grant photos permission` if permission is missing.
 3. Tap `Start M0 server`.
 4. Confirm Android shows a manual endpoint and a QR code.
-5. Confirm Android shows `Screen lock` as paused while the server is running.
-6. Open ShareSync on iPhone.
-7. Tap `Scan Pairing QR`.
-8. Scan the Android QR code.
-9. Confirm iOS shows the Android host and port under `Pairing`.
-10. Tap `Fetch Manifest`.
-11. Confirm iOS shows `Android Peer` as ready.
-12. Confirm iOS shows a photo count and a cursor.
-13. Confirm Android shows `Manifest photos` with the current pending photo count.
-14. Tap `Download Next Item`.
-15. Confirm status reaches completed/imported.
-16. Open iOS Photos.
-17. Confirm the item appears in the `ShareSync Backup` album.
-18. Confirm the iOS ShareSync screen shows updated `Synced`, `Skipped`, and `Result Failed` counts.
-19. Confirm Android shows the latest sync result summary.
+5. Tap `Copy endpoint` on Android.
+6. Open the copied endpoint from iPhone Safari if same-network reachability needs confirmation.
+7. Confirm Android shows `Screen lock` as paused while the server is running.
+8. Open ShareSync on iPhone.
+9. Tap `Scan Pairing QR`.
+10. Scan the Android QR code.
+11. Confirm iOS shows the Android host and port under `Pairing`.
+12. Tap `Fetch Manifest`.
+13. Confirm iOS shows `Android Peer` as ready.
+14. Confirm iOS shows a photo count and a cursor.
+15. Confirm Android shows `Manifest photos` with the current pending photo count.
+16. Tap `Download Next Item`.
+17. Confirm status reaches completed/imported.
+18. Open iOS Photos.
+19. Confirm the item appears in the `ShareSync Backup` album.
+20. Confirm the iOS ShareSync screen shows updated `Synced`, `Skipped`, and `Result Failed` counts.
+21. Confirm Android shows the latest sync result summary.
 
 Expected result: one Android photo is visible in iOS Photos, Android keeps showing the latest iOS sync result while the M0 server is running, and iCloud Photos can back it up through the normal iOS Photos pipeline.
 
@@ -90,7 +92,8 @@ Expected result: imported items remain tracked by Photos local identifier, and o
 1. Start another local process that occupies port `48291`, or start ShareSync once and verify conflict behavior during development.
 2. Tap `Start M0 server` on Android.
 3. Confirm Android endpoint shows the actual fallback port.
-4. Scan the QR code on iOS.
+4. Tap `Copy endpoint` and confirm the copied URL uses the actual fallback port.
+5. Scan the QR code on iOS.
 
 Expected result: QR payload contains the actual bound port, and iOS shows `Android Peer` before fetching `/v1/manifest` without manual editing.
 

@@ -44,6 +44,7 @@ class MainActivity : Activity() {
     private lateinit var pairingQrImage: ImageView
     private lateinit var startButton: Button
     private lateinit var stopButton: Button
+    private lateinit var copyEndpointButton: Button
     private lateinit var copyPairingButton: Button
 
     private var server: LocalSyncServer? = null
@@ -144,6 +145,11 @@ class MainActivity : Activity() {
             setOnClickListener { stopServer() }
         }
 
+        copyEndpointButton = Button(this).apply {
+            text = getString(R.string.m0_copy_endpoint)
+            setOnClickListener { copyEndpoint() }
+        }
+
         copyPairingButton = Button(this).apply {
             text = getString(R.string.m0_copy_pairing_payload)
             setOnClickListener { copyPairingPayload() }
@@ -161,6 +167,7 @@ class MainActivity : Activity() {
         root.addView(grantButton)
         root.addView(startButton)
         root.addView(stopButton)
+        root.addView(copyEndpointButton)
         root.addView(copyPairingButton)
         scrollView.addView(root)
         setContentView(scrollView)
@@ -175,13 +182,9 @@ class MainActivity : Activity() {
     }
 
     private fun refreshUi(message: String? = null) {
-        val ip = LocalNetworkAddresses.firstIpv4Address()
-        val displayPort = server?.port ?: M0SyncComponents.defaultPort()
-        val endpoint = if (ip == null) {
-            getString(R.string.m0_endpoint_unavailable)
-        } else {
-            getString(R.string.m0_endpoint, ip, displayPort)
-        }
+        val endpointUrl = currentEndpointUrl()
+        val endpoint = endpointUrl?.let { getString(R.string.m0_endpoint, it) }
+            ?: getString(R.string.m0_endpoint_unavailable)
 
         val status = when {
             message != null -> message
@@ -212,6 +215,7 @@ class MainActivity : Activity() {
 
         startButton.isEnabled = !isServerRunning && hasMediaPermission()
         stopButton.isEnabled = isServerRunning
+        copyEndpointButton.isEnabled = endpointUrl != null
         copyPairingButton.isEnabled = currentPairingPayloadJson != null
         updateKeepScreenAwake()
     }
@@ -394,6 +398,19 @@ class MainActivity : Activity() {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipboard.setPrimaryClip(ClipData.newPlainText("ShareSync pairing payload", payload))
         refreshUi(getString(R.string.m0_pairing_payload_copied))
+    }
+
+    private fun copyEndpoint() {
+        val endpointUrl = currentEndpointUrl() ?: return
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboard.setPrimaryClip(ClipData.newPlainText("ShareSync health endpoint", endpointUrl))
+        refreshUi(getString(R.string.m0_endpoint_copied))
+    }
+
+    private fun currentEndpointUrl(): String? {
+        val ip = LocalNetworkAddresses.firstIpv4Address() ?: return null
+        val displayPort = server?.port ?: M0SyncComponents.defaultPort()
+        return "http://$ip:$displayPort/v1/health"
     }
 
     private fun updateKeepScreenAwake() {

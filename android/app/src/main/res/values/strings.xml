@@ -5,8 +5,9 @@
     <string name="m0_status_starting">Starting local sync server...</string>
     <string name="m0_status_running">M0 local sync server is running.</string>
     <string name="m0_status_failed">Server failed: %1$s</string>
-    <string name="m0_endpoint">Manual test endpoint: http://%1$s:%2$d/v1/health</string>
+    <string name="m0_endpoint">Manual test endpoint: %1$s</string>
     <string name="m0_endpoint_unavailable">No local IPv4 address found. Connect to Wi-Fi or hotspot.</string>
+    <string name="m0_endpoint_copied">Endpoint copied. Open it from iPhone Safari to confirm local connectivity.</string>
     <string name="m0_permission_granted">Photos permission: granted.</string>
     <string name="m0_permission_missing">Photos permission: required for /v1/manifest and /v1/media.</string>
     <string name="m0_screen_lock_normal">Screen lock: normal.</string>
@@ -21,5 +22,6 @@
     <string name="m0_grant_permission">Grant photos permission</string>
     <string name="m0_start_server">Start M0 server</string>
     <string name="m0_stop_server">Stop M0 server</string>
+    <string name="m0_copy_endpoint">Copy endpoint</string>
     <string name="m0_copy_pairing_payload">Copy pairing payload</string>
 </resources>
