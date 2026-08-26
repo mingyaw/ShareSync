@@ -46,6 +46,7 @@ class MainActivity : Activity() {
     private lateinit var stopButton: Button
     private lateinit var copyEndpointButton: Button
     private lateinit var copyPairingButton: Button
+    private lateinit var clearSyncStateButton: Button
 
     private var server: LocalSyncServer? = null
     @Volatile
@@ -155,6 +156,11 @@ class MainActivity : Activity() {
             setOnClickListener { copyPairingPayload() }
         }
 
+        clearSyncStateButton = Button(this).apply {
+            text = getString(R.string.m0_clear_sync_state)
+            setOnClickListener { clearSyncState() }
+        }
+
         root.addView(title)
         root.addView(statusText)
         root.addView(endpointText)
@@ -169,6 +175,7 @@ class MainActivity : Activity() {
         root.addView(stopButton)
         root.addView(copyEndpointButton)
         root.addView(copyPairingButton)
+        root.addView(clearSyncStateButton)
         scrollView.addView(root)
         setContentView(scrollView)
     }
@@ -217,6 +224,7 @@ class MainActivity : Activity() {
         stopButton.isEnabled = isServerRunning
         copyEndpointButton.isEnabled = endpointUrl != null
         copyPairingButton.isEnabled = currentPairingPayloadJson != null
+        clearSyncStateButton.isEnabled = syncResultStore != null
         updateKeepScreenAwake()
     }
 
@@ -405,6 +413,18 @@ class MainActivity : Activity() {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipboard.setPrimaryClip(ClipData.newPlainText("ShareSync health endpoint", endpointUrl))
         refreshUi(getString(R.string.m0_endpoint_copied))
+    }
+
+    private fun clearSyncState() {
+        val store = syncResultStore ?: return
+        Thread {
+            SuspendBridge.runBlocking { store.clear() }
+            currentSyncResult = null
+            currentManifestPhotoCount = manifestBuilder?.let { builder ->
+                SuspendBridge.runBlocking { builder.buildM0Manifest().media.size }
+            }
+            runOnUiThread { refreshUi(getString(R.string.m0_sync_state_cleared)) }
+        }.start()
     }
 
     private fun currentEndpointUrl(): String? {

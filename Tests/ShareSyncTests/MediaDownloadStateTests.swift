@@ -145,6 +145,35 @@ final class MediaDownloadStateTests: XCTestCase {
         XCTAssertEqual(store.pendingRecords().map(\.sourceAssetId), ["media-001"])
     }
 
+    func testInMemoryStoreClearRemovesAllRecords() {
+        let store = InMemoryMediaDownloadStateStore()
+        store.upsertQueued(asset: makeAsset(assetId: "media-001", size: 2048), now: Date(timeIntervalSince1970: 1))
+
+        store.clear()
+
+        XCTAssertNil(store.record(for: "media-001"))
+        XCTAssertEqual(store.allRecords(), [])
+        XCTAssertEqual(store.pendingRecords(), [])
+        XCTAssertEqual(store.importedMappings(), [])
+    }
+
+    func testFileStoreClearRemovesPersistedRecords() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncStateTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let fileURL = directory.appendingPathComponent("media-download-state.json")
+        let store = FileMediaDownloadStateStore(fileURL: fileURL)
+
+        store.upsertQueued(asset: makeAsset(assetId: "media-001", size: 2048), now: Date(timeIntervalSince1970: 1))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: fileURL.path))
+
+        store.clear()
+
+        XCTAssertEqual(store.allRecords(), [])
+        XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
+        XCTAssertEqual(FileMediaDownloadStateStore(fileURL: fileURL).allRecords(), [])
+    }
+
     private func makeAsset(assetId: String, size: Int64) -> MediaAsset {
         MediaAsset(
             assetId: assetId,

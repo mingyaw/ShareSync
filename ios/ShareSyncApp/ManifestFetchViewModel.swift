@@ -231,6 +231,20 @@ final class ManifestFetchViewModel: ObservableObject {
         cancelDownload(reason: "Transfer paused because ShareSync left the foreground. Completed items are kept; retry remaining photos when you return.")
     }
 
+    func resetLocalSyncState() {
+        activeDownloadTask?.cancel()
+        activeDownloadTask = nil
+        downloadStateStore.clear()
+        try? syncResultStore.clear()
+        latestManifest = nil
+        summary = nil
+        syncResultSummary = nil
+        downloadProgressSummary = nil
+        cancellationMessage = nil
+        downloadState = .idle
+        state = .idle
+    }
+
     private func cancelDownload(reason: String) {
         activeDownloadTask?.cancel()
         activeDownloadTask = nil

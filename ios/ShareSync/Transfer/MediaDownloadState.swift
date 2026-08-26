@@ -46,6 +46,7 @@ protocol MediaDownloadStateStore {
     func markFailed(sourceAssetId: String, errorCode: String, now: Date)
     func pendingRecords() -> [MediaDownloadRecord]
     func importedMappings() -> [MediaImportMapping]
+    func clear()
 }
 
 final class InMemoryMediaDownloadStateStore: MediaDownloadStateStore {
@@ -142,6 +143,10 @@ final class InMemoryMediaDownloadStateStore: MediaDownloadStateStore {
             .sorted { lhs, rhs in
                 lhs.importedAt < rhs.importedAt
             }
+    }
+
+    func clear() {
+        records.removeAll()
     }
 
     private func mutate(
@@ -261,6 +266,19 @@ final class FileMediaDownloadStateStore: MediaDownloadStateStore {
             .sorted { lhs, rhs in
                 lhs.importedAt < rhs.importedAt
             }
+    }
+
+    func clear() {
+        records.removeAll()
+        do {
+            guard fileManager.fileExists(atPath: fileURL.path) else {
+                return
+            }
+
+            try fileManager.removeItem(at: fileURL)
+        } catch {
+            assertionFailure("Failed to clear media download state: \(error)")
+        }
     }
 
     private func mutate(

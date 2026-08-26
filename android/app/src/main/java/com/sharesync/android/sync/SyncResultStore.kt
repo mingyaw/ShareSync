@@ -5,6 +5,7 @@ import java.io.File
 interface SyncResultStore {
     suspend fun save(result: SyncResult)
     suspend fun latest(): SyncResult?
+    suspend fun clear()
 
     suspend fun completedMediaAssetIds(): Set<String> {
         return latest()
@@ -29,6 +30,10 @@ class InMemorySyncResultStore : SyncResultStore {
     override suspend fun latest(): SyncResult? {
         return latestResult
     }
+
+    override suspend fun clear() {
+        latestResult = null
+    }
 }
 
 class FileSyncResultStore(
@@ -47,6 +52,12 @@ class FileSyncResultStore(
         }
 
         return runCatching { codec.decode(file.readText()) }.getOrNull()
+    }
+
+    override suspend fun clear() {
+        if (file.exists()) {
+            file.delete()
+        }
     }
 
     companion object {

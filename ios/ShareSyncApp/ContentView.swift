@@ -188,6 +188,18 @@ struct ContentView: View {
             .controlSize(.large)
             .frame(maxWidth: .infinity)
             .disabled(!viewModel.canCancelDownload)
+
+            Button(role: .destructive) {
+                viewModel.resetLocalSyncState()
+            } label: {
+                Text("Reset Local Sync State")
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 44)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+            .frame(maxWidth: .infinity)
+            .disabled(viewModel.isTransferActive)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.bottom, 24)

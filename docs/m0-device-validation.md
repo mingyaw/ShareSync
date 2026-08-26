@@ -64,6 +64,17 @@ Expected result: Android continues updating the sync result summary even when th
 
 Expected result: previously imported items are skipped by local state, and iOS chooses the next pending item.
 
+## Reset Local Test State
+
+Use this only when rerunning M0 validation from a clean ShareSync state.
+
+1. On iOS, tap `Reset Local Sync State`.
+2. Confirm the receive screen returns to the idle manifest state.
+3. On Android, tap `Clear sync result`.
+4. Tap `Fetch Manifest` on iOS again.
+
+Expected result: ShareSync local transfer mappings and latest result JSON are cleared on iOS, Android clears its persisted iOS result report, and the next manifest/result cycle is rebuilt from the current devices. Imported photos remain in iOS Photos and are not deleted by the reset controls.
+
 ## Deleted Imported Photo
 
 1. Delete one imported ShareSync item from iOS Photos.
@@ -191,4 +202,5 @@ Expected result: iOS marks the photo as failed with `SS-STORE-001`, shows that c
 
 - Android SHA-256 is calculated lazily before full media transfers and returned in `X-ShareSync-SHA256`.
 - iOS duplicate prevention uses the app-local Android asset id to Photos local identifier mapping; deleting the iOS app removes that mapping.
+- M0 reset controls clear ShareSync local sync state only; they do not inspect or remove existing Photos library items.
 - Full no-cloud relay privacy goal is preserved; no cloud intermediary is used by this flow.

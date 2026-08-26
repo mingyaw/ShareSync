@@ -44,6 +44,19 @@ class SyncResultStoreTest {
     }
 
     @Test
+    fun inMemoryStoreClearRemovesResults() {
+        val store = InMemorySyncResultStore()
+
+        SuspendBridge.runBlocking {
+            store.save(syncResult("batch-001", syncItem("media-001", SyncItemStatus.synced)))
+            store.clear()
+        }
+
+        assertEquals(null, SuspendBridge.runBlocking { store.latest() })
+        assertEquals(emptySet<String>(), SuspendBridge.runBlocking { store.completedMediaAssetIds() })
+    }
+
+    @Test
     fun fileStorePersistsMergedResults() {
         val directory = File(System.getProperty("java.io.tmpdir"), "ShareSyncStoreTest-${System.nanoTime()}")
         val file = File(directory, "latest-sync-result.json")
@@ -63,6 +76,28 @@ class SyncResultStoreTest {
                 listOf("media-001" to SyncItemStatus.synced, "media-002" to SyncItemStatus.failed),
                 latest?.results?.map { it.sourceItemId to it.status },
             )
+        } finally {
+            file.delete()
+            directory.delete()
+        }
+    }
+
+    @Test
+    fun fileStoreClearRemovesPersistedResults() {
+        val directory = File(System.getProperty("java.io.tmpdir"), "ShareSyncStoreTest-${System.nanoTime()}")
+        val file = File(directory, "latest-sync-result.json")
+        val store = FileSyncResultStore(file = file)
+
+        try {
+            SuspendBridge.runBlocking {
+                store.save(syncResult("batch-001", syncItem("media-001", SyncItemStatus.synced)))
+            }
+            assertEquals(true, file.exists())
+
+            SuspendBridge.runBlocking { store.clear() }
+
+            assertEquals(null, SuspendBridge.runBlocking { store.latest() })
+            assertEquals(false, file.exists())
         } finally {
             file.delete()
             directory.delete()

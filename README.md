@@ -141,6 +141,7 @@ M0 excludes:
 - Do not add Apple ID or iCloud password handling.
 - iOS foreground transfer is guarded: the screen stays awake while active, and leaving the foreground pauses the transfer for retry.
 - Deleting the iOS app deletes its local sync mapping and can make previously imported Android photos eligible again.
+- Use the M0 reset controls only for validation. They clear ShareSync local state, not imported Photos library items.
 
 ## Local Checks
 
@@ -186,7 +187,13 @@ iOS:
 - Tap `Fetch Manifest`.
 - Tap `Download Next Item` or `Download 5 Items`.
 - Tap `Download Remaining` for the 100-item foreground transfer validation.
+- Use `Reset Local Sync State` only when you need to rerun validation from a clean iOS ShareSync state.
 - Open Photos and confirm imported photos appear in the `ShareSync Backup` album.
+
+Resetting test state:
+
+- Android `Clear sync result` removes the locally stored iOS result report so Android can rebuild manifest filtering from future reports.
+- iOS `Reset Local Sync State` removes ShareSync download/import mappings and latest result JSON. Photos already imported into the `ShareSync Backup` album remain in Photos.
 
 Use [docs/m0-device-validation.md](docs/m0-device-validation.md) as the real-device acceptance checklist before calling M0 complete.
 

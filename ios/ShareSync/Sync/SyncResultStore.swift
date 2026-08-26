@@ -3,6 +3,7 @@ import Foundation
 protocol SyncResultStore {
     func save(_ result: SyncResult) throws
     func latest() throws -> SyncResult?
+    func clear() throws
 }
 
 final class FileSyncResultStore: SyncResultStore {
@@ -30,6 +31,14 @@ final class FileSyncResultStore: SyncResultStore {
 
         let data = try Data(contentsOf: fileURL)
         return try JSONDecoder.syncResultDecoder.decode(SyncResult.self, from: data)
+    }
+
+    func clear() throws {
+        guard fileManager.fileExists(atPath: fileURL.path) else {
+            return
+        }
+
+        try fileManager.removeItem(at: fileURL)
     }
 
     private static func defaultStoreURL(fileManager: FileManager) -> URL {

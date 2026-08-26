@@ -63,4 +63,21 @@ final class SyncResultStoreTests: XCTestCase {
 
         XCTAssertEqual(try store.latest(), second)
     }
+
+    func testFileStoreClearRemovesLatestSyncResult() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncResultStoreTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let fileURL = directory.appendingPathComponent("latest-sync-result.json")
+        let store = FileSyncResultStore(fileURL: fileURL)
+        let result = SyncResult(syncBatchId: "batch-001", targetDeviceId: "ios-device-001", results: [])
+
+        try store.save(result)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: fileURL.path))
+
+        try store.clear()
+
+        XCTAssertNil(try store.latest())
+        XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
+    }
 }

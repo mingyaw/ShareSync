@@ -76,6 +76,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Keep Android sync result polling active while the M0 server is running.
 - [x] Exclude latest synced/skipped media results from Android manifest.
 - [x] Merge Android sync results across multiple M0 batches.
+- [x] Add Android validation control to clear persisted M0 sync result state.
 - [x] Add range request support.
 - [x] Add basic error responses.
 
@@ -146,6 +147,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Treat missing imported Photos assets as retryable transfer candidates.
 - [x] Persist latest shared `SyncResult` JSON.
 - [x] POST latest `SyncResult` back to Android M0 server.
+- [x] Add iOS validation control to clear local M0 download/import/result state.
 
 ## Cross-Platform Tasks
 
@@ -771,3 +773,19 @@ Completed the M0 check script slice:
 - Added `scripts/check-m0.sh` as the canonical local validation entry point.
 - The script runs fixture validation, Swift package tests, Android unit tests and Kotlin compile, and iOS app build.
 - Updated README local check instructions to match the commands used for current M0 verification.
+
+### 2026-08-26 M0 Reset Validation Controls
+
+Completed a validation reset slice for repeatable photo MVP testing:
+
+- Added `clear` support to Android and iOS local sync result stores.
+- Added `clear` support to iOS media download/import state stores.
+- Added Android `Clear sync result` action for resetting manifest filtering input during M0 validation.
+- Added iOS `Reset Local Sync State` action for clearing app-local transfer mappings and latest result JSON.
+- Documented that reset controls do not delete imported iOS Photos library items.
+
+Verified:
+
+```sh
+./scripts/check-m0.sh
+```
