@@ -73,6 +73,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Persist latest sync result on Android.
 - [x] Show latest sync result summary on Android M0 screen.
 - [x] Show latest failed result code on Android M0 screen.
+- [x] Restore latest Android sync result summary on app launch.
 - [x] Keep Android sync result polling active while the M0 server is running.
 - [x] Exclude latest synced/skipped media results from Android manifest.
 - [x] Merge Android sync results across multiple M0 batches.
@@ -852,6 +853,21 @@ Completed an iOS visibility slice for interrupted-transfer validation:
 - iOS receive screen now shows `Partial` count for manifest items with persisted partial bytes and local file state.
 - Partial records exclude completed full downloads and records without local file references.
 - Added Swift coverage for resumable partial record filtering.
+
+Verification target:
+
+```sh
+./scripts/check-m0.sh
+```
+
+### 2026-08-26 Android Persisted Result Restore
+
+Completed an Android validation visibility slice:
+
+- Android now loads the persisted latest M0 sync result when the app opens.
+- The latest sync result summary remains visible even before the local M0 server starts.
+- `Clear sync result` is enabled whenever a persisted result exists, not only while the server is running.
+- Stopping or failing to start the server restores the persisted result store instead of hiding existing validation state.
 
 Verification target:
 

@@ -21,6 +21,7 @@ import com.sharesync.android.pairing.QrCodeBitmapFactory
 import com.sharesync.android.security.DeviceIdentity
 import com.sharesync.android.security.DeviceIdentityStore
 import com.sharesync.android.security.SharedPreferencesDeviceIdentityStore
+import com.sharesync.android.sync.FileSyncResultStore
 import com.sharesync.android.sync.ManifestBuilder
 import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.sync.SyncItemStatus
@@ -63,6 +64,7 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         deviceIdentityStore = SharedPreferencesDeviceIdentityStore(this)
+        restorePersistedSyncResult()
         renderContent()
         refreshUi()
     }
@@ -224,7 +226,7 @@ class MainActivity : Activity() {
         stopButton.isEnabled = isServerRunning
         copyEndpointButton.isEnabled = endpointUrl != null
         copyPairingButton.isEnabled = currentPairingPayloadJson != null
-        clearSyncStateButton.isEnabled = syncResultStore != null
+        clearSyncStateButton.isEnabled = currentSyncResult != null
         updateKeepScreenAwake()
     }
 
@@ -298,7 +300,7 @@ class MainActivity : Activity() {
                 pollSyncResultUpdates(components.syncResultStore)
             } catch (error: Throwable) {
                 server = null
-                syncResultStore = null
+                restorePersistedSyncResult()
                 manifestBuilder = null
                 currentManifestPhotoCount = null
                 isServerRunning = false
@@ -352,11 +354,11 @@ class MainActivity : Activity() {
     private fun stopServer() {
         val currentServer = server ?: return
         server = null
-        syncResultStore = null
         manifestBuilder = null
         currentManifestPhotoCount = null
         isServerRunning = false
         currentPairingPayloadJson = null
+        restorePersistedSyncResult()
         syncResultPollThread?.interrupt()
         syncResultPollThread = null
         updateKeepScreenAwake()
@@ -425,6 +427,14 @@ class MainActivity : Activity() {
             }
             runOnUiThread { refreshUi(getString(R.string.m0_sync_state_cleared)) }
         }.start()
+    }
+
+    private fun restorePersistedSyncResult() {
+        val store = FileSyncResultStore(
+            file = FileSyncResultStore.defaultFile(applicationContext.filesDir),
+        )
+        syncResultStore = store
+        currentSyncResult = SuspendBridge.runBlocking { store.latest() }
     }
 
     private fun currentEndpointUrl(): String? {
