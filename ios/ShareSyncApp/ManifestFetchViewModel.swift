@@ -64,8 +64,10 @@ final class ManifestFetchViewModel: ObservableObject {
     @Published private(set) var pairedDevice: TrustedDevice?
     @Published private(set) var pairingToken: String?
     @Published private(set) var photoLibraryPermissionStatus: PhotoLibraryPermissionStatus = .unknown
+    @Published private(set) var localPeerHealth: LocalPeerHealth?
 
     private let client: ManifestClient
+    private let healthClient: HealthClient
     private let downloader: MediaDownloader
     private let photoImporter: PhotoImporter
     private let photoLibraryPermissionChecker: PhotoLibraryPermissionChecking
@@ -79,6 +81,7 @@ final class ManifestFetchViewModel: ObservableObject {
 
     init(
         client: ManifestClient = ManifestClient(),
+        healthClient: HealthClient = HealthClient(),
         downloader: MediaDownloader = MediaDownloader(),
         photoImporter: PhotoImporter = PhotoKitPhotoImporter(),
         photoLibraryPermissionChecker: PhotoLibraryPermissionChecking = PhotoKitPhotoImporter(),
@@ -89,6 +92,7 @@ final class ManifestFetchViewModel: ObservableObject {
         syncResultClient: SyncResultClient = SyncResultClient()
     ) {
         self.client = client
+        self.healthClient = healthClient
         self.downloader = downloader
         self.photoImporter = photoImporter
         self.photoLibraryPermissionChecker = photoLibraryPermissionChecker
@@ -134,6 +138,8 @@ final class ManifestFetchViewModel: ObservableObject {
 
         Task {
             do {
+                let health = try await healthClient.fetchHealth(from: trimmedHost, port: portNumber)
+                localPeerHealth = health
                 let manifest = try await client.fetchManifest(
                     from: trimmedHost,
                     port: portNumber,
@@ -152,6 +158,7 @@ final class ManifestFetchViewModel: ObservableObject {
                 state = .loaded
             } catch {
                 latestManifest = nil
+                localPeerHealth = nil
                 summary = nil
                 syncResultSummary = nil
                 downloadProgressSummary = nil
@@ -390,6 +397,19 @@ final class ManifestFetchViewModel: ObservableObject {
                 return "Pairing token was rejected. Scan the Android QR code again."
             case .unacceptableStatusCode:
                 return "Android rejected the manifest request."
+            }
+        }
+
+        if let healthError = error as? HealthClientError {
+            switch healthError {
+            case .invalidBaseURL:
+                return "Android endpoint is not valid."
+            case .nonHTTPResponse:
+                return "Android health check did not return a valid local response."
+            case .unacceptableStatusCode:
+                return "Android health check was rejected."
+            case .peerNotReady:
+                return "Android local server is not ready."
             }
         }
 

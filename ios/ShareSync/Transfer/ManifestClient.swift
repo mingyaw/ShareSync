@@ -6,6 +6,24 @@ enum ManifestClientError: Error, Equatable {
     case unacceptableStatusCode(Int)
 }
 
+enum HealthClientError: Error, Equatable {
+    case invalidBaseURL
+    case nonHTTPResponse
+    case unacceptableStatusCode(Int)
+    case peerNotReady(String)
+}
+
+struct LocalPeerHealth: Decodable, Equatable {
+    let status: String
+    let deviceId: String
+    let appVersion: String
+    let protocolVersion: Int
+
+    var isReady: Bool {
+        status == "ok"
+    }
+}
+
 protocol ManifestFetchingSession {
     func data(for request: URLRequest) async throws -> (Data, URLResponse)
 }
@@ -56,5 +74,43 @@ final class ManifestClient {
         }
 
         return try decoder.decode(SyncManifest.self, from: data)
+    }
+}
+
+final class HealthClient {
+    private let session: ManifestFetchingSession
+    private let decoder: JSONDecoder
+
+    init(session: ManifestFetchingSession = URLSession.shared) {
+        self.session = session
+        self.decoder = JSONDecoder()
+    }
+
+    func fetchHealth(from host: String, port: Int) async throws -> LocalPeerHealth {
+        var components = URLComponents()
+        components.scheme = "http"
+        components.host = host
+        components.port = port
+        components.path = "/v1/health"
+
+        guard let url = components.url else {
+            throw HealthClientError.invalidBaseURL
+        }
+
+        let (data, response) = try await session.data(for: URLRequest(url: url))
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw HealthClientError.nonHTTPResponse
+        }
+
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw HealthClientError.unacceptableStatusCode(httpResponse.statusCode)
+        }
+
+        let health = try decoder.decode(LocalPeerHealth.self, from: data)
+        guard health.isReady else {
+            throw HealthClientError.peerNotReady(health.status)
+        }
+
+        return health
     }
 }

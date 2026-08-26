@@ -112,6 +112,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 ### I3. Manifest Client
 
 - [x] Use `ManifestClient` to fetch Android manifest.
+- [x] Preflight Android `/v1/health` before manifest fetch.
 - [x] Show total photo count and total byte size.
 - [x] Show latest cursor in the M0 receive screen.
 
@@ -686,3 +687,12 @@ Completed the Photos permission preflight slice:
 - iOS receive screen now shows `Photos Access` before transfer.
 - iOS requests Photos permission before downloading photos, so denied/restricted access stops early instead of downloading files that cannot be imported.
 - Added Swift coverage for allowed and blocked Photos permission statuses.
+
+### 2026-08-26 Android Health Preflight
+
+Completed the local network health preflight slice:
+
+- Added an iOS `HealthClient` for Android `GET /v1/health`.
+- iOS now checks Android peer health before fetching the protected manifest endpoint.
+- Receive screen shows a ready Android peer with device id and protocol version after a successful health check.
+- Added Swift coverage for health decode, non-successful responses, and non-ready peer status.

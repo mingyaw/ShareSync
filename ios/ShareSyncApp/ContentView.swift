@@ -187,6 +187,9 @@ struct ContentView: View {
             if let pairedDevice = viewModel.pairedDevice {
                 StatusRow(title: "Device", value: pairedDevice.deviceName)
             }
+            if let health = viewModel.localPeerHealth {
+                StatusRow(title: "Android Peer", value: androidPeerText(health))
+            }
             StatusRow(title: "Manifest", value: manifestStatus)
 
             if let summary = viewModel.summary {
@@ -338,6 +341,10 @@ struct ContentView: View {
             return code
         }
         return "\(code) - \(fileName)"
+    }
+
+    private func androidPeerText(_ health: LocalPeerHealth) -> String {
+        "Ready - \(health.deviceId) - v\(health.protocolVersion)"
     }
 }
 

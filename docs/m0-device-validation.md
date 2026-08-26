@@ -21,14 +21,15 @@ This checklist validates the current main path: Android exposes recent photos ov
 7. Scan the Android QR code.
 8. Confirm iOS shows the Android host and port under `Pairing`.
 9. Tap `Fetch Manifest`.
-10. Confirm iOS shows a photo count and a cursor.
-11. Confirm Android shows `Manifest photos` with the current pending photo count.
-12. Tap `Download Next Item`.
-13. Confirm status reaches completed/imported.
-14. Open iOS Photos.
-15. Confirm the item appears in the `ShareSync Backup` album.
-16. Confirm the iOS ShareSync screen shows updated `Synced`, `Skipped`, and `Result Failed` counts.
-17. Confirm Android shows the latest sync result summary.
+10. Confirm iOS shows `Android Peer` as ready.
+11. Confirm iOS shows a photo count and a cursor.
+12. Confirm Android shows `Manifest photos` with the current pending photo count.
+13. Tap `Download Next Item`.
+14. Confirm status reaches completed/imported.
+15. Open iOS Photos.
+16. Confirm the item appears in the `ShareSync Backup` album.
+17. Confirm the iOS ShareSync screen shows updated `Synced`, `Skipped`, and `Result Failed` counts.
+18. Confirm Android shows the latest sync result summary.
 
 Expected result: one Android photo is visible in iOS Photos and iCloud Photos can back it up through the normal iOS Photos pipeline.
 
@@ -81,7 +82,7 @@ Expected result: downloaded-but-not-imported items continue into Photos import; 
 3. Confirm Android endpoint shows the actual fallback port.
 4. Scan the QR code on iOS.
 
-Expected result: QR payload contains the actual bound port, and iOS can fetch `/v1/manifest` without manual editing.
+Expected result: QR payload contains the actual bound port, and iOS shows `Android Peer` before fetching `/v1/manifest` without manual editing.
 
 ## Network Interruption
 
