@@ -16,7 +16,7 @@ final class SyncResultClient {
     private let session: SyncResultPostingSession
     private let encoder: JSONEncoder
 
-    init(session: SyncResultPostingSession = URLSession.shared) {
+    init(session: SyncResultPostingSession = LocalNetworkURLSessionFactory.shortRequestSession()) {
         self.session = session
         self.encoder = JSONEncoder()
     }

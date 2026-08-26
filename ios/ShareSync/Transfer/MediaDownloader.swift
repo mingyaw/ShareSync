@@ -38,7 +38,7 @@ final class MediaDownloader {
     private let now: () -> Date
 
     init(
-        session: MediaDataSession = URLSession.shared,
+        session: MediaDataSession = LocalNetworkURLSessionFactory.mediaTransferSession(),
         fileManager: FileManager = .default,
         downloadDirectory: URL? = nil,
         availableCapacityProvider: @escaping (URL) throws -> Int64? = MediaDownloader.availableCapacity,

@@ -116,6 +116,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 - [x] Use `ManifestClient` to fetch Android manifest.
 - [x] Preflight Android `/v1/health` before manifest fetch.
+- [x] Use explicit local-network timeouts for health, manifest, result posts, and media downloads.
 - [x] Show total photo count and total byte size.
 - [x] Show latest cursor in the M0 receive screen.
 
@@ -751,3 +752,13 @@ Completed the iOS background pause slice:
 - iOS now cancels active foreground photo transfer when ShareSync leaves the foreground.
 - The receive screen shows a background-specific pause message.
 - Completed items are kept and remaining photos stay retryable when the user returns.
+
+### 2026-08-26 Local Network Timeouts
+
+Completed the local-network timeout slice:
+
+- Added a shared iOS local-network URLSession factory.
+- Health, manifest, and sync-result requests use short local timeouts.
+- Photo media downloads use longer resource timeouts for larger images.
+- Sessions wait for connectivity and allow hotspot or constrained network paths during M0 validation.
+- Added Swift coverage for timeout configuration.

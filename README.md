@@ -31,6 +31,7 @@ The current codebase contains:
 - iOS QR scanner and manual pairing fallback.
 - M0 protected endpoints require the QR pairing token header for manifest, media, and sync result requests.
 - iOS receive screen that fetches the Android photo manifest, downloads one or more photos, verifies checksums when available, and imports into the `ShareSync Backup` Photos album.
+- iOS local-network requests use explicit timeouts: short for health/manifest/result posts and longer for photo media transfers.
 - iOS receive screen can download the next item, a small batch, or all remaining manifest items for M0 device validation.
 - iOS receive screen shows live batch progress, downloaded count, failed count, and current file during foreground transfer.
 - iOS receive screen can stop an active foreground transfer while keeping completed items retry-safe.
@@ -107,6 +108,7 @@ M0 includes only:
 - iOS manifest fetch
 - iOS photo download
 - iOS Photos import
+- local-network timeout tuning
 - duplicate prevention
 - interrupted sync resume
 - all-remaining foreground batch transfer for device validation

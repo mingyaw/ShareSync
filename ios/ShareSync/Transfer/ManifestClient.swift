@@ -34,7 +34,7 @@ final class ManifestClient {
     private let session: ManifestFetchingSession
     private let decoder: JSONDecoder
 
-    init(session: ManifestFetchingSession = URLSession.shared) {
+    init(session: ManifestFetchingSession = LocalNetworkURLSessionFactory.shortRequestSession()) {
         self.session = session
         self.decoder = JSONDecoder()
         self.decoder.dateDecodingStrategy = .iso8601
@@ -81,7 +81,7 @@ final class HealthClient {
     private let session: ManifestFetchingSession
     private let decoder: JSONDecoder
 
-    init(session: ManifestFetchingSession = URLSession.shared) {
+    init(session: ManifestFetchingSession = LocalNetworkURLSessionFactory.shortRequestSession()) {
         self.session = session
         self.decoder = JSONDecoder()
     }
