@@ -226,6 +226,7 @@ struct ContentView: View {
                 StatusRow(title: "Imported", value: "\(summary.importedCount)")
                 StatusRow(title: "Missing", value: "\(summary.missingCount)")
                 StatusRow(title: "Failed", value: "\(summary.failedCount)")
+                StatusRow(title: "Partial", value: "\(summary.partialCount)")
                 if let lastFailureCode = summary.lastFailureCode {
                     StatusRow(title: "Last Failure", value: lastFailureText(code: lastFailureCode, fileName: summary.lastFailureFileName))
                 }

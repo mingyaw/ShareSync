@@ -136,6 +136,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Pause iOS foreground transfer when the app leaves the foreground.
 - [x] Add manual foreground transfer stop and retry support.
 - [x] Resume or skip completed items after restart.
+- [x] Show resumable partial photo count on iOS receive screen.
 - [x] Add iOS Range request path for persisted partial media retries.
 - [x] Retry one transient network download failure before marking a photo failed.
 - [x] Remove temporary downloaded photo files after successful Photos import.
@@ -836,6 +837,21 @@ Completed a defensive validation slice for media resume:
 - Partial responses with missing or mismatched `Content-Range` are rejected before bytes are combined.
 - Added shared error code `SS-MEDIA-003` for invalid partial media responses.
 - Added Swift coverage for missing and mismatched `Content-Range` metadata.
+
+Verification target:
+
+```sh
+./scripts/check-m0.sh
+```
+
+### 2026-08-26 iOS Partial Resume Visibility
+
+Completed an iOS visibility slice for interrupted-transfer validation:
+
+- Added a state-store query for resumable partial media records.
+- iOS receive screen now shows `Partial` count for manifest items with persisted partial bytes and local file state.
+- Partial records exclude completed full downloads and records without local file references.
+- Added Swift coverage for resumable partial record filtering.
 
 Verification target:
 

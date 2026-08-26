@@ -130,7 +130,7 @@ Expected result: iOS retries one transient download interruption automatically. 
 
 For development builds with a persisted partial media file, confirm the next request includes a `Range` header such as `bytes=<downloadedBytes>-`.
 
-Expected result: Android returns `206 Partial Content`, iOS combines the partial file with the response body, verifies the final checksum, and imports only the completed photo.
+Expected result: iOS shows `Partial` greater than `0` before retry, Android returns `206 Partial Content`, iOS combines the partial file with the response body, verifies the final checksum, and imports only the completed photo.
 
 During development builds, simulate a `206 Partial Content` response with a missing or mismatched `Content-Range`.
 

@@ -82,6 +82,34 @@ final class MediaDownloadStateTests: XCTestCase {
         XCTAssertEqual(store.record(for: "media-001")?.localFileURL, fileURL)
         XCTAssertEqual(store.record(for: "media-001")?.downloadedBytes, 512)
         XCTAssertNil(store.record(for: "media-001")?.lastErrorCode)
+        XCTAssertEqual(store.resumablePartialRecords().map(\.sourceAssetId), ["media-001"])
+    }
+
+    func testResumablePartialRecordsExcludeFullDownloadsAndRecordsWithoutFiles() {
+        let store = InMemoryMediaDownloadStateStore()
+        let partialAsset = makeAsset(assetId: "media-partial", size: 2048)
+        let fullAsset = makeAsset(assetId: "media-full", size: 2048)
+        let noFileAsset = makeAsset(assetId: "media-no-file", size: 2048)
+
+        store.upsertQueued(asset: partialAsset, now: Date(timeIntervalSince1970: 1))
+        store.markDownloaded(
+            sourceAssetId: "media-partial",
+            localFileURL: URL(fileURLWithPath: "/tmp/media-partial.jpg"),
+            downloadedBytes: 512,
+            now: Date(timeIntervalSince1970: 2)
+        )
+        store.markFailed(sourceAssetId: "media-partial", errorCode: "SS-NET-002", now: Date(timeIntervalSince1970: 3))
+        store.upsertQueued(asset: fullAsset, now: Date(timeIntervalSince1970: 4))
+        store.markDownloaded(
+            sourceAssetId: "media-full",
+            localFileURL: URL(fileURLWithPath: "/tmp/media-full.jpg"),
+            downloadedBytes: 2048,
+            now: Date(timeIntervalSince1970: 5)
+        )
+        store.upsertQueued(asset: noFileAsset, now: Date(timeIntervalSince1970: 6))
+        store.markDownloading(sourceAssetId: "media-no-file", downloadedBytes: 128, now: Date(timeIntervalSince1970: 7))
+
+        XCTAssertEqual(store.resumablePartialRecords().map(\.sourceAssetId), ["media-partial"])
     }
 
     func testImportedRecordsAreNotRequeued() {
@@ -176,6 +204,7 @@ final class MediaDownloadStateTests: XCTestCase {
         XCTAssertNil(store.record(for: "media-001"))
         XCTAssertEqual(store.allRecords(), [])
         XCTAssertEqual(store.pendingRecords(), [])
+        XCTAssertEqual(store.resumablePartialRecords(), [])
         XCTAssertEqual(store.importedMappings(), [])
     }
 

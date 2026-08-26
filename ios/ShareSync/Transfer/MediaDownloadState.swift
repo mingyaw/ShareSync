@@ -45,6 +45,7 @@ protocol MediaDownloadStateStore {
     func markSkipped(sourceAssetId: String, now: Date)
     func markFailed(sourceAssetId: String, errorCode: String, now: Date)
     func pendingRecords() -> [MediaDownloadRecord]
+    func resumablePartialRecords() -> [MediaDownloadRecord]
     func importedMappings() -> [MediaImportMapping]
     func clear()
 }
@@ -133,6 +134,14 @@ final class InMemoryMediaDownloadStateStore: MediaDownloadStateStore {
             .filter { record in
                 record.status == .queued || record.status == .downloading || record.status == .failed
             }
+            .sorted { lhs, rhs in
+                lhs.updatedAt < rhs.updatedAt
+            }
+    }
+
+    func resumablePartialRecords() -> [MediaDownloadRecord] {
+        records.values
+            .filter(\.isResumablePartial)
             .sorted { lhs, rhs in
                 lhs.updatedAt < rhs.updatedAt
             }
@@ -262,6 +271,14 @@ final class FileMediaDownloadStateStore: MediaDownloadStateStore {
             }
     }
 
+    func resumablePartialRecords() -> [MediaDownloadRecord] {
+        records.values
+            .filter(\.isResumablePartial)
+            .sorted { lhs, rhs in
+                lhs.updatedAt < rhs.updatedAt
+            }
+    }
+
     func importedMappings() -> [MediaImportMapping] {
         records.values
             .compactMap(MediaImportMapping.init(record:))
@@ -361,5 +378,17 @@ private extension MediaImportMapping {
             photoLocalIdentifier: photoLocalIdentifier,
             importedAt: record.updatedAt
         )
+    }
+}
+
+private extension MediaDownloadRecord {
+    var isResumablePartial: Bool {
+        guard localFileURL != nil,
+              downloadedBytes > 0,
+              downloadedBytes < totalBytes else {
+            return false
+        }
+
+        return status == .queued || status == .downloading || status == .failed
     }
 }

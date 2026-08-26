@@ -27,6 +27,7 @@ final class ManifestFetchViewModel: ObservableObject {
         let importedCount: Int
         let missingCount: Int
         let failedCount: Int
+        let partialCount: Int
         let remainingCount: Int
         let validationAssetName: String?
         let lastFailureCode: String?
@@ -616,6 +617,10 @@ private extension ManifestFetchViewModel.ManifestSummary {
         failedCount = manifest.media.filter { asset in
             stateStore.record(for: asset.assetId)?.status == .failed
         }.count
+        let manifestAssetIds = Set(manifest.media.map(\.assetId))
+        partialCount = stateStore.resumablePartialRecords()
+            .filter { record in manifestAssetIds.contains(record.sourceAssetId) }
+            .count
         let latestFailedRecord = manifest.media
             .compactMap { asset -> (asset: MediaAsset, record: MediaDownloadRecord)? in
                 guard let record = stateStore.record(for: asset.assetId),

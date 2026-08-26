@@ -34,6 +34,7 @@ The current codebase contains:
 - iOS local-network requests use explicit timeouts: short for health/manifest/result posts and longer for photo media transfers.
 - iOS receive screen can download the next item, a small batch, or all remaining manifest items for M0 device validation.
 - iOS receive screen shows live batch progress, downloaded count, failed count, and current file during foreground transfer.
+- iOS receive screen shows resumable partial photo count for interrupted-transfer validation.
 - iOS media download can issue `Range` requests from a persisted partial offset and combine `206 Partial Content` responses.
 - iOS validates `206 Partial Content` `Content-Range` metadata before combining partial media bytes.
 - iOS receive screen can stop an active foreground transfer while keeping completed items retry-safe.
@@ -116,6 +117,7 @@ M0 includes only:
 - interrupted sync resume
 - partial media range retry foundation
 - partial response range validation
+- resumable partial count visibility
 - all-remaining foreground batch transfer for device validation
 - foreground batch progress visibility
 - foreground transfer stop and retry
