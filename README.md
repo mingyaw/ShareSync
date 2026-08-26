@@ -43,6 +43,7 @@ The current codebase contains:
 - Android M0 screen shows pending manifest photo count and latest failed sync result code.
 - Android manifest filtering for media already reported as synced or skipped.
 - Android merged sync result history across M0 batches.
+- iOS paired Android host, port, device metadata, and M0 pairing token persistence across app restarts.
 
 M0 validates the riskiest path:
 
@@ -142,6 +143,7 @@ M0 excludes:
 - iOS foreground transfer is guarded: the screen stays awake while active, and leaving the foreground pauses the transfer for retry.
 - Deleting the iOS app deletes its local sync mapping and can make previously imported Android photos eligible again.
 - Use the M0 reset controls only for validation. They clear ShareSync local state, not imported Photos library items.
+- iOS restores the last paired Android endpoint on app launch. If Android restarts its M0 server, scan the new QR code to refresh the short-lived pairing token.
 
 ## Local Checks
 
@@ -184,6 +186,7 @@ iOS:
 - Open `ios/ShareSync.xcodeproj` in Xcode.
 - Run the `ShareSync` scheme on an iPhone connected to the same network.
 - Scan the Android QR code, or paste the manual pairing payload.
+- If ShareSync was previously paired, confirm the Android IP and port are restored on launch.
 - Tap `Fetch Manifest`.
 - Tap `Download Next Item` or `Download 5 Items`.
 - Tap `Download Remaining` for the 100-item foreground transfer validation.

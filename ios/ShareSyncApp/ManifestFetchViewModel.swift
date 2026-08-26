@@ -76,6 +76,7 @@ final class ManifestFetchViewModel: ObservableObject {
     private let downloadStateStore: MediaDownloadStateStore
     private let syncResultStore: SyncResultStore
     private let syncResultClient: SyncResultClient
+    private let pairedDeviceSessionStore: PairedDeviceSessionStore
     private let pairingPayloadParser: PairingPayloadParser
     private var latestManifest: SyncManifest?
     private var activeDownloadTask: Task<Void, Never>?
@@ -90,7 +91,8 @@ final class ManifestFetchViewModel: ObservableObject {
         pairingPayloadParser: PairingPayloadParser = PairingPayloadParser(),
         downloadStateStore: MediaDownloadStateStore = FileMediaDownloadStateStore(),
         syncResultStore: SyncResultStore = FileSyncResultStore(),
-        syncResultClient: SyncResultClient = SyncResultClient()
+        syncResultClient: SyncResultClient = SyncResultClient(),
+        pairedDeviceSessionStore: PairedDeviceSessionStore = FilePairedDeviceSessionStore()
     ) {
         self.client = client
         self.healthClient = healthClient
@@ -102,7 +104,9 @@ final class ManifestFetchViewModel: ObservableObject {
         self.downloadStateStore = downloadStateStore
         self.syncResultStore = syncResultStore
         self.syncResultClient = syncResultClient
+        self.pairedDeviceSessionStore = pairedDeviceSessionStore
         self.photoLibraryPermissionStatus = photoLibraryPermissionChecker.photoLibraryPermissionStatus()
+        restorePairedDeviceSession()
     }
 
     var canFetch: Bool {
@@ -183,7 +187,7 @@ final class ManifestFetchViewModel: ObservableObject {
             let payload = try pairingPayloadParser.parse(data)
             host = payload.ip
             port = "\(payload.port)"
-            pairedDevice = TrustedDevice(
+            let trustedDevice = TrustedDevice(
                 deviceId: payload.deviceId,
                 deviceName: payload.deviceName,
                 platform: payload.platform,
@@ -193,7 +197,15 @@ final class ManifestFetchViewModel: ObservableObject {
                 lastSeenAt: nil,
                 trustStatus: .trusted
             )
+            pairedDevice = trustedDevice
             pairingToken = payload.pairingToken
+            try? pairedDeviceSessionStore.save(
+                PairedDeviceSession(
+                    host: payload.ip,
+                    port: payload.port,
+                    device: trustedDevice
+                )
+            )
             state = .idle
         } catch PairingPayloadParserError.expired {
             state = .failed("Pairing payload expired. Generate a new one on Android.")
@@ -243,6 +255,18 @@ final class ManifestFetchViewModel: ObservableObject {
         cancellationMessage = nil
         downloadState = .idle
         state = .idle
+    }
+
+    private func restorePairedDeviceSession() {
+        guard let session = try? pairedDeviceSessionStore.load(),
+              session.device.trustStatus == .trusted else {
+            return
+        }
+
+        host = session.host
+        port = "\(session.port)"
+        pairedDevice = session.device
+        pairingToken = session.device.pairingToken
     }
 
     private func cancelDownload(reason: String) {

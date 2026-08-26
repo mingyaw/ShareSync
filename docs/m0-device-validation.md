@@ -38,6 +38,16 @@ Expected result: one Android photo is visible in iOS Photos, Android keeps showi
 
 Note: `Fetch Manifest`, media downloads, and sync result return require the pairing token from the Android QR/payload. Re-scan or paste a fresh payload if iOS shows a token rejection message.
 
+## iOS Pairing Restore
+
+1. Complete QR pairing once.
+2. Force close ShareSync on iOS.
+3. Reopen ShareSync on iOS.
+4. Confirm the Android host, port, paired device name, and pairing status are restored without scanning again.
+5. Tap `Fetch Manifest` while the same Android M0 server session is still running.
+
+Expected result: iOS can reuse the persisted M0 pairing session after an app restart. If Android restarted the M0 server and generated a new token, iOS should show the token rejection message and require a fresh QR scan or pasted payload.
+
 ## Foreground Full Manifest Transfer
 
 1. Complete the baseline success path setup.
@@ -96,7 +106,7 @@ Expected result: downloaded-but-not-imported items continue into Photos import; 
 
 After a successful import, confirm the app does not depend on the temporary downloaded file anymore.
 
-Expected result: imported items remain tracked by Photos local identifier, and only downloaded-but-not-imported items need app temp files for resume.
+Expected result: imported items remain tracked by Photos local identifier, the paired Android session is restored, and only downloaded-but-not-imported items need app temp files for resume.
 
 ## Android Port Fallback
 

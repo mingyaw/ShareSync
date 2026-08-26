@@ -110,8 +110,10 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 ### I2. QR Pairing
 
 - [x] Implement QR scanner.
+- [x] Persist iOS paired Android endpoint and M0 token across app restarts.
 - [x] Parse payload using `PairingPayloadParser`.
 - [x] Show paired Android device.
+- [x] Restore last paired Android device on iOS app launch.
 
 ### I3. Manifest Client
 
@@ -169,6 +171,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [ ] Same Wi-Fi.
 - [ ] Android hotspot.
 - [ ] Transfer interrupted midway.
+- [x] iOS app restart after pairing.
 - [ ] Repeat sync.
 - [x] No Photos permission.
 - [x] iPhone storage low.
@@ -785,6 +788,22 @@ Completed a validation reset slice for repeatable photo MVP testing:
 - Documented that reset controls do not delete imported iOS Photos library items.
 
 Verified:
+
+```sh
+./scripts/check-m0.sh
+```
+
+### 2026-08-26 iOS Pairing Session Persistence
+
+Completed an iOS restart-resume slice for the photo MVP:
+
+- Added `PairedDeviceSession` persistence for Android host, port, trusted device metadata, and M0 pairing token.
+- iOS receive screen restores the last paired Android endpoint on launch.
+- Pairing restore supports retrying an interrupted M0 transfer without immediately rescanning QR, as long as the Android server session token is still current.
+- Documented that Android M0 server restarts still require a fresh QR scan or pasted payload because the token is regenerated.
+- Added Swift coverage for paired session save, load, and clear behavior.
+
+Verification target:
 
 ```sh
 ./scripts/check-m0.sh
