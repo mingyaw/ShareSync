@@ -63,10 +63,12 @@ final class ManifestFetchViewModel: ObservableObject {
     @Published private(set) var downloadProgressSummary: DownloadProgressSummary?
     @Published private(set) var pairedDevice: TrustedDevice?
     @Published private(set) var pairingToken: String?
+    @Published private(set) var photoLibraryPermissionStatus: PhotoLibraryPermissionStatus = .unknown
 
     private let client: ManifestClient
     private let downloader: MediaDownloader
     private let photoImporter: PhotoImporter
+    private let photoLibraryPermissionChecker: PhotoLibraryPermissionChecking
     private let photoAssetPresenceChecker: PhotoAssetPresenceChecking
     private let downloadStateStore: MediaDownloadStateStore
     private let syncResultStore: SyncResultStore
@@ -79,6 +81,7 @@ final class ManifestFetchViewModel: ObservableObject {
         client: ManifestClient = ManifestClient(),
         downloader: MediaDownloader = MediaDownloader(),
         photoImporter: PhotoImporter = PhotoKitPhotoImporter(),
+        photoLibraryPermissionChecker: PhotoLibraryPermissionChecking = PhotoKitPhotoImporter(),
         photoAssetPresenceChecker: PhotoAssetPresenceChecking = PhotoKitPhotoImporter(),
         pairingPayloadParser: PairingPayloadParser = PairingPayloadParser(),
         downloadStateStore: MediaDownloadStateStore = FileMediaDownloadStateStore(),
@@ -88,11 +91,13 @@ final class ManifestFetchViewModel: ObservableObject {
         self.client = client
         self.downloader = downloader
         self.photoImporter = photoImporter
+        self.photoLibraryPermissionChecker = photoLibraryPermissionChecker
         self.photoAssetPresenceChecker = photoAssetPresenceChecker
         self.pairingPayloadParser = pairingPayloadParser
         self.downloadStateStore = downloadStateStore
         self.syncResultStore = syncResultStore
         self.syncResultClient = syncResultClient
+        self.photoLibraryPermissionStatus = photoLibraryPermissionChecker.photoLibraryPermissionStatus()
     }
 
     var canFetch: Bool {
@@ -233,6 +238,14 @@ final class ManifestFetchViewModel: ObservableObject {
         activeDownloadTask?.cancel()
 
         activeDownloadTask = Task {
+            let permissionStatus = await photoLibraryPermissionChecker.requestPhotoLibraryPermission()
+            photoLibraryPermissionStatus = permissionStatus
+            guard permissionStatus.allowsImport else {
+                downloadState = .failed("Allow Photos access to import Android photos.")
+                activeDownloadTask = nil
+                return
+            }
+
             let transferAssets = nextTransferCandidates(in: manifest, limit: limit)
             guard !transferAssets.isEmpty else {
                 downloadState = .failed("No remaining photos to download.")

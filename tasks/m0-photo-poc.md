@@ -130,6 +130,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 ### I5. Photos Import
 
 - [x] Request Photos permission.
+- [x] Show Photos permission status before transfer.
 - [x] Create `ShareSync Backup` album.
 - [x] Import one downloaded photo for validation.
 - [x] Store Android asset id to iOS local identifier mapping.
@@ -158,7 +159,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [ ] Android hotspot.
 - [ ] Transfer interrupted midway.
 - [ ] Repeat sync.
-- [ ] No Photos permission.
+- [x] No Photos permission.
 - [x] iPhone storage low.
 
 ## Manual M0 Device Validation
@@ -676,3 +677,12 @@ Completed the transient network retry slice:
 - iOS media downloader now retries one time after `networkConnectionLost`, `timedOut`, or `cannotConnectToHost`.
 - User or system cancellation is still treated as a paused retryable item, not a failed photo.
 - Added Swift coverage for network retry recovery and cancelled transfer non-retry behavior.
+
+### 2026-08-26 Photos Permission Preflight
+
+Completed the Photos permission preflight slice:
+
+- Added a shared `PhotoLibraryPermissionStatus` contract for Photos import readiness.
+- iOS receive screen now shows `Photos Access` before transfer.
+- iOS requests Photos permission before downloading photos, so denied/restricted access stops early instead of downloading files that cannot be imported.
+- Added Swift coverage for allowed and blocked Photos permission statuses.

@@ -144,11 +144,13 @@ Expected result: photos reported as `synced` or `skipped` do not appear in the n
 1. Deny Android photos permission.
 2. Confirm Android cannot start a useful media server until permission is granted.
 3. Deny iOS Photos permission.
-4. Confirm iOS surfaces a failed import state.
-5. Deny iOS camera permission.
-6. Confirm manual pairing payload remains available as fallback.
+4. Confirm iOS shows `Photos Access` as denied or restricted.
+5. Tap `Download Next Item`, `Download 5 Items`, or `Download Remaining`.
+6. Confirm iOS stops before downloading and shows a Photos access failure message.
+7. Deny iOS camera permission.
+8. Confirm manual pairing payload remains available as fallback.
 
-Expected result: errors are visible and the user can recover by granting permissions.
+Expected result: errors are visible before unnecessary transfer work, and the user can recover by granting permissions.
 
 When a media endpoint fails, confirm the iOS receive screen shows `Last Failure` with the server error code and file name.
 

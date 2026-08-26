@@ -14,8 +14,26 @@ struct PhotoImportResult: Equatable {
     let errorCode: String?
 }
 
+enum PhotoLibraryPermissionStatus: String, Equatable {
+    case authorized
+    case limited
+    case denied
+    case restricted
+    case notDetermined
+    case unknown
+
+    var allowsImport: Bool {
+        self == .authorized || self == .limited
+    }
+}
+
 protocol PhotoImporter {
     func importBatch(_ requests: [PhotoImportRequest]) async -> [PhotoImportResult]
+}
+
+protocol PhotoLibraryPermissionChecking {
+    func photoLibraryPermissionStatus() -> PhotoLibraryPermissionStatus
+    func requestPhotoLibraryPermission() async -> PhotoLibraryPermissionStatus
 }
 
 protocol PhotoAssetPresenceChecking {
@@ -38,5 +56,21 @@ final class PhotoImporterStub: PhotoImporter {
 final class PhotoAssetPresenceCheckerStub: PhotoAssetPresenceChecking {
     func assetExists(localIdentifier: String) async throws -> Bool {
         false
+    }
+}
+
+final class PhotoLibraryPermissionCheckerStub: PhotoLibraryPermissionChecking {
+    private let status: PhotoLibraryPermissionStatus
+
+    init(status: PhotoLibraryPermissionStatus) {
+        self.status = status
+    }
+
+    func photoLibraryPermissionStatus() -> PhotoLibraryPermissionStatus {
+        status
+    }
+
+    func requestPhotoLibraryPermission() async -> PhotoLibraryPermissionStatus {
+        status
     }
 }

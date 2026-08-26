@@ -8,7 +8,7 @@ enum PhotoKitPhotoImporterError: Error {
     case albumCreationFailed
 }
 
-final class PhotoKitPhotoImporter: PhotoImporter, PhotoAssetPresenceChecking {
+final class PhotoKitPhotoImporter: PhotoImporter, PhotoLibraryPermissionChecking, PhotoAssetPresenceChecking {
     private let albumTitle: String
     private let library: PHPhotoLibrary
 
@@ -39,6 +39,19 @@ final class PhotoKitPhotoImporter: PhotoImporter, PhotoAssetPresenceChecking {
         return result.firstObject != nil
     }
 
+    func photoLibraryPermissionStatus() -> PhotoLibraryPermissionStatus {
+        Self.permissionStatus(from: PHPhotoLibrary.authorizationStatus(for: .readWrite))
+    }
+
+    func requestPhotoLibraryPermission() async -> PhotoLibraryPermissionStatus {
+        let current = photoLibraryPermissionStatus()
+        if current != .notDetermined {
+            return current
+        }
+
+        return Self.permissionStatus(from: await PHPhotoLibrary.requestAuthorization(for: .readWrite))
+    }
+
     private func importOne(_ request: PhotoImportRequest) async -> PhotoImportResult {
         do {
             try await ensurePhotoPermission()
@@ -61,14 +74,31 @@ final class PhotoKitPhotoImporter: PhotoImporter, PhotoAssetPresenceChecking {
     }
 
     private func ensurePhotoPermission() async throws {
-        let current = PHPhotoLibrary.authorizationStatus(for: .readWrite)
-        if current == .authorized || current == .limited {
+        let current = photoLibraryPermissionStatus()
+        if current.allowsImport {
             return
         }
 
-        let requested = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
-        guard requested == .authorized || requested == .limited else {
+        let requested = await requestPhotoLibraryPermission()
+        guard requested.allowsImport else {
             throw PhotoKitPhotoImporterError.photoPermissionDenied
+        }
+    }
+
+    private static func permissionStatus(from status: PHAuthorizationStatus) -> PhotoLibraryPermissionStatus {
+        switch status {
+        case .authorized:
+            return .authorized
+        case .limited:
+            return .limited
+        case .denied:
+            return .denied
+        case .restricted:
+            return .restricted
+        case .notDetermined:
+            return .notDetermined
+        @unknown default:
+            return .unknown
         }
     }
 

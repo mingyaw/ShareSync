@@ -183,6 +183,7 @@ struct ContentView: View {
     private var statusSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             StatusRow(title: "Pairing", value: pairedStatus)
+            StatusRow(title: "Photos Access", value: photosAccessStatus)
             if let pairedDevice = viewModel.pairedDevice {
                 StatusRow(title: "Device", value: pairedDevice.deviceName)
             }
@@ -312,6 +313,23 @@ struct ContentView: View {
             return "\(viewModel.summary?.photoCount ?? 0) photos"
         case .failed:
             return "Failed"
+        }
+    }
+
+    private var photosAccessStatus: String {
+        switch viewModel.photoLibraryPermissionStatus {
+        case .authorized:
+            return "Allowed"
+        case .limited:
+            return "Limited"
+        case .denied:
+            return "Denied"
+        case .restricted:
+            return "Restricted"
+        case .notDetermined:
+            return "Not Asked"
+        case .unknown:
+            return "Unknown"
         }
     }
 
