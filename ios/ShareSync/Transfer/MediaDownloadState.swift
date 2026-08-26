@@ -101,6 +101,7 @@ final class InMemoryMediaDownloadStateStore: MediaDownloadStateStore {
     func markImported(sourceAssetId: String, photoLocalIdentifier: String?, now: Date = Date()) {
         mutate(sourceAssetId: sourceAssetId, now: now) { record in
             record.status = .imported
+            record.localFileURL = nil
             record.photoLocalIdentifier = photoLocalIdentifier
         }
     }
@@ -219,6 +220,7 @@ final class FileMediaDownloadStateStore: MediaDownloadStateStore {
     func markImported(sourceAssetId: String, photoLocalIdentifier: String?, now: Date = Date()) {
         mutate(sourceAssetId: sourceAssetId, now: now) { record in
             record.status = .imported
+            record.localFileURL = nil
             record.photoLocalIdentifier = photoLocalIdentifier
         }
     }

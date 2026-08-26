@@ -76,6 +76,10 @@ Expected result: the item count includes `Missing`, iOS reports that item as fai
 
 Expected result: downloaded-but-not-imported items continue into Photos import; imported items are not duplicated.
 
+After a successful import, confirm the app does not depend on the temporary downloaded file anymore.
+
+Expected result: imported items remain tracked by Photos local identifier, and only downloaded-but-not-imported items need app temp files for resume.
+
 ## Android Port Fallback
 
 1. Start another local process that occupies port `48291`, or start ShareSync once and verify conflict behavior during development.

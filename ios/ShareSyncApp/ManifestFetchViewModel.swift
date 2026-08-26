@@ -341,6 +341,7 @@ final class ManifestFetchViewModel: ObservableObject {
 
             for importResult in importResults {
                 if importResult.status == .synced {
+                    removeDownloadedFile(for: importResult.sourceAssetId)
                     downloadStateStore.markImported(
                         sourceAssetId: importResult.sourceAssetId,
                         photoLocalIdentifier: importResult.localIdentifier,
@@ -367,6 +368,14 @@ final class ManifestFetchViewModel: ObservableObject {
                 : .failed("Downloaded, but photo import failed.")
             activeDownloadTask = nil
         }
+    }
+
+    private func removeDownloadedFile(for sourceAssetId: String) {
+        guard let localFileURL = downloadStateStore.record(for: sourceAssetId)?.localFileURL else {
+            return
+        }
+
+        try? FileManager.default.removeItem(at: localFileURL)
     }
 
     private static func message(for error: Error) -> String {

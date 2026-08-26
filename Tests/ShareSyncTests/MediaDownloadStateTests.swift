@@ -29,6 +29,7 @@ final class MediaDownloadStateTests: XCTestCase {
             now: now.addingTimeInterval(3)
         )
         XCTAssertEqual(store.record(for: "media-001")?.status, .imported)
+        XCTAssertNil(store.record(for: "media-001")?.localFileURL)
         XCTAssertEqual(store.record(for: "media-001")?.photoLocalIdentifier, "photo-local-001")
         XCTAssertEqual(
             store.importedMappings(),
@@ -76,6 +77,29 @@ final class MediaDownloadStateTests: XCTestCase {
 
         XCTAssertEqual(store.record(for: "media-001")?.status, .imported)
         XCTAssertEqual(store.importedMappings().map(\.sourceAssetId), ["media-001"])
+    }
+
+    func testImportedRecordClearsDownloadedFileURL() {
+        let store = InMemoryMediaDownloadStateStore()
+        let asset = makeAsset(assetId: "media-001", size: 2048)
+        let fileURL = URL(fileURLWithPath: "/tmp/media-001.jpg")
+
+        store.upsertQueued(asset: asset, now: Date(timeIntervalSince1970: 1))
+        store.markDownloaded(
+            sourceAssetId: "media-001",
+            localFileURL: fileURL,
+            downloadedBytes: 2048,
+            now: Date(timeIntervalSince1970: 2)
+        )
+        store.markImported(
+            sourceAssetId: "media-001",
+            photoLocalIdentifier: "photo-local-001",
+            now: Date(timeIntervalSince1970: 3)
+        )
+
+        XCTAssertEqual(store.record(for: "media-001")?.status, .imported)
+        XCTAssertNil(store.record(for: "media-001")?.localFileURL)
+        XCTAssertEqual(store.record(for: "media-001")?.downloadedBytes, 2048)
     }
 
     func testFileStorePersistsImportedMappings() throws {

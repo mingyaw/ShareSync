@@ -128,6 +128,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add manual foreground transfer stop and retry support.
 - [x] Resume or skip completed items after restart.
 - [x] Retry one transient network download failure before marking a photo failed.
+- [x] Remove temporary downloaded photo files after successful Photos import.
 
 ### I5. Photos Import
 
@@ -705,3 +706,12 @@ Completed the foreground awake guard slice:
 - iOS disables the idle timer while photo download or Photos import is active.
 - iOS restores normal screen locking when transfer stops, completes, fails, or the receive screen disappears.
 - Receive screen shows `Screen Lock` as paused during active foreground transfer for device validation.
+
+### 2026-08-26 Temporary Download Cleanup
+
+Completed the temporary download cleanup slice:
+
+- iOS removes temporary downloaded files after successful Photos import.
+- Imported media records no longer retain app temp file URLs.
+- Downloaded-but-not-imported records still retain their temp file URLs so restart resume can continue import.
+- Added Swift coverage for imported records clearing local temp file references.
