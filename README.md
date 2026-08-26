@@ -34,6 +34,7 @@ The current codebase contains:
 - iOS local-network requests use explicit timeouts: short for health/manifest/result posts and longer for photo media transfers.
 - iOS receive screen can download the next item, a small batch, or all remaining manifest items for M0 device validation.
 - iOS receive screen shows live batch progress, downloaded count, failed count, and current file during foreground transfer.
+- iOS media download can issue `Range` requests from a persisted partial offset and combine `206 Partial Content` responses.
 - iOS receive screen can stop an active foreground transfer while keeping completed items retry-safe.
 - iOS pauses active foreground transfers when the app leaves the foreground, keeping completed items retry-safe.
 - iOS local download/import state, duplicate prevention, restart resume, and deleted-photo reconciliation.
@@ -112,6 +113,7 @@ M0 includes only:
 - local-network timeout tuning
 - duplicate prevention
 - interrupted sync resume
+- partial media range retry foundation
 - all-remaining foreground batch transfer for device validation
 - foreground batch progress visibility
 - foreground transfer stop and retry
@@ -226,6 +228,7 @@ Swift Package core:
 
 - iOS background syncing is not implemented; keep the app open for M0.
 - Transfers are local-network only and currently use plain local HTTP.
+- Range retry is implemented for persisted partial download state; M0 still runs as a foreground transfer on iOS.
 - Duplicate prevention is based on app-local Android asset/import mapping.
 - Deleting the iOS app deletes the local mapping; Photos contents remain, but ShareSync may treat Android items as new.
 - iCloud backup is indirect: ShareSync imports into iOS Photos, then iCloud Photos handles backup according to the user's iOS settings.

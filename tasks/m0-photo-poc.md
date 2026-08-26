@@ -135,6 +135,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Pause iOS foreground transfer when the app leaves the foreground.
 - [x] Add manual foreground transfer stop and retry support.
 - [x] Resume or skip completed items after restart.
+- [x] Add iOS Range request path for persisted partial media retries.
 - [x] Retry one transient network download failure before marking a photo failed.
 - [x] Remove temporary downloaded photo files after successful Photos import.
 
@@ -802,6 +803,22 @@ Completed an iOS restart-resume slice for the photo MVP:
 - Pairing restore supports retrying an interrupted M0 transfer without immediately rescanning QR, as long as the Android server session token is still current.
 - Documented that Android M0 server restarts still require a fresh QR scan or pasted payload because the token is regenerated.
 - Added Swift coverage for paired session save, load, and clear behavior.
+
+Verification target:
+
+```sh
+./scripts/check-m0.sh
+```
+
+### 2026-08-26 iOS Media Range Resume Path
+
+Completed a media retry foundation for interrupted photo transfers:
+
+- iOS preserves partial local file metadata when a failed record is requeued.
+- `MediaDownloader` sends `Range: bytes=<downloadedBytes>-` when persisted partial bytes are available.
+- `206 Partial Content` responses are combined with the local prefix before checksum validation and final file write.
+- If Android ignores the range and returns `200 OK`, iOS treats the response as a full replacement to keep compatibility.
+- Added Swift coverage for partial range resume and full-response fallback behavior.
 
 Verification target:
 

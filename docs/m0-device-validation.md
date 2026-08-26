@@ -128,6 +128,10 @@ Expected result: QR payload contains the actual bound port, and iOS shows `Andro
 
 Expected result: iOS retries one transient download interruption automatically. If the connection is still unavailable, failed records remain retryable, completed records are not re-imported, and iOS shows `SS-NET-002` in `Last Failure`.
 
+For development builds with a persisted partial media file, confirm the next request includes a `Range` header such as `bytes=<downloadedBytes>-`.
+
+Expected result: Android returns `206 Partial Content`, iOS combines the partial file with the response body, verifies the final checksum, and imports only the completed photo.
+
 ## iOS Foreground Interruption
 
 1. Start a `Download Remaining` transfer on iOS.
@@ -211,6 +215,7 @@ Expected result: iOS marks the photo as failed with `SS-STORE-001`, shows that c
 ## Current M0 Gaps
 
 - Android SHA-256 is calculated lazily before full media transfers and returned in `X-ShareSync-SHA256`.
+- iOS can resume from persisted partial media state with `Range`; foreground M0 transfer progress still depends on the app remaining open.
 - iOS duplicate prevention uses the app-local Android asset id to Photos local identifier mapping; deleting the iOS app removes that mapping.
 - M0 reset controls clear ShareSync local sync state only; they do not inspect or remove existing Photos library items.
 - Full no-cloud relay privacy goal is preserved; no cloud intermediary is used by this flow.

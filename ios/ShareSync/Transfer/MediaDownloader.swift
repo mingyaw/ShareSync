@@ -120,7 +120,8 @@ final class MediaDownloader {
                     asset: asset,
                     host: host,
                     port: port,
-                    pairingToken: pairingToken
+                    pairingToken: pairingToken,
+                    resumeRecord: record
                 )
                 stateStore.markDownloaded(
                     sourceAssetId: asset.assetId,
@@ -173,7 +174,8 @@ final class MediaDownloader {
         asset: MediaAsset,
         host: String,
         port: Int,
-        pairingToken: String?
+        pairingToken: String?,
+        resumeRecord: MediaDownloadRecord?
     ) async throws -> MediaDownloadResult {
         guard let url = mediaURL(assetId: asset.assetId, host: host, port: port) else {
             throw MediaDownloaderError.invalidMediaURL
@@ -182,6 +184,10 @@ final class MediaDownloader {
         var request = URLRequest(url: url)
         if let pairingToken, !pairingToken.isEmpty {
             request.setValue(pairingToken, forHTTPHeaderField: "X-ShareSync-Pairing-Token")
+        }
+        let resume = resumablePrefix(for: resumeRecord)
+        if resume.downloadedBytes > 0 {
+            request.setValue("bytes=\(resume.downloadedBytes)-", forHTTPHeaderField: "Range")
         }
 
         let (data, response) = try await session.data(for: request)
@@ -196,10 +202,15 @@ final class MediaDownloader {
             )
         }
 
+        let finalData = if resume.downloadedBytes > 0 && httpResponse.statusCode == 206 {
+            resume.data + data
+        } else {
+            data
+        }
         let responseHash = httpResponse.value(forHTTPHeaderField: "X-ShareSync-SHA256")
         let expectedHash = firstNonEmpty(asset.sha256, responseHash)
         if let expectedHash {
-            let digest = SHA256.hash(data: data)
+            let digest = SHA256.hash(data: finalData)
                 .map { String(format: "%02x", $0) }
                 .joined()
             guard digest.caseInsensitiveCompare(expectedHash) == .orderedSame else {
@@ -209,13 +220,13 @@ final class MediaDownloader {
 
         try fileManager.createDirectory(at: downloadDirectory, withIntermediateDirectories: true)
         let destination = downloadDirectory.appendingPathComponent(localFileName(for: asset), isDirectory: false)
-        try ensureEnoughStorage(for: data.count, at: destination)
-        try data.write(to: destination, options: [.atomic])
+        try ensureEnoughStorage(for: finalData.count, at: destination)
+        try finalData.write(to: destination, options: [.atomic])
 
         return MediaDownloadResult(
             assetId: asset.assetId,
             localFileURL: destination,
-            downloadedBytes: Int64(data.count)
+            downloadedBytes: Int64(finalData.count)
         )
     }
 
@@ -223,22 +234,44 @@ final class MediaDownloader {
         asset: MediaAsset,
         host: String,
         port: Int,
-        pairingToken: String?
+        pairingToken: String?,
+        resumeRecord: MediaDownloadRecord?
     ) async throws -> MediaDownloadResult {
         do {
             return try await download(
                 asset: asset,
                 host: host,
                 port: port,
-                pairingToken: pairingToken
+                pairingToken: pairingToken,
+                resumeRecord: resumeRecord
             )
         } catch {
             guard Self.shouldRetryDownload(error) else {
                 throw error
             }
 
-            return try await download(asset: asset, host: host, port: port, pairingToken: pairingToken)
+            return try await download(
+                asset: asset,
+                host: host,
+                port: port,
+                pairingToken: pairingToken,
+                resumeRecord: resumeRecord
+            )
         }
+    }
+
+    private func resumablePrefix(for record: MediaDownloadRecord?) -> (data: Data, downloadedBytes: Int64) {
+        guard let record,
+              record.downloadedBytes > 0,
+              let localFileURL = record.localFileURL,
+              fileManager.fileExists(atPath: localFileURL.path),
+              let data = try? Data(contentsOf: localFileURL),
+              !data.isEmpty else {
+            return (Data(), 0)
+        }
+
+        let downloadedBytes = min(Int64(data.count), record.downloadedBytes)
+        return (data.prefix(Int(downloadedBytes)), downloadedBytes)
     }
 
     private static func shouldRetryDownload(_ error: Error) -> Bool {

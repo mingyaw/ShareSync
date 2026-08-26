@@ -62,6 +62,28 @@ final class MediaDownloadStateTests: XCTestCase {
         XCTAssertEqual(store.record(for: "media-001")?.status, .downloaded)
     }
 
+    func testFailedRecordKeepsPartialDownloadWhenRequeued() {
+        let store = InMemoryMediaDownloadStateStore()
+        let asset = makeAsset(assetId: "media-001", size: 2048)
+        let fileURL = URL(fileURLWithPath: "/tmp/media-001.partial")
+
+        store.upsertQueued(asset: asset, now: Date(timeIntervalSince1970: 1))
+        store.markDownloaded(
+            sourceAssetId: "media-001",
+            localFileURL: fileURL,
+            downloadedBytes: 512,
+            now: Date(timeIntervalSince1970: 2)
+        )
+        store.markFailed(sourceAssetId: "media-001", errorCode: "SS-NET-002", now: Date(timeIntervalSince1970: 3))
+
+        store.upsertQueued(asset: asset, now: Date(timeIntervalSince1970: 4))
+
+        XCTAssertEqual(store.record(for: "media-001")?.status, .queued)
+        XCTAssertEqual(store.record(for: "media-001")?.localFileURL, fileURL)
+        XCTAssertEqual(store.record(for: "media-001")?.downloadedBytes, 512)
+        XCTAssertNil(store.record(for: "media-001")?.lastErrorCode)
+    }
+
     func testImportedRecordsAreNotRequeued() {
         let store = InMemoryMediaDownloadStateStore()
         let asset = makeAsset(assetId: "media-001", size: 2048)

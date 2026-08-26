@@ -68,16 +68,17 @@ final class InMemoryMediaDownloadStateStore: MediaDownloadStateStore {
             return
         }
 
+        let existing = records[asset.assetId]
         records[asset.assetId] = MediaDownloadRecord(
             sourceDeviceId: asset.sourceDeviceId,
             sourceAssetId: asset.assetId,
             sourceHash: asset.sha256,
             status: .queued,
-            localFileURL: nil,
+            localFileURL: existing?.localFileURL,
             photoLocalIdentifier: nil,
-            downloadedBytes: 0,
+            downloadedBytes: existing?.downloadedBytes ?? 0,
             totalBytes: asset.size,
-            attemptCount: records[asset.assetId]?.attemptCount ?? 0,
+            attemptCount: existing?.attemptCount ?? 0,
             lastErrorCode: nil,
             updatedAt: now
         )
@@ -190,16 +191,17 @@ final class FileMediaDownloadStateStore: MediaDownloadStateStore {
             return
         }
 
+        let existing = records[asset.assetId]
         records[asset.assetId] = MediaDownloadRecord(
             sourceDeviceId: asset.sourceDeviceId,
             sourceAssetId: asset.assetId,
             sourceHash: asset.sha256,
             status: .queued,
-            localFileURL: nil,
+            localFileURL: existing?.localFileURL,
             photoLocalIdentifier: nil,
-            downloadedBytes: 0,
+            downloadedBytes: existing?.downloadedBytes ?? 0,
             totalBytes: asset.size,
-            attemptCount: records[asset.assetId]?.attemptCount ?? 0,
+            attemptCount: existing?.attemptCount ?? 0,
             lastErrorCode: nil,
             updatedAt: now
         )
