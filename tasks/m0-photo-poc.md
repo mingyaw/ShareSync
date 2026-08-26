@@ -99,6 +99,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Implement single-item media downloader validation path.
 - [x] Implement single-item PhotoKit import path.
 - [x] Implement QR scanner UI.
+- [x] Add iOS clear-pairing control for stale M0 endpoint/token recovery.
 
 ### I1. Project Setup
 
@@ -113,6 +114,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 - [x] Implement QR scanner.
 - [x] Persist iOS paired Android endpoint and M0 token across app restarts.
+- [x] Clear stale iOS paired Android endpoint and M0 token without deleting the app.
 - [x] Parse payload using `PairingPayloadParser`.
 - [x] Show paired Android device.
 - [x] Restore last paired Android device on iOS app launch.
@@ -176,6 +178,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [ ] Android hotspot.
 - [ ] Transfer interrupted midway.
 - [x] iOS app restart after pairing.
+- [x] Stale iOS pairing reset.
 - [ ] Repeat sync.
 - [x] No Photos permission.
 - [x] iPhone storage low.
@@ -195,6 +198,20 @@ Run the full checklist in `docs/m0-device-validation.md` before calling M0 compl
 - App Store release.
 
 ## Progress Log
+
+### 2026-08-26 iOS Clear Pairing Control
+
+Completed a small M0 reliability slice:
+
+- Added an iOS `Clear Pairing` action for stale Android M0 endpoint/token recovery.
+- Kept pairing reset separate from local download/import/result state reset.
+- Documented the stale-pairing validation path and reset semantics.
+
+Verified:
+
+```sh
+./scripts/check-m0.sh
+```
 
 ### 2026-08-20
 

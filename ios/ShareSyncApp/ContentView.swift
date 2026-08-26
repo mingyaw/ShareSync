@@ -200,6 +200,18 @@ struct ContentView: View {
             .controlSize(.large)
             .frame(maxWidth: .infinity)
             .disabled(viewModel.isTransferActive)
+
+            Button(role: .destructive) {
+                viewModel.clearPairing()
+            } label: {
+                Text("Clear Pairing")
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 44)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+            .frame(maxWidth: .infinity)
+            .disabled(viewModel.isTransferActive || !viewModel.canClearPairing)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.bottom, 24)

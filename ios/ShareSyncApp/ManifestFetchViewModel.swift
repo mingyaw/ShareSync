@@ -132,6 +132,13 @@ final class ManifestFetchViewModel: ObservableObject {
         downloadState == .downloading || downloadState == .importing
     }
 
+    var canClearPairing: Bool {
+        pairedDevice != nil
+            || pairingToken != nil
+            || !host.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || !pairingPayloadText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
     func fetchManifest() {
         let trimmedHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedHost.isEmpty else {
@@ -249,6 +256,27 @@ final class ManifestFetchViewModel: ObservableObject {
         activeDownloadTask = nil
         downloadStateStore.clear()
         try? syncResultStore.clear()
+        latestManifest = nil
+        summary = nil
+        syncResultSummary = nil
+        downloadProgressSummary = nil
+        cancellationMessage = nil
+        downloadState = .idle
+        state = .idle
+    }
+
+    func clearPairing() {
+        guard !isTransferActive else {
+            return
+        }
+
+        try? pairedDeviceSessionStore.clear()
+        host = ""
+        port = "48291"
+        pairingPayloadText = ""
+        pairedDevice = nil
+        pairingToken = nil
+        localPeerHealth = nil
         latestManifest = nil
         summary = nil
         syncResultSummary = nil

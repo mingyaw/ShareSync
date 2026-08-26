@@ -48,6 +48,7 @@ The current codebase contains:
 - Android manifest filtering for media already reported as synced or skipped.
 - Android merged sync result history across M0 batches.
 - iOS paired Android host, port, device metadata, and M0 pairing token persistence across app restarts.
+- iOS clear-pairing control for refreshing stale Android M0 endpoint/token state without deleting the app.
 
 M0 validates the riskiest path:
 
@@ -195,6 +196,7 @@ iOS:
 - Run the `ShareSync` scheme on an iPhone connected to the same network.
 - Scan the Android QR code, or paste the manual pairing payload.
 - If ShareSync was previously paired, confirm the Android IP and port are restored on launch.
+- Use `Clear Pairing` before scanning a fresh Android QR code if Android restarted and generated a new M0 token.
 - Tap `Fetch Manifest`.
 - Tap `Download Next Item` or `Download 5 Items`.
 - Tap `Download Remaining` for the 100-item foreground transfer validation.
@@ -205,6 +207,7 @@ Resetting test state:
 
 - Android `Clear sync result` removes the locally stored iOS result report so Android can rebuild manifest filtering from future reports.
 - iOS `Reset Local Sync State` removes ShareSync download/import mappings and latest result JSON. Photos already imported into the `ShareSync Backup` album remain in Photos.
+- iOS `Clear Pairing` removes only the saved Android endpoint, device metadata, pairing token, and pasted payload. It does not clear download/import mappings.
 
 Use [docs/m0-device-validation.md](docs/m0-device-validation.md) as the real-device acceptance checklist before calling M0 complete.
 
