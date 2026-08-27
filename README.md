@@ -214,7 +214,7 @@ Resetting test state:
 - Android `Copy sync result` copies the latest persisted iOS result JSON for validation notes or issue reports.
 - iOS `Copy Sync Result` copies the latest locally generated result JSON for comparison with Android.
 - iOS `Reset Local Sync State` removes ShareSync download/import mappings and latest result JSON. Photos already imported into the `ShareSync Backup` album remain in Photos.
-- iOS `Clear Pairing` removes only the saved Android endpoint, device metadata, pairing token, and pasted payload. It does not clear download/import mappings.
+- iOS `Clear Pairing` removes only the saved Android endpoint, device metadata, pairing token, and pasted payload. It does not clear download/import mappings or the latest sync result evidence.
 
 Use [docs/m0-device-validation.md](docs/m0-device-validation.md) as the real-device acceptance checklist, and record pass/fail evidence in [docs/m0-validation-results.md](docs/m0-validation-results.md), before calling M0 complete.
 

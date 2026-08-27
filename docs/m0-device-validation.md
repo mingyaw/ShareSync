@@ -61,7 +61,7 @@ Use this when Android restarted the M0 server and iOS still has the old endpoint
 4. Scan the fresh Android QR code, or paste the new manual pairing payload.
 5. Tap `Fetch Manifest`.
 
-Expected result: iOS forgets only the saved Android endpoint, device metadata, token, and pasted payload. Existing download/import mappings remain intact, so clearing pairing does not by itself make previously imported photos re-download.
+Expected result: iOS forgets only the saved Android endpoint, device metadata, token, and pasted payload. Existing download/import mappings and latest sync result evidence remain intact, so clearing pairing does not by itself make previously imported photos re-download.
 
 ## Foreground Full Manifest Transfer
 

@@ -117,7 +117,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 - [x] Implement QR scanner.
 - [x] Persist iOS paired Android endpoint and M0 token across app restarts.
-- [x] Clear stale iOS paired Android endpoint and M0 token without deleting the app.
+- [x] Clear stale iOS paired Android endpoint and M0 token without deleting the app or sync result evidence.
 - [x] Parse payload using `PairingPayloadParser`.
 - [x] Show paired Android device.
 - [x] Restore last paired Android device on iOS app launch.
@@ -297,6 +297,20 @@ Completed a cross-platform validation tool:
 - Added `scripts/compare-sync-results.py` for comparing iOS and Android copied sync result JSON.
 - The tool validates the basic shared result shape before canonical comparison.
 - Added the comparison tool to `./scripts/check-m0.sh` using the sample sync result fixture.
+
+Verified:
+
+```sh
+./scripts/check-m0.sh
+```
+
+### 2026-08-27 Clear Pairing Result Evidence
+
+Completed a small iOS state-consistency fix:
+
+- Kept latest sync result summary visible after clearing stale pairing.
+- Preserved copied-result evidence separately from pairing endpoint/token state.
+- Updated reset semantics in README and M0 validation docs.
 
 Verified:
 

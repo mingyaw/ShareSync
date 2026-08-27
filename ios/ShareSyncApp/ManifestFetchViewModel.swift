@@ -283,7 +283,6 @@ final class ManifestFetchViewModel: ObservableObject {
         localPeerHealth = nil
         latestManifest = nil
         summary = nil
-        syncResultSummary = nil
         downloadProgressSummary = nil
         cancellationMessage = nil
         downloadState = .idle
