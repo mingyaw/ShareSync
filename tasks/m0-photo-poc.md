@@ -177,6 +177,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Align item status values with `sync-result.schema.json`.
 - [x] Validate sample sync result fixture against `shared/schemas/sync-result.schema.json`.
 - [x] Add sync result comparison script for iOS and Android copied JSON.
+- [x] Validate M0 results tracker status values and completion gate scenarios.
 
 ## Test Matrix
 
@@ -341,6 +342,21 @@ Completed an Android validation-readiness slice:
 - Added a concise `Phase` row to the Android M0 screen.
 - Covered permission, server starting, ready-to-start, ready-to-pair, retry, and completion states.
 - Updated M0 validation steps to check Android phase during baseline and full-manifest validation.
+
+Verified:
+
+```sh
+./scripts/check-m0.sh
+```
+
+### 2026-08-27 M0 Results Tracker Validation
+
+Completed a validation-document guard:
+
+- Added `scripts/validate-m0-results.py`.
+- Checks allowed status values in the M0 validation results table.
+- Checks that every required M0 completion-gate scenario is represented.
+- Added the results tracker validation to `./scripts/check-m0.sh`.
 
 Verified:
 

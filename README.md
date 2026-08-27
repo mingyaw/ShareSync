@@ -172,6 +172,7 @@ Run checks individually when isolating a failure:
 ```sh
 python3 scripts/validate-fixtures.py
 python3 scripts/compare-sync-results.py ios-result.json android-result.json
+python3 scripts/validate-m0-results.py
 swift test
 
 cd android
