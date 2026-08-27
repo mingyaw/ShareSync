@@ -174,6 +174,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Keep fixture enum values lowercase.
 - [x] Align item status values with `sync-result.schema.json`.
 - [x] Validate sample sync result fixture against `shared/schemas/sync-result.schema.json`.
+- [x] Add sync result comparison script for iOS and Android copied JSON.
 
 ## Test Matrix
 
@@ -282,6 +283,20 @@ Completed an iOS M0 validation aid:
 - Restored the latest persisted sync result summary on iOS app launch.
 - Added a `Copy Sync Result` action for the latest iOS-generated result JSON.
 - Updated validation steps so iOS and Android result JSON can be compared during real-device runs.
+
+Verified:
+
+```sh
+./scripts/check-m0.sh
+```
+
+### 2026-08-27 Sync Result Compare Tool
+
+Completed a cross-platform validation tool:
+
+- Added `scripts/compare-sync-results.py` for comparing iOS and Android copied sync result JSON.
+- The tool validates the basic shared result shape before canonical comparison.
+- Added the comparison tool to `./scripts/check-m0.sh` using the sample sync result fixture.
 
 Verified:
 

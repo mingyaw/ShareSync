@@ -221,6 +221,14 @@ Tap `Copy sync result` on Android.
 
 Expected result: Android copies the latest persisted sync result JSON so the exact iOS report can be recorded with validation notes or issue reports.
 
+Save the iOS and Android copied JSON into local files and compare them:
+
+```sh
+python3 scripts/compare-sync-results.py ios-result.json android-result.json
+```
+
+Expected result: the command prints `ok sync results match`.
+
 Post two sync result batches with different media ids.
 
 Expected result: Android keeps completed media from both batches. If the same media id appears in a later batch, the later status replaces the earlier status.

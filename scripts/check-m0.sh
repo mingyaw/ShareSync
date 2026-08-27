@@ -8,6 +8,9 @@ cd "$ROOT_DIR"
 
 echo "== Fixture validation =="
 python3 scripts/validate-fixtures.py
+python3 scripts/compare-sync-results.py \
+  shared/fixtures/sample-sync-result.json \
+  shared/fixtures/sample-sync-result.json
 
 echo
 echo "== Swift package tests =="
