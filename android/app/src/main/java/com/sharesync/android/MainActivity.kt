@@ -37,6 +37,7 @@ import java.util.UUID
 
 class MainActivity : Activity() {
     private lateinit var statusText: TextView
+    private lateinit var phaseText: TextView
     private lateinit var endpointText: TextView
     private lateinit var permissionText: TextView
     private lateinit var screenLockText: TextView
@@ -54,6 +55,8 @@ class MainActivity : Activity() {
     private var server: LocalSyncServer? = null
     @Volatile
     private var isServerRunning = false
+    @Volatile
+    private var isServerStarting = false
     @Volatile
     private var syncResultPollThread: Thread? = null
     private var currentPairingPayloadJson: String? = null
@@ -116,6 +119,7 @@ class MainActivity : Activity() {
         }
 
         statusText = bodyText(topPadding = 12 * density)
+        phaseText = bodyText(topPadding = 12 * density)
         endpointText = bodyText(topPadding = 12 * density)
         permissionText = bodyText(topPadding = 12 * density)
         screenLockText = bodyText(topPadding = 12 * density)
@@ -172,6 +176,7 @@ class MainActivity : Activity() {
 
         root.addView(title)
         root.addView(statusText)
+        root.addView(phaseText)
         root.addView(endpointText)
         root.addView(permissionText)
         root.addView(screenLockText)
@@ -210,6 +215,7 @@ class MainActivity : Activity() {
         }
 
         statusText.text = status
+        phaseText.text = getString(R.string.m0_phase, phaseStatus())
         endpointText.text = endpoint
         permissionText.text = if (hasMediaPermission()) {
             getString(R.string.m0_permission_granted)
@@ -273,6 +279,7 @@ class MainActivity : Activity() {
         }
 
         startButton.isEnabled = false
+        isServerStarting = true
         refreshUi(getString(R.string.m0_status_starting))
 
         Thread {
@@ -299,6 +306,7 @@ class MainActivity : Activity() {
                 currentManifestPhotoCount = SuspendBridge.runBlocking {
                     components.manifestBuilder.buildM0Manifest().media.size
                 }
+                isServerStarting = false
                 isServerRunning = true
                 currentPairingPayloadJson = createPairingPayloadJson(
                     identity = identity,
@@ -312,6 +320,7 @@ class MainActivity : Activity() {
                 restorePersistedSyncResult()
                 manifestBuilder = null
                 currentManifestPhotoCount = null
+                isServerStarting = false
                 isServerRunning = false
                 currentPairingPayloadJson = null
                 runOnUiThread {
@@ -365,6 +374,7 @@ class MainActivity : Activity() {
         server = null
         manifestBuilder = null
         currentManifestPhotoCount = null
+        isServerStarting = false
         isServerRunning = false
         currentPairingPayloadJson = null
         restorePersistedSyncResult()
@@ -513,6 +523,28 @@ class MainActivity : Activity() {
             failedCount,
             latestFailureCode,
         )
+    }
+
+    private fun phaseStatus(): String {
+        if (!hasMediaPermission()) {
+            return getString(R.string.m0_phase_permission_required)
+        }
+
+        if (isServerStarting) {
+            return getString(R.string.m0_phase_server_starting)
+        }
+
+        if (!isServerRunning) {
+            return getString(R.string.m0_phase_ready_to_start)
+        }
+
+        val pendingPhotoCount = currentManifestPhotoCount
+        val hasFailedResult = currentSyncResult?.results?.any { it.status == SyncItemStatus.failed } == true
+        return when {
+            pendingPhotoCount == 0 -> getString(R.string.m0_phase_transfer_complete)
+            hasFailedResult -> getString(R.string.m0_phase_retry_required)
+            else -> getString(R.string.m0_phase_ready_to_pair)
+        }
     }
 
     private fun manifestTransferStatus(pendingPhotoCount: Int): String {

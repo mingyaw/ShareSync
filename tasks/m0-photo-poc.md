@@ -74,6 +74,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Show latest sync result summary on Android M0 screen.
 - [x] Show latest failed result code on Android M0 screen.
 - [x] Restore latest Android sync result summary on app launch.
+- [x] Show Android phase for permission, server start, pairing, retry, and completion validation.
 - [x] Add Android copy action for latest sync result JSON.
 - [x] Show Android manifest transfer status for ready, retry, or complete validation.
 - [x] Keep Android sync result polling active while the M0 server is running.
@@ -326,6 +327,20 @@ Completed a small iOS validation-readiness slice:
 - Added a concise `Phase` row to the receive screen.
 - Covered pairing, fetch, transfer, retry, no-photo, completion, and error states.
 - Updated M0 validation steps to use phase status during baseline and repeat-sync checks.
+
+Verified:
+
+```sh
+./scripts/check-m0.sh
+```
+
+### 2026-08-27 Android M0 Phase
+
+Completed an Android validation-readiness slice:
+
+- Added a concise `Phase` row to the Android M0 screen.
+- Covered permission, server starting, ready-to-start, ready-to-pair, retry, and completion states.
+- Updated M0 validation steps to check Android phase during baseline and full-manifest validation.
 
 Verified:
 

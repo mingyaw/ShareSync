@@ -5,6 +5,13 @@
     <string name="m0_status_starting">Starting local sync server...</string>
     <string name="m0_status_running">M0 local sync server is running.</string>
     <string name="m0_status_failed">Server failed: %1$s</string>
+    <string name="m0_phase">Phase: %1$s.</string>
+    <string name="m0_phase_permission_required">Permission Required</string>
+    <string name="m0_phase_ready_to_start">Ready To Start</string>
+    <string name="m0_phase_server_starting">Server Starting</string>
+    <string name="m0_phase_ready_to_pair">Ready To Pair</string>
+    <string name="m0_phase_retry_required">Retry Required</string>
+    <string name="m0_phase_transfer_complete">Transfer Complete</string>
     <string name="m0_endpoint">Manual test endpoint: %1$s</string>
     <string name="m0_endpoint_unavailable">No local IPv4 address found. Connect to Wi-Fi or hotspot.</string>
     <string name="m0_endpoint_copied">Endpoint copied. Open it from iPhone Safari to confirm local connectivity.</string>

@@ -15,28 +15,29 @@ This checklist validates the current main path: Android exposes recent photos ov
 1. Open ShareSync on Android.
 2. Tap `Grant photos permission` if permission is missing.
 3. Tap `Start M0 server`.
-4. Confirm Android shows a manual endpoint and a QR code.
-5. Tap `Copy endpoint` on Android.
-6. Open the copied endpoint from iPhone Safari if same-network reachability needs confirmation.
-7. Confirm Android shows `Screen lock` as paused while the server is running.
-8. Open ShareSync on iPhone.
-9. Tap `Scan Pairing QR`.
-10. Scan the Android QR code.
-11. Confirm iOS shows the Android host and port under `Pairing`.
-12. Tap `Fetch Manifest`.
-13. Confirm iOS shows `Android Peer` as ready.
-14. Confirm iOS shows `Phase` as `Ready To Transfer`.
-15. Confirm iOS shows a photo count and a cursor.
-16. Confirm iOS shows `Transfer` as `Ready` for pending photos.
-17. Confirm Android shows `Manifest photos` with the current pending photo count and `Ready` status.
-18. Tap `Download Next Item`.
-19. Confirm status reaches completed/imported.
-20. Open iOS Photos.
-21. Confirm the item appears in the `ShareSync Backup` album.
-22. Confirm the iOS ShareSync screen shows updated `Synced`, `Skipped`, and `Result Failed` counts.
-23. Tap `Copy Sync Result` on iOS and save the JSON with the validation run notes if needed.
-24. Confirm Android shows the latest sync result summary.
-25. Tap `Copy sync result` on Android and compare the JSON with the iOS copy if needed.
+4. Confirm Android shows `Phase` as `Ready To Pair`.
+5. Confirm Android shows a manual endpoint and a QR code.
+6. Tap `Copy endpoint` on Android.
+7. Open the copied endpoint from iPhone Safari if same-network reachability needs confirmation.
+8. Confirm Android shows `Screen lock` as paused while the server is running.
+9. Open ShareSync on iPhone.
+10. Tap `Scan Pairing QR`.
+11. Scan the Android QR code.
+12. Confirm iOS shows the Android host and port under `Pairing`.
+13. Tap `Fetch Manifest`.
+14. Confirm iOS shows `Android Peer` as ready.
+15. Confirm iOS shows `Phase` as `Ready To Transfer`.
+16. Confirm iOS shows a photo count and a cursor.
+17. Confirm iOS shows `Transfer` as `Ready` for pending photos.
+18. Confirm Android shows `Manifest photos` with the current pending photo count and `Ready` status.
+19. Tap `Download Next Item`.
+20. Confirm status reaches completed/imported.
+21. Open iOS Photos.
+22. Confirm the item appears in the `ShareSync Backup` album.
+23. Confirm the iOS ShareSync screen shows updated `Synced`, `Skipped`, and `Result Failed` counts.
+24. Tap `Copy Sync Result` on iOS and save the JSON with the validation run notes if needed.
+25. Confirm Android shows the latest sync result summary.
+26. Tap `Copy sync result` on Android and compare the JSON with the iOS copy if needed.
 
 Expected result: one Android photo is visible in iOS Photos, Android keeps showing the latest iOS sync result while the M0 server is running, and iCloud Photos can back it up through the normal iOS Photos pipeline.
 
@@ -82,7 +83,7 @@ Keep the Android M0 screen open during the transfer and confirm Android `Screen 
 
 Expected result: Android continues updating the sync result summary even when the transfer takes longer than one minute.
 
-After the next manifest refresh, confirm Android `Manifest photos` reaches `0 pending, Complete` when all exposed photos were reported as synced or skipped.
+After the next manifest refresh, confirm Android `Phase` is `Transfer Complete` and `Manifest photos` reaches `0 pending, Complete` when all exposed photos were reported as synced or skipped.
 
 ## Repeat Sync
 
