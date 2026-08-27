@@ -232,6 +232,7 @@ struct ContentView: View {
 
     private var statusSection: some View {
         VStack(alignment: .leading, spacing: 12) {
+            StatusRow(title: "Phase", value: phaseStatus)
             StatusRow(title: "Pairing", value: pairedStatus)
             StatusRow(title: "Photos Access", value: photosAccessStatus)
             StatusRow(title: "Screen Lock", value: screenLockStatus)
@@ -365,6 +366,47 @@ struct ContentView: View {
 
     private var pairedStatus: String {
         viewModel.host.isEmpty ? "Manual" : "\(viewModel.host):\(viewModel.port)"
+    }
+
+    private var phaseStatus: String {
+        if viewModel.isTransferActive {
+            return "Transfer Active"
+        }
+
+        if case .loading = viewModel.state {
+            return "Fetching Manifest"
+        }
+
+        if case .failed = viewModel.state {
+            return "Fetch Error"
+        }
+
+        if case .failed = viewModel.downloadState {
+            return "Transfer Error"
+        }
+
+        if case .cancelled = viewModel.downloadState {
+            return "Retry Required"
+        }
+
+        if viewModel.host.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return "Pairing Required"
+        }
+
+        guard let summary = viewModel.summary else {
+            return "Ready To Fetch"
+        }
+
+        switch summary.transferStatus {
+        case "Complete":
+            return "Transfer Complete"
+        case "Needs Retry":
+            return "Retry Required"
+        case "No Photos":
+            return "No Photos"
+        default:
+            return "Ready To Transfer"
+        }
     }
 
     private var manifestStatus: String {

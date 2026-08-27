@@ -137,6 +137,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Track per-asset download state.
 - [x] Expand UI action from single-item validation to batch download.
 - [x] Add all-remaining manifest download action for M0 device validation.
+- [x] Show iOS receive phase for pairing, fetch, transfer, retry, and completion validation.
 - [x] Show manifest transfer status for ready, retry, complete, or no-photo validation.
 - [x] Show live foreground batch progress during iOS transfer.
 - [x] Keep iPhone screen awake during active foreground transfer.
@@ -311,6 +312,20 @@ Completed a small iOS state-consistency fix:
 - Kept latest sync result summary visible after clearing stale pairing.
 - Preserved copied-result evidence separately from pairing endpoint/token state.
 - Updated reset semantics in README and M0 validation docs.
+
+Verified:
+
+```sh
+./scripts/check-m0.sh
+```
+
+### 2026-08-27 iOS Receive Phase
+
+Completed a small iOS validation-readiness slice:
+
+- Added a concise `Phase` row to the receive screen.
+- Covered pairing, fetch, transfer, retry, no-photo, completion, and error states.
+- Updated M0 validation steps to use phase status during baseline and repeat-sync checks.
 
 Verified:
 
