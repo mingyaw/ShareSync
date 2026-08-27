@@ -62,6 +62,7 @@ final class ManifestFetchViewModel: ObservableObject {
     @Published private(set) var downloadState: DownloadState = .idle
     @Published private(set) var summary: ManifestSummary?
     @Published private(set) var syncResultSummary: SyncResultSummary?
+    @Published private(set) var latestSyncResultJSON: String?
     @Published private(set) var downloadProgressSummary: DownloadProgressSummary?
     @Published private(set) var cancellationMessage: String?
     @Published private(set) var pairedDevice: TrustedDevice?
@@ -109,6 +110,7 @@ final class ManifestFetchViewModel: ObservableObject {
         self.pairedDeviceSessionStore = pairedDeviceSessionStore
         self.photoLibraryPermissionStatus = photoLibraryPermissionChecker.photoLibraryPermissionStatus()
         restorePairedDeviceSession()
+        restoreLatestSyncResult()
     }
 
     var canFetch: Bool {
@@ -260,6 +262,7 @@ final class ManifestFetchViewModel: ObservableObject {
         latestManifest = nil
         summary = nil
         syncResultSummary = nil
+        latestSyncResultJSON = nil
         downloadProgressSummary = nil
         cancellationMessage = nil
         downloadState = .idle
@@ -297,6 +300,15 @@ final class ManifestFetchViewModel: ObservableObject {
         port = "\(session.port)"
         pairedDevice = session.device
         pairingToken = session.device.pairingToken
+    }
+
+    private func restoreLatestSyncResult() {
+        guard let result = try? syncResultStore.latest() else {
+            return
+        }
+
+        syncResultSummary = SyncResultSummary(result: result)
+        latestSyncResultJSON = Self.jsonString(for: result)
     }
 
     private func cancelDownload(reason: String) {
@@ -512,6 +524,15 @@ final class ManifestFetchViewModel: ObservableObject {
         return error.localizedDescription
     }
 
+    private static func jsonString(for result: SyncResult) -> String? {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        guard let data = try? encoder.encode(result) else {
+            return nil
+        }
+        return String(data: data, encoding: .utf8)
+    }
+
     private func nextTransferCandidate(in manifest: SyncManifest) -> MediaAsset? {
         nextTransferCandidates(in: manifest, limit: 1).first
     }
@@ -585,6 +606,7 @@ final class ManifestFetchViewModel: ObservableObject {
             records: records(for: manifest)
         )
         try? syncResultStore.save(result)
+        latestSyncResultJSON = Self.jsonString(for: result)
         try? await syncResultClient.postSyncResult(
             result,
             to: host,

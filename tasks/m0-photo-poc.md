@@ -102,6 +102,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Implement single-item PhotoKit import path.
 - [x] Implement QR scanner UI.
 - [x] Add iOS clear-pairing control for stale M0 endpoint/token recovery.
+- [x] Add iOS copy action for latest generated sync result JSON.
 
 ### I1. Project Setup
 
@@ -157,6 +158,8 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Prevent duplicate imports.
 - [x] Treat missing imported Photos assets as retryable transfer candidates.
 - [x] Persist latest shared `SyncResult` JSON.
+- [x] Restore latest shared `SyncResult` JSON on iOS app launch.
+- [x] Copy latest shared `SyncResult` JSON from the iOS receive screen.
 - [x] POST latest `SyncResult` back to Android M0 server.
 - [x] Add iOS validation control to clear local M0 download/import/result state.
 
@@ -265,6 +268,20 @@ Completed an Android M0 validation slice:
 - Added manifest transfer status to the Android M0 screen.
 - Show `Ready`, `Needs retry`, or `Complete` next to pending manifest photo count.
 - Updated validation steps to confirm Android reaches `0 pending, Complete` after synced/skipped results filter the manifest.
+
+Verified:
+
+```sh
+./scripts/check-m0.sh
+```
+
+### 2026-08-27 iOS Sync Result Copy
+
+Completed an iOS M0 validation aid:
+
+- Restored the latest persisted sync result summary on iOS app launch.
+- Added a `Copy Sync Result` action for the latest iOS-generated result JSON.
+- Updated validation steps so iOS and Android result JSON can be compared during real-device runs.
 
 Verified:
 

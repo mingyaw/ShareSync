@@ -5,6 +5,7 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var viewModel = ManifestFetchViewModel()
     @State private var isShowingPairingScanner = false
+    @State private var syncResultCopyMessage: String?
 
     var body: some View {
         NavigationStack {
@@ -99,6 +100,18 @@ struct ContentView: View {
             .buttonStyle(.bordered)
             .controlSize(.large)
             .frame(maxWidth: .infinity)
+
+            Button {
+                copySyncResult()
+            } label: {
+                Text("Copy Sync Result")
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 44)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+            .frame(maxWidth: .infinity)
+            .disabled(viewModel.latestSyncResultJSON == nil)
 
             Button {
                 viewModel.fetchManifest()
@@ -265,6 +278,14 @@ struct ContentView: View {
                 StatusRow(title: "Result Failed", value: "\(syncResultSummary.failedCount)")
             }
 
+            if viewModel.latestSyncResultJSON != nil, let syncResultCopyMessage {
+                Text(syncResultCopyMessage)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 4)
+            }
+
             if case .cancelled = viewModel.downloadState {
                 Text(viewModel.cancellationMessage ?? "Transfer stopped. Completed items are kept; remaining items can be retried.")
                     .font(.footnote)
@@ -389,6 +410,15 @@ struct ContentView: View {
 
     private func androidPeerText(_ health: LocalPeerHealth) -> String {
         "Ready - \(health.deviceId) - v\(health.protocolVersion)"
+    }
+
+    private func copySyncResult() {
+        guard let json = viewModel.latestSyncResultJSON else {
+            return
+        }
+
+        UIPasteboard.general.string = json
+        syncResultCopyMessage = "Sync result JSON copied."
     }
 
     private func updateIdleTimer(for state: ManifestFetchViewModel.DownloadState) {

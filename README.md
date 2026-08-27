@@ -41,7 +41,7 @@ The current codebase contains:
 - iOS receive screen can stop an active foreground transfer while keeping completed items retry-safe.
 - iOS pauses active foreground transfers when the app leaves the foreground, keeping completed items retry-safe.
 - iOS local download/import state, duplicate prevention, restart resume, and deleted-photo reconciliation.
-- iOS latest sync result JSON persistence for M0 validation.
+- iOS latest sync result JSON persistence, restore, and copy action for M0 validation.
 - iOS to Android sync result return path over the local M0 server.
 - Android latest sync result persistence and M0 screen summary.
 - Android restores the latest persisted sync result on app launch for validation.
@@ -203,6 +203,7 @@ iOS:
 - Tap `Fetch Manifest`.
 - Tap `Download Next Item` or `Download 5 Items`.
 - Tap `Download Remaining` for the 100-item foreground transfer validation.
+- Use `Copy Sync Result` to copy the latest iOS-generated result JSON after a manifest fetch or transfer.
 - Use `Reset Local Sync State` only when you need to rerun validation from a clean iOS ShareSync state.
 - Open Photos and confirm imported photos appear in the `ShareSync Backup` album.
 
@@ -210,6 +211,7 @@ Resetting test state:
 
 - Android `Clear sync result` removes the locally stored iOS result report so Android can rebuild manifest filtering from future reports.
 - Android `Copy sync result` copies the latest persisted iOS result JSON for validation notes or issue reports.
+- iOS `Copy Sync Result` copies the latest locally generated result JSON for comparison with Android.
 - iOS `Reset Local Sync State` removes ShareSync download/import mappings and latest result JSON. Photos already imported into the `ShareSync Backup` album remain in Photos.
 - iOS `Clear Pairing` removes only the saved Android endpoint, device metadata, pairing token, and pasted payload. It does not clear download/import mappings.
 
