@@ -81,7 +81,9 @@ Expected result: iOS keeps the foreground transfer awake, imports every remainin
 
 Keep the Android M0 screen open during the transfer and confirm Android `Screen lock` remains paused.
 
-Expected result: Android continues updating the sync result summary even when the transfer takes longer than one minute.
+Confirm Android shows the ShareSync photo transfer foreground-service notification while the M0 server is running.
+
+Expected result: Android continues updating the sync result summary even when the transfer takes longer than one minute, and Android keeps the M0 data-sync foreground service active until `Stop M0 server` is tapped.
 
 After the next manifest refresh, confirm Android `Phase` is `Transfer Complete` and `Manifest photos` reaches `0 pending, Complete` when all exposed photos were reported as synced or skipped.
 

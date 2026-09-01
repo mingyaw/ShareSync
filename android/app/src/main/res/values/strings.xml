@@ -5,6 +5,10 @@
     <string name="m0_status_starting">Starting local sync server...</string>
     <string name="m0_status_running">M0 local sync server is running.</string>
     <string name="m0_status_failed">Server failed: %1$s</string>
+    <string name="m0_foreground_channel_name">M0 Photo Transfer</string>
+    <string name="m0_foreground_channel_description">Keeps local Android-to-iOS photo transfer available while ShareSync is open or backgrounded.</string>
+    <string name="m0_foreground_notification_title">ShareSync photo transfer</string>
+    <string name="m0_foreground_notification_text">Android photos are available to the paired iPhone on this local network.</string>
     <string name="m0_phase">Phase: %1$s.</string>
     <string name="m0_phase_permission_required">Permission Required</string>
     <string name="m0_phase_ready_to_start">Ready To Start</string>

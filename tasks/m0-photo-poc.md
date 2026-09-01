@@ -35,6 +35,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add Android endpoint copy action for same-network validation.
 - [x] Show Android pending manifest photo count for manual validation.
 - [x] Keep Android screen awake while the M0 server is running.
+- [x] Start an Android foreground data-sync service while the M0 server is running.
 
 ### A1. Project Setup
 
@@ -209,6 +210,21 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-01 Android M0 Foreground Service
+
+Completed an Android background-transfer support slice:
+
+- Added `AndroidM0ForegroundService` with a low-importance M0 photo transfer notification channel.
+- Declared the Android foreground service permissions and `dataSync` service type.
+- Started the foreground service after the local M0 server successfully binds, and stopped it when the server stops or start fails.
+
+Verified:
+
+```sh
+./gradlew :app:testDebugUnitTest :app:compileDebugKotlin :app:processDebugMainManifest
+./scripts/check-m0.sh
+```
 
 ### 2026-09-01 Android M0 Runtime State Model
 

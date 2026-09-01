@@ -313,10 +313,12 @@ class MainActivity : Activity() {
                     port = createdServer.port,
                     pairingToken = pairingToken,
                 )
+                AndroidM0ForegroundService.start(applicationContext)
                 runOnUiThread { refreshUi() }
                 pollSyncResultUpdates(components.syncResultStore)
             } catch (error: Throwable) {
                 server = null
+                AndroidM0ForegroundService.stop(applicationContext)
                 restorePersistedSyncResult()
                 manifestBuilder = null
                 currentManifestPhotoCount = null
@@ -381,6 +383,7 @@ class MainActivity : Activity() {
         syncResultPollThread?.interrupt()
         syncResultPollThread = null
         updateKeepScreenAwake()
+        AndroidM0ForegroundService.stop(applicationContext)
 
         Thread {
             try {
