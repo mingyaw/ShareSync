@@ -155,6 +155,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add manual foreground transfer stop and retry support.
 - [x] Resume or skip completed items after restart.
 - [x] Show resumable partial photo count on iOS receive screen.
+- [x] Exclude stale iOS partial file references from resumable partial counts.
 - [x] Add iOS Range request path for persisted partial media retries.
 - [x] Retry one transient network download failure before marking a photo failed.
 - [x] Remove temporary downloaded photo files after successful Photos import.
@@ -218,6 +219,20 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-01 iOS M0 Stale Partial State
+
+Completed an iOS photo-transfer resume reliability slice:
+
+- Made `FileMediaDownloadStateStore` require the partial temp file to exist before reporting a record as resumable.
+- Kept the in-memory state store as a pure state model for focused tests.
+- Added Swift coverage for existing partial files and stale partial file references.
+
+Verified:
+
+```sh
+swift test
+```
 
 ### 2026-09-01 Android M0 Endpoint Request Count
 

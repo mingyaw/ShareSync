@@ -177,10 +177,16 @@ final class FileMediaDownloadStateStore: MediaDownloadStateStore {
     private var records: [String: MediaDownloadRecord]
     private let fileManager: FileManager
     private let fileURL: URL
+    private let fileExists: (URL) -> Bool
 
-    init(fileManager: FileManager = .default, fileURL: URL? = nil) {
+    init(
+        fileManager: FileManager = .default,
+        fileURL: URL? = nil,
+        fileExists: ((URL) -> Bool)? = nil
+    ) {
         self.fileManager = fileManager
         self.fileURL = fileURL ?? Self.defaultStoreURL(fileManager: fileManager)
+        self.fileExists = fileExists ?? { fileManager.fileExists(atPath: $0.path) }
         self.records = Self.loadRecords(fileManager: fileManager, fileURL: self.fileURL)
     }
 
@@ -273,7 +279,9 @@ final class FileMediaDownloadStateStore: MediaDownloadStateStore {
 
     func resumablePartialRecords() -> [MediaDownloadRecord] {
         records.values
-            .filter(\.isResumablePartial)
+            .filter { record in
+                record.isResumablePartial && record.localFileURL.map(fileExists) == true
+            }
             .sorted { lhs, rhs in
                 lhs.updatedAt < rhs.updatedAt
             }

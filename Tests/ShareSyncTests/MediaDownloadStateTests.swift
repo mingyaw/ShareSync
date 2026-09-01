@@ -225,6 +225,51 @@ final class MediaDownloadStateTests: XCTestCase {
         XCTAssertEqual(FileMediaDownloadStateStore(fileURL: fileURL).allRecords(), [])
     }
 
+    func testFileStoreResumablePartialRecordsRequireExistingFile() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncStateTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let fileURL = directory.appendingPathComponent("media-download-state.json")
+        let partialURL = directory.appendingPathComponent("media-001.partial")
+        let asset = makeAsset(assetId: "media-001", size: 2048)
+        try Data("partial".utf8).write(to: partialURL)
+
+        let store = FileMediaDownloadStateStore(fileURL: fileURL)
+        store.upsertQueued(asset: asset, now: Date(timeIntervalSince1970: 1))
+        store.markDownloaded(
+            sourceAssetId: "media-001",
+            localFileURL: partialURL,
+            downloadedBytes: 7,
+            now: Date(timeIntervalSince1970: 2)
+        )
+        store.markFailed(sourceAssetId: "media-001", errorCode: "SS-NET-002", now: Date(timeIntervalSince1970: 3))
+
+        XCTAssertEqual(store.resumablePartialRecords().map(\.sourceAssetId), ["media-001"])
+    }
+
+    func testFileStoreResumablePartialRecordsExcludeStaleFileReferences() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncStateTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let fileURL = directory.appendingPathComponent("media-download-state.json")
+        let stalePartialURL = directory.appendingPathComponent("missing-media-001.partial")
+        let asset = makeAsset(assetId: "media-001", size: 2048)
+
+        let store = FileMediaDownloadStateStore(fileURL: fileURL)
+        store.upsertQueued(asset: asset, now: Date(timeIntervalSince1970: 1))
+        store.markDownloaded(
+            sourceAssetId: "media-001",
+            localFileURL: stalePartialURL,
+            downloadedBytes: 512,
+            now: Date(timeIntervalSince1970: 2)
+        )
+        store.markFailed(sourceAssetId: "media-001", errorCode: "SS-NET-002", now: Date(timeIntervalSince1970: 3))
+
+        XCTAssertEqual(store.record(for: "media-001")?.downloadedBytes, 512)
+        XCTAssertEqual(store.resumablePartialRecords(), [])
+    }
+
     private func makeAsset(assetId: String, size: Int64) -> MediaAsset {
         MediaAsset(
             assetId: assetId,
