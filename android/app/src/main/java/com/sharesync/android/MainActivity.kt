@@ -16,26 +16,18 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
-import com.sharesync.android.pairing.PairingPayloadFactory
 import com.sharesync.android.pairing.QrCodeBitmapFactory
-import com.sharesync.android.security.DeviceIdentity
 import com.sharesync.android.security.DeviceIdentityStore
 import com.sharesync.android.security.SharedPreferencesDeviceIdentityStore
 import com.sharesync.android.sync.FileSyncResultStore
 import com.sharesync.android.sync.ManifestBuilder
-import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.sync.SyncItemStatus
 import com.sharesync.android.sync.SyncResult
 import com.sharesync.android.sync.SyncResultJsonCodec
 import com.sharesync.android.sync.SyncResultStore
-import com.sharesync.android.scanner.media.MediaStreamProvider
-import com.sharesync.android.transfer.server.LocalServerBinder
 import com.sharesync.android.transfer.server.LocalRequestActivity
 import com.sharesync.android.transfer.server.LocalRequestActivityTracker
-import com.sharesync.android.transfer.server.LocalSyncRouter
 import com.sharesync.android.transfer.server.LocalSyncServer
-import java.net.BindException
-import java.util.UUID
 
 class MainActivity : Activity() {
     private lateinit var statusText: TextView
@@ -326,49 +318,26 @@ class MainActivity : Activity() {
 
         Thread {
             try {
-                val identity = SuspendBridge.runBlocking {
-                    deviceIdentityStore.getOrCreate()
-                }
-                val pairingToken = UUID.randomUUID().toString().replace("-", "")
-                val components = M0SyncComponents.create(
-                    context = this,
-                    deviceId = identity.deviceId,
+                val session = AndroidM0ServerSessionController.start(
+                    context = applicationContext,
+                    deviceIdentityStore = deviceIdentityStore,
                     appVersion = "0.1.0",
-                    pairingToken = pairingToken,
                 )
-                val createdServer = startLocalServer(
-                    serverBinder = components.serverBinder,
-                    router = components.router,
-                    mediaStreamProvider = components.mediaStreamProvider,
-                )
-                val pairingPayloadJson = createPairingPayloadJson(
-                    identity = identity,
-                    port = createdServer.port,
-                    pairingToken = pairingToken,
-                )
-                val session = AndroidM0ServerSession(
-                    server = createdServer,
-                    syncResultStore = components.syncResultStore,
-                    manifestBuilder = components.manifestBuilder,
-                    requestActivityTracker = components.requestActivityTracker,
-                    pairingPayloadJson = pairingPayloadJson,
-                )
-                AndroidM0ServerSessionRegistry.set(session)
                 server = session.server
                 syncResultStore = session.syncResultStore
                 manifestBuilder = session.manifestBuilder
                 requestActivityTracker = session.requestActivityTracker
-                currentSyncResult = SuspendBridge.runBlocking { components.syncResultStore.latest() }
-                currentRequestActivity = components.requestActivityTracker.latest()
+                currentSyncResult = SuspendBridge.runBlocking { session.syncResultStore.latest() }
+                currentRequestActivity = session.requestActivityTracker.latest()
                 currentManifestPhotoCount = SuspendBridge.runBlocking {
-                    components.manifestBuilder.buildM0Manifest().media.size
+                    session.manifestBuilder.buildM0Manifest().media.size
                 }
                 isServerStarting = false
                 isServerRunning = true
                 currentPairingPayloadJson = session.pairingPayloadJson
                 AndroidM0ForegroundService.start(applicationContext)
                 runOnUiThread { refreshUi() }
-                pollSyncResultUpdates(components.syncResultStore)
+                pollSyncResultUpdates(session.syncResultStore)
             } catch (error: Throwable) {
                 server = null
                 AndroidM0ServerSessionRegistry.clear()
@@ -386,45 +355,6 @@ class MainActivity : Activity() {
                 }
             }
         }.start()
-    }
-
-    private fun startLocalServer(
-        serverBinder: LocalServerBinder,
-        router: LocalSyncRouter,
-        mediaStreamProvider: MediaStreamProvider,
-    ): LocalSyncServer {
-        return try {
-            bindAndStartServer(
-                serverBinder = serverBinder,
-                router = router,
-                mediaStreamProvider = mediaStreamProvider,
-                port = M0SyncComponents.defaultPort(),
-            )
-        } catch (error: BindException) {
-            bindAndStartServer(
-                serverBinder = serverBinder,
-                router = router,
-                mediaStreamProvider = mediaStreamProvider,
-                port = AVAILABLE_PORT,
-            )
-        }
-    }
-
-    private fun bindAndStartServer(
-        serverBinder: LocalServerBinder,
-        router: LocalSyncRouter,
-        mediaStreamProvider: MediaStreamProvider,
-        port: Int,
-    ): LocalSyncServer {
-        val createdServer = SuspendBridge.runBlocking {
-            serverBinder.bind(
-                router = router,
-                mediaStreamProvider = mediaStreamProvider,
-                port = port,
-            )
-        }
-        SuspendBridge.runBlocking { createdServer.start() }
-        return createdServer
     }
 
     private fun stopServer() {
@@ -447,28 +377,15 @@ class MainActivity : Activity() {
 
         Thread {
             try {
-                SuspendBridge.runBlocking { currentServer.stop() }
+                if (currentSession != null) {
+                    AndroidM0ServerSessionController.stop(currentSession)
+                } else {
+                    SuspendBridge.runBlocking { currentServer.stop() }
+                }
             } finally {
                 runOnUiThread { refreshUi() }
             }
         }.start()
-    }
-
-    private fun createPairingPayloadJson(
-        identity: DeviceIdentity,
-        port: Int,
-        pairingToken: String,
-    ): String? {
-        val ip = LocalNetworkAddresses.firstIpv4Address() ?: return null
-        val payload = PairingPayloadFactory(
-            deviceIdProvider = { identity.deviceId },
-            deviceNameProvider = { identity.deviceName },
-            publicKeyProvider = { identity.publicKey },
-            localIpProvider = { ip },
-            portProvider = { port },
-            pairingTokenProvider = { pairingToken },
-        ).createPayload()
-        return ManifestJsonEncoder().encode(payload)
     }
 
     private fun refreshPairingQr() {
@@ -659,7 +576,6 @@ class MainActivity : Activity() {
 
     private companion object {
         const val REQUEST_MEDIA_PERMISSION = 1001
-        const val AVAILABLE_PORT = 0
         const val SYNC_RESULT_POLL_INTERVAL_MS = 2_000L
     }
 }

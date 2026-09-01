@@ -40,6 +40,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Keep Android screen awake while the M0 server is running.
 - [x] Start an Android foreground data-sync service while the M0 server is running.
 - [x] Restore the Android M0 screen from an in-process running server session after Activity recreation.
+- [x] Extract Android M0 server session start/stop into a controller for foreground service ownership.
 
 ### A1. Project Setup
 
@@ -215,6 +216,20 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-01 Android M0 Session Controller
+
+Completed an Android service-ownership preparation slice:
+
+- Added `AndroidM0ServerSessionController` to own M0 server session creation, fallback port binding, pairing payload generation, and stop behavior.
+- Slimmed MainActivity so it consumes a running session instead of binding the local HTTP server directly.
+- Kept a direct stop fallback if Activity state and the session registry diverge.
+
+Verified:
+
+```sh
+./gradlew :app:testDebugUnitTest :app:compileDebugKotlin :app:processDebugMainManifest
+```
 
 ### 2026-09-01 iOS Sync Result Return Status
 
