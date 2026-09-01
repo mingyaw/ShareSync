@@ -32,6 +32,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add app-level M0 sync component factory.
 - [x] Add Android UI controls to request photos permission and start/stop server.
 - [x] Add Android notification permission request path for foreground transfer status.
+- [x] Add Android M0 foreground notification tap path back to the control screen.
 - [x] Show Android local IP/port for manual testing.
 - [x] Add Android endpoint copy action for same-network validation.
 - [x] Show Android pending manifest photo count for manual validation.
@@ -211,6 +212,20 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-01 Android M0 Notification Return Path
+
+Completed an Android foreground-transfer usability slice:
+
+- Added a notification tap `PendingIntent` that returns to the M0 control screen.
+- Marked the foreground notification as a progress-style local transfer notification.
+- Updated device validation to confirm the notification can bring Android back from the background.
+
+Verified:
+
+```sh
+./scripts/check-m0.sh
+```
 
 ### 2026-09-01 Android M0 Notification Permission
 
