@@ -217,6 +217,20 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 
 ## Progress Log
 
+### 2026-09-01 Android M0 Foreground Service Session Cleanup
+
+Completed a foreground-service ownership cleanup slice:
+
+- Made `AndroidM0ForegroundService` stop the active in-process M0 server session when the service is destroyed.
+- Kept MainActivity as the UI owner while tightening the service/session lifecycle boundary.
+- Reduced the chance of stale session references after service shutdown.
+
+Verified:
+
+```sh
+./gradlew :app:testDebugUnitTest :app:compileDebugKotlin :app:processDebugMainManifest
+```
+
 ### 2026-09-01 Android M0 Session Controller
 
 Completed an Android service-ownership preparation slice:

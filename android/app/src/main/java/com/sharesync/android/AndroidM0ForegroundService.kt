@@ -24,6 +24,12 @@ class AndroidM0ForegroundService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
+        val activeSession = AndroidM0ServerSessionRegistry.current
+        if (activeSession != null) {
+            Thread {
+                AndroidM0ServerSessionController.stop(activeSession)
+            }.start()
+        }
         stopForeground(STOP_FOREGROUND_REMOVE)
         super.onDestroy()
     }
