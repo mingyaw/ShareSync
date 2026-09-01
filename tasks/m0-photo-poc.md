@@ -168,6 +168,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Show Photos permission status before transfer.
 - [x] Create `ShareSync Backup` album.
 - [x] Import one downloaded photo for validation.
+- [x] Verify local import request size before writing to Photos.
 - [x] Store Android asset id to iOS local identifier mapping.
 - [x] Prevent duplicate imports.
 - [x] Treat missing imported Photos assets as retryable transfer candidates.
@@ -222,6 +223,21 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-01 iOS M0 Import Request Size Validation
+
+Completed an iOS Photos import integrity slice:
+
+- Added `sourceSize` to `PhotoImportRequest` so import requests retain manifest/download byte-count evidence.
+- Added `PhotoImportRequestValidator` to reject mismatched local files before Photos import.
+- Wired `PhotoKitPhotoImporter` to return `SS-MEDIA-004` for import-time size mismatches.
+- Added Swift coverage for matching and mismatched import request sizes.
+
+Verified:
+
+```sh
+swift test
+```
 
 ### 2026-09-01 iOS M0 Media Size Verification
 

@@ -3,8 +3,36 @@ import Foundation
 struct PhotoImportRequest: Equatable {
     let sourceAssetId: String
     let sourceHash: String?
+    let sourceSize: Int64
     let localFileURL: URL
     let mediaType: MediaType
+}
+
+enum PhotoImportRequestValidationError: Error, Equatable {
+    case fileSizeMismatch(expected: Int64, actual: Int64)
+}
+
+struct PhotoImportRequestValidator {
+    private let fileSize: (URL) throws -> Int64
+
+    init(fileSize: @escaping (URL) throws -> Int64 = Self.fileSize) {
+        self.fileSize = fileSize
+    }
+
+    func validate(_ request: PhotoImportRequest) throws {
+        let actualSize = try fileSize(request.localFileURL)
+        guard actualSize == request.sourceSize else {
+            throw PhotoImportRequestValidationError.fileSizeMismatch(
+                expected: request.sourceSize,
+                actual: actualSize
+            )
+        }
+    }
+
+    private static func fileSize(for url: URL) throws -> Int64 {
+        let values = try url.resourceValues(forKeys: [.fileSizeKey])
+        return Int64(values.fileSize ?? 0)
+    }
 }
 
 struct PhotoImportResult: Equatable {

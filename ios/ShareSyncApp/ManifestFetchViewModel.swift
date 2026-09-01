@@ -418,6 +418,7 @@ final class ManifestFetchViewModel: ObservableObject {
                     return PhotoImportRequest(
                         sourceAssetId: asset.assetId,
                         sourceHash: asset.sha256,
+                        sourceSize: result.downloadedBytes,
                         localFileURL: result.localFileURL,
                         mediaType: asset.mediaType
                     )
@@ -593,6 +594,7 @@ final class ManifestFetchViewModel: ObservableObject {
         return PhotoImportRequest(
             sourceAssetId: asset.assetId,
             sourceHash: asset.sha256,
+            sourceSize: asset.size,
             localFileURL: localFileURL,
             mediaType: asset.mediaType
         )

@@ -11,10 +11,16 @@ enum PhotoKitPhotoImporterError: Error {
 final class PhotoKitPhotoImporter: PhotoImporter, PhotoLibraryPermissionChecking, PhotoAssetPresenceChecking {
     private let albumTitle: String
     private let library: PHPhotoLibrary
+    private let requestValidator: PhotoImportRequestValidator
 
-    init(albumTitle: String = "ShareSync Backup", library: PHPhotoLibrary = .shared()) {
+    init(
+        albumTitle: String = "ShareSync Backup",
+        library: PHPhotoLibrary = .shared(),
+        requestValidator: PhotoImportRequestValidator = PhotoImportRequestValidator()
+    ) {
         self.albumTitle = albumTitle
         self.library = library
+        self.requestValidator = requestValidator
     }
 
     func importBatch(_ requests: [PhotoImportRequest]) async -> [PhotoImportResult] {
@@ -54,6 +60,7 @@ final class PhotoKitPhotoImporter: PhotoImporter, PhotoLibraryPermissionChecking
 
     private func importOne(_ request: PhotoImportRequest) async -> PhotoImportResult {
         do {
+            try requestValidator.validate(request)
             try await ensurePhotoPermission()
             let album = try await ensureAlbum()
             let localIdentifier = try await add(request: request, to: album)
@@ -202,6 +209,10 @@ final class PhotoKitPhotoImporter: PhotoImporter, PhotoLibraryPermissionChecking
             case .missingPlaceholder, .albumCreationFailed:
                 return "SS-MEDIA-999"
             }
+        }
+
+        if case PhotoImportRequestValidationError.fileSizeMismatch = error {
+            return "SS-MEDIA-004"
         }
 
         return "SS-MEDIA-999"
