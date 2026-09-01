@@ -172,6 +172,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Persist latest shared `SyncResult` JSON.
 - [x] Restore latest shared `SyncResult` JSON on iOS app launch.
 - [x] Copy latest shared `SyncResult` JSON from the iOS receive screen.
+- [x] Use fallback error codes for unknown failed iOS media results.
 - [x] POST latest `SyncResult` back to Android M0 server.
 - [x] Show iOS sync result return status after posting to Android.
 - [x] Add iOS validation control to clear local M0 download/import/result state.
@@ -219,6 +220,20 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-01 iOS M0 Unknown Failure Result Codes
+
+Completed an iOS-to-Android result clarity slice:
+
+- Made `SyncResultBuilder` use `SS-MEDIA-999` when a failed media record has no usable error code.
+- Preserved explicit error codes when the downloader/importer already recorded one.
+- Added Swift coverage for nil and blank failed-record error codes.
+
+Verified:
+
+```sh
+swift test
+```
 
 ### 2026-09-01 iOS M0 Stale Partial State
 

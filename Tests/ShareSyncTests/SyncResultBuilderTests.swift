@@ -82,6 +82,37 @@ final class SyncResultBuilderTests: XCTestCase {
         XCTAssertEqual(result.results, [])
     }
 
+    func testBuildMediaResultUsesFallbackErrorCodeForUnknownFailures() {
+        let result = SyncResultBuilder().buildMediaResult(
+            syncBatchId: "batch-001",
+            targetDeviceId: "ios-device-001",
+            records: [
+                makeRecord(sourceAssetId: "media-nil-error", status: .failed),
+                makeRecord(sourceAssetId: "media-empty-error", status: .failed, lastErrorCode: "  \n")
+            ]
+        )
+
+        XCTAssertEqual(
+            result.results,
+            [
+                SyncItemResult(
+                    itemType: .media,
+                    sourceItemId: "media-nil-error",
+                    targetItemId: nil,
+                    status: .failed,
+                    errorCode: "SS-MEDIA-999"
+                ),
+                SyncItemResult(
+                    itemType: .media,
+                    sourceItemId: "media-empty-error",
+                    targetItemId: nil,
+                    status: .failed,
+                    errorCode: "SS-MEDIA-999"
+                )
+            ]
+        )
+    }
+
     private func makeRecord(
         sourceAssetId: String,
         status: MediaDownloadStatus,

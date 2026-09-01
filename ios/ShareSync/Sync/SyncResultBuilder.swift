@@ -37,7 +37,7 @@ struct SyncResultBuilder {
                 sourceItemId: record.sourceAssetId,
                 targetItemId: record.photoLocalIdentifier,
                 status: .failed,
-                errorCode: record.lastErrorCode
+                errorCode: firstNonEmpty(record.lastErrorCode) ?? "SS-MEDIA-999"
             )
         case .missing:
             return SyncItemResult(
@@ -50,5 +50,14 @@ struct SyncResultBuilder {
         case .queued, .downloading, .downloaded:
             return nil
         }
+    }
+
+    private func firstNonEmpty(_ value: String?) -> String? {
+        guard let value else {
+            return nil
+        }
+
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 }
