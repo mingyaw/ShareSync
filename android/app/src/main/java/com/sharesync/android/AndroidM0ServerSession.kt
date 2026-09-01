@@ -2,12 +2,14 @@ package com.sharesync.android
 
 import com.sharesync.android.sync.ManifestBuilder
 import com.sharesync.android.sync.SyncResultStore
+import com.sharesync.android.transfer.server.LocalRequestActivityTracker
 import com.sharesync.android.transfer.server.LocalSyncServer
 
 data class AndroidM0ServerSession(
     val server: LocalSyncServer,
     val syncResultStore: SyncResultStore,
     val manifestBuilder: ManifestBuilder,
+    val requestActivityTracker: LocalRequestActivityTracker,
     val pairingPayloadJson: String?,
 )
 

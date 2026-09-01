@@ -30,6 +30,8 @@ import com.sharesync.android.sync.SyncResultJsonCodec
 import com.sharesync.android.sync.SyncResultStore
 import com.sharesync.android.scanner.media.MediaStreamProvider
 import com.sharesync.android.transfer.server.LocalServerBinder
+import com.sharesync.android.transfer.server.LocalRequestActivity
+import com.sharesync.android.transfer.server.LocalRequestActivityTracker
 import com.sharesync.android.transfer.server.LocalSyncRouter
 import com.sharesync.android.transfer.server.LocalSyncServer
 import java.net.BindException
@@ -43,6 +45,7 @@ class MainActivity : Activity() {
     private lateinit var notificationPermissionText: TextView
     private lateinit var screenLockText: TextView
     private lateinit var manifestSummaryText: TextView
+    private lateinit var requestActivityText: TextView
     private lateinit var syncResultText: TextView
     private lateinit var pairingPayloadText: TextView
     private lateinit var pairingQrImage: ImageView
@@ -63,8 +66,10 @@ class MainActivity : Activity() {
     private var currentPairingPayloadJson: String? = null
     private var currentManifestPhotoCount: Int? = null
     private var currentSyncResult: SyncResult? = null
+    private var currentRequestActivity: LocalRequestActivity? = null
     private var syncResultStore: SyncResultStore? = null
     private var manifestBuilder: ManifestBuilder? = null
+    private var requestActivityTracker: LocalRequestActivityTracker? = null
     private lateinit var deviceIdentityStore: DeviceIdentityStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -133,6 +138,7 @@ class MainActivity : Activity() {
         notificationPermissionText = bodyText(topPadding = 12 * density)
         screenLockText = bodyText(topPadding = 12 * density)
         manifestSummaryText = bodyText(topPadding = 12 * density)
+        requestActivityText = bodyText(topPadding = 12 * density)
         syncResultText = bodyText(topPadding = 12 * density)
         pairingPayloadText = bodyText(topPadding = 12 * density)
         pairingQrImage = ImageView(this).apply {
@@ -191,6 +197,7 @@ class MainActivity : Activity() {
         root.addView(notificationPermissionText)
         root.addView(screenLockText)
         root.addView(manifestSummaryText)
+        root.addView(requestActivityText)
         root.addView(syncResultText)
         root.addView(pairingQrImage)
         root.addView(pairingPayloadText)
@@ -247,6 +254,8 @@ class MainActivity : Activity() {
         manifestSummaryText.text = currentManifestPhotoCount?.let { count ->
             getString(R.string.m0_manifest_summary, count, manifestTransferStatus(count))
         } ?: getString(R.string.m0_manifest_unavailable)
+        requestActivityText.text = currentRequestActivity?.let(::formatRequestActivity)
+            ?: getString(R.string.m0_request_activity_unavailable)
         syncResultText.text = currentSyncResult?.let(::formatSyncResult)
             ?: getString(R.string.m0_sync_result_unavailable)
         refreshPairingQr()
@@ -341,13 +350,16 @@ class MainActivity : Activity() {
                     server = createdServer,
                     syncResultStore = components.syncResultStore,
                     manifestBuilder = components.manifestBuilder,
+                    requestActivityTracker = components.requestActivityTracker,
                     pairingPayloadJson = pairingPayloadJson,
                 )
                 AndroidM0ServerSessionRegistry.set(session)
                 server = session.server
                 syncResultStore = session.syncResultStore
                 manifestBuilder = session.manifestBuilder
+                requestActivityTracker = session.requestActivityTracker
                 currentSyncResult = SuspendBridge.runBlocking { components.syncResultStore.latest() }
+                currentRequestActivity = components.requestActivityTracker.latest()
                 currentManifestPhotoCount = SuspendBridge.runBlocking {
                     components.manifestBuilder.buildM0Manifest().media.size
                 }
@@ -363,6 +375,8 @@ class MainActivity : Activity() {
                 AndroidM0ForegroundService.stop(applicationContext)
                 restorePersistedSyncResult()
                 manifestBuilder = null
+                requestActivityTracker = null
+                currentRequestActivity = null
                 currentManifestPhotoCount = null
                 isServerStarting = false
                 isServerRunning = false
@@ -419,7 +433,9 @@ class MainActivity : Activity() {
         server = null
         AndroidM0ServerSessionRegistry.clear(currentSession)
         manifestBuilder = null
+        requestActivityTracker = null
         currentManifestPhotoCount = null
+        currentRequestActivity = null
         isServerStarting = false
         isServerRunning = false
         currentPairingPayloadJson = null
@@ -518,10 +534,12 @@ class MainActivity : Activity() {
         server = session.server
         syncResultStore = session.syncResultStore
         manifestBuilder = session.manifestBuilder
+        requestActivityTracker = session.requestActivityTracker
         currentPairingPayloadJson = session.pairingPayloadJson
         isServerStarting = false
         isServerRunning = true
         currentSyncResult = SuspendBridge.runBlocking { session.syncResultStore.latest() }
+        currentRequestActivity = session.requestActivityTracker.latest()
         currentManifestPhotoCount = SuspendBridge.runBlocking {
             session.manifestBuilder.buildM0Manifest().media.size
         }
@@ -559,6 +577,7 @@ class MainActivity : Activity() {
                     return@Thread
                 }
                 currentSyncResult = SuspendBridge.runBlocking { store.latest() }
+                currentRequestActivity = requestActivityTracker?.latest()
                 currentManifestPhotoCount = manifestBuilder?.let { builder ->
                     SuspendBridge.runBlocking { builder.buildM0Manifest().media.size }
                 }
@@ -584,6 +603,14 @@ class MainActivity : Activity() {
             skippedCount,
             failedCount,
             latestFailureCode,
+        )
+    }
+
+    private fun formatRequestActivity(activity: LocalRequestActivity): String {
+        return getString(
+            R.string.m0_request_activity_summary,
+            activity.endpoint,
+            activity.statusCode,
         )
     }
 

@@ -15,9 +15,10 @@ class LocalSyncRouter(
     private val syncResultStore: SyncResultStore,
     private val manifestJsonEncoder: ManifestJsonEncoder = ManifestJsonEncoder(),
     private val syncResultJsonCodec: SyncResultJsonCodec = SyncResultJsonCodec(),
+    private val requestActivityTracker: LocalRequestActivityTracker? = null,
 ) {
     suspend fun health(): LocalApiResponse {
-        return LocalApiResponse.json(
+        val response = LocalApiResponse.json(
             body = """
                 {
                   "status": "ok",
@@ -27,16 +28,22 @@ class LocalSyncRouter(
                 }
             """.trimIndent()
         )
+        requestActivityTracker?.record("health", response.statusCode)
+        return response
     }
 
     suspend fun manifest(headers: Map<String, String> = emptyMap()): LocalApiResponse {
         if (!isAuthorized(headers)) {
-            return LocalApiResponse.jsonError(statusCode = 401, errorCode = "SS-AUTH-001")
+            val response = LocalApiResponse.jsonError(statusCode = 401, errorCode = "SS-AUTH-001")
+            requestActivityTracker?.record("manifest", response.statusCode)
+            return response
         }
 
-        return LocalApiResponse.json(
+        val response = LocalApiResponse.json(
             body = manifestJsonEncoder.encode(manifestProvider.currentManifest())
         )
+        requestActivityTracker?.record("manifest", response.statusCode)
+        return response
     }
 
     suspend fun media(
@@ -45,29 +52,44 @@ class LocalSyncRouter(
         headers: Map<String, String> = emptyMap(),
     ): LocalMediaResponse {
         if (!isAuthorized(headers)) {
-            return LocalMediaResponse.unauthorized("SS-AUTH-001")
+            val response = LocalMediaResponse.unauthorized("SS-AUTH-001")
+            requestActivityTracker?.record("media", response.httpStatusCode())
+            return response
         }
 
         val asset = mediaProvider.findMedia(assetId)
-            ?: return LocalMediaResponse.notFound("SS-MEDIA-404")
+        if (asset == null) {
+            val response = LocalMediaResponse.notFound("SS-MEDIA-404")
+            requestActivityTracker?.record("media", response.httpStatusCode())
+            return response
+        }
 
         val range = ByteRange.parse(rangeHeader, asset.size)
-            ?: return LocalMediaResponse.rangeNotSatisfiable("SS-REQ-416", asset.size)
-        return LocalMediaResponse.found(
+        if (range == null) {
+            val response = LocalMediaResponse.rangeNotSatisfiable("SS-REQ-416", asset.size)
+            requestActivityTracker?.record("media", response.httpStatusCode())
+            return response
+        }
+
+        val response = LocalMediaResponse.found(
             asset = asset,
             range = range,
         )
+        requestActivityTracker?.record("media", response.httpStatusCode())
+        return response
     }
 
     suspend fun syncResult(body: String, headers: Map<String, String> = emptyMap()): LocalApiResponse {
         if (!isAuthorized(headers)) {
-            return LocalApiResponse.jsonError(statusCode = 401, errorCode = "SS-AUTH-001")
+            val response = LocalApiResponse.jsonError(statusCode = 401, errorCode = "SS-AUTH-001")
+            requestActivityTracker?.record("sync-result", response.statusCode)
+            return response
         }
 
         return try {
             val result = syncResultJsonCodec.decode(body)
             syncResultStore.save(result)
-            LocalApiResponse.json(
+            val response = LocalApiResponse.json(
                 statusCode = 202,
                 body = """
                     {
@@ -77,10 +99,16 @@ class LocalSyncRouter(
                     }
                 """.trimIndent()
             )
+            requestActivityTracker?.record("sync-result", response.statusCode)
+            response
         } catch (_: JSONException) {
-            LocalApiResponse.jsonError(statusCode = 400, errorCode = "SS-REQ-001")
+            val response = LocalApiResponse.jsonError(statusCode = 400, errorCode = "SS-REQ-001")
+            requestActivityTracker?.record("sync-result", response.statusCode)
+            response
         } catch (_: IllegalArgumentException) {
-            LocalApiResponse.jsonError(statusCode = 400, errorCode = "SS-REQ-001")
+            val response = LocalApiResponse.jsonError(statusCode = 400, errorCode = "SS-REQ-001")
+            requestActivityTracker?.record("sync-result", response.statusCode)
+            response
         }
     }
 
@@ -261,5 +289,14 @@ private fun String.escapeJson(): String {
                 else -> append(char)
             }
         }
+    }
+}
+
+private fun LocalMediaResponse.httpStatusCode(): Int {
+    return when (this) {
+        is LocalMediaResponse.Found -> statusCode
+        is LocalMediaResponse.NotFound -> statusCode
+        is LocalMediaResponse.Unauthorized -> statusCode
+        is LocalMediaResponse.RangeNotSatisfiable -> statusCode
     }
 }

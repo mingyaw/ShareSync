@@ -21,23 +21,42 @@ class LocalSyncRouterTest {
 
     @Test
     fun manifestAcceptsExpectedPairingToken() {
+        val activityTracker = LocalRequestActivityTracker(clock = { 1234L })
         val response = SuspendBridge.runBlocking {
-            router().manifest(mapOf(LocalSyncRouter.PAIRING_TOKEN_HEADER to PAIRING_TOKEN))
+            router(requestActivityTracker = activityTracker)
+                .manifest(mapOf(LocalSyncRouter.PAIRING_TOKEN_HEADER to PAIRING_TOKEN))
         }
 
         assertEquals(200, response.statusCode)
+        assertEquals(LocalRequestActivity("manifest", 200, 1234L), activityTracker.latest())
     }
 
     @Test
     fun mediaRejectsWrongPairingToken() {
+        val activityTracker = LocalRequestActivityTracker(clock = { 5678L })
         val response = SuspendBridge.runBlocking {
-            router().media(
+            router(requestActivityTracker = activityTracker).media(
                 assetId = "media-001",
                 headers = pairingHeaders("wrong-token"),
             )
         }
 
         assertEquals(LocalMediaResponse.Unauthorized(401, "SS-AUTH-001"), response)
+        assertEquals(LocalRequestActivity("media", 401, 5678L), activityTracker.latest())
+    }
+
+    @Test
+    fun syncResultRecordsBadRequestActivity() {
+        val activityTracker = LocalRequestActivityTracker(clock = { 9012L })
+        val response = SuspendBridge.runBlocking {
+            router(requestActivityTracker = activityTracker).syncResult(
+                body = """{"bad": true}""",
+                headers = pairingHeaders(),
+            )
+        }
+
+        assertEquals(400, response.statusCode)
+        assertEquals(LocalRequestActivity("sync-result", 400, 9012L), activityTracker.latest())
     }
 
     @Test
@@ -92,7 +111,9 @@ class LocalSyncRouterTest {
         )
     }
 
-    private fun router(): LocalSyncRouter {
+    private fun router(
+        requestActivityTracker: LocalRequestActivityTracker? = null,
+    ): LocalSyncRouter {
         return LocalSyncRouter(
             deviceId = "android-device-001",
             appVersion = "0.1.0",
@@ -116,6 +137,7 @@ class LocalSyncRouterTest {
                 }
             },
             syncResultStore = InMemorySyncResultStore(),
+            requestActivityTracker = requestActivityTracker,
         )
     }
 

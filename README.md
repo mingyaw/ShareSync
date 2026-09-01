@@ -49,7 +49,7 @@ The current codebase contains:
 - Android starts a foreground data-sync service while the M0 local server is running.
 - Android can reconnect the M0 screen to an already running in-process server session after Activity recreation.
 - Android M0 screen shows a concise phase status for permission, server start, pairing, retry, and completion validation.
-- Android M0 screen shows pending manifest photo count, manifest transfer status, and latest failed sync result code.
+- Android M0 screen shows pending manifest photo count, manifest transfer status, latest local request activity, and latest failed sync result code.
 - Android can copy the latest sync result JSON for real-device validation records.
 - Android manifest filtering for media already reported as synced or skipped.
 - Android merged sync result history across M0 batches.

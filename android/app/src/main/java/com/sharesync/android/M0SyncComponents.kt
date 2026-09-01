@@ -7,6 +7,7 @@ import com.sharesync.android.sync.FileSyncResultStore
 import com.sharesync.android.sync.ManifestBuilder
 import com.sharesync.android.sync.SyncResultStore
 import com.sharesync.android.transfer.server.EmbeddedLocalServerBinder
+import com.sharesync.android.transfer.server.LocalRequestActivityTracker
 import com.sharesync.android.transfer.server.LocalSyncRouter
 import com.sharesync.android.transfer.server.ManifestProvider
 
@@ -15,6 +16,7 @@ class M0SyncComponents private constructor(
     val mediaStreamProvider: MediaStreamProvider,
     val manifestBuilder: ManifestBuilder,
     val syncResultStore: SyncResultStore,
+    val requestActivityTracker: LocalRequestActivityTracker,
     val router: LocalSyncRouter,
     val serverBinder: EmbeddedLocalServerBinder,
 ) {
@@ -44,12 +46,14 @@ class M0SyncComponents private constructor(
             val manifestProvider = object : ManifestProvider {
                 override suspend fun currentManifest() = manifestBuilder.buildM0Manifest()
             }
+            val requestActivityTracker = LocalRequestActivityTracker()
 
             return M0SyncComponents(
                 mediaScanner = mediaScanner,
                 mediaStreamProvider = MediaStreamProvider(contentResolver),
                 manifestBuilder = manifestBuilder,
                 syncResultStore = syncResultStore,
+                requestActivityTracker = requestActivityTracker,
                 router = LocalSyncRouter(
                     deviceId = deviceId,
                     appVersion = appVersion,
@@ -57,6 +61,7 @@ class M0SyncComponents private constructor(
                     manifestProvider = manifestProvider,
                     mediaProvider = mediaScanner,
                     syncResultStore = syncResultStore,
+                    requestActivityTracker = requestActivityTracker,
                 ),
                 serverBinder = EmbeddedLocalServerBinder(),
             )

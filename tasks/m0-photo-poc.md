@@ -36,6 +36,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Show Android local IP/port for manual testing.
 - [x] Add Android endpoint copy action for same-network validation.
 - [x] Show Android pending manifest photo count for manual validation.
+- [x] Show Android latest local request activity for background-transfer validation.
 - [x] Keep Android screen awake while the M0 server is running.
 - [x] Start an Android foreground data-sync service while the M0 server is running.
 - [x] Restore the Android M0 screen from an in-process running server session after Activity recreation.
@@ -213,6 +214,21 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-01 Android M0 Request Activity
+
+Completed an Android background-transfer observability slice:
+
+- Added `LocalRequestActivityTracker` for local endpoint/status activity without recording media metadata.
+- Recorded latest `health`, `manifest`, `media`, and `sync-result` request status in the Android router.
+- Surfaced latest local request activity on the Android M0 screen and preserved it across Activity recreation.
+- Added router tests for request activity recording.
+
+Verified:
+
+```sh
+./gradlew :app:testDebugUnitTest :app:compileDebugKotlin :app:processDebugMainManifest
+```
 
 ### 2026-09-01 Android M0 Activity Recreation Recovery
 
