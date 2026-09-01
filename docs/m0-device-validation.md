@@ -86,7 +86,7 @@ Confirm Android shows the ShareSync photo transfer foreground-service notificati
 
 Put Android ShareSync in the background, tap the ShareSync photo transfer notification, and confirm Android returns to the M0 control screen.
 
-Confirm Android `Last request` updates to `manifest`, `media`, or `sync-result` with the latest HTTP status as iOS fetches, downloads, and reports results.
+Confirm Android `Last request` updates to `manifest`, `media`, or `sync-result` with the latest HTTP status and a recent age as iOS fetches, downloads, and reports results.
 
 Rotate Android or trigger an Activity recreation during the running M0 server session, then confirm the endpoint, QR payload, foreground notification, and sync result summary are still available.
 

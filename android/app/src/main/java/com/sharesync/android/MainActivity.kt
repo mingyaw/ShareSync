@@ -611,7 +611,18 @@ class MainActivity : Activity() {
             R.string.m0_request_activity_summary,
             activity.endpoint,
             activity.statusCode,
+            requestActivityAgeLabel(activity),
         )
+    }
+
+    private fun requestActivityAgeLabel(activity: LocalRequestActivity): String {
+        val ageMillis = (System.currentTimeMillis() - activity.recordedAtEpochMillis).coerceAtLeast(0)
+        val ageSeconds = ageMillis / 1_000
+        return when {
+            ageSeconds < 60 -> "${ageSeconds}s ago"
+            ageSeconds < 3_600 -> "${ageSeconds / 60}m ago"
+            else -> "${ageSeconds / 3_600}h ago"
+        }
     }
 
     private fun runtimeState(): AndroidM0RuntimeState {

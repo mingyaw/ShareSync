@@ -215,6 +215,20 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 
 ## Progress Log
 
+### 2026-09-01 Android M0 Request Activity Age
+
+Completed a small Android validation-readability slice:
+
+- Added an age label to the Android `Last request` row.
+- Kept request tracking limited to endpoint, HTTP status, and local timestamp.
+- Updated device validation to confirm request activity is recent during iOS fetch/download/result reporting.
+
+Verified:
+
+```sh
+./scripts/check-m0.sh
+```
+
 ### 2026-09-01 Android M0 Request Activity
 
 Completed an Android background-transfer observability slice:
