@@ -43,6 +43,43 @@ class ManifestBuilderTest {
     }
 
     @Test
+    fun buildM0ManifestExcludesPhotoAfterFailedItemIsRetriedSuccessfully() {
+        val scanner = FakeMediaScanner(
+            assets = listOf(
+                mediaAsset("media-retried"),
+                mediaAsset("media-new"),
+            )
+        )
+        val store = InMemorySyncResultStore()
+        SuspendBridge.runBlocking {
+            store.save(
+                SyncResult(
+                    syncBatchId = "batch-001",
+                    targetDeviceId = "ios-device-001",
+                    results = listOf(syncItem("media-retried", SyncItemStatus.failed)),
+                )
+            )
+            store.save(
+                SyncResult(
+                    syncBatchId = "batch-002",
+                    targetDeviceId = "ios-device-001",
+                    results = listOf(syncItem("media-retried", SyncItemStatus.synced)),
+                )
+            )
+        }
+
+        val manifest = SuspendBridge.runBlocking {
+            ManifestBuilder(
+                sourceDeviceId = "android-device-001",
+                mediaScanner = scanner,
+                syncResultStore = store,
+            ).buildM0Manifest(limit = 100)
+        }
+
+        assertEquals(listOf("media-new"), manifest.media.map { it.assetId })
+    }
+
+    @Test
     fun buildM0ManifestScansBeyondLimitBeforeFilteringCompletedMedia() {
         val scanner = FakeMediaScanner(
             assets = listOf(

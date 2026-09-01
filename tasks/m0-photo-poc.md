@@ -88,6 +88,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Keep Android sync result polling active while the M0 server is running.
 - [x] Exclude latest synced/skipped media results from Android manifest.
 - [x] Merge Android sync results across multiple M0 batches.
+- [x] Cover Android manifest filtering after failed photos are retried successfully.
 - [x] Add Android validation control to clear persisted M0 sync result state.
 - [x] Extract Android M0 runtime phase and manifest status rules into a tested model.
 - [x] Add range request support.
@@ -224,6 +225,20 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-01 Android M0 Retry Success Manifest Filtering
+
+Completed an Android retry-flow regression slice:
+
+- Added Android store coverage for a media result moving from `failed` to `synced` across batches.
+- Added Android manifest coverage proving a retried-success photo is excluded from the next M0 manifest.
+- Preserved failed media retry behavior while locking down the successful retry completion path.
+
+Verified:
+
+```sh
+./gradlew :app:testDebugUnitTest :app:compileDebugKotlin
+```
 
 ### 2026-09-01 iOS M0 Photo-Only Transfer Planner
 

@@ -44,6 +44,21 @@ class SyncResultStoreTest {
     }
 
     @Test
+    fun inMemoryStoreTreatsRetriedSuccessAsCompleted() {
+        val store = InMemorySyncResultStore()
+
+        SuspendBridge.runBlocking {
+            store.save(syncResult("batch-001", syncItem("media-001", SyncItemStatus.failed)))
+            store.save(syncResult("batch-002", syncItem("media-001", SyncItemStatus.synced)))
+        }
+
+        val latest = SuspendBridge.runBlocking { store.latest() }
+
+        assertEquals(listOf("media-001" to SyncItemStatus.synced), latest?.results?.map { it.sourceItemId to it.status })
+        assertEquals(setOf("media-001"), SuspendBridge.runBlocking { store.completedMediaAssetIds() })
+    }
+
+    @Test
     fun inMemoryStoreClearRemovesResults() {
         val store = InMemorySyncResultStore()
 
