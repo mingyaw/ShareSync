@@ -527,6 +527,7 @@ class MainActivity : Activity() {
         return getString(
             R.string.m0_request_activity_summary,
             activity.endpoint,
+            activity.requestCount,
             activity.statusCode,
             requestActivityAgeLabel(activity),
         )

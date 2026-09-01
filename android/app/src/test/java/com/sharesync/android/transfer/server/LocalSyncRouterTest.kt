@@ -28,7 +28,7 @@ class LocalSyncRouterTest {
         }
 
         assertEquals(200, response.statusCode)
-        assertEquals(LocalRequestActivity("manifest", 200, 1234L), activityTracker.latest())
+        assertEquals(LocalRequestActivity("manifest", 200, 1234L, 1), activityTracker.latest())
     }
 
     @Test
@@ -42,7 +42,7 @@ class LocalSyncRouterTest {
         }
 
         assertEquals(LocalMediaResponse.Unauthorized(401, "SS-AUTH-001"), response)
-        assertEquals(LocalRequestActivity("media", 401, 5678L), activityTracker.latest())
+        assertEquals(LocalRequestActivity("media", 401, 5678L, 1), activityTracker.latest())
     }
 
     @Test
@@ -56,7 +56,24 @@ class LocalSyncRouterTest {
         }
 
         assertEquals(400, response.statusCode)
-        assertEquals(LocalRequestActivity("sync-result", 400, 9012L), activityTracker.latest())
+        assertEquals(LocalRequestActivity("sync-result", 400, 9012L, 1), activityTracker.latest())
+    }
+
+    @Test
+    fun requestActivityCountsLocalRequestsAcrossEndpoints() {
+        var now = 10_000L
+        val activityTracker = LocalRequestActivityTracker(clock = { now })
+        val router = router(requestActivityTracker = activityTracker)
+
+        SuspendBridge.runBlocking {
+            router.health()
+            now = 11_000L
+            router.manifest(pairingHeaders())
+            now = 12_000L
+            router.media(assetId = "media-001", headers = pairingHeaders())
+        }
+
+        assertEquals(LocalRequestActivity("media", 200, 12_000L, 3), activityTracker.latest())
     }
 
     @Test

@@ -31,7 +31,7 @@
     <string name="m0_manifest_status_complete">Complete</string>
     <string name="m0_manifest_status_needs_retry">Needs retry</string>
     <string name="m0_request_activity_unavailable">Last request: waiting for iPhone.</string>
-    <string name="m0_request_activity_summary">Last request: %1$s, HTTP %2$d, %3$s.</string>
+    <string name="m0_request_activity_summary">Last request: %1$s #%2$d, HTTP %3$d, %4$s.</string>
     <string name="m0_sync_result_unavailable">Sync result: waiting for iPhone report.</string>
     <string name="m0_sync_result_summary">Sync result: %1$s, synced %2$d, skipped %3$d, failed %4$d, last failure %5$s.</string>
     <string name="m0_sync_result_no_failure">none</string>
