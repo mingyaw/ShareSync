@@ -5,6 +5,7 @@ data class LocalRequestActivity(
     val statusCode: Int,
     val recordedAtEpochMillis: Long,
     val requestCount: Int,
+    val endpointRequestCount: Int,
 )
 
 class LocalRequestActivityTracker(
@@ -15,15 +16,19 @@ class LocalRequestActivityTracker(
     @Volatile
     private var latestActivity: LocalRequestActivity? = null
     private var requestCount = 0
+    private val endpointRequestCounts = mutableMapOf<String, Int>()
 
     fun record(endpoint: String, statusCode: Int) {
         synchronized(lock) {
             requestCount += 1
+            val endpointCount = (endpointRequestCounts[endpoint] ?: 0) + 1
+            endpointRequestCounts[endpoint] = endpointCount
             latestActivity = LocalRequestActivity(
                 endpoint = endpoint,
                 statusCode = statusCode,
                 recordedAtEpochMillis = clock(),
                 requestCount = requestCount,
+                endpointRequestCount = endpointCount,
             )
         }
     }
