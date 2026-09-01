@@ -144,6 +144,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 - [x] Download one photo file to app temp directory for validation.
 - [x] Verify SHA-256 when available.
+- [x] Verify downloaded byte count against manifest size.
 - [x] Track per-asset download state.
 - [x] Expand UI action from single-item validation to batch download.
 - [x] Add all-remaining manifest download action for M0 device validation.
@@ -158,6 +159,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Exclude stale iOS partial file references from resumable partial counts.
 - [x] Add iOS Range request path for persisted partial media retries.
 - [x] Retry one transient network download failure before marking a photo failed.
+- [x] Retry one media size mismatch before marking a photo failed.
 - [x] Remove temporary downloaded photo files after successful Photos import.
 
 ### I5. Photos Import
@@ -220,6 +222,21 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-01 iOS M0 Media Size Verification
+
+Completed an iOS photo-download integrity slice:
+
+- Added downloaded byte-count verification against the manifest media size.
+- Added `SS-MEDIA-004` for media size mismatch failures.
+- Made size mismatch retry once, matching checksum mismatch recovery behavior.
+- Added Swift coverage for unrecovered and recovered size mismatch downloads.
+
+Verified:
+
+```sh
+swift test
+```
 
 ### 2026-09-01 iOS M0 Unknown Failure Result Codes
 

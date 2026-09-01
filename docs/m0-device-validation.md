@@ -193,6 +193,14 @@ Expected result: ShareSync pauses foreground-only transfer when iOS leaves the f
 
 Expected result: iOS retries the checksum mismatch once, imports the photo if the retry matches, and does not mark the item failed.
 
+## Size Mismatch Retry
+
+1. During development, simulate or force a short or oversized response body for one photo while keeping the manifest size unchanged.
+2. Let the next response return exactly the manifest byte count.
+3. Start the iOS download.
+
+Expected result: iOS retries the size mismatch once, imports the photo if the retry size matches, and reports `SS-MEDIA-004` if the mismatch remains.
+
 ## Manual Stop And Retry
 
 1. Complete the baseline success path setup.

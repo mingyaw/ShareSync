@@ -168,6 +168,89 @@ final class MediaDownloaderTests: XCTestCase {
         XCTAssertEqual(try Data(contentsOf: XCTUnwrap(store.record(for: "mediastore-1-52")?.localFileURL)), expectedData)
     }
 
+    func testSizeMismatchMarksFailedWhenHashIsMissing() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let asset = makeAsset(
+            assetId: "mediastore-1-59",
+            fileName: "IMG_0059.jpg",
+            size: 20,
+            sha256: nil
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        let session = StubMediaDataSession(
+            data: Data("short-photo".utf8),
+            response: HTTPURLResponse(
+                url: URL(string: "http://192.168.1.10:48291/v1/media/mediastore-1-59")!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+        )
+        let downloader = MediaDownloader(session: session, downloadDirectory: directory)
+
+        let results = await downloader.downloadMedia(
+            assets: [asset],
+            host: "192.168.1.10",
+            port: 48291,
+            stateStore: store
+        )
+
+        XCTAssertTrue(results.isEmpty)
+        XCTAssertEqual(store.record(for: "mediastore-1-59")?.status, .failed)
+        XCTAssertEqual(store.record(for: "mediastore-1-59")?.lastErrorCode, "SS-MEDIA-004")
+    }
+
+    func testSizeMismatchRetriesOnceAndCanRecover() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let expectedData = Data("correct-size-photo".utf8)
+        let asset = makeAsset(
+            assetId: "mediastore-1-60",
+            fileName: "IMG_0060.jpg",
+            size: Int64(expectedData.count),
+            sha256: nil
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        let session = StubSequenceMediaDataSession(responses: [
+            (
+                data: Data("short-photo".utf8),
+                response: HTTPURLResponse(
+                    url: URL(string: "http://192.168.1.10:48291/v1/media/mediastore-1-60")!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!
+            ),
+            (
+                data: expectedData,
+                response: HTTPURLResponse(
+                    url: URL(string: "http://192.168.1.10:48291/v1/media/mediastore-1-60")!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!
+            ),
+        ])
+        let downloader = MediaDownloader(session: session, downloadDirectory: directory)
+
+        let results = await downloader.downloadMedia(
+            assets: [asset],
+            host: "192.168.1.10",
+            port: 48291,
+            stateStore: store
+        )
+
+        XCTAssertEqual(results.map(\.assetId), ["mediastore-1-60"])
+        XCTAssertEqual(store.record(for: "mediastore-1-60")?.status, .downloaded)
+        XCTAssertEqual(session.requests.count, 2)
+        XCTAssertEqual(try Data(contentsOf: XCTUnwrap(store.record(for: "mediastore-1-60")?.localFileURL)), expectedData)
+    }
+
     func testTransientNetworkErrorRetriesOnceAndCanRecover() async throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)

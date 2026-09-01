@@ -6,6 +6,7 @@ enum MediaDownloaderError: Error, Equatable {
     case nonHTTPResponse
     case unacceptableStatusCode(Int, String?)
     case checksumMismatch
+    case sizeMismatch(expected: Int64, actual: Int64)
     case invalidPartialResponse
     case insufficientStorage
 }
@@ -222,6 +223,9 @@ final class MediaDownloader {
                 throw MediaDownloaderError.checksumMismatch
             }
         }
+        guard Int64(finalData.count) == asset.size else {
+            throw MediaDownloaderError.sizeMismatch(expected: asset.size, actual: Int64(finalData.count))
+        }
 
         try fileManager.createDirectory(at: downloadDirectory, withIntermediateDirectories: true)
         let destination = downloadDirectory.appendingPathComponent(localFileName(for: asset), isDirectory: false)
@@ -281,6 +285,9 @@ final class MediaDownloader {
 
     private static func shouldRetryDownload(_ error: Error) -> Bool {
         if case MediaDownloaderError.checksumMismatch = error {
+            return true
+        }
+        if case MediaDownloaderError.sizeMismatch = error {
             return true
         }
 
@@ -343,6 +350,8 @@ final class MediaDownloader {
                 return "SS-NET-002"
             case .checksumMismatch:
                 return "SS-MEDIA-001"
+            case .sizeMismatch:
+                return "SS-MEDIA-004"
             case .invalidPartialResponse:
                 return "SS-MEDIA-003"
             case .insufficientStorage:
