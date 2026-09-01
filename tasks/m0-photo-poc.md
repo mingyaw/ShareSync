@@ -38,6 +38,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Show Android pending manifest photo count for manual validation.
 - [x] Keep Android screen awake while the M0 server is running.
 - [x] Start an Android foreground data-sync service while the M0 server is running.
+- [x] Restore the Android M0 screen from an in-process running server session after Activity recreation.
 
 ### A1. Project Setup
 
@@ -212,6 +213,21 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-01 Android M0 Activity Recreation Recovery
+
+Completed an Android background-transfer resilience slice:
+
+- Added `AndroidM0ServerSessionRegistry` to hold the active in-process M0 server session.
+- Reconnected MainActivity to the running server, manifest builder, pairing payload, and sync result store after Activity recreation.
+- Stopped treating every Activity destroy as an explicit M0 server stop; finishing the Activity still stops the session.
+- Updated device validation to check Activity recreation during a running transfer.
+
+Verified:
+
+```sh
+./gradlew :app:testDebugUnitTest :app:compileDebugKotlin :app:processDebugMainManifest
+```
 
 ### 2026-09-01 Android M0 Foreground Service Lifecycle
 

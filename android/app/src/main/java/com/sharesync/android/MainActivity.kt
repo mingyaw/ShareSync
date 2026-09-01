@@ -71,13 +71,20 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         deviceIdentityStore = SharedPreferencesDeviceIdentityStore(this)
         restorePersistedSyncResult()
+        restoreRunningServerSession()
         renderContent()
         refreshUi()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        stopServer()
+        if (isFinishing) {
+            stopServer()
+        } else {
+            syncResultPollThread?.interrupt()
+            syncResultPollThread = null
+            updateKeepScreenAwake()
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -325,25 +332,34 @@ class MainActivity : Activity() {
                     router = components.router,
                     mediaStreamProvider = components.mediaStreamProvider,
                 )
-                server = createdServer
-                syncResultStore = components.syncResultStore
-                manifestBuilder = components.manifestBuilder
+                val pairingPayloadJson = createPairingPayloadJson(
+                    identity = identity,
+                    port = createdServer.port,
+                    pairingToken = pairingToken,
+                )
+                val session = AndroidM0ServerSession(
+                    server = createdServer,
+                    syncResultStore = components.syncResultStore,
+                    manifestBuilder = components.manifestBuilder,
+                    pairingPayloadJson = pairingPayloadJson,
+                )
+                AndroidM0ServerSessionRegistry.set(session)
+                server = session.server
+                syncResultStore = session.syncResultStore
+                manifestBuilder = session.manifestBuilder
                 currentSyncResult = SuspendBridge.runBlocking { components.syncResultStore.latest() }
                 currentManifestPhotoCount = SuspendBridge.runBlocking {
                     components.manifestBuilder.buildM0Manifest().media.size
                 }
                 isServerStarting = false
                 isServerRunning = true
-                currentPairingPayloadJson = createPairingPayloadJson(
-                    identity = identity,
-                    port = createdServer.port,
-                    pairingToken = pairingToken,
-                )
+                currentPairingPayloadJson = session.pairingPayloadJson
                 AndroidM0ForegroundService.start(applicationContext)
                 runOnUiThread { refreshUi() }
                 pollSyncResultUpdates(components.syncResultStore)
             } catch (error: Throwable) {
                 server = null
+                AndroidM0ServerSessionRegistry.clear()
                 AndroidM0ForegroundService.stop(applicationContext)
                 restorePersistedSyncResult()
                 manifestBuilder = null
@@ -398,8 +414,10 @@ class MainActivity : Activity() {
     }
 
     private fun stopServer() {
-        val currentServer = server ?: return
+        val currentSession = AndroidM0ServerSessionRegistry.current
+        val currentServer = server ?: currentSession?.server ?: return
         server = null
+        AndroidM0ServerSessionRegistry.clear(currentSession)
         manifestBuilder = null
         currentManifestPhotoCount = null
         isServerStarting = false
@@ -493,6 +511,21 @@ class MainActivity : Activity() {
         )
         syncResultStore = store
         currentSyncResult = SuspendBridge.runBlocking { store.latest() }
+    }
+
+    private fun restoreRunningServerSession() {
+        val session = AndroidM0ServerSessionRegistry.current ?: return
+        server = session.server
+        syncResultStore = session.syncResultStore
+        manifestBuilder = session.manifestBuilder
+        currentPairingPayloadJson = session.pairingPayloadJson
+        isServerStarting = false
+        isServerRunning = true
+        currentSyncResult = SuspendBridge.runBlocking { session.syncResultStore.latest() }
+        currentManifestPhotoCount = SuspendBridge.runBlocking {
+            session.manifestBuilder.buildM0Manifest().media.size
+        }
+        pollSyncResultUpdates(session.syncResultStore)
     }
 
     private fun currentEndpointUrl(): String? {

@@ -47,6 +47,7 @@ The current codebase contains:
 - Android latest sync result persistence and M0 screen summary.
 - Android restores the latest persisted sync result on app launch for validation.
 - Android starts a foreground data-sync service while the M0 local server is running.
+- Android can reconnect the M0 screen to an already running in-process server session after Activity recreation.
 - Android M0 screen shows a concise phase status for permission, server start, pairing, retry, and completion validation.
 - Android M0 screen shows pending manifest photo count, manifest transfer status, and latest failed sync result code.
 - Android can copy the latest sync result JSON for real-device validation records.
