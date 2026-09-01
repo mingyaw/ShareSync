@@ -88,6 +88,8 @@ Put Android ShareSync in the background, tap the ShareSync photo transfer notifi
 
 Expected result: Android continues updating the sync result summary even when the transfer takes longer than one minute, Android keeps the M0 data-sync foreground service active until `Stop M0 server` is tapped, and the foreground notification can return the tester to the control screen.
 
+If Android or the system kills the ShareSync process during M0, restart ShareSync and start a fresh M0 server session before retrying the transfer. The foreground service is intentionally non-sticky for M0 so it does not show a stale transfer notification after the HTTP server is gone.
+
 After the next manifest refresh, confirm Android `Phase` is `Transfer Complete` and `Manifest photos` reaches `0 pending, Complete` when all exposed photos were reported as synced or skipped.
 
 ## Repeat Sync

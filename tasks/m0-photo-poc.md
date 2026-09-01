@@ -213,6 +213,20 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 
 ## Progress Log
 
+### 2026-09-01 Android M0 Foreground Service Lifecycle
+
+Completed an Android foreground-service reliability slice:
+
+- Made the M0 foreground service non-sticky so Android does not recreate a stale transfer notification without the HTTP server.
+- Switched foreground-service shutdown to direct `stopService`.
+- Documented the M0 retry expectation if Android or the system kills the ShareSync process.
+
+Verified:
+
+```sh
+./scripts/check-m0.sh
+```
+
 ### 2026-09-01 Android M0 Notification Return Path
 
 Completed an Android foreground-transfer usability slice:

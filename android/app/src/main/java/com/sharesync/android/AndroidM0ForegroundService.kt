@@ -17,18 +17,16 @@ class AndroidM0ForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when (intent?.action) {
-            ACTION_STOP -> {
-                stopForeground(STOP_FOREGROUND_REMOVE)
-                stopSelf()
-                return START_NOT_STICKY
-            }
-            else -> startForeground(NOTIFICATION_ID, buildNotification())
-        }
-        return START_STICKY
+        startForeground(NOTIFICATION_ID, buildNotification())
+        return START_NOT_STICKY
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onDestroy() {
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        super.onDestroy()
+    }
 
     private fun ensureNotificationChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
@@ -81,7 +79,6 @@ class AndroidM0ForegroundService : Service() {
         private const val NOTIFICATION_ID = 48291
         private const val OPEN_MAIN_ACTIVITY_REQUEST_CODE = 48292
         private const val ACTION_START = "com.sharesync.android.action.START_M0_FOREGROUND"
-        private const val ACTION_STOP = "com.sharesync.android.action.STOP_M0_FOREGROUND"
 
         private fun pendingIntentImmutableFlag(): Int {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -102,9 +99,7 @@ class AndroidM0ForegroundService : Service() {
         }
 
         fun stop(context: Context) {
-            val intent = Intent(context, AndroidM0ForegroundService::class.java)
-                .setAction(ACTION_STOP)
-            context.startService(intent)
+            context.stopService(Intent(context, AndroidM0ForegroundService::class.java))
         }
     }
 }
