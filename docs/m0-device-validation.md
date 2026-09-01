@@ -36,9 +36,10 @@ This checklist validates the current main path: Android exposes recent photos ov
 21. Open iOS Photos.
 22. Confirm the item appears in the `ShareSync Backup` album.
 23. Confirm the iOS ShareSync screen shows updated `Synced`, `Skipped`, and `Result Failed` counts.
-24. Tap `Copy Sync Result` on iOS and save the JSON with the validation run notes if needed.
-25. Confirm Android shows the latest sync result summary.
-26. Tap `Copy sync result` on Android and compare the JSON with the iOS copy if needed.
+24. Confirm iOS shows `Result Return` as `Posted HTTP 202`.
+25. Tap `Copy Sync Result` on iOS and save the JSON with the validation run notes if needed.
+26. Confirm Android shows `Last request` as `sync-result` with HTTP `202`, and shows the latest sync result summary.
+27. Tap `Copy sync result` on Android and compare the JSON with the iOS copy if needed.
 
 Expected result: one Android photo is visible in iOS Photos, Android keeps showing the latest iOS sync result while the M0 server is running, and iCloud Photos can back it up through the normal iOS Photos pipeline.
 

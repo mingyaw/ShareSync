@@ -26,7 +26,7 @@ final class SyncResultClient {
         to host: String,
         port: Int,
         pairingToken: String? = nil
-    ) async throws {
+    ) async throws -> Int {
         var components = URLComponents()
         components.scheme = "http"
         components.host = host
@@ -53,5 +53,7 @@ final class SyncResultClient {
         guard (200...299).contains(httpResponse.statusCode) else {
             throw SyncResultClientError.unacceptableStatusCode(httpResponse.statusCode)
         }
+
+        return httpResponse.statusCode
     }
 }

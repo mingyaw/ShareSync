@@ -43,6 +43,11 @@ final class ManifestFetchViewModel: ObservableObject {
         let failedCount: Int
     }
 
+    struct SyncResultReturnSummary: Equatable {
+        let status: String
+        let httpStatusCode: Int?
+    }
+
     struct DownloadProgressSummary: Equatable {
         let totalCount: Int
         let processedCount: Int
@@ -62,6 +67,7 @@ final class ManifestFetchViewModel: ObservableObject {
     @Published private(set) var downloadState: DownloadState = .idle
     @Published private(set) var summary: ManifestSummary?
     @Published private(set) var syncResultSummary: SyncResultSummary?
+    @Published private(set) var syncResultReturnSummary: SyncResultReturnSummary?
     @Published private(set) var latestSyncResultJSON: String?
     @Published private(set) var downloadProgressSummary: DownloadProgressSummary?
     @Published private(set) var cancellationMessage: String?
@@ -168,11 +174,13 @@ final class ManifestFetchViewModel: ObservableObject {
                 latestManifest = manifest
                 await reconcileMissingPhotoAssets(in: manifest)
                 summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
-                syncResultSummary = await publishSyncResultSummary(
+                let publishSummary = await publishSyncResultSummary(
                     for: manifest,
                     host: trimmedHost,
                     port: portNumber
                 )
+                syncResultSummary = publishSummary.resultSummary
+                syncResultReturnSummary = publishSummary.returnSummary
                 downloadProgressSummary = nil
                 downloadState = .idle
                 state = .loaded
@@ -181,6 +189,7 @@ final class ManifestFetchViewModel: ObservableObject {
                 localPeerHealth = nil
                 summary = nil
                 syncResultSummary = nil
+                syncResultReturnSummary = nil
                 downloadProgressSummary = nil
                 state = .failed(Self.message(for: error))
             }
@@ -262,6 +271,7 @@ final class ManifestFetchViewModel: ObservableObject {
         latestManifest = nil
         summary = nil
         syncResultSummary = nil
+        syncResultReturnSummary = nil
         latestSyncResultJSON = nil
         downloadProgressSummary = nil
         cancellationMessage = nil
@@ -284,6 +294,7 @@ final class ManifestFetchViewModel: ObservableObject {
         latestManifest = nil
         summary = nil
         downloadProgressSummary = nil
+        syncResultReturnSummary = nil
         cancellationMessage = nil
         downloadState = .idle
         state = .idle
@@ -308,6 +319,7 @@ final class ManifestFetchViewModel: ObservableObject {
 
         syncResultSummary = SyncResultSummary(result: result)
         latestSyncResultJSON = Self.jsonString(for: result)
+        syncResultReturnSummary = SyncResultReturnSummary(status: "Not posted", httpStatusCode: nil)
     }
 
     private func cancelDownload(reason: String) {
@@ -384,11 +396,13 @@ final class ManifestFetchViewModel: ObservableObject {
                     }
                 )
             summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
-            syncResultSummary = await publishSyncResultSummary(
+            let postDownloadPublishSummary = await publishSyncResultSummary(
                 for: manifest,
                 host: trimmedHost,
                 port: portNumber
             )
+            syncResultSummary = postDownloadPublishSummary.resultSummary
+            syncResultReturnSummary = postDownloadPublishSummary.returnSummary
 
             if Task.isCancelled {
                 downloadState = .cancelled
@@ -411,11 +425,13 @@ final class ManifestFetchViewModel: ObservableObject {
             )
 
             guard !importRequests.isEmpty else {
-                syncResultSummary = await publishSyncResultSummary(
+                let noImportPublishSummary = await publishSyncResultSummary(
                     for: manifest,
                     host: trimmedHost,
                     port: portNumber
                 )
+                syncResultSummary = noImportPublishSummary.resultSummary
+                syncResultReturnSummary = noImportPublishSummary.returnSummary
                 downloadProgressSummary = nil
                 downloadState = .failed("No photos downloaded.")
                 activeDownloadTask = nil
@@ -427,11 +443,13 @@ final class ManifestFetchViewModel: ObservableObject {
 
             if Task.isCancelled {
                 summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
-                syncResultSummary = await publishSyncResultSummary(
+                let cancelledPublishSummary = await publishSyncResultSummary(
                     for: manifest,
                     host: trimmedHost,
                     port: portNumber
                 )
+                syncResultSummary = cancelledPublishSummary.resultSummary
+                syncResultReturnSummary = cancelledPublishSummary.returnSummary
                 downloadState = .cancelled
                 activeDownloadTask = nil
                 return
@@ -455,11 +473,13 @@ final class ManifestFetchViewModel: ObservableObject {
             }
 
             summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
-            syncResultSummary = await publishSyncResultSummary(
+            let completedPublishSummary = await publishSyncResultSummary(
                 for: manifest,
                 host: trimmedHost,
                 port: portNumber
             )
+            syncResultSummary = completedPublishSummary.resultSummary
+            syncResultReturnSummary = completedPublishSummary.returnSummary
             downloadProgressSummary = nil
             downloadState = importResults.contains { $0.status == .synced }
                 ? .completed
@@ -598,7 +618,11 @@ final class ManifestFetchViewModel: ObservableObject {
         }
     }
 
-    private func publishSyncResultSummary(for manifest: SyncManifest, host: String, port: Int) async -> SyncResultSummary {
+    private func publishSyncResultSummary(
+        for manifest: SyncManifest,
+        host: String,
+        port: Int
+    ) async -> (resultSummary: SyncResultSummary, returnSummary: SyncResultReturnSummary) {
         let result = SyncResultBuilder().buildMediaResult(
             syncBatchId: "m0-\(manifest.cursor)",
             targetDeviceId: "ios-local",
@@ -606,13 +630,35 @@ final class ManifestFetchViewModel: ObservableObject {
         )
         try? syncResultStore.save(result)
         latestSyncResultJSON = Self.jsonString(for: result)
-        try? await syncResultClient.postSyncResult(
-            result,
-            to: host,
-            port: port,
-            pairingToken: pairingToken
-        )
-        return SyncResultSummary(result: result)
+        do {
+            let statusCode = try await syncResultClient.postSyncResult(
+                result,
+                to: host,
+                port: port,
+                pairingToken: pairingToken
+            )
+            return (
+                SyncResultSummary(result: result),
+                SyncResultReturnSummary(status: "Posted", httpStatusCode: statusCode)
+            )
+        } catch {
+            return (
+                SyncResultSummary(result: result),
+                SyncResultReturnSummary(status: "Failed", httpStatusCode: Self.httpStatusCode(from: error))
+            )
+        }
+    }
+
+    private static func httpStatusCode(from error: Error) -> Int? {
+        guard let clientError = error as? SyncResultClientError else {
+            return nil
+        }
+
+        if case .unacceptableStatusCode(let statusCode) = clientError {
+            return statusCode
+        }
+
+        return nil
     }
 
     private func records(for manifest: SyncManifest) -> [MediaDownloadRecord] {

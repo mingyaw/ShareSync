@@ -278,6 +278,9 @@ struct ContentView: View {
                 StatusRow(title: "Skipped", value: "\(syncResultSummary.skippedCount)")
                 StatusRow(title: "Result Failed", value: "\(syncResultSummary.failedCount)")
             }
+            if let returnSummary = viewModel.syncResultReturnSummary {
+                StatusRow(title: "Result Return", value: syncResultReturnText(returnSummary))
+            }
 
             if viewModel.latestSyncResultJSON != nil, let syncResultCopyMessage {
                 Text(syncResultCopyMessage)
@@ -448,6 +451,14 @@ struct ContentView: View {
             return code
         }
         return "\(code) - \(fileName)"
+    }
+
+    private func syncResultReturnText(_ summary: ManifestFetchViewModel.SyncResultReturnSummary) -> String {
+        if let httpStatusCode = summary.httpStatusCode {
+            return "\(summary.status) HTTP \(httpStatusCode)"
+        }
+
+        return summary.status
     }
 
     private func androidPeerText(_ health: LocalPeerHealth) -> String {

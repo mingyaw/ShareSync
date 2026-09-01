@@ -43,7 +43,7 @@ The current codebase contains:
 - iOS pauses active foreground transfers when the app leaves the foreground, keeping completed items retry-safe.
 - iOS local download/import state, duplicate prevention, restart resume, and deleted-photo reconciliation.
 - iOS latest sync result JSON persistence, restore, and copy action for M0 validation.
-- iOS to Android sync result return path over the local M0 server.
+- iOS to Android sync result return path over the local M0 server, with visible posted/failed return status.
 - Android latest sync result persistence and M0 screen summary.
 - Android restores the latest persisted sync result on app launch for validation.
 - Android starts a foreground data-sync service while the M0 local server is running.

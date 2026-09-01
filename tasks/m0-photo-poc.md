@@ -169,6 +169,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Restore latest shared `SyncResult` JSON on iOS app launch.
 - [x] Copy latest shared `SyncResult` JSON from the iOS receive screen.
 - [x] POST latest `SyncResult` back to Android M0 server.
+- [x] Show iOS sync result return status after posting to Android.
 - [x] Add iOS validation control to clear local M0 download/import/result state.
 
 ## Cross-Platform Tasks
@@ -214,6 +215,20 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-01 iOS Sync Result Return Status
+
+Completed an iOS-to-Android result-return validation slice:
+
+- Changed `SyncResultClient.postSyncResult` to return the accepted HTTP status code.
+- Added iOS `Result Return` status for posted, failed, or restored local-only result state.
+- Updated baseline device validation to expect iOS `Posted HTTP 202` and Android `sync-result` request activity.
+
+Verified:
+
+```sh
+swift test
+```
 
 ### 2026-09-01 Android M0 Request Activity Age
 
