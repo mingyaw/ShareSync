@@ -192,7 +192,7 @@ Android:
 
 - Open `android/` in Android Studio.
 - Run the `app` configuration on a physical Android phone.
-- Grant photos permission.
+- Grant M0 permissions, including photos and Android notification permission when prompted.
 - Tap `Start M0 server`.
 - Confirm the screen shows a manual endpoint and QR code.
 - Use `Copy endpoint` if you want to test the health URL from iPhone Safari.

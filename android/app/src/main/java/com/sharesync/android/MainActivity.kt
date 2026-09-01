@@ -40,6 +40,7 @@ class MainActivity : Activity() {
     private lateinit var phaseText: TextView
     private lateinit var endpointText: TextView
     private lateinit var permissionText: TextView
+    private lateinit var notificationPermissionText: TextView
     private lateinit var screenLockText: TextView
     private lateinit var manifestSummaryText: TextView
     private lateinit var syncResultText: TextView
@@ -122,6 +123,7 @@ class MainActivity : Activity() {
         phaseText = bodyText(topPadding = 12 * density)
         endpointText = bodyText(topPadding = 12 * density)
         permissionText = bodyText(topPadding = 12 * density)
+        notificationPermissionText = bodyText(topPadding = 12 * density)
         screenLockText = bodyText(topPadding = 12 * density)
         manifestSummaryText = bodyText(topPadding = 12 * density)
         syncResultText = bodyText(topPadding = 12 * density)
@@ -140,8 +142,8 @@ class MainActivity : Activity() {
         }
 
         val grantButton = Button(this).apply {
-            text = getString(R.string.m0_grant_permission)
-            setOnClickListener { requestMediaPermission() }
+            text = getString(R.string.m0_grant_permissions)
+            setOnClickListener { requestM0Permissions() }
         }
 
         startButton = Button(this).apply {
@@ -179,6 +181,7 @@ class MainActivity : Activity() {
         root.addView(phaseText)
         root.addView(endpointText)
         root.addView(permissionText)
+        root.addView(notificationPermissionText)
         root.addView(screenLockText)
         root.addView(manifestSummaryText)
         root.addView(syncResultText)
@@ -222,6 +225,11 @@ class MainActivity : Activity() {
         } else {
             getString(R.string.m0_permission_missing)
         }
+        notificationPermissionText.text = if (hasNotificationPermission()) {
+            getString(R.string.m0_notification_permission_granted)
+        } else {
+            getString(R.string.m0_notification_permission_missing)
+        }
         screenLockText.text = if (isServerRunning) {
             getString(R.string.m0_screen_lock_paused)
         } else {
@@ -245,8 +253,8 @@ class MainActivity : Activity() {
         updateKeepScreenAwake()
     }
 
-    private fun requestMediaPermission() {
-        val missing = requiredMediaPermissions()
+    private fun requestM0Permissions() {
+        val missing = requiredM0Permissions()
             .filter { permission -> checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED }
             .toTypedArray()
 
@@ -272,9 +280,27 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun hasNotificationPermission(): Boolean {
+        return requiredNotificationPermissions().all { permission ->
+            checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    private fun requiredNotificationPermissions(): List<String> {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            listOf(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            emptyList()
+        }
+    }
+
+    private fun requiredM0Permissions(): List<String> {
+        return requiredMediaPermissions() + requiredNotificationPermissions()
+    }
+
     private fun startServer() {
         if (!hasMediaPermission()) {
-            requestMediaPermission()
+            requestM0Permissions()
             return
         }
 

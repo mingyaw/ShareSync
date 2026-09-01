@@ -21,6 +21,8 @@
     <string name="m0_endpoint_copied">Endpoint copied. Open it from iPhone Safari to confirm local connectivity.</string>
     <string name="m0_permission_granted">Photos permission: granted.</string>
     <string name="m0_permission_missing">Photos permission: required for /v1/manifest and /v1/media.</string>
+    <string name="m0_notification_permission_granted">Notifications permission: granted.</string>
+    <string name="m0_notification_permission_missing">Notifications permission: recommended for Android foreground transfer status.</string>
     <string name="m0_screen_lock_normal">Screen lock: normal.</string>
     <string name="m0_screen_lock_paused">Screen lock: paused while M0 server is running.</string>
     <string name="m0_manifest_unavailable">Manifest photos: start the server to scan.</string>
@@ -35,7 +37,7 @@
     <string name="m0_sync_state_cleared">Local M0 sync result cleared. Fetch from iPhone again to rebuild state.</string>
     <string name="m0_pairing_payload_unavailable">Pairing payload: start the server to generate a short-lived payload.</string>
     <string name="m0_pairing_payload_copied">Pairing payload copied. Paste it into the iPhone ShareSync receive screen.</string>
-    <string name="m0_grant_permission">Grant photos permission</string>
+    <string name="m0_grant_permissions">Grant M0 permissions</string>
     <string name="m0_start_server">Start M0 server</string>
     <string name="m0_stop_server">Stop M0 server</string>
     <string name="m0_copy_endpoint">Copy endpoint</string>

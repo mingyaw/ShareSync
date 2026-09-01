@@ -31,6 +31,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Connect media stream provider to real HTTP response bodies.
 - [x] Add app-level M0 sync component factory.
 - [x] Add Android UI controls to request photos permission and start/stop server.
+- [x] Add Android notification permission request path for foreground transfer status.
 - [x] Show Android local IP/port for manual testing.
 - [x] Add Android endpoint copy action for same-network validation.
 - [x] Show Android pending manifest photo count for manual validation.
@@ -210,6 +211,20 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-01 Android M0 Notification Permission
+
+Completed an Android foreground-transfer validation slice:
+
+- Added Android notification permission status to the M0 screen.
+- Updated the M0 permissions action to request photos and Android 13+ notification permission together.
+- Updated validation notes so foreground-service notification checks are explicit during device runs.
+
+Verified:
+
+```sh
+./gradlew :app:testDebugUnitTest :app:compileDebugKotlin :app:processDebugMainManifest
+```
 
 ### 2026-09-01 Android M0 Foreground Service
 

@@ -8,12 +8,13 @@ This checklist validates the current main path: Android exposes recent photos ov
 - iPhone with ShareSync debug build installed.
 - Both devices on the same Wi-Fi network or Android hotspot.
 - Android photos permission granted.
+- Android notification permission granted on Android 13+ for foreground transfer status validation.
 - iOS camera, local network, and Photos permissions granted when prompted.
 
 ## Baseline Success Path
 
 1. Open ShareSync on Android.
-2. Tap `Grant photos permission` if permission is missing.
+2. Tap `Grant M0 permissions` if photos or notifications permission is missing.
 3. Tap `Start M0 server`.
 4. Confirm Android shows `Phase` as `Ready To Pair`.
 5. Confirm Android shows a manual endpoint and a QR code.
