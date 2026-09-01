@@ -525,35 +525,35 @@ class MainActivity : Activity() {
         )
     }
 
+    private fun runtimeState(): AndroidM0RuntimeState {
+        return AndroidM0RuntimeState(
+            hasMediaPermission = hasMediaPermission(),
+            isServerStarting = isServerStarting,
+            isServerRunning = isServerRunning,
+            pendingPhotoCount = currentManifestPhotoCount,
+            latestSyncResult = currentSyncResult,
+        )
+    }
+
     private fun phaseStatus(): String {
-        if (!hasMediaPermission()) {
-            return getString(R.string.m0_phase_permission_required)
-        }
-
-        if (isServerStarting) {
-            return getString(R.string.m0_phase_server_starting)
-        }
-
-        if (!isServerRunning) {
-            return getString(R.string.m0_phase_ready_to_start)
-        }
-
-        val pendingPhotoCount = currentManifestPhotoCount
-        val hasFailedResult = currentSyncResult?.results?.any { it.status == SyncItemStatus.failed } == true
-        return when {
-            pendingPhotoCount == 0 -> getString(R.string.m0_phase_transfer_complete)
-            hasFailedResult -> getString(R.string.m0_phase_retry_required)
-            else -> getString(R.string.m0_phase_ready_to_pair)
+        return when (runtimeState().phase()) {
+            AndroidM0Phase.PERMISSION_REQUIRED -> getString(R.string.m0_phase_permission_required)
+            AndroidM0Phase.READY_TO_START -> getString(R.string.m0_phase_ready_to_start)
+            AndroidM0Phase.SERVER_STARTING -> getString(R.string.m0_phase_server_starting)
+            AndroidM0Phase.READY_TO_PAIR -> getString(R.string.m0_phase_ready_to_pair)
+            AndroidM0Phase.RETRY_REQUIRED -> getString(R.string.m0_phase_retry_required)
+            AndroidM0Phase.TRANSFER_COMPLETE -> getString(R.string.m0_phase_transfer_complete)
         }
     }
 
     private fun manifestTransferStatus(pendingPhotoCount: Int): String {
-        val result = currentSyncResult
-        val hasFailedResult = result?.results?.any { it.status == SyncItemStatus.failed } == true
-        return when {
-            pendingPhotoCount == 0 -> getString(R.string.m0_manifest_status_complete)
-            hasFailedResult -> getString(R.string.m0_manifest_status_needs_retry)
-            else -> getString(R.string.m0_manifest_status_ready)
+        val state = runtimeState().copy(pendingPhotoCount = pendingPhotoCount)
+        return when (state.manifestStatus()) {
+            AndroidM0ManifestStatus.COMPLETE -> getString(R.string.m0_manifest_status_complete)
+            AndroidM0ManifestStatus.NEEDS_RETRY -> getString(R.string.m0_manifest_status_needs_retry)
+            AndroidM0ManifestStatus.READY,
+            null,
+            -> getString(R.string.m0_manifest_status_ready)
         }
     }
 

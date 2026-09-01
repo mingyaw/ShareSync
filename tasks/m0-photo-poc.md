@@ -81,6 +81,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Exclude latest synced/skipped media results from Android manifest.
 - [x] Merge Android sync results across multiple M0 batches.
 - [x] Add Android validation control to clear persisted M0 sync result state.
+- [x] Extract Android M0 runtime phase and manifest status rules into a tested model.
 - [x] Add range request support.
 - [x] Return `416 Range Not Satisfiable` for invalid Android media ranges.
 - [x] Add basic error responses.
@@ -208,6 +209,20 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-01 Android M0 Runtime State Model
+
+Completed an Android M0 service-readiness slice:
+
+- Added `AndroidM0RuntimeState` for phase and manifest transfer status rules.
+- Kept MainActivity responsible for UI text while moving state decisions into testable Kotlin.
+- Added Android unit coverage for permission, server starting, ready, retry, and transfer-complete states.
+
+Verified:
+
+```sh
+./gradlew :app:testDebugUnitTest :app:compileDebugKotlin
+```
 
 ### 2026-08-26 iOS Clear Pairing Control
 
