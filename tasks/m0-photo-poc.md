@@ -113,6 +113,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Implement QR scanner UI.
 - [x] Add iOS clear-pairing control for stale M0 endpoint/token recovery.
 - [x] Add iOS copy action for latest generated sync result JSON.
+- [x] Restrict iOS M0 transfer planning and receive summaries to photos only.
 
 ### I1. Project Setup
 
@@ -223,6 +224,23 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-01 iOS M0 Photo-Only Transfer Planner
+
+Completed an iOS photo-MVP scope enforcement slice:
+
+- Added `M0PhotoTransferPlanner` to select transfer candidates from photo assets only.
+- Updated iOS receive flow to use the planner for next-item, small-batch, and remaining transfers.
+- Updated iOS receive summaries so counts, bytes, failures, partials, and remaining totals are based on photo assets only.
+- Added Swift coverage for photo-only filtering, retryable statuses, completed-photo exclusion, and limits.
+- Added the planner to the Xcode app target.
+
+Verified:
+
+```sh
+swift test
+./scripts/check-m0.sh
+```
 
 ### 2026-09-01 iOS M0 Import Request Size Validation
 

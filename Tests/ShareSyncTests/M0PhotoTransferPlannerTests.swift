@@ -1,0 +1,113 @@
+import Foundation
+import XCTest
+@testable import ShareSync
+
+final class M0PhotoTransferPlannerTests: XCTestCase {
+    func testNextTransferCandidatesIncludePhotosOnly() {
+        let manifest = makeManifest(
+            media: [
+                makeAsset(assetId: "photo-001", mediaType: .photo),
+                makeAsset(assetId: "video-001", mediaType: .video),
+                makeAsset(assetId: "photo-002", mediaType: .photo),
+            ]
+        )
+        let store = InMemoryMediaDownloadStateStore()
+
+        let candidates = M0PhotoTransferPlanner().nextTransferCandidates(
+            in: manifest,
+            stateStore: store,
+            limit: 10
+        )
+
+        XCTAssertEqual(candidates.map(\.assetId), ["photo-001", "photo-002"])
+    }
+
+    func testNextTransferCandidatesSkipCompletedPhotosAndKeepRetryablePhotos() {
+        let importedPhoto = makeAsset(assetId: "photo-imported", mediaType: .photo)
+        let skippedPhoto = makeAsset(assetId: "photo-skipped", mediaType: .photo)
+        let failedPhoto = makeAsset(assetId: "photo-failed", mediaType: .photo)
+        let missingPhoto = makeAsset(assetId: "photo-missing", mediaType: .photo)
+        let queuedPhoto = makeAsset(assetId: "photo-queued", mediaType: .photo)
+        let manifest = makeManifest(
+            media: [
+                importedPhoto,
+                skippedPhoto,
+                failedPhoto,
+                missingPhoto,
+                queuedPhoto,
+                makeAsset(assetId: "video-001", mediaType: .video),
+            ]
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        store.upsertQueued(asset: importedPhoto, now: Date(timeIntervalSince1970: 1))
+        store.markImported(
+            sourceAssetId: importedPhoto.assetId,
+            photoLocalIdentifier: "photo-local-imported",
+            now: Date(timeIntervalSince1970: 2)
+        )
+        store.upsertQueued(asset: skippedPhoto, now: Date(timeIntervalSince1970: 3))
+        store.markSkipped(sourceAssetId: skippedPhoto.assetId, now: Date(timeIntervalSince1970: 4))
+        store.upsertQueued(asset: failedPhoto, now: Date(timeIntervalSince1970: 5))
+        store.markFailed(sourceAssetId: failedPhoto.assetId, errorCode: "SS-NET-002", now: Date(timeIntervalSince1970: 6))
+        store.upsertQueued(asset: missingPhoto, now: Date(timeIntervalSince1970: 7))
+        store.markMissing(sourceAssetId: missingPhoto.assetId, now: Date(timeIntervalSince1970: 8))
+        store.upsertQueued(asset: queuedPhoto, now: Date(timeIntervalSince1970: 9))
+
+        let candidates = M0PhotoTransferPlanner().nextTransferCandidates(
+            in: manifest,
+            stateStore: store,
+            limit: 10
+        )
+
+        XCTAssertEqual(candidates.map(\.assetId), ["photo-failed", "photo-missing", "photo-queued"])
+    }
+
+    func testNextTransferCandidatesHonorsLimit() {
+        let manifest = makeManifest(
+            media: [
+                makeAsset(assetId: "photo-001", mediaType: .photo),
+                makeAsset(assetId: "photo-002", mediaType: .photo),
+                makeAsset(assetId: "photo-003", mediaType: .photo),
+            ]
+        )
+
+        let candidates = M0PhotoTransferPlanner().nextTransferCandidates(
+            in: manifest,
+            stateStore: InMemoryMediaDownloadStateStore(),
+            limit: 2
+        )
+
+        XCTAssertEqual(candidates.map(\.assetId), ["photo-001", "photo-002"])
+    }
+
+    private func makeManifest(media: [MediaAsset]) -> SyncManifest {
+        SyncManifest(
+            version: 1,
+            sourceDeviceId: "android-device-001",
+            generatedAt: Date(timeIntervalSince1970: 1),
+            cursor: "cursor-001",
+            media: media,
+            contacts: [],
+            files: []
+        )
+    }
+
+    private func makeAsset(assetId: String, mediaType: MediaType) -> MediaAsset {
+        MediaAsset(
+            assetId: assetId,
+            sourceDeviceId: "android-device-001",
+            mediaType: mediaType,
+            fileName: "\(assetId).\(mediaType == .photo ? "jpg" : "mp4")",
+            mimeType: mediaType == .photo ? "image/jpeg" : "video/mp4",
+            size: 1024,
+            sha256: nil,
+            createdAt: nil,
+            modifiedAt: nil,
+            takenAt: nil,
+            width: nil,
+            height: nil,
+            durationMs: nil,
+            relativePath: "DCIM/Camera"
+        )
+    }
+}

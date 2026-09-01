@@ -87,6 +87,7 @@ final class ManifestFetchViewModel: ObservableObject {
     private let syncResultClient: SyncResultClient
     private let pairedDeviceSessionStore: PairedDeviceSessionStore
     private let pairingPayloadParser: PairingPayloadParser
+    private let photoTransferPlanner = M0PhotoTransferPlanner()
     private var latestManifest: SyncManifest?
     private var activeDownloadTask: Task<Void, Never>?
 
@@ -558,21 +559,11 @@ final class ManifestFetchViewModel: ObservableObject {
     }
 
     private func nextTransferCandidates(in manifest: SyncManifest, limit: Int) -> [MediaAsset] {
-        guard limit > 0 else {
-            return []
-        }
-
-        return Array(manifest.media.lazy.filter { asset in
-            guard let record = self.downloadStateStore.record(for: asset.assetId) else {
-                return true
-            }
-
-            return record.status == .queued
-                || record.status == .downloading
-                || record.status == .downloaded
-                || record.status == .missing
-                || record.status == .failed
-        }.prefix(limit))
+        photoTransferPlanner.nextTransferCandidates(
+            in: manifest,
+            stateStore: downloadStateStore,
+            limit: limit
+        )
     }
 
     private func downloadedImportRequest(for asset: MediaAsset) -> PhotoImportRequest? {
@@ -692,34 +683,35 @@ private extension ManifestFetchViewModel.SyncResultSummary {
 
 private extension ManifestFetchViewModel.ManifestSummary {
     init(manifest: SyncManifest, stateStore: MediaDownloadStateStore) {
+        let photoAssets = M0PhotoTransferPlanner().photoAssets(in: manifest)
         sourceDeviceId = manifest.sourceDeviceId
         cursor = manifest.cursor
-        photoCount = manifest.media.filter { $0.mediaType == .photo }.count
-        totalBytes = manifest.media.reduce(0) { $0 + $1.size }
-        validationAssetName = manifest.media.first { asset in
+        photoCount = photoAssets.count
+        totalBytes = photoAssets.reduce(0) { $0 + $1.size }
+        validationAssetName = photoAssets.first { asset in
             guard let record = stateStore.record(for: asset.assetId) else {
                 return true
             }
 
             return record.status != .imported && record.status != .skipped
         }?.fileName
-        downloadedCount = manifest.media.filter { asset in
+        downloadedCount = photoAssets.filter { asset in
             stateStore.record(for: asset.assetId)?.status == .downloaded
         }.count
-        importedCount = manifest.media.filter { asset in
+        importedCount = photoAssets.filter { asset in
             stateStore.record(for: asset.assetId)?.status == .imported
         }.count
-        missingCount = manifest.media.filter { asset in
+        missingCount = photoAssets.filter { asset in
             stateStore.record(for: asset.assetId)?.status == .missing
         }.count
-        failedCount = manifest.media.filter { asset in
+        failedCount = photoAssets.filter { asset in
             stateStore.record(for: asset.assetId)?.status == .failed
         }.count
-        let manifestAssetIds = Set(manifest.media.map(\.assetId))
+        let manifestAssetIds = Set(photoAssets.map(\.assetId))
         partialCount = stateStore.resumablePartialRecords()
             .filter { record in manifestAssetIds.contains(record.sourceAssetId) }
             .count
-        let latestFailedRecord = manifest.media
+        let latestFailedRecord = photoAssets
             .compactMap { asset -> (asset: MediaAsset, record: MediaDownloadRecord)? in
                 guard let record = stateStore.record(for: asset.assetId),
                       record.status == .failed else {
@@ -730,7 +722,7 @@ private extension ManifestFetchViewModel.ManifestSummary {
             .max { lhs, rhs in lhs.record.updatedAt < rhs.record.updatedAt }
         lastFailureCode = latestFailedRecord?.record.lastErrorCode
         lastFailureFileName = latestFailedRecord?.asset.fileName
-        remainingCount = manifest.media.filter { asset in
+        remainingCount = photoAssets.filter { asset in
             guard let record = stateStore.record(for: asset.assetId) else {
                 return true
             }

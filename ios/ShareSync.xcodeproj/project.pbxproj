@@ -16,6 +16,7 @@
 		100000000000000000000006 /* ShareSync/ImporterPhotos/PhotoImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000016 /* ShareSync/ImporterPhotos/PhotoImporter.swift */; };
 		100000000000000000000007 /* ShareSync/Security/TrustedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000017 /* ShareSync/Security/TrustedDevice.swift */; };
 		100000000000000000000008 /* ShareSync/Transfer/MediaDownloadState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000018 /* ShareSync/Transfer/MediaDownloadState.swift */; };
+		100000000000000000000024 /* ShareSync/Transfer/M0PhotoTransferPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000023 /* ShareSync/Transfer/M0PhotoTransferPlanner.swift */; };
 		100000000000000000000009 /* ManifestFetchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000019 /* ManifestFetchViewModel.swift */; };
 		10000000000000000000000A /* ShareSync/Transfer/MediaDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000001A /* ShareSync/Transfer/MediaDownloader.swift */; };
 		10000000000000000000000B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000001B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift */; };
@@ -36,6 +37,7 @@
 		100000000000000000000016 /* ShareSync/ImporterPhotos/PhotoImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/ImporterPhotos/PhotoImporter.swift; sourceTree = "<group>"; };
 		100000000000000000000017 /* ShareSync/Security/TrustedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Security/TrustedDevice.swift; sourceTree = "<group>"; };
 		100000000000000000000018 /* ShareSync/Transfer/MediaDownloadState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Transfer/MediaDownloadState.swift; sourceTree = "<group>"; };
+		100000000000000000000023 /* ShareSync/Transfer/M0PhotoTransferPlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Transfer/M0PhotoTransferPlanner.swift; sourceTree = "<group>"; };
 		100000000000000000000019 /* ManifestFetchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManifestFetchViewModel.swift; sourceTree = "<group>"; };
 		10000000000000000000001A /* ShareSync/Transfer/MediaDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Transfer/MediaDownloader.swift; sourceTree = "<group>"; };
 		10000000000000000000001B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift; sourceTree = "<group>"; };
@@ -87,6 +89,7 @@
 				100000000000000000000015 /* ShareSync/Transfer/ManifestClient.swift */,
 				100000000000000000000021 /* ShareSync/Transfer/LocalNetworkURLSessionFactory.swift */,
 				100000000000000000000018 /* ShareSync/Transfer/MediaDownloadState.swift */,
+				100000000000000000000023 /* ShareSync/Transfer/M0PhotoTransferPlanner.swift */,
 				10000000000000000000001A /* ShareSync/Transfer/MediaDownloader.swift */,
 				100000000000000000000016 /* ShareSync/ImporterPhotos/PhotoImporter.swift */,
 				10000000000000000000001B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift */,
@@ -183,6 +186,7 @@
 				100000000000000000000005 /* ShareSync/Transfer/ManifestClient.swift in Sources */,
 				100000000000000000000022 /* ShareSync/Transfer/LocalNetworkURLSessionFactory.swift in Sources */,
 				100000000000000000000008 /* ShareSync/Transfer/MediaDownloadState.swift in Sources */,
+				100000000000000000000024 /* ShareSync/Transfer/M0PhotoTransferPlanner.swift in Sources */,
 				10000000000000000000000A /* ShareSync/Transfer/MediaDownloader.swift in Sources */,
 				100000000000000000000006 /* ShareSync/ImporterPhotos/PhotoImporter.swift in Sources */,
 				10000000000000000000000B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift in Sources */,
