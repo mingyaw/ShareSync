@@ -52,11 +52,11 @@ M1 keeps the main axis focused on photos only:
 
 ### M1.4 Product UI Polish
 
-- [ ] Rename M0-facing labels to product-facing photo sync labels.
-- [ ] Reduce validation-only controls or group them under diagnostics.
-- [ ] Add clearer empty states for no photos, all synced, and retry required.
-- [ ] Add short user-facing explanations for iOS foreground requirements.
-- [ ] Keep manual endpoint and JSON copy tools available for diagnostics.
+- [x] Rename M0-facing labels to product-facing photo sync labels.
+- [x] Reduce validation-only controls or group them under diagnostics.
+- [x] Add clearer empty states for no photos, all synced, and retry required.
+- [x] Add short user-facing explanations for iOS foreground requirements.
+- [x] Keep manual endpoint and JSON copy tools available for diagnostics.
 
 ### M1.5 Release Readiness
 
@@ -94,3 +94,12 @@ Verified:
 ```sh
 ./scripts/check-m0.sh
 ```
+
+### 2026-09-02 Product UI Polish
+
+Made the photo MVP feel closer to an actual product while keeping diagnostic tools available:
+
+- Updated the iOS receiver into a structured ShareSync photo workflow with header, transfer summary, primary actions, connection setup, status, and diagnostics sections.
+- Added clearer iOS states for pairing required, ready to fetch, ready to transfer, active transfer, retry, no photos, and complete.
+- Added explicit foreground guidance on iOS so the user understands why ShareSync should stay open during transfer.
+- Updated Android strings from M0/test-server wording to photo sync product wording.

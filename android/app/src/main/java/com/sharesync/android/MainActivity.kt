@@ -6,11 +6,14 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
-import android.view.WindowManager
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -97,10 +100,11 @@ class MainActivity : Activity() {
 
     private fun renderContent() {
         val density = resources.displayMetrics.density
-        val padding = (24 * density).toInt()
+        val padding = (20 * density).toInt()
 
         val scrollView = ScrollView(this).apply {
             isFillViewport = true
+            setBackgroundColor(Color.rgb(242, 242, 247))
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -121,18 +125,25 @@ class MainActivity : Activity() {
             text = getString(R.string.app_name)
             textSize = 28f
             setTextColor(getColor(android.R.color.black))
+            typeface = Typeface.DEFAULT_BOLD
+        }
+        val subtitle = TextView(this).apply {
+            text = getString(R.string.m0_android_subtitle)
+            textSize = 15f
+            setTextColor(Color.rgb(99, 99, 102))
+            setPadding(0, (4 * density).toInt(), 0, (18 * density).toInt())
         }
 
-        statusText = bodyText(topPadding = 12 * density)
-        phaseText = bodyText(topPadding = 12 * density)
-        endpointText = bodyText(topPadding = 12 * density)
-        permissionText = bodyText(topPadding = 12 * density)
-        notificationPermissionText = bodyText(topPadding = 12 * density)
-        screenLockText = bodyText(topPadding = 12 * density)
-        manifestSummaryText = bodyText(topPadding = 12 * density)
-        requestActivityText = bodyText(topPadding = 12 * density)
-        syncResultText = bodyText(topPadding = 12 * density)
-        pairingPayloadText = bodyText(topPadding = 12 * density)
+        statusText = bodyText()
+        phaseText = bodyText()
+        endpointText = bodyText()
+        permissionText = bodyText()
+        notificationPermissionText = bodyText()
+        screenLockText = bodyText()
+        manifestSummaryText = bodyText()
+        requestActivityText = bodyText()
+        syncResultText = bodyText()
+        pairingPayloadText = bodyText()
         pairingQrImage = ImageView(this).apply {
             adjustViewBounds = true
             setBackgroundColor(getColor(android.R.color.white))
@@ -149,66 +160,131 @@ class MainActivity : Activity() {
         val grantButton = Button(this).apply {
             text = getString(R.string.m0_grant_permissions)
             setOnClickListener { requestM0Permissions() }
+            fullWidthButtonLayout()
         }
 
         startButton = Button(this).apply {
             text = getString(R.string.m0_start_server)
             setOnClickListener { startServer() }
+            fullWidthButtonLayout()
         }
 
         stopButton = Button(this).apply {
             text = getString(R.string.m0_stop_server)
             setOnClickListener { stopServer() }
+            fullWidthButtonLayout()
         }
 
         copyEndpointButton = Button(this).apply {
             text = getString(R.string.m0_copy_endpoint)
             setOnClickListener { copyEndpoint() }
+            fullWidthButtonLayout()
         }
 
         copyPairingButton = Button(this).apply {
             text = getString(R.string.m0_copy_pairing_payload)
             setOnClickListener { copyPairingPayload() }
+            fullWidthButtonLayout()
         }
 
         copySyncResultButton = Button(this).apply {
             text = getString(R.string.m0_copy_sync_result)
             setOnClickListener { copySyncResult() }
+            fullWidthButtonLayout()
         }
 
         clearSyncStateButton = Button(this).apply {
             text = getString(R.string.m0_clear_sync_state)
             setOnClickListener { clearSyncState() }
+            fullWidthButtonLayout()
         }
 
         root.addView(title)
-        root.addView(statusText)
-        root.addView(phaseText)
-        root.addView(endpointText)
-        root.addView(permissionText)
-        root.addView(notificationPermissionText)
-        root.addView(screenLockText)
-        root.addView(manifestSummaryText)
-        root.addView(requestActivityText)
-        root.addView(syncResultText)
-        root.addView(pairingQrImage)
-        root.addView(pairingPayloadText)
-        root.addView(grantButton)
-        root.addView(startButton)
-        root.addView(stopButton)
-        root.addView(copyEndpointButton)
-        root.addView(copyPairingButton)
-        root.addView(copySyncResultButton)
-        root.addView(clearSyncStateButton)
+        root.addView(subtitle)
+        root.addView(
+            productPanel(
+                title = getString(R.string.m0_panel_summary),
+                children = listOf(statusText, phaseText, manifestSummaryText, syncResultText),
+            ),
+        )
+        root.addView(
+            productPanel(
+                title = getString(R.string.m0_panel_actions),
+                children = listOf(grantButton, startButton, stopButton),
+            ),
+        )
+        root.addView(
+            productPanel(
+                title = getString(R.string.m0_panel_pairing),
+                children = listOf(endpointText, pairingQrImage, pairingPayloadText, copyPairingButton),
+            ),
+        )
+        root.addView(
+            productPanel(
+                title = getString(R.string.m0_panel_diagnostics),
+                children = listOf(
+                    permissionText,
+                    notificationPermissionText,
+                    screenLockText,
+                    requestActivityText,
+                    copyEndpointButton,
+                    copySyncResultButton,
+                    clearSyncStateButton,
+                ),
+            ),
+        )
         scrollView.addView(root)
         setContentView(scrollView)
     }
 
-    private fun bodyText(topPadding: Float): TextView {
+    private fun bodyText(): TextView {
         return TextView(this).apply {
             textSize = 16f
-            setTextColor(getColor(android.R.color.darker_gray))
-            setPadding(0, topPadding.toInt(), 0, 0)
+            setTextColor(Color.rgb(99, 99, 102))
+            setPadding(0, (8 * resources.displayMetrics.density).toInt(), 0, 0)
+        }
+    }
+
+    private fun productPanel(title: String, children: List<android.view.View>): LinearLayout {
+        val density = resources.displayMetrics.density
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(
+                (16 * density).toInt(),
+                (14 * density).toInt(),
+                (16 * density).toInt(),
+                (16 * density).toInt(),
+            )
+            background = GradientDrawable().apply {
+                setColor(Color.WHITE)
+                cornerRadius = 8 * density
+            }
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                bottomMargin = (14 * density).toInt()
+            }
+
+            addView(TextView(context).apply {
+                text = title
+                textSize = 18f
+                typeface = Typeface.DEFAULT_BOLD
+                setTextColor(Color.rgb(28, 28, 30))
+                setPadding(0, 0, 0, (4 * density).toInt())
+            })
+            children.forEach(::addView)
+        }
+    }
+
+    private fun Button.fullWidthButtonLayout() {
+        val density = resources.displayMetrics.density
+        minHeight = (48 * density).toInt()
+        layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+        ).apply {
+            topMargin = (10 * density).toInt()
         }
     }
 
