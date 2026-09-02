@@ -47,6 +47,58 @@ final class MediaDownloaderTests: XCTestCase {
         XCTAssertEqual(session.requests.map { $0.url?.path }, ["/v1/media/mediastore-1-42"])
     }
 
+    func testDownloadMediaDoesNotSkipSameAssetIdFromDifferentSourceDevice() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let data = Data("current-device-photo".utf8)
+        let previousDeviceAsset = makeAsset(
+            assetId: "shared-media-id",
+            fileName: "IMG_PREVIOUS.jpg",
+            size: 128,
+            sha256: nil,
+            sourceDeviceId: "android-previous"
+        )
+        let currentDeviceAsset = makeAsset(
+            assetId: "shared-media-id",
+            fileName: "IMG_CURRENT.jpg",
+            size: Int64(data.count),
+            sha256: sha256(data),
+            sourceDeviceId: "android-current"
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        store.upsertQueued(asset: previousDeviceAsset, now: Date(timeIntervalSince1970: 1))
+        store.markImported(
+            sourceAssetId: previousDeviceAsset.assetId,
+            photoLocalIdentifier: "previous-local-photo",
+            now: Date(timeIntervalSince1970: 2)
+        )
+        let session = StubMediaDataSession(
+            data: data,
+            response: HTTPURLResponse(
+                url: URL(string: "http://192.168.1.10:48291/v1/media/shared-media-id")!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+        )
+        let downloader = MediaDownloader(session: session, downloadDirectory: directory)
+
+        let results = await downloader.downloadMedia(
+            assets: [currentDeviceAsset],
+            host: "192.168.1.10",
+            port: 48291,
+            stateStore: store
+        )
+
+        XCTAssertEqual(results.map(\.assetId), ["shared-media-id"])
+        XCTAssertEqual(session.requests.count, 1)
+        XCTAssertNil(session.requests.first?.value(forHTTPHeaderField: "Range"))
+        XCTAssertEqual(store.record(for: currentDeviceAsset)?.sourceDeviceId, "android-current")
+        XCTAssertEqual(store.record(for: currentDeviceAsset)?.status, .downloaded)
+    }
+
     func testDownloadMediaSendsPairingTokenHeader() async throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
@@ -725,10 +777,16 @@ final class MediaDownloaderTests: XCTestCase {
         XCTAssertNil(store.record(for: "mediastore-1-47")?.lastErrorCode)
     }
 
-    private func makeAsset(assetId: String, fileName: String, size: Int64, sha256: String?) -> MediaAsset {
+    private func makeAsset(
+        assetId: String,
+        fileName: String,
+        size: Int64,
+        sha256: String?,
+        sourceDeviceId: String = "android-demo-device"
+    ) -> MediaAsset {
         MediaAsset(
             assetId: assetId,
-            sourceDeviceId: "android-demo-device",
+            sourceDeviceId: sourceDeviceId,
             mediaType: .photo,
             fileName: fileName,
             mimeType: "image/jpeg",

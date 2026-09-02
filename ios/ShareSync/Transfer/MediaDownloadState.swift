@@ -90,11 +90,12 @@ final class InMemoryMediaDownloadStateStore: MediaDownloadStateStore {
 
     func upsertQueued(asset: MediaAsset, now: Date = Date()) {
         if let existing = records[asset.assetId],
-           existing.status == .downloaded || existing.status == .imported || existing.status == .skipped {
+           existing.matches(asset: asset),
+           existing.status.isTerminalForQueue {
             return
         }
 
-        let existing = records[asset.assetId]
+        let existing = record(for: asset)
         records[asset.assetId] = MediaDownloadRecord(
             sourceDeviceId: asset.sourceDeviceId,
             sourceAssetId: asset.assetId,
@@ -227,11 +228,12 @@ final class FileMediaDownloadStateStore: MediaDownloadStateStore {
 
     func upsertQueued(asset: MediaAsset, now: Date = Date()) {
         if let existing = records[asset.assetId],
-           existing.status == .downloaded || existing.status == .imported || existing.status == .skipped {
+           existing.matches(asset: asset),
+           existing.status.isTerminalForQueue {
             return
         }
 
-        let existing = records[asset.assetId]
+        let existing = record(for: asset)
         records[asset.assetId] = MediaDownloadRecord(
             sourceDeviceId: asset.sourceDeviceId,
             sourceAssetId: asset.assetId,
@@ -432,5 +434,11 @@ private extension MediaDownloadRecord {
         }
 
         return status == .queued || status == .downloading || status == .failed
+    }
+}
+
+private extension MediaDownloadStatus {
+    var isTerminalForQueue: Bool {
+        self == .downloaded || self == .imported || self == .skipped
     }
 }

@@ -129,6 +129,34 @@ final class MediaDownloadStateTests: XCTestCase {
         XCTAssertEqual(store.importedMappings().map(\.sourceAssetId), ["media-001"])
     }
 
+    func testDifferentSourceDeviceCanQueueSameAssetIdAfterImportedRecord() {
+        let store = InMemoryMediaDownloadStateStore()
+        let previousDeviceAsset = makeAsset(
+            assetId: "media-001",
+            size: 2048,
+            sourceDeviceId: "android-previous"
+        )
+        let currentDeviceAsset = makeAsset(
+            assetId: "media-001",
+            size: 4096,
+            sourceDeviceId: "android-current"
+        )
+
+        store.upsertQueued(asset: previousDeviceAsset, now: Date(timeIntervalSince1970: 1))
+        store.markImported(
+            sourceAssetId: previousDeviceAsset.assetId,
+            photoLocalIdentifier: "previous-local-photo",
+            now: Date(timeIntervalSince1970: 2)
+        )
+        store.upsertQueued(asset: currentDeviceAsset, now: Date(timeIntervalSince1970: 3))
+
+        let record = store.record(for: currentDeviceAsset)
+        XCTAssertEqual(record?.sourceDeviceId, "android-current")
+        XCTAssertEqual(record?.status, .queued)
+        XCTAssertEqual(record?.totalBytes, 4096)
+        XCTAssertNil(record?.photoLocalIdentifier)
+    }
+
     func testRecordForAssetMatchesSourceDeviceWhenPresent() {
         let store = InMemoryMediaDownloadStateStore()
         let currentDeviceAsset = makeAsset(

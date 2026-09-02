@@ -85,7 +85,7 @@ final class MediaDownloader {
                 break
             }
 
-            guard let record = stateStore.record(for: asset.assetId),
+            guard let record = stateStore.record(for: asset),
                   record.status == .queued || record.status == .downloading || record.status == .failed else {
                 processedCount += 1
                 await progress?(

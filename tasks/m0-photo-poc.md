@@ -159,6 +159,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Resume or skip completed items after restart.
 - [x] Prioritize already-downloaded photos for import before starting new downloads.
 - [x] Treat same asset id from a different Android device as a separate M0 photo candidate.
+- [x] Queue and download same asset id from a different Android device instead of reusing old terminal state.
 - [x] Show resumable partial photo count on iOS receive screen.
 - [x] Exclude stale iOS partial file references from resumable partial counts.
 - [x] Add iOS Range request path for persisted partial media retries.
@@ -231,6 +232,22 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-02 iOS M0 Source-Aware Queueing
+
+Completed an iOS source-device queueing slice:
+
+- Updated media state queueing so only matching-source terminal records block requeue.
+- Preserved same-source duplicate prevention while allowing a different Android device with the same asset id to transfer as a new photo.
+- Updated media downloader lookup to use source-aware state before deciding whether to skip or resume a download.
+- Added Swift coverage for current-device downloads after a previous-device imported record.
+
+Verified:
+
+```sh
+swift test
+./scripts/check-m0.sh
+```
 
 ### 2026-09-02 iOS M0 Source-Aware State Lookup
 
