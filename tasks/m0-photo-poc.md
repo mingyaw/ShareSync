@@ -84,6 +84,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Reject non-media sync result items on the Android M0 endpoint.
 - [x] Show latest sync result summary on Android M0 screen.
 - [x] Show latest failed result code on Android M0 screen.
+- [x] Treat conflicted Android sync results as retry-required M0 state.
 - [x] Restore latest Android sync result summary on app launch.
 - [x] Show Android phase for permission, server start, pairing, retry, and completion validation.
 - [x] Add Android copy action for latest sync result JSON.
@@ -235,6 +236,21 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-02 Android M0 Conflict Retry State
+
+Completed an Android M0 retry-state slice:
+
+- Treated shared `conflicted` sync result items as retry-required alongside `failed`.
+- Updated Android M0 phase and manifest status rules so conflicted results surface as `Needs retry`.
+- Included conflicted result items in the Android latest failure count and latest error-code summary.
+
+Verified:
+
+```sh
+./gradlew :app:testDebugUnitTest :app:compileDebugKotlin
+./scripts/check-m0.sh
+```
 
 ### 2026-09-02 Android M0 Media-Only Sync Results
 

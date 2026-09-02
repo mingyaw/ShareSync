@@ -11,7 +11,7 @@ data class AndroidM0RuntimeState(
     val latestSyncResult: SyncResult?,
 ) {
     val hasFailedResult: Boolean
-        get() = latestSyncResult?.results?.any { it.status == SyncItemStatus.failed } == true
+        get() = latestSyncResult?.results?.any { it.status.isRetryableFailure } == true
 
     fun phase(): AndroidM0Phase {
         if (!hasMediaPermission) {
@@ -57,3 +57,6 @@ enum class AndroidM0ManifestStatus {
     COMPLETE,
     NEEDS_RETRY,
 }
+
+private val SyncItemStatus.isRetryableFailure: Boolean
+    get() = this == SyncItemStatus.failed || this == SyncItemStatus.conflicted

@@ -58,6 +58,17 @@ class AndroidM0RuntimeStateTest {
     }
 
     @Test
+    fun phaseShowsRetryRequiredWhenLatestResultHasConflict() {
+        val state = runtimeState(
+            isServerRunning = true,
+            pendingPhotoCount = 3,
+            latestSyncResult = syncResult(syncItem("photo-001", SyncItemStatus.conflicted)),
+        )
+
+        assertEquals(AndroidM0Phase.RETRY_REQUIRED, state.phase())
+    }
+
+    @Test
     fun phaseShowsTransferCompleteWhenNoPhotosRemainPending() {
         val state = runtimeState(
             isServerRunning = true,
@@ -86,6 +97,13 @@ class AndroidM0RuntimeStateTest {
             runtimeState(
                 pendingPhotoCount = 4,
                 latestSyncResult = syncResult(syncItem("photo-001", SyncItemStatus.failed)),
+            ).manifestStatus(),
+        )
+        assertEquals(
+            AndroidM0ManifestStatus.NEEDS_RETRY,
+            runtimeState(
+                pendingPhotoCount = 4,
+                latestSyncResult = syncResult(syncItem("photo-001", SyncItemStatus.conflicted)),
             ).manifestStatus(),
         )
         assertEquals(
@@ -127,7 +145,7 @@ class AndroidM0RuntimeStateTest {
             sourceItemId = sourceItemId,
             targetItemId = null,
             status = status,
-            errorCode = if (status == SyncItemStatus.failed) "SS-NET-002" else null,
+            errorCode = if (status == SyncItemStatus.failed || status == SyncItemStatus.conflicted) "SS-NET-002" else null,
         )
     }
 }

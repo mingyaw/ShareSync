@@ -508,9 +508,9 @@ class MainActivity : Activity() {
     private fun formatSyncResult(result: SyncResult): String {
         val syncedCount = result.results.count { it.status == SyncItemStatus.synced }
         val skippedCount = result.results.count { it.status == SyncItemStatus.skipped }
-        val failedCount = result.results.count { it.status == SyncItemStatus.failed }
+        val failedCount = result.results.count { it.status.isRetryableFailure }
         val latestFailureCode = result.results
-            .lastOrNull { it.status == SyncItemStatus.failed }
+            .lastOrNull { it.status.isRetryableFailure }
             ?.errorCode
             ?: getString(R.string.m0_sync_result_no_failure)
         return getString(
@@ -533,6 +533,9 @@ class MainActivity : Activity() {
             requestActivityAgeLabel(activity),
         )
     }
+
+    private val SyncItemStatus.isRetryableFailure: Boolean
+        get() = this == SyncItemStatus.failed || this == SyncItemStatus.conflicted
 
     private fun requestActivityAgeLabel(activity: LocalRequestActivity): String {
         val ageMillis = (System.currentTimeMillis() - activity.recordedAtEpochMillis).coerceAtLeast(0)
