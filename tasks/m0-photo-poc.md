@@ -188,6 +188,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Persist latest shared `SyncResult` JSON.
 - [x] Restore latest shared `SyncResult` JSON on iOS app launch.
 - [x] Copy latest shared `SyncResult` JSON from the iOS receive screen.
+- [x] Allow imported iOS media results without a Photos local identifier to report synced.
 - [x] Use fallback error codes for unknown failed iOS media results.
 - [x] POST latest `SyncResult` back to Android M0 server.
 - [x] Restrict iOS M0 sync result records to photos only.
@@ -238,6 +239,21 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-02 iOS M0 Synced Result Without Local ID
+
+Completed an iOS sync-result specification slice:
+
+- Locked down successful imported media records so they can report `synced` even when Photos does not provide a local identifier.
+- Preserved Android manifest filtering behavior by keeping the source asset id as the completion key.
+- Added Swift builder coverage for `synced` results with `targetItemId: null`.
+
+Verified:
+
+```sh
+swift test
+./scripts/check-m0.sh
+```
 
 ### 2026-09-02 iOS M0 Limited Transfer Priority
 

@@ -113,6 +113,33 @@ final class SyncResultBuilderTests: XCTestCase {
         )
     }
 
+    func testBuildMediaResultAllowsImportedRecordWithoutPhotoLocalIdentifier() {
+        let result = SyncResultBuilder().buildMediaResult(
+            syncBatchId: "batch-001",
+            targetDeviceId: "ios-device-001",
+            records: [
+                makeRecord(
+                    sourceAssetId: "media-imported-without-local-id",
+                    status: .imported,
+                    photoLocalIdentifier: nil
+                )
+            ]
+        )
+
+        XCTAssertEqual(
+            result.results,
+            [
+                SyncItemResult(
+                    itemType: .media,
+                    sourceItemId: "media-imported-without-local-id",
+                    targetItemId: nil,
+                    status: .synced,
+                    errorCode: nil
+                )
+            ]
+        )
+    }
+
     private func makeRecord(
         sourceAssetId: String,
         status: MediaDownloadStatus,
