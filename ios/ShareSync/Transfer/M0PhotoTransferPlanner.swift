@@ -34,6 +34,15 @@ struct M0PhotoTransferPlanner {
     func photoAssets(in manifest: SyncManifest) -> [MediaAsset] {
         manifest.media.filter { $0.mediaType == .photo }
     }
+
+    func syncResultRecords(
+        in manifest: SyncManifest,
+        stateStore: MediaDownloadStateStore
+    ) -> [MediaDownloadRecord] {
+        photoAssets(in: manifest).compactMap { asset in
+            stateStore.record(for: asset.assetId)
+        }
+    }
 }
 
 private struct TransferCandidate: Comparable {

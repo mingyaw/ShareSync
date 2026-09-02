@@ -180,6 +180,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Copy latest shared `SyncResult` JSON from the iOS receive screen.
 - [x] Use fallback error codes for unknown failed iOS media results.
 - [x] POST latest `SyncResult` back to Android M0 server.
+- [x] Restrict iOS M0 sync result records to photos only.
 - [x] Show iOS sync result return status after posting to Android.
 - [x] Add iOS validation control to clear local M0 download/import/result state.
 
@@ -226,6 +227,21 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-02 iOS M0 Photo-Only Sync Result Records
+
+Completed an iOS result-return scope slice:
+
+- Reused the M0 photo transfer planner to choose records for sync result generation.
+- Restricted iOS M0 sync result records to manifest photos only, keeping videos and future media branches out of the photo MVP path.
+- Preserved manifest photo order in returned records for predictable JSON comparison during validation.
+
+Verified:
+
+```sh
+swift test
+./scripts/check-m0.sh
+```
 
 ### 2026-09-02 iOS M0 Downloaded Photo Import Priority
 

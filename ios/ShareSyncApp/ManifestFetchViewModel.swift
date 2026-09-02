@@ -655,10 +655,10 @@ final class ManifestFetchViewModel: ObservableObject {
     }
 
     private func records(for manifest: SyncManifest) -> [MediaDownloadRecord] {
-        let sourceAssetIds = Set(manifest.media.map(\.assetId))
-        return downloadStateStore.allRecords().filter { record in
-            sourceAssetIds.contains(record.sourceAssetId)
-        }
+        photoTransferPlanner.syncResultRecords(
+            in: manifest,
+            stateStore: downloadStateStore
+        )
     }
 }
 

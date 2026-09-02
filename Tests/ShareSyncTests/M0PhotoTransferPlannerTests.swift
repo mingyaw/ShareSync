@@ -125,6 +125,45 @@ final class M0PhotoTransferPlannerTests: XCTestCase {
         ])
     }
 
+    func testSyncResultRecordsIncludePhotosOnlyInManifestOrder() {
+        let firstPhoto = makeAsset(assetId: "photo-001", mediaType: .photo)
+        let video = makeAsset(assetId: "video-001", mediaType: .video)
+        let secondPhoto = makeAsset(assetId: "photo-002", mediaType: .photo)
+        let manifest = makeManifest(
+            media: [
+                firstPhoto,
+                video,
+                secondPhoto,
+            ]
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        store.upsertQueued(asset: secondPhoto, now: Date(timeIntervalSince1970: 1))
+        store.markImported(
+            sourceAssetId: secondPhoto.assetId,
+            photoLocalIdentifier: "photo-local-002",
+            now: Date(timeIntervalSince1970: 2)
+        )
+        store.upsertQueued(asset: video, now: Date(timeIntervalSince1970: 3))
+        store.markImported(
+            sourceAssetId: video.assetId,
+            photoLocalIdentifier: "video-local-001",
+            now: Date(timeIntervalSince1970: 4)
+        )
+        store.upsertQueued(asset: firstPhoto, now: Date(timeIntervalSince1970: 5))
+        store.markImported(
+            sourceAssetId: firstPhoto.assetId,
+            photoLocalIdentifier: "photo-local-001",
+            now: Date(timeIntervalSince1970: 6)
+        )
+
+        let records = M0PhotoTransferPlanner().syncResultRecords(
+            in: manifest,
+            stateStore: store
+        )
+
+        XCTAssertEqual(records.map(\.sourceAssetId), ["photo-001", "photo-002"])
+    }
+
     private func makeManifest(media: [MediaAsset]) -> SyncManifest {
         SyncManifest(
             version: 1,
