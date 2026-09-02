@@ -14,27 +14,42 @@ Status values:
 
 | Scenario | Status | Last Run | Devices | Network | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Baseline one-photo sync | Not Run | - | - | - | Pair, fetch manifest, download one item, confirm Photos import and Android sync result. |
-| Foreground full manifest transfer | Not Run | - | - | - | Run `Download Remaining` with both apps foregrounded. |
-| Repeat sync without duplicates | Not Run | - | - | - | Fetch/download again after successful import; confirm previously imported photos are skipped. |
-| Deleted imported photo retry | Not Run | - | - | - | Delete imported iOS Photos item, fetch again, confirm it becomes retryable. |
-| iOS app restart after pairing | Not Run | - | - | - | Confirm paired Android endpoint/token restore while Android server session is still valid. |
-| Stale iOS pairing reset | Not Run | - | - | - | Restart Android server, clear iOS pairing, scan fresh QR, fetch manifest. |
-| App restart resume | Not Run | - | - | - | Restart iOS after download/import boundary; confirm no duplicate import. |
-| Manual stop and retry | Not Run | - | - | - | Stop active transfer, fetch again, retry remaining items. |
-| Network interruption retry | Not Run | - | - | - | Interrupt Wi-Fi/hotspot during transfer, reconnect, retry. |
-| Invalid range response handling | Not Run | - | - | - | Development API validation for `416` and iOS partial validation path. |
-| Same Wi-Fi transport | Not Run | - | - | - | Both devices on same LAN. |
-| Android hotspot transport | Not Run | - | - | - | iPhone connected to Android hotspot. |
-| iPhone lock or app background during transfer | Not Run | - | - | - | Confirm foreground-only pause and retry path. |
-| Android app background during transfer | Not Run | - | - | - | Confirm current M0 limitation or device-specific behavior. |
-| Photos permission denied | Not Run | - | - | - | Confirm permission error appears before transfer work. |
-| Camera permission denied | Not Run | - | - | - | Confirm manual payload fallback remains usable. |
-| Low iPhone storage | Not Run | - | - | - | Confirm `SS-STORE-001` and Android failed result report. |
+| Baseline one-photo sync | Pass | 2026-09-02 | User real devices | Local | Completed by user report; detailed device names not recorded. |
+| Foreground full manifest transfer | Pass | 2026-09-02 | User real devices | Local | Completed by user report; detailed device names not recorded. |
+| Repeat sync without duplicates | Pass | 2026-09-02 | User real devices | Local | Completed by user report; detailed device names not recorded. |
+| Deleted imported photo retry | Pass | 2026-09-02 | User real devices | Local | Completed by user report; detailed device names not recorded. |
+| iOS app restart after pairing | Pass | 2026-09-02 | User real devices | Local | Completed by user report; detailed device names not recorded. |
+| Stale iOS pairing reset | Pass | 2026-09-02 | User real devices | Local | Completed by user report; detailed device names not recorded. |
+| App restart resume | Pass | 2026-09-02 | User real devices | Local | Completed by user report; detailed device names not recorded. |
+| Manual stop and retry | Pass | 2026-09-02 | User real devices | Local | Completed by user report; detailed device names not recorded. |
+| Network interruption retry | Pass | 2026-09-02 | User real devices | Local | Completed by user report; detailed device names not recorded. |
+| Invalid range response handling | Pass | 2026-09-02 | User real devices | Local | Completed by user report; detailed device names not recorded. |
+| Same Wi-Fi transport | Pass | 2026-09-02 | User real devices | Same Wi-Fi | Completed by user report; detailed device names not recorded. |
+| Android hotspot transport | Pass | 2026-09-02 | User real devices | Android hotspot | Completed by user report; detailed device names not recorded. |
+| iPhone lock or app background during transfer | Pass | 2026-09-02 | User real devices | Local | Completed by user report; detailed device names not recorded. |
+| Android app background during transfer | Pass | 2026-09-02 | User real devices | Local | Completed by user report; detailed device names not recorded. |
+| Photos permission denied | Pass | 2026-09-02 | User real devices | Local | Completed by user report; detailed device names not recorded. |
+| Camera permission denied | Pass | 2026-09-02 | User real devices | Local | Completed by user report; detailed device names not recorded. |
+| Low iPhone storage | Pass | 2026-09-02 | User real devices | Local | Completed by user report; detailed device names not recorded. |
 
 ## Run Log
 
 Add newest entries at the top.
+
+### 2026-09-02 User-Reported Matrix Completion
+
+```text
+Date: 2026-09-02
+Android device / OS: User real device, details not recorded
+iPhone / iOS: User real device, details not recorded
+Network: Same Wi-Fi and Android hotspot scenarios reported complete
+Builds: Current M0 builds
+Scenarios: Full M0 real-device matrix
+Result: Pass by user report
+Blocking issues: None reported
+Notes: User reported the real-device test matrix is complete. Exact device model, OS versions, build numbers, and copied sync result JSON can be appended in a later evidence refinement pass.
+Sync result JSON: Not captured in this summary entry
+```
 
 ### Template
 

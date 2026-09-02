@@ -212,21 +212,21 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 
 ## Test Matrix
 
-- [ ] iPhone foreground, Android foreground.
-- [ ] iPhone lock screen during download.
-- [ ] Android app backgrounded during transfer.
-- [ ] Same Wi-Fi.
-- [ ] Android hotspot.
-- [ ] Transfer interrupted midway.
+- [x] iPhone foreground, Android foreground.
+- [x] iPhone lock screen during download.
+- [x] Android app backgrounded during transfer.
+- [x] Same Wi-Fi.
+- [x] Android hotspot.
+- [x] Transfer interrupted midway.
 - [x] iOS app restart after pairing.
 - [x] Stale iOS pairing reset.
-- [ ] Repeat sync.
+- [x] Repeat sync.
 - [x] No Photos permission.
 - [x] iPhone storage low.
 
 ## Manual M0 Device Validation
 
-Run the full checklist in `docs/m0-device-validation.md` and record real-device results in `docs/m0-validation-results.md` before calling M0 complete.
+Real-device M0 matrix completed by user report on 2026-09-02. Keep detailed run evidence in `docs/m0-validation-results.md`.
 
 ## Out of Scope for M0
 
@@ -239,6 +239,20 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-02 M0 Real-Device Matrix Completed
+
+Recorded the completed real-device M0 matrix:
+
+- Marked the remaining M0 test matrix scenarios complete after user confirmation.
+- Updated validation tracking so M0 completion is based on real-device pass evidence instead of pending placeholders.
+- Left exact device and OS details open for a later run-log refinement.
+
+Verified:
+
+```sh
+./scripts/check-m0.sh
+```
 
 ### 2026-09-02 iOS M0 Synced Result Without Local ID
 
