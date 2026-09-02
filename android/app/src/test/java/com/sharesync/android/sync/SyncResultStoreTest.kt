@@ -59,6 +59,20 @@ class SyncResultStoreTest {
     }
 
     @Test
+    fun inMemoryStoreKeepsConflictedMediaRetryable() {
+        val store = InMemorySyncResultStore()
+
+        SuspendBridge.runBlocking {
+            store.save(syncResult("batch-001", syncItem("media-001", SyncItemStatus.conflicted)))
+        }
+
+        val latest = SuspendBridge.runBlocking { store.latest() }
+
+        assertEquals(listOf("media-001" to SyncItemStatus.conflicted), latest?.results?.map { it.sourceItemId to it.status })
+        assertEquals(emptySet<String>(), SuspendBridge.runBlocking { store.completedMediaAssetIds() })
+    }
+
+    @Test
     fun inMemoryStoreClearRemovesResults() {
         val store = InMemorySyncResultStore()
 
@@ -133,7 +147,7 @@ class SyncResultStoreTest {
             sourceItemId = sourceItemId,
             targetItemId = null,
             status = status,
-            errorCode = if (status == SyncItemStatus.failed) "SS-NET-002" else null,
+            errorCode = if (status == SyncItemStatus.failed || status == SyncItemStatus.conflicted) "SS-NET-002" else null,
         )
     }
 }

@@ -80,6 +80,36 @@ class ManifestBuilderTest {
     }
 
     @Test
+    fun buildM0ManifestKeepsConflictedMediaForRetry() {
+        val scanner = FakeMediaScanner(
+            assets = listOf(
+                mediaAsset("media-conflicted"),
+                mediaAsset("media-new"),
+            )
+        )
+        val store = InMemorySyncResultStore()
+        SuspendBridge.runBlocking {
+            store.save(
+                SyncResult(
+                    syncBatchId = "batch-001",
+                    targetDeviceId = "ios-device-001",
+                    results = listOf(syncItem("media-conflicted", SyncItemStatus.conflicted)),
+                )
+            )
+        }
+
+        val manifest = SuspendBridge.runBlocking {
+            ManifestBuilder(
+                sourceDeviceId = "android-device-001",
+                mediaScanner = scanner,
+                syncResultStore = store,
+            ).buildM0Manifest(limit = 100)
+        }
+
+        assertEquals(listOf("media-conflicted", "media-new"), manifest.media.map { it.assetId })
+    }
+
+    @Test
     fun buildM0ManifestScansBeyondLimitBeforeFilteringCompletedMedia() {
         val scanner = FakeMediaScanner(
             assets = listOf(
@@ -140,7 +170,7 @@ class ManifestBuilderTest {
             sourceItemId = sourceItemId,
             targetItemId = null,
             status = status,
-            errorCode = null,
+            errorCode = if (status == SyncItemStatus.failed || status == SyncItemStatus.conflicted) "SS-NET-002" else null,
         )
     }
 
