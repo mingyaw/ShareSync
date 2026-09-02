@@ -81,6 +81,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Persist latest sync result on Android.
 - [x] Reject malformed Android sync result payloads before persistence.
 - [x] Validate Android sync result status/error-code consistency before persistence.
+- [x] Reject non-media sync result items on the Android M0 endpoint.
 - [x] Show latest sync result summary on Android M0 screen.
 - [x] Show latest failed result code on Android M0 screen.
 - [x] Restore latest Android sync result summary on app launch.
@@ -234,6 +235,21 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-02 Android M0 Media-Only Sync Results
+
+Completed an Android M0 photo-scope safety slice:
+
+- Rejected non-media sync result items on the Android M0 result endpoint before persistence.
+- Kept future contact/file sync result records out of the photo-only MVP path.
+- Added router coverage proving non-media result items return `400 SS-REQ-001` without changing stored state.
+
+Verified:
+
+```sh
+./gradlew :app:testDebugUnitTest :app:compileDebugKotlin
+./scripts/check-m0.sh
+```
 
 ### 2026-09-02 Android M0 Sync Result Status Consistency
 

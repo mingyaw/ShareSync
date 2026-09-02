@@ -116,6 +116,20 @@ class LocalSyncRouterTest {
     }
 
     @Test
+    fun syncResultRejectsNonMediaItemsWithoutPersisting() {
+        val store = InMemorySyncResultStore()
+        val response = SuspendBridge.runBlocking {
+            router(syncResultStore = store).syncResult(
+                body = syncResultBody(itemType = "contact", status = "synced", errorCode = "null"),
+                headers = pairingHeaders(),
+            )
+        }
+
+        assertEquals(400, response.statusCode)
+        assertEquals(null, SuspendBridge.runBlocking { store.latest() })
+    }
+
+    @Test
     fun syncResultRejectsSuccessfulItemWithErrorCodeWithoutPersisting() {
         val store = InMemorySyncResultStore()
         val response = SuspendBridge.runBlocking {
@@ -277,14 +291,18 @@ class LocalSyncRouterTest {
         )
     }
 
-    private fun syncResultBody(status: String, errorCode: String): String {
+    private fun syncResultBody(
+        itemType: String = "media",
+        status: String,
+        errorCode: String,
+    ): String {
         return """
             {
               "syncBatchId": "batch-001",
               "targetDeviceId": "ios-device-001",
               "results": [
                 {
-                  "itemType": "media",
+                  "itemType": "$itemType",
                   "sourceItemId": "media-001",
                   "targetItemId": "photo-local-001",
                   "status": "$status",

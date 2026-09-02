@@ -2,6 +2,7 @@ package com.sharesync.android.transfer.server
 
 import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.sync.MediaAsset
+import com.sharesync.android.sync.SyncItemType
 import com.sharesync.android.sync.SyncItemStatus
 import com.sharesync.android.sync.SyncResult
 import com.sharesync.android.sync.SyncResultJsonCodec
@@ -119,6 +120,7 @@ class LocalSyncRouter(
         require(result.syncBatchId.isNotBlank())
         require(result.targetDeviceId.isNotBlank())
         result.results.forEach { item ->
+            require(item.itemType == SyncItemType.media)
             require(item.sourceItemId.isNotBlank())
             when (item.status) {
                 SyncItemStatus.synced,
