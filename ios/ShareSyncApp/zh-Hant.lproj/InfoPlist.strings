@@ -1,0 +1,5 @@
+"CFBundleDisplayName" = "ShareSync";
+"NSCameraUsageDescription" = "ShareSync 需要使用相機掃描 Android 配對碼。";
+"NSLocalNetworkUsageDescription" = "ShareSync 會透過本機網路連線到已配對的 Android 手機。";
+"NSPhotoLibraryAddUsageDescription" = "ShareSync 會將 Android 照片匯入你的 iPhone 照片圖庫。";
+"NSPhotoLibraryUsageDescription" = "ShareSync 會建立備份相簿，並將 Android 照片匯入你的照片圖庫。";

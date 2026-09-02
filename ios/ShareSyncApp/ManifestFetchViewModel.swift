@@ -152,12 +152,12 @@ final class ManifestFetchViewModel: ObservableObject {
     func fetchManifest() {
         let trimmedHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedHost.isEmpty else {
-            state = .failed("Enter Android IP address.")
+            state = .failed(Self.localized("ios.vm.enter_android_ip"))
             return
         }
 
         guard let portNumber = Int(port), (1...65535).contains(portNumber) else {
-            state = .failed("Enter a valid port.")
+            state = .failed(Self.localized("ios.vm.enter_valid_port"))
             return
         }
 
@@ -200,7 +200,7 @@ final class ManifestFetchViewModel: ObservableObject {
     func applyPairingPayload() {
         let trimmedPayload = pairingPayloadText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let data = trimmedPayload.data(using: .utf8), !data.isEmpty else {
-            state = .failed("Paste the Android pairing payload.")
+            state = .failed(Self.localized("ios.vm.paste_pairing_payload"))
             return
         }
 
@@ -229,9 +229,9 @@ final class ManifestFetchViewModel: ObservableObject {
             )
             state = .idle
         } catch PairingPayloadParserError.expired {
-            state = .failed("Pairing payload expired. Generate a new one on Android.")
+            state = .failed(Self.localized("ios.vm.pairing_expired"))
         } catch {
-            state = .failed("Pairing payload is not valid.")
+            state = .failed(Self.localized("ios.vm.pairing_invalid"))
         }
     }
 
@@ -245,7 +245,7 @@ final class ManifestFetchViewModel: ObservableObject {
 
     func downloadRemainingMedia() {
         guard let manifest = latestManifest else {
-            downloadState = .failed("Fetch manifest before downloading.")
+            downloadState = .failed(Self.localized("ios.vm.fetch_manifest_before_download"))
             return
         }
 
@@ -253,7 +253,7 @@ final class ManifestFetchViewModel: ObservableObject {
     }
 
     func cancelDownload() {
-        cancelDownload(reason: "Transfer stopped. Completed items are kept; remaining items can be retried.")
+        cancelDownload(reason: Self.localized("ios.vm.transfer_stopped"))
     }
 
     func cancelDownloadForBackground() {
@@ -261,7 +261,7 @@ final class ManifestFetchViewModel: ObservableObject {
             return
         }
 
-        cancelDownload(reason: "Transfer paused because ShareSync left the foreground. Completed items are kept; retry remaining photos when you return.")
+        cancelDownload(reason: Self.localized("ios.vm.transfer_paused_background"))
     }
 
     func resetLocalSyncState() {
@@ -320,7 +320,7 @@ final class ManifestFetchViewModel: ObservableObject {
 
         syncResultSummary = SyncResultSummary(result: result)
         latestSyncResultJSON = Self.jsonString(for: result)
-        syncResultReturnSummary = SyncResultReturnSummary(status: "Not posted", httpStatusCode: nil)
+        syncResultReturnSummary = SyncResultReturnSummary(status: Self.localized("ios.vm.not_posted"), httpStatusCode: nil)
     }
 
     private func cancelDownload(reason: String) {
@@ -335,18 +335,18 @@ final class ManifestFetchViewModel: ObservableObject {
 
     private func downloadNextMediaBatch(limit: Int) {
         guard let manifest = latestManifest, !manifest.media.isEmpty else {
-            downloadState = .failed("Manifest has no photos to download.")
+            downloadState = .failed(Self.localized("ios.vm.manifest_no_photos"))
             return
         }
 
         guard let portNumber = Int(port), (1...65535).contains(portNumber) else {
-            downloadState = .failed("Enter a valid port.")
+            downloadState = .failed(Self.localized("ios.vm.enter_valid_port"))
             return
         }
 
         let trimmedHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedHost.isEmpty else {
-            downloadState = .failed("Enter Android IP address.")
+            downloadState = .failed(Self.localized("ios.vm.enter_android_ip"))
             return
         }
 
@@ -359,14 +359,14 @@ final class ManifestFetchViewModel: ObservableObject {
             let permissionStatus = await photoLibraryPermissionChecker.requestPhotoLibraryPermission()
             photoLibraryPermissionStatus = permissionStatus
             guard permissionStatus.allowsImport else {
-                downloadState = .failed("Allow Photos access to import Android photos.")
+                downloadState = .failed(Self.localized("ios.vm.allow_photos"))
                 activeDownloadTask = nil
                 return
             }
 
             let transferAssets = nextTransferCandidates(in: manifest, limit: limit)
             guard !transferAssets.isEmpty else {
-                downloadState = .failed("No remaining photos to download.")
+                downloadState = .failed(Self.localized("ios.vm.no_remaining_photos"))
                 activeDownloadTask = nil
                 return
             }
@@ -435,7 +435,7 @@ final class ManifestFetchViewModel: ObservableObject {
                 syncResultSummary = noImportPublishSummary.resultSummary
                 syncResultReturnSummary = noImportPublishSummary.returnSummary
                 downloadProgressSummary = nil
-                downloadState = .failed("No photos downloaded.")
+                downloadState = .failed(Self.localized("ios.vm.no_photos_downloaded"))
                 activeDownloadTask = nil
                 return
             }
@@ -485,7 +485,7 @@ final class ManifestFetchViewModel: ObservableObject {
             downloadProgressSummary = nil
             downloadState = importResults.contains { $0.status == .synced }
                 ? .completed
-                : .failed("Downloaded, but photo import failed.")
+                : .failed(Self.localized("ios.vm.import_failed"))
             activeDownloadTask = nil
         }
     }
@@ -502,43 +502,43 @@ final class ManifestFetchViewModel: ObservableObject {
         if let urlError = error as? URLError {
             switch urlError.code {
             case .cannotConnectToHost, .networkConnectionLost, .timedOut:
-                return "Cannot reach Android phone on local network."
+                return localized("ios.vm.cannot_reach_android")
             case .notConnectedToInternet:
-                return "Local network is unavailable."
+                return localized("ios.vm.local_network_unavailable")
             case .appTransportSecurityRequiresSecureConnection:
-                return "Local HTTP is blocked by iOS settings."
+                return localized("ios.vm.local_http_blocked")
             default:
                 return urlError.localizedDescription
             }
         }
 
         if error is DecodingError {
-            return "Android manifest format is not supported."
+            return localized("ios.vm.manifest_unsupported")
         }
 
         if let manifestError = error as? ManifestClientError {
             switch manifestError {
             case .invalidBaseURL:
-                return "Android endpoint is not valid."
+                return localized("ios.vm.endpoint_invalid")
             case .nonHTTPResponse:
-                return "Android did not return a valid local response."
+                return localized("ios.vm.invalid_local_response")
             case .unacceptableStatusCode(401):
-                return "Pairing token was rejected. Scan the Android QR code again."
+                return localized("ios.vm.pairing_rejected")
             case .unacceptableStatusCode:
-                return "Android rejected the manifest request."
+                return localized("ios.vm.manifest_rejected")
             }
         }
 
         if let healthError = error as? HealthClientError {
             switch healthError {
             case .invalidBaseURL:
-                return "Android endpoint is not valid."
+                return localized("ios.vm.endpoint_invalid")
             case .nonHTTPResponse:
-                return "Android health check did not return a valid local response."
+                return localized("ios.vm.health_invalid_response")
             case .unacceptableStatusCode:
-                return "Android health check was rejected."
+                return localized("ios.vm.health_rejected")
             case .peerNotReady:
-                return "Android local server is not ready."
+                return localized("ios.vm.android_not_ready")
             }
         }
 
@@ -632,12 +632,12 @@ final class ManifestFetchViewModel: ObservableObject {
             )
             return (
                 SyncResultSummary(result: result),
-                SyncResultReturnSummary(status: "Posted", httpStatusCode: statusCode)
+                SyncResultReturnSummary(status: Self.localized("ios.vm.posted"), httpStatusCode: statusCode)
             )
         } catch {
             return (
                 SyncResultSummary(result: result),
-                SyncResultReturnSummary(status: "Failed", httpStatusCode: Self.httpStatusCode(from: error))
+                SyncResultReturnSummary(status: Self.localized("ios.status.failed"), httpStatusCode: Self.httpStatusCode(from: error))
             )
         }
     }
@@ -659,6 +659,10 @@ final class ManifestFetchViewModel: ObservableObject {
             in: manifest,
             stateStore: downloadStateStore
         )
+    }
+
+    private static func localized(_ key: String) -> String {
+        NSLocalizedString(key, comment: "")
     }
 }
 

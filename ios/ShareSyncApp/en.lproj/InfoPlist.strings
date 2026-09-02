@@ -1,0 +1,5 @@
+"CFBundleDisplayName" = "ShareSync";
+"NSCameraUsageDescription" = "ShareSync uses the camera to scan the Android pairing code.";
+"NSLocalNetworkUsageDescription" = "ShareSync connects to your paired Android phone on the local network.";
+"NSPhotoLibraryAddUsageDescription" = "ShareSync imports Android photos into your iPhone photo library.";
+"NSPhotoLibraryUsageDescription" = "ShareSync creates a backup album and imports Android photos into your photo library.";

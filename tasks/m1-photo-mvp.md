@@ -61,7 +61,7 @@ M1 keeps the main axis focused on photos only:
 ### M1.5 Release Readiness
 
 - [ ] Update privacy copy for local photo transfer and Photos import.
-- [ ] Update permission rationale copy for Android photos, Android notifications, iOS camera, iOS Photos, and local network.
+- [x] Update permission rationale copy for Android photos, Android notifications, iOS camera, iOS Photos, and local network.
 - [ ] Add setup notes for release/debug build variants.
 - [ ] Add M1 manual regression checklist.
 - [ ] Keep post-M1 product branches explicitly separated.
@@ -103,3 +103,12 @@ Made the photo MVP feel closer to an actual product while keeping diagnostic too
 - Added clearer iOS states for pairing required, ready to fetch, ready to transfer, active transfer, retry, no photos, and complete.
 - Added explicit foreground guidance on iOS so the user understands why ShareSync should stay open during transfer.
 - Updated Android strings from M0/test-server wording to photo sync product wording.
+
+### 2026-09-02 Traditional Chinese And English Localization
+
+Added the first product localization pass:
+
+- Added Android English defaults and Traditional Chinese `values-zh-rTW` strings.
+- Added iOS English and Traditional Chinese `Localizable.strings`.
+- Added iOS English and Traditional Chinese `InfoPlist.strings` for camera, local network, and Photos permission prompts.
+- Localized the current iOS product UI, QR scanner, and primary user-facing error messages.

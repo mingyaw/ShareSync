@@ -20,7 +20,7 @@ struct QRCodeScannerView: View {
                 case .notDetermined:
                     VStack(spacing: 16) {
                         ProgressView()
-                        Text("Preparing camera")
+                        Text("ios.qr.preparing_camera")
                             .foregroundStyle(.secondary)
                     }
                     .task {
@@ -29,7 +29,7 @@ struct QRCodeScannerView: View {
                     }
                 default:
                     VStack(alignment: .center, spacing: 16) {
-                        Text("Camera access is required to scan the Android pairing QR code.")
+                        Text("ios.qr.camera_required")
                             .multilineTextAlignment(.center)
                             .foregroundStyle(.secondary)
                     }
@@ -37,11 +37,11 @@ struct QRCodeScannerView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
-            .navigationTitle("Scan Pairing QR")
+            .navigationTitle("ios.qr.scan_pairing_qr")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Close") {
+                    Button("ios.qr.close") {
                         dismiss()
                     }
                 }

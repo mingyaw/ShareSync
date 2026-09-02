@@ -24,7 +24,7 @@ struct ContentView: View {
             }
             .background(Color(.systemGroupedBackground))
             .scrollDismissesKeyboard(.interactively)
-            .navigationTitle("Receive Photos")
+            .navigationTitle("ios.nav.receive_photos")
             .fullScreenCover(isPresented: $isShowingPairingScanner) {
                 QRCodeScannerView { payload in
                     viewModel.pairingPayloadText = payload
@@ -51,7 +51,7 @@ struct ContentView: View {
                 .font(.largeTitle)
                 .fontWeight(.semibold)
 
-            Text("Back up Android photos to iCloud through this iPhone.")
+            Text("ios.header.subtitle")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -80,9 +80,9 @@ struct ContentView: View {
 
                 if let summary = viewModel.summary {
                     HStack(spacing: 10) {
-                        MetricView(title: "Photos", value: "\(summary.photoCount)")
-                        MetricView(title: "Done", value: "\(summary.importedCount + summary.downloadedCount)")
-                        MetricView(title: "Left", value: "\(summary.remainingCount)")
+                        MetricView(title: "ios.metric.photos", value: "\(summary.photoCount)")
+                        MetricView(title: "ios.metric.done", value: "\(summary.importedCount + summary.downloadedCount)")
+                        MetricView(title: "ios.metric.left", value: "\(summary.remainingCount)")
                     }
                 }
             }
@@ -123,7 +123,7 @@ struct ContentView: View {
                     Button {
                         viewModel.downloadFirstMedia()
                     } label: {
-                        Label("Next", systemImage: "arrow.down.to.line")
+                        Label("ios.action.next", systemImage: "arrow.down.to.line")
                             .frame(maxWidth: .infinity)
                             .frame(minHeight: 42)
                     }
@@ -133,7 +133,7 @@ struct ContentView: View {
                     Button {
                         viewModel.downloadSmallMediaBatch()
                     } label: {
-                        Label("5 Photos", systemImage: "square.stack.3d.down.right")
+                        Label("ios.action.five_photos", systemImage: "square.stack.3d.down.right")
                             .frame(maxWidth: .infinity)
                             .frame(minHeight: 42)
                     }
@@ -144,14 +144,14 @@ struct ContentView: View {
                 Button(role: .cancel) {
                     viewModel.cancelDownload()
                 } label: {
-                    Label("Stop Transfer", systemImage: "stop.circle")
+                    Label("ios.action.stop_transfer", systemImage: "stop.circle")
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 42)
                 }
                 .buttonStyle(.bordered)
                 .disabled(!viewModel.canCancelDownload)
 
-                Text("Keep ShareSync open while photos sync. If iOS pauses the app, completed items stay recorded and the remaining photos can resume.")
+                Text("ios.footer.foreground")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -160,26 +160,26 @@ struct ContentView: View {
     }
 
     private var connectionPanel: some View {
-        ProductPanel(title: "Connection") {
+        ProductPanel(title: "ios.panel.connection") {
             VStack(alignment: .leading, spacing: 14) {
                 Button {
                     isShowingPairingScanner = true
                 } label: {
-                    Label("Scan Pairing QR", systemImage: "qrcode.viewfinder")
+                    Label("ios.action.scan_pairing_qr", systemImage: "qrcode.viewfinder")
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 44)
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.large)
 
-                TextField("Android IP", text: $viewModel.host)
+                TextField("ios.connection.android_ip", text: $viewModel.host)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .keyboardType(.numbersAndPunctuation)
                     .textFieldStyle(.roundedBorder)
                     .frame(maxWidth: .infinity, minHeight: 48)
 
-                TextField("Port", text: $viewModel.port)
+                TextField("ios.connection.port", text: $viewModel.port)
                     .keyboardType(.numberPad)
                     .textFieldStyle(.roundedBorder)
                     .frame(maxWidth: .infinity, minHeight: 48)
@@ -195,7 +195,7 @@ struct ContentView: View {
                 Button {
                     viewModel.applyPairingPayload()
                 } label: {
-                    Label("Use Pairing Payload", systemImage: "link")
+                    Label("ios.action.use_pairing_payload", systemImage: "link")
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 44)
                 }
@@ -206,12 +206,12 @@ struct ContentView: View {
     }
 
     private var diagnosticsPanel: some View {
-        ProductPanel(title: "Diagnostics") {
+        ProductPanel(title: "ios.panel.diagnostics") {
             VStack(alignment: .leading, spacing: 12) {
                 Button {
                     copySyncResult()
                 } label: {
-                    Label("Copy Sync Result", systemImage: "doc.on.doc")
+                    Label("ios.action.copy_sync_result", systemImage: "doc.on.doc")
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 42)
                 }
@@ -221,7 +221,7 @@ struct ContentView: View {
                 Button(role: .destructive) {
                     viewModel.resetLocalSyncState()
                 } label: {
-                    Label("Reset Local Sync State", systemImage: "arrow.counterclockwise")
+                    Label("ios.action.reset_local_sync_state", systemImage: "arrow.counterclockwise")
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 42)
                 }
@@ -231,7 +231,7 @@ struct ContentView: View {
                 Button(role: .destructive) {
                     viewModel.clearPairing()
                 } label: {
-                    Label("Clear Pairing", systemImage: "xmark.circle")
+                    Label("ios.action.clear_pairing", systemImage: "xmark.circle")
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 42)
                 }
@@ -242,55 +242,55 @@ struct ContentView: View {
     }
 
     private var statusSection: some View {
-        ProductPanel(title: "Status") {
+        ProductPanel(title: "ios.panel.status") {
             VStack(alignment: .leading, spacing: 12) {
-                StatusRow(title: "Pairing", value: pairedStatus)
-                StatusRow(title: "Photos Access", value: photosAccessStatus)
-                StatusRow(title: "Screen Lock", value: screenLockStatus)
+                StatusRow(title: "ios.status.pairing", value: pairedStatus)
+                StatusRow(title: "ios.status.photos_access", value: photosAccessStatus)
+                StatusRow(title: "ios.status.screen_lock", value: screenLockStatus)
                 if let pairedDevice = viewModel.pairedDevice {
-                    StatusRow(title: "Device", value: pairedDevice.deviceName)
+                    StatusRow(title: "ios.status.device", value: pairedDevice.deviceName)
                 }
                 if let health = viewModel.localPeerHealth {
-                    StatusRow(title: "Android Peer", value: androidPeerText(health))
+                    StatusRow(title: "ios.status.android_peer", value: androidPeerText(health))
                 }
-                StatusRow(title: "Manifest", value: manifestStatus)
+                StatusRow(title: "ios.status.manifest", value: manifestStatus)
 
                 if let summary = viewModel.summary {
-                    StatusRow(title: "Photos", value: "\(summary.photoCount)")
-                    StatusRow(title: "Transfer", value: summary.transferStatus)
-                    StatusRow(title: "Transfer Size", value: ByteCountFormatter.string(fromByteCount: summary.totalBytes, countStyle: .file))
-                    StatusRow(title: "Test Item", value: summary.validationAssetName ?? "None")
-                    StatusRow(title: "Downloaded", value: "\(summary.downloadedCount)")
-                    StatusRow(title: "Imported", value: "\(summary.importedCount)")
-                    StatusRow(title: "Missing", value: "\(summary.missingCount)")
-                    StatusRow(title: "Failed", value: "\(summary.failedCount)")
-                    StatusRow(title: "Partial", value: "\(summary.partialCount)")
+                    StatusRow(title: "ios.status.photos", value: "\(summary.photoCount)")
+                    StatusRow(title: "ios.status.transfer", value: localizedTransferStatus(summary.transferStatus))
+                    StatusRow(title: "ios.status.transfer_size", value: ByteCountFormatter.string(fromByteCount: summary.totalBytes, countStyle: .file))
+                    StatusRow(title: "ios.status.test_item", value: summary.validationAssetName ?? localized("ios.value.none"))
+                    StatusRow(title: "ios.status.downloaded", value: "\(summary.downloadedCount)")
+                    StatusRow(title: "ios.status.imported", value: "\(summary.importedCount)")
+                    StatusRow(title: "ios.status.missing", value: "\(summary.missingCount)")
+                    StatusRow(title: "ios.status.failed", value: "\(summary.failedCount)")
+                    StatusRow(title: "ios.status.partial", value: "\(summary.partialCount)")
                     if let lastFailureCode = summary.lastFailureCode {
-                        StatusRow(title: "Last Failure", value: lastFailureText(code: lastFailureCode, fileName: summary.lastFailureFileName))
+                        StatusRow(title: "ios.status.last_failure", value: lastFailureText(code: lastFailureCode, fileName: summary.lastFailureFileName))
                     }
-                    StatusRow(title: "Remaining", value: "\(summary.remainingCount)")
-                    StatusRow(title: "Cursor", value: summary.cursor)
+                    StatusRow(title: "ios.status.remaining", value: "\(summary.remainingCount)")
+                    StatusRow(title: "ios.status.cursor", value: summary.cursor)
                 } else {
-                    StatusRow(title: "Photos", value: "Waiting")
+                    StatusRow(title: "ios.status.photos", value: localized("ios.status.waiting"))
                 }
 
                 if let progress = viewModel.downloadProgressSummary {
-                    StatusRow(title: "Batch Progress", value: progress.progressText)
-                    StatusRow(title: "Batch Downloaded", value: "\(progress.downloadedCount)")
-                    StatusRow(title: "Batch Failed", value: "\(progress.failedCount)")
+                    StatusRow(title: "ios.status.batch_progress", value: progress.progressText)
+                    StatusRow(title: "ios.status.batch_downloaded", value: "\(progress.downloadedCount)")
+                    StatusRow(title: "ios.status.batch_failed", value: "\(progress.failedCount)")
                     if let currentFileName = progress.currentFileName {
-                        StatusRow(title: "Current File", value: currentFileName)
+                        StatusRow(title: "ios.status.current_file", value: currentFileName)
                     }
                 }
 
                 if let syncResultSummary = viewModel.syncResultSummary {
-                    StatusRow(title: "Sync Batch", value: syncResultSummary.syncBatchId)
-                    StatusRow(title: "Synced", value: "\(syncResultSummary.syncedCount)")
-                    StatusRow(title: "Skipped", value: "\(syncResultSummary.skippedCount)")
-                    StatusRow(title: "Result Failed", value: "\(syncResultSummary.failedCount)")
+                    StatusRow(title: "ios.status.sync_batch", value: syncResultSummary.syncBatchId)
+                    StatusRow(title: "ios.status.synced", value: "\(syncResultSummary.syncedCount)")
+                    StatusRow(title: "ios.status.skipped", value: "\(syncResultSummary.skippedCount)")
+                    StatusRow(title: "ios.status.result_failed", value: "\(syncResultSummary.failedCount)")
                 }
                 if let returnSummary = viewModel.syncResultReturnSummary {
-                    StatusRow(title: "Result Return", value: syncResultReturnText(returnSummary))
+                    StatusRow(title: "ios.status.result_return", value: syncResultReturnText(returnSummary))
                 }
 
                 if viewModel.latestSyncResultJSON != nil, let syncResultCopyMessage {
@@ -302,7 +302,7 @@ struct ContentView: View {
                 }
 
                 if case .cancelled = viewModel.downloadState {
-                    Text(viewModel.cancellationMessage ?? "Transfer stopped. Completed items are kept; remaining items can be retried.")
+                    Text(viewModel.cancellationMessage ?? localized("ios.transfer.cancelled_default"))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -332,50 +332,22 @@ struct ContentView: View {
     private var buttonTitle: String {
         switch viewModel.state {
         case .loading:
-            return "Fetching"
+            return localized("ios.action.fetching")
         default:
-            return "Fetch Manifest"
-        }
-    }
-
-    private var downloadButtonTitle: String {
-        switch viewModel.downloadState {
-        case .downloading:
-            return "Downloading"
-        case .importing:
-            return "Importing"
-        case .cancelled:
-            return "Download Next Item"
-        case .completed:
-            return "Download Next Item"
-        default:
-            return "Download Next Item"
-        }
-    }
-
-    private var batchDownloadButtonTitle: String {
-        switch viewModel.downloadState {
-        case .downloading:
-            return "Downloading"
-        case .importing:
-            return "Importing"
-        case .cancelled:
-            return "Download 5 Items"
-        default:
-            return "Download 5 Items"
+            return localized("ios.action.fetch_manifest")
         }
     }
 
     private var remainingDownloadButtonTitle: String {
         switch viewModel.downloadState {
         case .downloading:
-            return "Syncing Photos"
+            return localized("ios.action.syncing_photos")
         case .importing:
-            return "Importing Photos"
+            return localized("ios.action.importing_photos")
         case .cancelled:
-            return "Resume Photo Sync"
+            return localized("ios.action.resume_photo_sync")
         default:
-            return "Sync All Photos"
+            return localized("ios.action.sync_all_photos")
         }
     }
 
@@ -383,30 +355,30 @@ struct ContentView: View {
         if let summary = viewModel.summary {
             switch summary.transferStatus {
             case "Complete":
-                return "All manifest photos are backed up or skipped."
+                return localized("ios.summary.all_complete")
             case "Needs Retry":
-                return "Some photos need attention before this sync is complete."
+                return localized("ios.summary.retry_required")
             case "No Photos":
-                return "Android has no photos to send right now."
+                return localized("ios.summary.no_photos")
             default:
-                return "\(summary.remainingCount) photos ready to sync."
+                return String(format: localized("ios.summary.remaining_format"), summary.remainingCount)
             }
         }
 
         if viewModel.host.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "Pair with your Android phone to begin."
+            return localized("ios.summary.pair_to_begin")
         }
 
-        return "Fetch the latest Android photo list."
+        return localized("ios.summary.fetch_latest")
     }
 
     private var summaryIconName: String {
-        switch phaseStatus {
-        case "Transfer Complete":
+        switch phaseKind {
+        case .transferComplete:
             return "checkmark.circle.fill"
-        case "Retry Required", "Transfer Error", "Fetch Error":
+        case .retryRequired, .transferError, .fetchError:
             return "exclamationmark.triangle.fill"
-        case "Transfer Active", "Fetching Manifest":
+        case .transferActive, .fetchingManifest:
             return "arrow.triangle.2.circlepath"
         default:
             return "photo.on.rectangle.angled"
@@ -414,12 +386,12 @@ struct ContentView: View {
     }
 
     private var summaryTint: Color {
-        switch phaseStatus {
-        case "Transfer Complete":
+        switch phaseKind {
+        case .transferComplete:
             return .green
-        case "Retry Required", "Transfer Error", "Fetch Error":
+        case .retryRequired, .transferError, .fetchError:
             return .orange
-        case "Transfer Active", "Fetching Manifest":
+        case .transferActive, .fetchingManifest:
             return .blue
         default:
             return .secondary
@@ -427,82 +399,107 @@ struct ContentView: View {
     }
 
     private var pairedStatus: String {
-        viewModel.host.isEmpty ? "Manual" : "\(viewModel.host):\(viewModel.port)"
+        viewModel.host.isEmpty ? localized("ios.status.manual") : "\(viewModel.host):\(viewModel.port)"
     }
 
     private var phaseStatus: String {
+        switch phaseKind {
+        case .transferActive:
+            return localized("ios.phase.transfer_active")
+        case .fetchingManifest:
+            return localized("ios.phase.fetching_manifest")
+        case .fetchError:
+            return localized("ios.phase.fetch_error")
+        case .transferError:
+            return localized("ios.phase.transfer_error")
+        case .retryRequired:
+            return localized("ios.phase.retry_required")
+        case .pairingRequired:
+            return localized("ios.phase.pairing_required")
+        case .readyToFetch:
+            return localized("ios.phase.ready_to_fetch")
+        case .transferComplete:
+            return localized("ios.phase.transfer_complete")
+        case .noPhotos:
+            return localized("ios.phase.no_photos")
+        case .readyToTransfer:
+            return localized("ios.phase.ready_to_transfer")
+        }
+    }
+
+    private var phaseKind: PhaseKind {
         if viewModel.isTransferActive {
-            return "Transfer Active"
+            return .transferActive
         }
 
         if case .loading = viewModel.state {
-            return "Fetching Manifest"
+            return .fetchingManifest
         }
 
         if case .failed = viewModel.state {
-            return "Fetch Error"
+            return .fetchError
         }
 
         if case .failed = viewModel.downloadState {
-            return "Transfer Error"
+            return .transferError
         }
 
         if case .cancelled = viewModel.downloadState {
-            return "Retry Required"
+            return .retryRequired
         }
 
         if viewModel.host.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "Pairing Required"
+            return .pairingRequired
         }
 
         guard let summary = viewModel.summary else {
-            return "Ready To Fetch"
+            return .readyToFetch
         }
 
         switch summary.transferStatus {
         case "Complete":
-            return "Transfer Complete"
+            return .transferComplete
         case "Needs Retry":
-            return "Retry Required"
+            return .retryRequired
         case "No Photos":
-            return "No Photos"
+            return .noPhotos
         default:
-            return "Ready To Transfer"
+            return .readyToTransfer
         }
     }
 
     private var manifestStatus: String {
         switch viewModel.state {
         case .idle:
-            return "Ready"
+            return localized("ios.status.ready")
         case .loading:
-            return "Loading"
+            return localized("ios.status.loading")
         case .loaded:
-            return "\(viewModel.summary?.photoCount ?? 0) photos"
+            return String(format: localized("ios.value.photo_count_format"), viewModel.summary?.photoCount ?? 0)
         case .failed:
-            return "Failed"
+            return localized("ios.status.failed")
         }
     }
 
     private var photosAccessStatus: String {
         switch viewModel.photoLibraryPermissionStatus {
         case .authorized:
-            return "Allowed"
+            return localized("ios.status.allowed")
         case .limited:
-            return "Limited"
+            return localized("ios.status.limited")
         case .denied:
-            return "Denied"
+            return localized("ios.status.denied")
         case .restricted:
-            return "Restricted"
+            return localized("ios.status.restricted")
         case .notDetermined:
-            return "Not Asked"
+            return localized("ios.status.not_asked")
         case .unknown:
-            return "Unknown"
+            return localized("ios.status.unknown")
         }
     }
 
     private var screenLockStatus: String {
-        shouldKeepScreenAwake(for: viewModel.downloadState) ? "Paused" : "Normal"
+        shouldKeepScreenAwake(for: viewModel.downloadState) ? localized("ios.status.paused") : localized("ios.status.normal")
     }
 
     private func lastFailureText(code: String, fileName: String?) -> String {
@@ -521,7 +518,7 @@ struct ContentView: View {
     }
 
     private func androidPeerText(_ health: LocalPeerHealth) -> String {
-        "Ready - \(health.deviceId) - v\(health.protocolVersion)"
+        String(format: localized("ios.value.ready_device_format"), health.deviceId, health.protocolVersion)
     }
 
     private func copySyncResult() {
@@ -530,7 +527,7 @@ struct ContentView: View {
         }
 
         UIPasteboard.general.string = json
-        syncResultCopyMessage = "Sync result JSON copied."
+        syncResultCopyMessage = localized("ios.toast.sync_result_copied")
     }
 
     private func updateIdleTimer(for state: ManifestFetchViewModel.DownloadState) {
@@ -540,10 +537,40 @@ struct ContentView: View {
     private func shouldKeepScreenAwake(for state: ManifestFetchViewModel.DownloadState) -> Bool {
         state == .downloading || state == .importing
     }
+
+    private func localized(_ key: String) -> String {
+        NSLocalizedString(key, comment: "")
+    }
+
+    private func localizedTransferStatus(_ status: String) -> String {
+        switch status {
+        case "Complete":
+            return localized("ios.phase.transfer_complete")
+        case "Needs Retry":
+            return localized("ios.phase.retry_required")
+        case "No Photos":
+            return localized("ios.phase.no_photos")
+        default:
+            return localized("ios.status.ready")
+        }
+    }
+}
+
+private enum PhaseKind {
+    case fetchError
+    case fetchingManifest
+    case noPhotos
+    case pairingRequired
+    case readyToFetch
+    case readyToTransfer
+    case retryRequired
+    case transferActive
+    case transferComplete
+    case transferError
 }
 
 private struct StatusRow: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
 
     var body: some View {
@@ -568,10 +595,10 @@ private struct StatusRow: View {
 }
 
 private struct ProductPanel<Content: View>: View {
-    let title: String?
+    let title: LocalizedStringKey?
     let content: Content
 
-    init(title: String? = nil, @ViewBuilder content: () -> Content) {
+    init(title: LocalizedStringKey? = nil, @ViewBuilder content: () -> Content) {
         self.title = title
         self.content = content()
     }
@@ -593,7 +620,7 @@ private struct ProductPanel<Content: View>: View {
 }
 
 private struct MetricView: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
 
     var body: some View {
