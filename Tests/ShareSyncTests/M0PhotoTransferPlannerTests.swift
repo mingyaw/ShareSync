@@ -80,6 +80,51 @@ final class M0PhotoTransferPlannerTests: XCTestCase {
         XCTAssertEqual(candidates.map(\.assetId), ["photo-001", "photo-002"])
     }
 
+    func testNextTransferCandidatesPrioritizeDownloadedPhotosBeforeNewDownloads() {
+        let newPhoto = makeAsset(assetId: "photo-new", mediaType: .photo)
+        let downloadedPhoto = makeAsset(assetId: "photo-downloaded", mediaType: .photo)
+        let failedPhoto = makeAsset(assetId: "photo-failed", mediaType: .photo)
+        let secondDownloadedPhoto = makeAsset(assetId: "photo-downloaded-2", mediaType: .photo)
+        let manifest = makeManifest(
+            media: [
+                newPhoto,
+                downloadedPhoto,
+                failedPhoto,
+                secondDownloadedPhoto,
+            ]
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        store.upsertQueued(asset: downloadedPhoto, now: Date(timeIntervalSince1970: 1))
+        store.markDownloaded(
+            sourceAssetId: downloadedPhoto.assetId,
+            localFileURL: URL(fileURLWithPath: "/tmp/photo-downloaded.jpg"),
+            downloadedBytes: downloadedPhoto.size,
+            now: Date(timeIntervalSince1970: 2)
+        )
+        store.upsertQueued(asset: failedPhoto, now: Date(timeIntervalSince1970: 3))
+        store.markFailed(sourceAssetId: failedPhoto.assetId, errorCode: "SS-NET-002", now: Date(timeIntervalSince1970: 4))
+        store.upsertQueued(asset: secondDownloadedPhoto, now: Date(timeIntervalSince1970: 5))
+        store.markDownloaded(
+            sourceAssetId: secondDownloadedPhoto.assetId,
+            localFileURL: URL(fileURLWithPath: "/tmp/photo-downloaded-2.jpg"),
+            downloadedBytes: secondDownloadedPhoto.size,
+            now: Date(timeIntervalSince1970: 6)
+        )
+
+        let candidates = M0PhotoTransferPlanner().nextTransferCandidates(
+            in: manifest,
+            stateStore: store,
+            limit: 10
+        )
+
+        XCTAssertEqual(candidates.map(\.assetId), [
+            "photo-downloaded",
+            "photo-downloaded-2",
+            "photo-failed",
+            "photo-new",
+        ])
+    }
+
     private func makeManifest(media: [MediaAsset]) -> SyncManifest {
         SyncManifest(
             version: 1,
