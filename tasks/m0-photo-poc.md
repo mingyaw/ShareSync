@@ -158,6 +158,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add manual foreground transfer stop and retry support.
 - [x] Resume or skip completed items after restart.
 - [x] Prioritize already-downloaded photos for import before starting new downloads.
+- [x] Treat same asset id from a different Android device as a separate M0 photo candidate.
 - [x] Show resumable partial photo count on iOS receive screen.
 - [x] Exclude stale iOS partial file references from resumable partial counts.
 - [x] Add iOS Range request path for persisted partial media retries.
@@ -182,6 +183,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Use fallback error codes for unknown failed iOS media results.
 - [x] POST latest `SyncResult` back to Android M0 server.
 - [x] Restrict iOS M0 sync result records to photos only.
+- [x] Exclude sync result records whose source device does not match the current Android manifest.
 - [x] Show iOS sync result return status after posting to Android.
 - [x] Add iOS validation control to clear local M0 download/import/result state.
 
@@ -228,6 +230,21 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-02 iOS M0 Source Device Matching
+
+Completed an iOS source-device safety slice:
+
+- Added M0 planner source-device matching for persisted media state.
+- Kept legacy records without `sourceDeviceId` compatible with current M0 duplicate-prevention behavior.
+- Added Swift coverage so the same asset id from a different Android device remains transferable and is excluded from current-device sync result records.
+
+Verified:
+
+```sh
+swift test
+./scripts/check-m0.sh
+```
 
 ### 2026-09-02 iOS M0 Duplicate State Load Safety
 

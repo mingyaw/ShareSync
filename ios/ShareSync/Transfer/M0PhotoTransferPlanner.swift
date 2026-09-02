@@ -11,7 +11,7 @@ struct M0PhotoTransferPlanner {
         }
 
         let candidates = photoAssets(in: manifest).enumerated().compactMap { index, asset -> TransferCandidate? in
-            guard let record = stateStore.record(for: asset.assetId) else {
+            guard let record = matchingRecord(for: asset, stateStore: stateStore) else {
                 return TransferCandidate(asset: asset, manifestIndex: index, priority: .new)
             }
 
@@ -40,8 +40,24 @@ struct M0PhotoTransferPlanner {
         stateStore: MediaDownloadStateStore
     ) -> [MediaDownloadRecord] {
         photoAssets(in: manifest).compactMap { asset in
-            stateStore.record(for: asset.assetId)
+            matchingRecord(for: asset, stateStore: stateStore)
         }
+    }
+
+    private func matchingRecord(
+        for asset: MediaAsset,
+        stateStore: MediaDownloadStateStore
+    ) -> MediaDownloadRecord? {
+        guard let record = stateStore.record(for: asset.assetId) else {
+            return nil
+        }
+
+        guard let recordSourceDeviceId = record.sourceDeviceId,
+              !recordSourceDeviceId.isEmpty else {
+            return record
+        }
+
+        return recordSourceDeviceId == asset.sourceDeviceId ? record : nil
     }
 }
 

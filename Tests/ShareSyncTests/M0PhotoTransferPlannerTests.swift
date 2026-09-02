@@ -164,10 +164,76 @@ final class M0PhotoTransferPlannerTests: XCTestCase {
         XCTAssertEqual(records.map(\.sourceAssetId), ["photo-001", "photo-002"])
     }
 
-    private func makeManifest(media: [MediaAsset]) -> SyncManifest {
+    func testNextTransferCandidatesTreatSameAssetIdFromDifferentDeviceAsNewPhoto() {
+        let currentDevicePhoto = makeAsset(
+            assetId: "shared-media-id",
+            mediaType: .photo,
+            sourceDeviceId: "android-device-current"
+        )
+        let previousDevicePhoto = makeAsset(
+            assetId: "shared-media-id",
+            mediaType: .photo,
+            sourceDeviceId: "android-device-previous"
+        )
+        let manifest = makeManifest(
+            media: [currentDevicePhoto],
+            sourceDeviceId: "android-device-current"
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        store.upsertQueued(asset: previousDevicePhoto, now: Date(timeIntervalSince1970: 1))
+        store.markImported(
+            sourceAssetId: previousDevicePhoto.assetId,
+            photoLocalIdentifier: "previous-photo-local-id",
+            now: Date(timeIntervalSince1970: 2)
+        )
+
+        let candidates = M0PhotoTransferPlanner().nextTransferCandidates(
+            in: manifest,
+            stateStore: store,
+            limit: 10
+        )
+
+        XCTAssertEqual(candidates.map(\.assetId), ["shared-media-id"])
+    }
+
+    func testSyncResultRecordsExcludeSameAssetIdFromDifferentDevice() {
+        let currentDevicePhoto = makeAsset(
+            assetId: "shared-media-id",
+            mediaType: .photo,
+            sourceDeviceId: "android-device-current"
+        )
+        let previousDevicePhoto = makeAsset(
+            assetId: "shared-media-id",
+            mediaType: .photo,
+            sourceDeviceId: "android-device-previous"
+        )
+        let manifest = makeManifest(
+            media: [currentDevicePhoto],
+            sourceDeviceId: "android-device-current"
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        store.upsertQueued(asset: previousDevicePhoto, now: Date(timeIntervalSince1970: 1))
+        store.markImported(
+            sourceAssetId: previousDevicePhoto.assetId,
+            photoLocalIdentifier: "previous-photo-local-id",
+            now: Date(timeIntervalSince1970: 2)
+        )
+
+        let records = M0PhotoTransferPlanner().syncResultRecords(
+            in: manifest,
+            stateStore: store
+        )
+
+        XCTAssertEqual(records, [])
+    }
+
+    private func makeManifest(
+        media: [MediaAsset],
+        sourceDeviceId: String = "android-device-001"
+    ) -> SyncManifest {
         SyncManifest(
             version: 1,
-            sourceDeviceId: "android-device-001",
+            sourceDeviceId: sourceDeviceId,
             generatedAt: Date(timeIntervalSince1970: 1),
             cursor: "cursor-001",
             media: media,
@@ -176,10 +242,14 @@ final class M0PhotoTransferPlannerTests: XCTestCase {
         )
     }
 
-    private func makeAsset(assetId: String, mediaType: MediaType) -> MediaAsset {
+    private func makeAsset(
+        assetId: String,
+        mediaType: MediaType,
+        sourceDeviceId: String = "android-device-001"
+    ) -> MediaAsset {
         MediaAsset(
             assetId: assetId,
-            sourceDeviceId: "android-device-001",
+            sourceDeviceId: sourceDeviceId,
             mediaType: mediaType,
             fileName: "\(assetId).\(mediaType == .photo ? "jpg" : "mp4")",
             mimeType: mediaType == .photo ? "image/jpeg" : "video/mp4",
