@@ -80,12 +80,12 @@
 "ios.summary.fetch_latest" = "取得最新 Android 照片清單。";
 "ios.summary.no_photos" = "Android 目前沒有可傳送的照片。";
 "ios.summary.pair_to_begin" = "與 Android 手機配對後開始。";
-"ios.summary.remaining_format" = "還有 %d 張照片可同步。";
+"ios.summary.remaining_format" = "還有 %@ 張照片可同步。";
 "ios.summary.retry_required" = "部分照片需要處理後才能完成這次同步。";
 "ios.toast.sync_result_copied" = "已複製同步結果 JSON。";
 "ios.transfer.cancelled_default" = "傳輸已停止。已完成項目會保留紀錄，剩餘項目可重試。";
 "ios.value.none" = "無";
-"ios.value.photo_count_format" = "%d 張照片";
+"ios.value.photo_count_format" = "%@ 張照片";
 "ios.value.ready_device_format" = "就緒 - %@ - v%@";
 "ios.vm.enter_android_ip" = "請輸入 Android IP 位址。";
 "ios.vm.enter_valid_port" = "請輸入有效的連接埠。";

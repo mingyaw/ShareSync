@@ -361,7 +361,7 @@ struct ContentView: View {
             case "No Photos":
                 return localized("ios.summary.no_photos")
             default:
-                return String(format: localized("ios.summary.remaining_format"), summary.remainingCount)
+                return String(format: localized("ios.summary.remaining_format"), "\(summary.remainingCount)")
             }
         }
 
@@ -475,7 +475,7 @@ struct ContentView: View {
         case .loading:
             return localized("ios.status.loading")
         case .loaded:
-            return String(format: localized("ios.value.photo_count_format"), viewModel.summary?.photoCount ?? 0)
+            return String(format: localized("ios.value.photo_count_format"), "\(viewModel.summary?.photoCount ?? 0)")
         case .failed:
             return localized("ios.status.failed")
         }
@@ -518,7 +518,7 @@ struct ContentView: View {
     }
 
     private func androidPeerText(_ health: LocalPeerHealth) -> String {
-        String(format: localized("ios.value.ready_device_format"), health.deviceId, health.protocolVersion)
+        String(format: localized("ios.value.ready_device_format"), health.deviceId, "\(health.protocolVersion)")
     }
 
     private func copySyncResult() {

@@ -80,12 +80,12 @@
 "ios.summary.fetch_latest" = "Fetch the latest Android photo list.";
 "ios.summary.no_photos" = "Android has no photos to send right now.";
 "ios.summary.pair_to_begin" = "Pair with your Android phone to begin.";
-"ios.summary.remaining_format" = "%d photos ready to sync.";
+"ios.summary.remaining_format" = "%@ photos ready to sync.";
 "ios.summary.retry_required" = "Some photos need attention before this sync is complete.";
 "ios.toast.sync_result_copied" = "Sync result JSON copied.";
 "ios.transfer.cancelled_default" = "Transfer stopped. Completed items are kept; remaining items can be retried.";
 "ios.value.none" = "None";
-"ios.value.photo_count_format" = "%d photos";
+"ios.value.photo_count_format" = "%@ photos";
 "ios.value.ready_device_format" = "Ready - %@ - v%@";
 "ios.vm.enter_android_ip" = "Enter Android IP address.";
 "ios.vm.enter_valid_port" = "Enter a valid port.";
