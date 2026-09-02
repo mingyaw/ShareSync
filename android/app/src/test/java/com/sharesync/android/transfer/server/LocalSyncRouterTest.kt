@@ -116,6 +116,51 @@ class LocalSyncRouterTest {
     }
 
     @Test
+    fun syncResultRejectsSuccessfulItemWithErrorCodeWithoutPersisting() {
+        val store = InMemorySyncResultStore()
+        val response = SuspendBridge.runBlocking {
+            router(syncResultStore = store).syncResult(
+                body = syncResultBody(status = "synced", errorCode = """"SS-MEDIA-999""""),
+                headers = pairingHeaders(),
+            )
+        }
+
+        assertEquals(400, response.statusCode)
+        assertEquals(null, SuspendBridge.runBlocking { store.latest() })
+    }
+
+    @Test
+    fun syncResultRejectsFailedItemWithoutErrorCodeWithoutPersisting() {
+        val store = InMemorySyncResultStore()
+        val response = SuspendBridge.runBlocking {
+            router(syncResultStore = store).syncResult(
+                body = syncResultBody(status = "failed", errorCode = "null"),
+                headers = pairingHeaders(),
+            )
+        }
+
+        assertEquals(400, response.statusCode)
+        assertEquals(null, SuspendBridge.runBlocking { store.latest() })
+    }
+
+    @Test
+    fun syncResultAcceptsFailedItemWithErrorCode() {
+        val store = InMemorySyncResultStore()
+        val response = SuspendBridge.runBlocking {
+            router(syncResultStore = store).syncResult(
+                body = syncResultBody(status = "failed", errorCode = """"SS-MEDIA-999""""),
+                headers = pairingHeaders(),
+            )
+        }
+
+        val stored = SuspendBridge.runBlocking { store.latest() }
+        assertEquals(202, response.statusCode)
+        assertEquals("batch-001", stored?.syncBatchId)
+        assertEquals("failed", stored?.results?.first()?.status?.name)
+        assertEquals("SS-MEDIA-999", stored?.results?.first()?.errorCode)
+    }
+
+    @Test
     fun requestActivityCountsLocalRequestsAcrossEndpoints() {
         var now = 10_000L
         val activityTracker = LocalRequestActivityTracker(clock = { now })
@@ -230,6 +275,24 @@ class LocalSyncRouterTest {
             mimeType = "image/jpeg",
             size = 1024,
         )
+    }
+
+    private fun syncResultBody(status: String, errorCode: String): String {
+        return """
+            {
+              "syncBatchId": "batch-001",
+              "targetDeviceId": "ios-device-001",
+              "results": [
+                {
+                  "itemType": "media",
+                  "sourceItemId": "media-001",
+                  "targetItemId": "photo-local-001",
+                  "status": "$status",
+                  "errorCode": $errorCode
+                }
+              ]
+            }
+        """.trimIndent()
     }
 
     private companion object {

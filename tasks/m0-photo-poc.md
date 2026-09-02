@@ -80,6 +80,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Enforce pairing-token header on protected M0 endpoints.
 - [x] Persist latest sync result on Android.
 - [x] Reject malformed Android sync result payloads before persistence.
+- [x] Validate Android sync result status/error-code consistency before persistence.
 - [x] Show latest sync result summary on Android M0 screen.
 - [x] Show latest failed result code on Android M0 screen.
 - [x] Restore latest Android sync result summary on app launch.
@@ -233,6 +234,21 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-02 Android M0 Sync Result Status Consistency
+
+Completed an Android sync-result consistency slice:
+
+- Rejected `synced` and `skipped` result items that still carry an error code before persistence.
+- Required `failed` and `conflicted` result items to carry a nonblank shared error code.
+- Added router coverage for malformed status/error combinations and accepted valid failure records.
+
+Verified:
+
+```sh
+./gradlew :app:testDebugUnitTest :app:compileDebugKotlin
+./scripts/check-m0.sh
+```
 
 ### 2026-09-02 Android M0 Sync Result Required Field Validation
 

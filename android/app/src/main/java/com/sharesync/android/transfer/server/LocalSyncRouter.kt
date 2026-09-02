@@ -2,6 +2,7 @@ package com.sharesync.android.transfer.server
 
 import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.sync.MediaAsset
+import com.sharesync.android.sync.SyncItemStatus
 import com.sharesync.android.sync.SyncResult
 import com.sharesync.android.sync.SyncResultJsonCodec
 import com.sharesync.android.sync.SyncResultStore
@@ -119,6 +120,14 @@ class LocalSyncRouter(
         require(result.targetDeviceId.isNotBlank())
         result.results.forEach { item ->
             require(item.sourceItemId.isNotBlank())
+            when (item.status) {
+                SyncItemStatus.synced,
+                SyncItemStatus.skipped,
+                -> require(item.errorCode.isNullOrBlank())
+                SyncItemStatus.failed,
+                SyncItemStatus.conflicted,
+                -> require(!item.errorCode.isNullOrBlank())
+            }
         }
     }
 
