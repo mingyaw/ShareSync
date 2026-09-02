@@ -15,18 +15,17 @@
 
 ### 2.1 必做功能
 
-MVP 需完成：
+MVP 先以照片為唯一主軸。M0 已完成 Android 照片到 iOS Photos 的可行性驗證；M1 將此路徑硬化成可重複使用的照片 MVP。影片、聯絡人與文件列為 M1 之後的產品分支。
 
-- 目前第一版 MVP 切片先只完成 Android 照片到 iOS Photos；影片、聯絡人與文件列為後續 MVP 擴充。
+M1 需完成：
+
 - Android 與 iPhone QR code 首次配對。
 - 裝置信任資料儲存與解除配對。
-- Android 掃描照片、影片、聯絡人、指定文件資料夾。
+- Android 掃描照片。
 - Android 產生同步 manifest。
 - Android 開啟本地 HTTPS server。
 - iOS 透過 local HTTPS 拉取 manifest 與資料。
-- iOS 將照片與影片寫入 Photos。
-- iOS 將聯絡人寫入 Contacts。
-- iOS 將文件寫入 App iCloud Documents container。
+- iOS 將照片寫入 Photos。
 - 基礎去重。
 - 同步紀錄。
 - 失敗重試。
@@ -1257,4 +1256,4 @@ M0 - Android to iOS Photo PoC
 8. 中斷後可繼續。
 9. 產出測試報告。
 
-M0 完成後再進入完整 MVP。
+M0 已於 2026-09-02 完成。下一個主軸是 `M1 - Photo MVP Hardening`，先完成照片 MVP 的安全、同步紀錄、重跑可靠性、產品 UI 與 release readiness，再進入影片、聯絡人、文件或反向同步分支。

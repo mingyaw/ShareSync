@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 implementation ready for real-device validation. Android can expose local photo endpoints, and iOS can pair, fetch, download, verify, and import Android photos into Photos on the same local network.
+Status: M0 photo PoC complete by automated checks and user-reported real-device validation on 2026-09-02. The next main axis is M1 photo MVP hardening.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -16,7 +16,7 @@ The project intentionally uses native implementation:
 
 ## Current Stage
 
-The repository is focused on `M0 - Android to iOS Photo PoC`.
+The completed baseline is `M0 - Android to iOS Photo PoC`. Active follow-up work moves into `M1 - Photo MVP Hardening`, which keeps the product focused on photos before expanding to videos, contacts, files, or reverse sync.
 
 The current codebase contains:
 
@@ -105,6 +105,7 @@ tasks/
 - [M0 Device Validation Checklist](docs/m0-device-validation.md)
 - [M0 Validation Results](docs/m0-validation-results.md)
 - [M0 Photo PoC](tasks/m0-photo-poc.md)
+- [M1 Photo MVP Hardening](tasks/m1-photo-mvp.md)
 
 ## M0 Rules
 

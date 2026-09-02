@@ -41,18 +41,14 @@ Android 端負責自動掃描資料、建立同步清單、發起傳輸與排程
 
 ### 3.2 MVP 目標
 
-MVP 需完成以下能力：
-
-目前第一版 MVP 切片先只完成 Android 照片到 iOS Photos；影片、聯絡人與文件放入後續擴充。
+MVP 先以照片為唯一主軸。M0 已完成 Android 照片到 iOS Photos 的可行性驗證；M1 將此路徑硬化成可重複使用的照片 MVP。影片、聯絡人與文件放入 M1 之後的產品分支。
 
 1. Android 與 iPhone 首次安全配對。
-2. Android 掃描照片、影片、聯絡人與指定文件資料夾。
+2. Android 掃描照片並產生同步 manifest。
 3. Android 與 iPhone 在本地網路中傳輸資料。
-4. iPhone 將接收的照片與影片寫入 Photos。
-5. iPhone 將接收的聯絡人寫入 Contacts。
-6. iPhone 將接收的文件寫入 App 的 iCloud Documents container。
-7. 支援同步紀錄、去重、失敗恢復與基礎錯誤提示。
-8. 在 iOS 無法背景接收時，提供低摩擦的一鍵同步保底流程。
+4. iPhone 將接收的照片寫入 Photos。
+5. 支援同步紀錄、去重、失敗恢復與基礎錯誤提示。
+6. 在 iOS 無法背景接收時，提供低摩擦的一鍵同步保底流程。
 
 ### 3.3 非目標
 
@@ -904,6 +900,10 @@ Android 有 128 張新照片待備份到 iCloud。點一下完成同步。
 - 背景同步測試報告。
 - 技術風險修正建議。
 
+狀態：
+
+- 已於 2026-09-02 完成 M0 Android-to-iOS photo PoC。
+
 ### 18.2 Phase 1：MVP
 
 時程：8 至 12 週
@@ -916,17 +916,21 @@ Android 有 128 張新照片待備份到 iCloud。點一下完成同步。
 
 - QR 配對。
 - 同 Wi-Fi 傳輸。
-- Android 照片與影片同步。
-- Android 聯絡人同步。
-- Android 文件同步。
+- Android 照片同步。
 - iOS 寫入 Photos。
-- iOS 寫入 Contacts。
-- iOS 寫入 iCloud Documents container。
 - 同步紀錄。
 - 基礎去重。
 - 失敗重試。
 - 本地通知保底。
 - 權限引導。
+
+M1 之後的產品分支：
+
+- 影片同步。
+- 聯絡人同步。
+- 文件與 iCloud Documents 同步。
+- BLE discovery。
+- 反向同步與雙向合併。
 
 ### 18.3 Phase 2：反向同步
 
