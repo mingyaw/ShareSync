@@ -50,6 +50,31 @@ protocol MediaDownloadStateStore {
     func clear()
 }
 
+extension MediaDownloadStateStore {
+    func record(for asset: MediaAsset) -> MediaDownloadRecord? {
+        guard let record = record(for: asset.assetId) else {
+            return nil
+        }
+
+        return record.matches(asset: asset) ? record : nil
+    }
+}
+
+extension MediaDownloadRecord {
+    func matches(asset: MediaAsset) -> Bool {
+        guard sourceAssetId == asset.assetId else {
+            return false
+        }
+
+        guard let sourceDeviceId,
+              !sourceDeviceId.isEmpty else {
+            return true
+        }
+
+        return sourceDeviceId == asset.sourceDeviceId
+    }
+}
+
 final class InMemoryMediaDownloadStateStore: MediaDownloadStateStore {
     private var records: [String: MediaDownloadRecord] = [:]
 

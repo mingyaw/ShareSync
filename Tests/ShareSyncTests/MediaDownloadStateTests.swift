@@ -129,6 +129,47 @@ final class MediaDownloadStateTests: XCTestCase {
         XCTAssertEqual(store.importedMappings().map(\.sourceAssetId), ["media-001"])
     }
 
+    func testRecordForAssetMatchesSourceDeviceWhenPresent() {
+        let store = InMemoryMediaDownloadStateStore()
+        let currentDeviceAsset = makeAsset(
+            assetId: "media-001",
+            size: 2048,
+            sourceDeviceId: "android-current"
+        )
+        let previousDeviceAsset = makeAsset(
+            assetId: "media-001",
+            size: 2048,
+            sourceDeviceId: "android-previous"
+        )
+
+        store.upsertQueued(asset: previousDeviceAsset, now: Date(timeIntervalSince1970: 1))
+        store.markImported(
+            sourceAssetId: previousDeviceAsset.assetId,
+            photoLocalIdentifier: "previous-local-photo",
+            now: Date(timeIntervalSince1970: 2)
+        )
+
+        XCTAssertNil(store.record(for: currentDeviceAsset))
+        XCTAssertEqual(store.record(for: previousDeviceAsset)?.status, .imported)
+    }
+
+    func testRecordForAssetKeepsLegacyRecordsWithoutSourceDeviceCompatible() {
+        let currentDeviceAsset = makeAsset(
+            assetId: "media-001",
+            size: 2048,
+            sourceDeviceId: "android-current"
+        )
+        let legacyRecord = makeRecord(
+            sourceDeviceId: nil,
+            sourceAssetId: "media-001",
+            status: .imported,
+            photoLocalIdentifier: "legacy-local-photo",
+            updatedAt: Date(timeIntervalSince1970: 1)
+        )
+
+        XCTAssertTrue(legacyRecord.matches(asset: currentDeviceAsset))
+    }
+
     func testImportedRecordClearsDownloadedFileURL() {
         let store = InMemoryMediaDownloadStateStore()
         let asset = makeAsset(assetId: "media-001", size: 2048)
@@ -299,10 +340,14 @@ final class MediaDownloadStateTests: XCTestCase {
         XCTAssertEqual(store.resumablePartialRecords(), [])
     }
 
-    private func makeAsset(assetId: String, size: Int64) -> MediaAsset {
+    private func makeAsset(
+        assetId: String,
+        size: Int64,
+        sourceDeviceId: String = "android-demo-device"
+    ) -> MediaAsset {
         MediaAsset(
             assetId: assetId,
-            sourceDeviceId: "android-demo-device",
+            sourceDeviceId: sourceDeviceId,
             mediaType: .photo,
             fileName: "\(assetId).jpg",
             mimeType: "image/jpeg",
@@ -319,6 +364,7 @@ final class MediaDownloadStateTests: XCTestCase {
     }
 
     private func makeRecord(
+        sourceDeviceId: String? = "android-demo-device",
         sourceAssetId: String,
         status: MediaDownloadStatus,
         photoLocalIdentifier: String? = nil,
@@ -326,7 +372,7 @@ final class MediaDownloadStateTests: XCTestCase {
         updatedAt: Date
     ) -> MediaDownloadRecord {
         MediaDownloadRecord(
-            sourceDeviceId: "android-demo-device",
+            sourceDeviceId: sourceDeviceId,
             sourceAssetId: sourceAssetId,
             sourceHash: nil,
             status: status,

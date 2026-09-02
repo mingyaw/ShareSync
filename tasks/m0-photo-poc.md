@@ -177,6 +177,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Prevent duplicate imports.
 - [x] Treat missing imported Photos assets as retryable transfer candidates.
 - [x] Load duplicate iOS media state records safely and keep the newest local state.
+- [x] Add source-aware iOS media state lookup for M0 photo records.
 - [x] Persist latest shared `SyncResult` JSON.
 - [x] Restore latest shared `SyncResult` JSON on iOS app launch.
 - [x] Copy latest shared `SyncResult` JSON from the iOS receive screen.
@@ -230,6 +231,21 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-02 iOS M0 Source-Aware State Lookup
+
+Completed an iOS local-state consistency slice:
+
+- Added source-aware media state lookup so UI summaries, downloaded import reuse, missing-photo reconciliation, transfer planning, and sync result generation use the same source-device matching rule.
+- Kept legacy records without `sourceDeviceId` compatible with existing M0 duplicate-prevention state.
+- Added Swift coverage for matching current-device records and legacy records.
+
+Verified:
+
+```sh
+swift test
+./scripts/check-m0.sh
+```
 
 ### 2026-09-02 iOS M0 Source Device Matching
 

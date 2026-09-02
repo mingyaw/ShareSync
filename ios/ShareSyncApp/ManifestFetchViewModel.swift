@@ -567,7 +567,7 @@ final class ManifestFetchViewModel: ObservableObject {
     }
 
     private func downloadedImportRequest(for asset: MediaAsset) -> PhotoImportRequest? {
-        guard let record = downloadStateStore.record(for: asset.assetId),
+        guard let record = downloadStateStore.record(for: asset),
               record.status == .downloaded else {
             return nil
         }
@@ -593,7 +593,7 @@ final class ManifestFetchViewModel: ObservableObject {
 
     private func reconcileMissingPhotoAssets(in manifest: SyncManifest) async {
         for asset in manifest.media {
-            guard let record = downloadStateStore.record(for: asset.assetId),
+            guard let record = downloadStateStore.record(for: asset),
                   record.status == .imported,
                   let photoLocalIdentifier = record.photoLocalIdentifier,
                   !photoLocalIdentifier.isEmpty else {
@@ -689,31 +689,30 @@ private extension ManifestFetchViewModel.ManifestSummary {
         photoCount = photoAssets.count
         totalBytes = photoAssets.reduce(0) { $0 + $1.size }
         validationAssetName = photoAssets.first { asset in
-            guard let record = stateStore.record(for: asset.assetId) else {
+            guard let record = stateStore.record(for: asset) else {
                 return true
             }
 
             return record.status != .imported && record.status != .skipped
         }?.fileName
         downloadedCount = photoAssets.filter { asset in
-            stateStore.record(for: asset.assetId)?.status == .downloaded
+            stateStore.record(for: asset)?.status == .downloaded
         }.count
         importedCount = photoAssets.filter { asset in
-            stateStore.record(for: asset.assetId)?.status == .imported
+            stateStore.record(for: asset)?.status == .imported
         }.count
         missingCount = photoAssets.filter { asset in
-            stateStore.record(for: asset.assetId)?.status == .missing
+            stateStore.record(for: asset)?.status == .missing
         }.count
         failedCount = photoAssets.filter { asset in
-            stateStore.record(for: asset.assetId)?.status == .failed
+            stateStore.record(for: asset)?.status == .failed
         }.count
-        let manifestAssetIds = Set(photoAssets.map(\.assetId))
         partialCount = stateStore.resumablePartialRecords()
-            .filter { record in manifestAssetIds.contains(record.sourceAssetId) }
+            .filter { record in photoAssets.contains { asset in record.matches(asset: asset) } }
             .count
         let latestFailedRecord = photoAssets
             .compactMap { asset -> (asset: MediaAsset, record: MediaDownloadRecord)? in
-                guard let record = stateStore.record(for: asset.assetId),
+                guard let record = stateStore.record(for: asset),
                       record.status == .failed else {
                     return nil
                 }
@@ -723,7 +722,7 @@ private extension ManifestFetchViewModel.ManifestSummary {
         lastFailureCode = latestFailedRecord?.record.lastErrorCode
         lastFailureFileName = latestFailedRecord?.asset.fileName
         remainingCount = photoAssets.filter { asset in
-            guard let record = stateStore.record(for: asset.assetId) else {
+            guard let record = stateStore.record(for: asset) else {
                 return true
             }
 
