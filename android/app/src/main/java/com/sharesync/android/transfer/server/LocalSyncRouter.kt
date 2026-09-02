@@ -2,6 +2,7 @@ package com.sharesync.android.transfer.server
 
 import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.sync.MediaAsset
+import com.sharesync.android.sync.SyncResult
 import com.sharesync.android.sync.SyncResultJsonCodec
 import com.sharesync.android.sync.SyncResultStore
 import org.json.JSONException
@@ -88,6 +89,7 @@ class LocalSyncRouter(
 
         return try {
             val result = syncResultJsonCodec.decode(body)
+            validateSyncResult(result)
             syncResultStore.save(result)
             val response = LocalApiResponse.json(
                 statusCode = 202,
@@ -109,6 +111,14 @@ class LocalSyncRouter(
             val response = LocalApiResponse.jsonError(statusCode = 400, errorCode = "SS-REQ-001")
             requestActivityTracker?.record("sync-result", response.statusCode)
             response
+        }
+    }
+
+    private fun validateSyncResult(result: SyncResult) {
+        require(result.syncBatchId.isNotBlank())
+        require(result.targetDeviceId.isNotBlank())
+        result.results.forEach { item ->
+            require(item.sourceItemId.isNotBlank())
         }
     }
 

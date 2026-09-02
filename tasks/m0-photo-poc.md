@@ -79,6 +79,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Implement `POST /v1/sync/result`.
 - [x] Enforce pairing-token header on protected M0 endpoints.
 - [x] Persist latest sync result on Android.
+- [x] Reject malformed Android sync result payloads before persistence.
 - [x] Show latest sync result summary on Android M0 screen.
 - [x] Show latest failed result code on Android M0 screen.
 - [x] Restore latest Android sync result summary on app launch.
@@ -232,6 +233,21 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-02 Android M0 Sync Result Required Field Validation
+
+Completed an Android sync-result ingestion safety slice:
+
+- Added server-side validation for blank `syncBatchId`, `targetDeviceId`, and media `sourceItemId` values before persisting iOS sync results.
+- Kept malformed sync result payloads as `400 SS-REQ-001` responses so bad data does not affect Android manifest filtering.
+- Added Android router coverage proving invalid sync result payloads are rejected without persistence.
+
+Verified:
+
+```sh
+./gradlew :app:testDebugUnitTest :app:compileDebugKotlin
+./scripts/check-m0.sh
+```
 
 ### 2026-09-02 iOS M0 Source-Aware Queueing
 

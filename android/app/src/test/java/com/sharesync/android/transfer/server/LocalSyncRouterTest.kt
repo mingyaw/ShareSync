@@ -60,6 +60,62 @@ class LocalSyncRouterTest {
     }
 
     @Test
+    fun syncResultRejectsBlankRequiredFieldsWithoutPersisting() {
+        val store = InMemorySyncResultStore()
+        val response = SuspendBridge.runBlocking {
+            router(syncResultStore = store).syncResult(
+                body = """
+                    {
+                      "syncBatchId": " ",
+                      "targetDeviceId": "ios-device-001",
+                      "results": [
+                        {
+                          "itemType": "media",
+                          "sourceItemId": "media-001",
+                          "targetItemId": "photo-local-001",
+                          "status": "synced",
+                          "errorCode": null
+                        }
+                      ]
+                    }
+                """.trimIndent(),
+                headers = pairingHeaders(),
+            )
+        }
+
+        assertEquals(400, response.statusCode)
+        assertEquals(null, SuspendBridge.runBlocking { store.latest() })
+    }
+
+    @Test
+    fun syncResultRejectsBlankSourceItemIdsWithoutPersisting() {
+        val store = InMemorySyncResultStore()
+        val response = SuspendBridge.runBlocking {
+            router(syncResultStore = store).syncResult(
+                body = """
+                    {
+                      "syncBatchId": "batch-001",
+                      "targetDeviceId": "ios-device-001",
+                      "results": [
+                        {
+                          "itemType": "media",
+                          "sourceItemId": " ",
+                          "targetItemId": "photo-local-001",
+                          "status": "synced",
+                          "errorCode": null
+                        }
+                      ]
+                    }
+                """.trimIndent(),
+                headers = pairingHeaders(),
+            )
+        }
+
+        assertEquals(400, response.statusCode)
+        assertEquals(null, SuspendBridge.runBlocking { store.latest() })
+    }
+
+    @Test
     fun requestActivityCountsLocalRequestsAcrossEndpoints() {
         var now = 10_000L
         val activityTracker = LocalRequestActivityTracker(clock = { now })
@@ -132,6 +188,7 @@ class LocalSyncRouterTest {
 
     private fun router(
         requestActivityTracker: LocalRequestActivityTracker? = null,
+        syncResultStore: InMemorySyncResultStore = InMemorySyncResultStore(),
     ): LocalSyncRouter {
         return LocalSyncRouter(
             deviceId = "android-device-001",
@@ -155,7 +212,7 @@ class LocalSyncRouterTest {
                     return mediaAsset(assetId)
                 }
             },
-            syncResultStore = InMemorySyncResultStore(),
+            syncResultStore = syncResultStore,
             requestActivityTracker = requestActivityTracker,
         )
     }
