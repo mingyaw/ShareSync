@@ -112,3 +112,13 @@ Added the first product localization pass:
 - Added iOS English and Traditional Chinese `Localizable.strings`.
 - Added iOS English and Traditional Chinese `InfoPlist.strings` for camera, local network, and Photos permission prompts.
 - Localized the current iOS product UI, QR scanner, and primary user-facing error messages.
+
+### 2026-09-02 Pairing-First UX Flow
+
+Moved the MVP closer to the intended product flow:
+
+- Android now auto-starts photo sharing after photo permission is available and presents pairing QR/status as the primary screen.
+- Android manual server controls, endpoint copy, raw pairing payload, sync result JSON, and reset actions are grouped under settings/diagnostics.
+- iOS now shows pairing first when no Android device is configured.
+- iOS shows the photo sync workflow after pairing, with auto-sync-all enabled by default and manual sync-all still available.
+- iOS advanced connection, status, and diagnostics controls are tucked behind a settings disclosure.

@@ -3,9 +3,11 @@ import UIKit
 
 struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
+    @AppStorage("autoSyncAllPhotos") private var autoSyncAllPhotos = true
     @StateObject private var viewModel = ManifestFetchViewModel()
     @State private var isShowingPairingScanner = false
     @State private var syncResultCopyMessage: String?
+    @State private var isSettingsExpanded = false
 
     var body: some View {
         NavigationStack {
@@ -13,10 +15,12 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     headerSection
                     transferSummaryPanel
-                    primaryActions
-                    connectionPanel
-                    statusSection
-                    diagnosticsPanel
+                    if isPaired {
+                        primaryActions
+                    } else {
+                        pairingPanel
+                    }
+                    settingsSection
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 18)
@@ -29,6 +33,9 @@ struct ContentView: View {
                 QRCodeScannerView { payload in
                     viewModel.pairingPayloadText = payload
                     viewModel.applyPairingPayload()
+                    if autoSyncAllPhotos {
+                        viewModel.syncAllPhotos()
+                    }
                 }
             }
             .onChange(of: viewModel.downloadState) { _, newState in
@@ -92,32 +99,31 @@ struct ContentView: View {
     private var primaryActions: some View {
         ProductPanel {
             VStack(alignment: .leading, spacing: 12) {
+                Toggle(isOn: $autoSyncAllPhotos) {
+                    Text("ios.action.auto_sync_all")
+                }
+                .disabled(viewModel.isTransferActive)
+
                 Button {
-                    viewModel.fetchManifest()
+                    viewModel.syncAllPhotos()
                 } label: {
-                    Label(buttonTitle, systemImage: "arrow.clockwise")
+                    Label(primarySyncButtonTitle, systemImage: "arrow.triangle.2.circlepath")
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 46)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
-                .disabled(!viewModel.canFetch)
+                .disabled(!viewModel.canSyncAll)
 
                 Button {
-                    viewModel.downloadRemainingMedia()
+                    viewModel.fetchManifest()
                 } label: {
-                    HStack {
-                        if viewModel.isTransferActive {
-                            ProgressView()
-                        }
-                        Label(remainingDownloadButtonTitle, systemImage: "square.and.arrow.down")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .frame(minHeight: 46)
+                    Label(buttonTitle, systemImage: "arrow.clockwise")
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 42)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(!viewModel.canDownload)
+                .buttonStyle(.bordered)
+                .disabled(!viewModel.canFetch)
 
                 HStack(spacing: 12) {
                     Button {
@@ -159,8 +165,55 @@ struct ContentView: View {
         }
     }
 
+    private var pairingPanel: some View {
+        ProductPanel {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("ios.pairing.prompt")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Button {
+                    isShowingPairingScanner = true
+                } label: {
+                    Label("ios.action.scan_pairing_qr", systemImage: "qrcode.viewfinder")
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 46)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+
+                Toggle(isOn: $autoSyncAllPhotos) {
+                    Text("ios.action.auto_sync_after_pairing")
+                }
+            }
+        }
+    }
+
+    private var settingsSection: some View {
+        ProductPanel(title: "ios.panel.settings") {
+            DisclosureGroup(isExpanded: $isSettingsExpanded) {
+                VStack(alignment: .leading, spacing: 16) {
+                    connectionPanelContent
+                    statusSectionContent
+                    diagnosticsPanelContent
+                }
+                .padding(.top, 10)
+            } label: {
+                Text("ios.settings.advanced")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+            }
+        }
+    }
+
     private var connectionPanel: some View {
         ProductPanel(title: "ios.panel.connection") {
+            connectionPanelContent
+        }
+    }
+
+    private var connectionPanelContent: some View {
             VStack(alignment: .leading, spacing: 14) {
                 Button {
                     isShowingPairingScanner = true
@@ -202,11 +255,15 @@ struct ContentView: View {
                 .buttonStyle(.bordered)
                 .controlSize(.large)
             }
-        }
     }
 
     private var diagnosticsPanel: some View {
         ProductPanel(title: "ios.panel.diagnostics") {
+            diagnosticsPanelContent
+        }
+    }
+
+    private var diagnosticsPanelContent: some View {
             VStack(alignment: .leading, spacing: 12) {
                 Button {
                     copySyncResult()
@@ -238,11 +295,15 @@ struct ContentView: View {
                 .buttonStyle(.bordered)
                 .disabled(viewModel.isTransferActive || !viewModel.canClearPairing)
             }
-        }
     }
 
     private var statusSection: some View {
         ProductPanel(title: "ios.panel.status") {
+            statusSectionContent
+        }
+    }
+
+    private var statusSectionContent: some View {
             VStack(alignment: .leading, spacing: 12) {
                 StatusRow(title: "ios.status.pairing", value: pairedStatus)
                 StatusRow(title: "ios.status.photos_access", value: photosAccessStatus)
@@ -326,7 +387,10 @@ struct ContentView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-        }
+    }
+
+    private var isPaired: Bool {
+        !viewModel.host.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     private var buttonTitle: String {
@@ -338,7 +402,7 @@ struct ContentView: View {
         }
     }
 
-    private var remainingDownloadButtonTitle: String {
+    private var primarySyncButtonTitle: String {
         switch viewModel.downloadState {
         case .downloading:
             return localized("ios.action.syncing_photos")

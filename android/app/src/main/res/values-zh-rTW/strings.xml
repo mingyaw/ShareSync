@@ -5,6 +5,7 @@
     <string name="m0_panel_summary">照片同步</string>
     <string name="m0_panel_actions">操作</string>
     <string name="m0_panel_pairing">配對</string>
+    <string name="m0_panel_settings">設定</string>
     <string name="m0_panel_diagnostics">診斷</string>
     <string name="m0_status_ready">照片分享尚未開啟。允許照片權限後，即可在連接埠 %1$d 提供 Android 照片。</string>
     <string name="m0_status_starting">正在啟動照片同步...</string>
@@ -43,6 +44,8 @@
     <string name="m0_sync_result_copied">已複製同步結果 JSON。</string>
     <string name="m0_sync_state_cleared">照片同步紀錄已清除。請從 iPhone 重新取得清單以重建狀態。</string>
     <string name="m0_pairing_payload_unavailable">照片同步啟動後會顯示配對碼。</string>
+    <string name="m0_pairing_instruction_waiting">允許照片權限並保持 ShareSync 開啟，配對碼會自動顯示。</string>
+    <string name="m0_pairing_instruction_ready">請用 iPhone 掃描此配對碼。配對後，只要 ShareSync 保持開啟，這支 Android 手機就會提供照片狀態。</string>
     <string name="m0_pairing_payload_copied">已複製配對碼，請貼到 iPhone ShareSync 接收畫面。</string>
     <string name="m0_grant_permissions">允許照片權限</string>
     <string name="m0_start_server">提供照片</string>

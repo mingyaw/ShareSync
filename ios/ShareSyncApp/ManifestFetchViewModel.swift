@@ -124,6 +124,13 @@ final class ManifestFetchViewModel: ObservableObject {
         !host.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && Int(port) != nil && state != .loading
     }
 
+    var canSyncAll: Bool {
+        !host.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && Int(port) != nil
+            && state != .loading
+            && !isTransferActive
+    }
+
     var canDownload: Bool {
         guard let latestManifest else {
             return false
@@ -185,6 +192,58 @@ final class ManifestFetchViewModel: ObservableObject {
                 downloadProgressSummary = nil
                 downloadState = .idle
                 state = .loaded
+            } catch {
+                latestManifest = nil
+                localPeerHealth = nil
+                summary = nil
+                syncResultSummary = nil
+                syncResultReturnSummary = nil
+                downloadProgressSummary = nil
+                state = .failed(Self.message(for: error))
+            }
+        }
+    }
+
+    func syncAllPhotos() {
+        let trimmedHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedHost.isEmpty else {
+            state = .failed(Self.localized("ios.vm.enter_android_ip"))
+            return
+        }
+
+        guard let portNumber = Int(port), (1...65535).contains(portNumber) else {
+            state = .failed(Self.localized("ios.vm.enter_valid_port"))
+            return
+        }
+
+        state = .loading
+
+        Task {
+            do {
+                let health = try await healthClient.fetchHealth(from: trimmedHost, port: portNumber)
+                localPeerHealth = health
+                let manifest = try await client.fetchManifest(
+                    from: trimmedHost,
+                    port: portNumber,
+                    pairingToken: pairingToken
+                )
+                latestManifest = manifest
+                await reconcileMissingPhotoAssets(in: manifest)
+                summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
+                let publishSummary = await publishSyncResultSummary(
+                    for: manifest,
+                    host: trimmedHost,
+                    port: portNumber
+                )
+                syncResultSummary = publishSummary.resultSummary
+                syncResultReturnSummary = publishSummary.returnSummary
+                downloadProgressSummary = nil
+                downloadState = .idle
+                state = .loaded
+                guard nextTransferCandidate(in: manifest) != nil else {
+                    return
+                }
+                downloadNextMediaBatch(limit: manifest.media.count)
             } catch {
                 latestManifest = nil
                 localPeerHealth = nil

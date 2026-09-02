@@ -1,4 +1,6 @@
 "ios.action.clear_pairing" = "Clear Pairing";
+"ios.action.auto_sync_all" = "Auto sync all photos after pairing";
+"ios.action.auto_sync_after_pairing" = "Sync all photos after pairing";
 "ios.action.copy_sync_result" = "Copy Sync Result";
 "ios.action.fetch_manifest" = "Fetch Manifest";
 "ios.action.fetching" = "Fetching";
@@ -22,7 +24,9 @@
 "ios.nav.receive_photos" = "Receive Photos";
 "ios.panel.connection" = "Connection";
 "ios.panel.diagnostics" = "Diagnostics";
+"ios.panel.settings" = "Settings";
 "ios.panel.status" = "Status";
+"ios.pairing.prompt" = "Open ShareSync on Android and scan the pairing QR code. After pairing, this iPhone can sync all available photos into Photos for iCloud backup.";
 "ios.phase.fetch_error" = "Fetch Error";
 "ios.phase.fetching_manifest" = "Fetching Manifest";
 "ios.phase.no_photos" = "No Photos";
@@ -82,6 +86,7 @@
 "ios.summary.pair_to_begin" = "Pair with your Android phone to begin.";
 "ios.summary.remaining_format" = "%@ photos ready to sync.";
 "ios.summary.retry_required" = "Some photos need attention before this sync is complete.";
+"ios.settings.advanced" = "Connection, status, and diagnostics";
 "ios.toast.sync_result_copied" = "Sync result JSON copied.";
 "ios.transfer.cancelled_default" = "Transfer stopped. Completed items are kept; remaining items can be retried.";
 "ios.value.none" = "None";

@@ -5,6 +5,7 @@
     <string name="m0_panel_summary">Photo Sync</string>
     <string name="m0_panel_actions">Actions</string>
     <string name="m0_panel_pairing">Pairing</string>
+    <string name="m0_panel_settings">Settings</string>
     <string name="m0_panel_diagnostics">Diagnostics</string>
     <string name="m0_status_ready">Photo sharing is off. Allow photo access, then make Android photos available on port %1$d.</string>
     <string name="m0_status_starting">Starting photo sync...</string>
@@ -43,6 +44,8 @@
     <string name="m0_sync_result_copied">Sync result JSON copied.</string>
     <string name="m0_sync_state_cleared">Photo sync history cleared. Fetch from iPhone again to rebuild state.</string>
     <string name="m0_pairing_payload_unavailable">Pairing code appears after photo sync starts.</string>
+    <string name="m0_pairing_instruction_waiting">Allow photo access and keep ShareSync open. The pairing code will appear automatically.</string>
+    <string name="m0_pairing_instruction_ready">Scan this pairing code from your iPhone. After pairing, this Android phone will keep photos available while ShareSync stays open.</string>
     <string name="m0_pairing_payload_copied">Pairing payload copied. Paste it into the iPhone ShareSync receive screen.</string>
     <string name="m0_grant_permissions">Allow Photo Access</string>
     <string name="m0_start_server">Make Photos Available</string>

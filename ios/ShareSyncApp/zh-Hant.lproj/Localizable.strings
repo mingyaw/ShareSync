@@ -1,4 +1,6 @@
 "ios.action.clear_pairing" = "清除配對";
+"ios.action.auto_sync_all" = "配對後自動同步全部照片";
+"ios.action.auto_sync_after_pairing" = "配對後同步全部照片";
 "ios.action.copy_sync_result" = "複製同步結果";
 "ios.action.fetch_manifest" = "取得照片清單";
 "ios.action.fetching" = "取得中";
@@ -22,7 +24,9 @@
 "ios.nav.receive_photos" = "接收照片";
 "ios.panel.connection" = "連線";
 "ios.panel.diagnostics" = "診斷";
+"ios.panel.settings" = "設定";
 "ios.panel.status" = "狀態";
+"ios.pairing.prompt" = "請在 Android 開啟 ShareSync，並掃描配對 QR Code。配對後，這支 iPhone 可以將可用照片同步到照片 App，接著由 iCloud 備份。";
 "ios.phase.fetch_error" = "取得失敗";
 "ios.phase.fetching_manifest" = "取得清單中";
 "ios.phase.no_photos" = "沒有照片";
@@ -82,6 +86,7 @@
 "ios.summary.pair_to_begin" = "與 Android 手機配對後開始。";
 "ios.summary.remaining_format" = "還有 %@ 張照片可同步。";
 "ios.summary.retry_required" = "部分照片需要處理後才能完成這次同步。";
+"ios.settings.advanced" = "連線、狀態與診斷";
 "ios.toast.sync_result_copied" = "已複製同步結果 JSON。";
 "ios.transfer.cancelled_default" = "傳輸已停止。已完成項目會保留紀錄，剩餘項目可重試。";
 "ios.value.none" = "無";

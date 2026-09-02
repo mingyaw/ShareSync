@@ -40,6 +40,7 @@ class MainActivity : Activity() {
     private lateinit var notificationPermissionText: TextView
     private lateinit var screenLockText: TextView
     private lateinit var manifestSummaryText: TextView
+    private lateinit var pairingInstructionText: TextView
     private lateinit var requestActivityText: TextView
     private lateinit var syncResultText: TextView
     private lateinit var pairingPayloadText: TextView
@@ -74,6 +75,9 @@ class MainActivity : Activity() {
         restoreRunningServerSession()
         renderContent()
         refreshUi()
+        if (hasMediaPermission() && !isServerRunning) {
+            startServer()
+        }
     }
 
     override fun onDestroy() {
@@ -94,7 +98,11 @@ class MainActivity : Activity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_MEDIA_PERMISSION) {
-            refreshUi()
+            if (hasMediaPermission()) {
+                startServer()
+            } else {
+                refreshUi()
+            }
         }
     }
 
@@ -141,6 +149,7 @@ class MainActivity : Activity() {
         notificationPermissionText = bodyText()
         screenLockText = bodyText()
         manifestSummaryText = bodyText()
+        pairingInstructionText = bodyText()
         requestActivityText = bodyText()
         syncResultText = bodyText()
         pairingPayloadText = bodyText()
@@ -203,20 +212,14 @@ class MainActivity : Activity() {
         root.addView(subtitle)
         root.addView(
             productPanel(
-                title = getString(R.string.m0_panel_summary),
-                children = listOf(statusText, phaseText, manifestSummaryText, syncResultText),
-            ),
-        )
-        root.addView(
-            productPanel(
-                title = getString(R.string.m0_panel_actions),
-                children = listOf(grantButton, startButton, stopButton),
-            ),
-        )
-        root.addView(
-            productPanel(
                 title = getString(R.string.m0_panel_pairing),
-                children = listOf(endpointText, pairingQrImage, pairingPayloadText, copyPairingButton),
+                children = listOf(statusText, phaseText, manifestSummaryText, pairingInstructionText, pairingQrImage),
+            ),
+        )
+        root.addView(
+            productPanel(
+                title = getString(R.string.m0_panel_settings),
+                children = listOf(grantButton, startButton, stopButton, endpointText, pairingPayloadText, copyPairingButton),
             ),
         )
         root.addView(
@@ -227,6 +230,7 @@ class MainActivity : Activity() {
                     notificationPermissionText,
                     screenLockText,
                     requestActivityText,
+                    syncResultText,
                     copyEndpointButton,
                     copySyncResultButton,
                     clearSyncStateButton,
@@ -319,6 +323,11 @@ class MainActivity : Activity() {
         }
         pairingPayloadText.text = currentPairingPayloadJson
             ?: getString(R.string.m0_pairing_payload_unavailable)
+        pairingInstructionText.text = if (currentPairingPayloadJson != null) {
+            getString(R.string.m0_pairing_instruction_ready)
+        } else {
+            getString(R.string.m0_pairing_instruction_waiting)
+        }
         manifestSummaryText.text = currentManifestPhotoCount?.let { count ->
             getString(R.string.m0_manifest_summary, count, manifestTransferStatus(count))
         } ?: getString(R.string.m0_manifest_unavailable)
@@ -383,6 +392,10 @@ class MainActivity : Activity() {
     }
 
     private fun startServer() {
+        if (isServerRunning || isServerStarting) {
+            return
+        }
+
         if (!hasMediaPermission()) {
             requestM0Permissions()
             return
