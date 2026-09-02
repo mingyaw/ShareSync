@@ -125,6 +125,37 @@ final class M0PhotoTransferPlannerTests: XCTestCase {
         ])
     }
 
+    func testNextTransferCandidatesAppliesLimitAfterDownloadedPriority() {
+        let newPhoto = makeAsset(assetId: "photo-new", mediaType: .photo)
+        let downloadedPhoto = makeAsset(assetId: "photo-downloaded", mediaType: .photo)
+        let failedPhoto = makeAsset(assetId: "photo-failed", mediaType: .photo)
+        let manifest = makeManifest(
+            media: [
+                newPhoto,
+                failedPhoto,
+                downloadedPhoto,
+            ]
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        store.upsertQueued(asset: downloadedPhoto, now: Date(timeIntervalSince1970: 1))
+        store.markDownloaded(
+            sourceAssetId: downloadedPhoto.assetId,
+            localFileURL: URL(fileURLWithPath: "/tmp/photo-downloaded.jpg"),
+            downloadedBytes: downloadedPhoto.size,
+            now: Date(timeIntervalSince1970: 2)
+        )
+        store.upsertQueued(asset: failedPhoto, now: Date(timeIntervalSince1970: 3))
+        store.markFailed(sourceAssetId: failedPhoto.assetId, errorCode: "SS-NET-002", now: Date(timeIntervalSince1970: 4))
+
+        let candidates = M0PhotoTransferPlanner().nextTransferCandidates(
+            in: manifest,
+            stateStore: store,
+            limit: 1
+        )
+
+        XCTAssertEqual(candidates.map(\.assetId), ["photo-downloaded"])
+    }
+
     func testSyncResultRecordsIncludePhotosOnlyInManifestOrder() {
         let firstPhoto = makeAsset(assetId: "photo-001", mediaType: .photo)
         let video = makeAsset(assetId: "video-001", mediaType: .video)

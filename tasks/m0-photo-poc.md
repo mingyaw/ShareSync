@@ -163,6 +163,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Add manual foreground transfer stop and retry support.
 - [x] Resume or skip completed items after restart.
 - [x] Prioritize already-downloaded photos for import before starting new downloads.
+- [x] Apply transfer limits after prioritizing already-downloaded photos.
 - [x] Treat same asset id from a different Android device as a separate M0 photo candidate.
 - [x] Queue and download same asset id from a different Android device instead of reusing old terminal state.
 - [x] Show resumable partial photo count on iOS receive screen.
@@ -237,6 +238,21 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-02 iOS M0 Limited Transfer Priority
+
+Completed an iOS transfer-planning safety slice:
+
+- Locked down single-photo and small-batch planning so transfer limits are applied after downloaded-photo priority.
+- Ensured an already-downloaded photo is selected for import before failed retry or new download candidates when `limit` is small.
+- Added Swift planner coverage for the small-limit validation path.
+
+Verified:
+
+```sh
+swift test
+./scripts/check-m0.sh
+```
 
 ### 2026-09-02 Android M0 Conflicted Manifest Retry
 
