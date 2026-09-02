@@ -68,7 +68,7 @@ Sync result JSON:
 
 ## M0 Completion Gate
 
-M0 can be called complete when these scenarios are `Pass` on real devices:
+M0 is complete by user-reported real-device validation on 2026-09-02 because these required scenarios are `Pass`:
 
 - Baseline one-photo sync.
 - Foreground full manifest transfer.

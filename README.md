@@ -221,7 +221,7 @@ Resetting test state:
 - iOS `Reset Local Sync State` removes ShareSync download/import mappings and latest result JSON. Photos already imported into the `ShareSync Backup` album remain in Photos.
 - iOS `Clear Pairing` removes only the saved Android endpoint, device metadata, pairing token, and pasted payload. It does not clear download/import mappings or the latest sync result evidence.
 
-Use [docs/m0-device-validation.md](docs/m0-device-validation.md) as the real-device acceptance checklist, and record pass/fail evidence in [docs/m0-validation-results.md](docs/m0-validation-results.md), before calling M0 complete.
+M0 real-device validation was completed by user report on 2026-09-02. Use [docs/m0-device-validation.md](docs/m0-device-validation.md) to rerun the acceptance checklist, and keep pass/fail evidence in [docs/m0-validation-results.md](docs/m0-validation-results.md).
 
 If Gradle cannot find the Android SDK, create an untracked `android/local.properties`:
 

@@ -1,5 +1,7 @@
 # M0 - Android to iOS Photo PoC
 
+Status: Complete by automated checks and user-reported real-device matrix on 2026-09-02.
+
 Goal: prove that iPhone can pull photos from Android over a local network and import them into iOS Photos without duplicate imports.
 
 ## Success Criteria
@@ -239,6 +241,20 @@ Real-device M0 matrix completed by user report on 2026-09-02. Keep detailed run 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-02 M0 Main Axis Complete
+
+Closed the M0 photo-sync main axis:
+
+- Confirmed Android, iOS, and cross-platform M0 implementation tasks are complete for the photo-only MVP path.
+- Confirmed the M0 real-device test matrix is complete by user report.
+- Kept contacts, files, BLE discovery, background scheduling, HTTPS hardening, request signing, and App Store release as post-M0 product branches.
+
+Verified:
+
+```sh
+./scripts/check-m0.sh
+```
 
 ### 2026-09-02 M0 Real-Device Matrix Completed
 
