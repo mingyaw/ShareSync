@@ -175,6 +175,7 @@ Goal: prove that iPhone can pull photos from Android over a local network and im
 - [x] Store Android asset id to iOS local identifier mapping.
 - [x] Prevent duplicate imports.
 - [x] Treat missing imported Photos assets as retryable transfer candidates.
+- [x] Load duplicate iOS media state records safely and keep the newest local state.
 - [x] Persist latest shared `SyncResult` JSON.
 - [x] Restore latest shared `SyncResult` JSON on iOS app launch.
 - [x] Copy latest shared `SyncResult` JSON from the iOS receive screen.
@@ -227,6 +228,21 @@ Run the full checklist in `docs/m0-device-validation.md` and record real-device 
 - App Store release.
 
 ## Progress Log
+
+### 2026-09-02 iOS M0 Duplicate State Load Safety
+
+Completed an iOS local-state resilience slice:
+
+- Updated the file-backed media download state store to tolerate duplicate persisted asset records.
+- Kept the newest record by `updatedAt` so app relaunch keeps the latest known photo state.
+- Added Swift coverage for duplicate persisted asset records during file-store load.
+
+Verified:
+
+```sh
+swift test
+./scripts/check-m0.sh
+```
 
 ### 2026-09-02 iOS M0 Photo-Only Sync Result Records
 

@@ -182,6 +182,35 @@ final class MediaDownloadStateTests: XCTestCase {
         )
     }
 
+    func testFileStoreLoadsLatestRecordWhenPersistedStateContainsDuplicateAssetIds() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncStateTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let fileURL = directory.appendingPathComponent("media-download-state.json")
+        let olderRecord = makeRecord(
+            sourceAssetId: "media-001",
+            status: .failed,
+            lastErrorCode: "SS-NET-002",
+            updatedAt: Date(timeIntervalSince1970: 1)
+        )
+        let newerRecord = makeRecord(
+            sourceAssetId: "media-001",
+            status: .imported,
+            photoLocalIdentifier: "photo-local-001",
+            updatedAt: Date(timeIntervalSince1970: 2)
+        )
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        try encoder.encode([olderRecord, newerRecord]).write(to: fileURL)
+
+        let store = FileMediaDownloadStateStore(fileURL: fileURL)
+
+        XCTAssertEqual(store.allRecords().map(\.sourceAssetId), ["media-001"])
+        XCTAssertEqual(store.record(for: "media-001")?.status, .imported)
+        XCTAssertEqual(store.record(for: "media-001")?.photoLocalIdentifier, "photo-local-001")
+    }
+
     func testFailedRecordsRemainPendingWithAttemptCount() {
         let store = InMemoryMediaDownloadStateStore()
         let asset = makeAsset(assetId: "media-001", size: 2048)
@@ -286,6 +315,28 @@ final class MediaDownloadStateTests: XCTestCase {
             height: nil,
             durationMs: nil,
             relativePath: "DCIM/Camera"
+        )
+    }
+
+    private func makeRecord(
+        sourceAssetId: String,
+        status: MediaDownloadStatus,
+        photoLocalIdentifier: String? = nil,
+        lastErrorCode: String? = nil,
+        updatedAt: Date
+    ) -> MediaDownloadRecord {
+        MediaDownloadRecord(
+            sourceDeviceId: "android-demo-device",
+            sourceAssetId: sourceAssetId,
+            sourceHash: nil,
+            status: status,
+            localFileURL: nil,
+            photoLocalIdentifier: photoLocalIdentifier,
+            downloadedBytes: status == .imported ? 2048 : 0,
+            totalBytes: 2048,
+            attemptCount: status == .failed ? 1 : 0,
+            lastErrorCode: lastErrorCode,
+            updatedAt: updatedAt
         )
     }
 }

@@ -342,7 +342,16 @@ final class FileMediaDownloadStateStore: MediaDownloadStateStore {
             return [:]
         }
 
-        return Dictionary(uniqueKeysWithValues: records.map { ($0.sourceAssetId, $0) })
+        return records.reduce(into: [:]) { loadedRecords, record in
+            guard let existing = loadedRecords[record.sourceAssetId] else {
+                loadedRecords[record.sourceAssetId] = record
+                return
+            }
+
+            if existing.updatedAt <= record.updatedAt {
+                loadedRecords[record.sourceAssetId] = record
+            }
+        }
     }
 
     private static func defaultStoreURL(fileManager: FileManager) -> URL {
