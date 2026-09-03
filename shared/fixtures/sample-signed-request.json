@@ -1,0 +1,9 @@
+{
+  "secret": "pairing-token-001",
+  "method": "GET",
+  "path": "/v1/manifest",
+  "timestamp": "1800000000000",
+  "nonce": "nonce-001",
+  "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "signature": "V+Zfc9LZCzOl+H/8ZpZGbCjZ2WiZxwo2mgc17pPqPhY="
+}

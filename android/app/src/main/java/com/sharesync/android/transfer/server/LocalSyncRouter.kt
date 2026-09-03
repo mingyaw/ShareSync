@@ -19,6 +19,9 @@ class LocalSyncRouter(
     private val manifestJsonEncoder: ManifestJsonEncoder = ManifestJsonEncoder(),
     private val syncResultJsonCodec: SyncResultJsonCodec = SyncResultJsonCodec(),
     private val requestActivityTracker: LocalRequestActivityTracker? = null,
+    private val signatureValidator: RequestSignatureValidator = RequestSignatureValidator(
+        secretProvider = { pairingToken },
+    ),
 ) {
     suspend fun health(): LocalApiResponse {
         val response = LocalApiResponse.json(
@@ -35,8 +38,8 @@ class LocalSyncRouter(
         return response
     }
 
-    suspend fun manifest(headers: Map<String, String> = emptyMap()): LocalApiResponse {
-        if (!isAuthorized(headers)) {
+    suspend fun manifest(headers: Map<String, String> = emptyMap(), path: String = "/v1/manifest"): LocalApiResponse {
+        if (!isAuthorized(method = "GET", path = path, body = "", headers = headers)) {
             val response = LocalApiResponse.jsonError(statusCode = 401, errorCode = "SS-AUTH-001")
             requestActivityTracker?.record("manifest", response.statusCode)
             return response
@@ -53,8 +56,9 @@ class LocalSyncRouter(
         assetId: String,
         rangeHeader: String? = null,
         headers: Map<String, String> = emptyMap(),
+        path: String = "/v1/media/$assetId",
     ): LocalMediaResponse {
-        if (!isAuthorized(headers)) {
+        if (!isAuthorized(method = "GET", path = path, body = "", headers = headers)) {
             val response = LocalMediaResponse.unauthorized("SS-AUTH-001")
             requestActivityTracker?.record("media", response.httpStatusCode())
             return response
@@ -82,8 +86,12 @@ class LocalSyncRouter(
         return response
     }
 
-    suspend fun syncResult(body: String, headers: Map<String, String> = emptyMap()): LocalApiResponse {
-        if (!isAuthorized(headers)) {
+    suspend fun syncResult(
+        body: String,
+        headers: Map<String, String> = emptyMap(),
+        path: String = "/v1/sync/result",
+    ): LocalApiResponse {
+        if (!isAuthorized(method = "POST", path = path, body = body, headers = headers)) {
             val response = LocalApiResponse.jsonError(statusCode = 401, errorCode = "SS-AUTH-001")
             requestActivityTracker?.record("sync-result", response.statusCode)
             return response
@@ -133,7 +141,11 @@ class LocalSyncRouter(
         }
     }
 
-    private fun isAuthorized(headers: Map<String, String>): Boolean {
+    private fun isAuthorized(method: String, path: String, body: String, headers: Map<String, String>): Boolean {
+        if (signatureValidator.isAuthorized(method = method, path = path, body = body, headers = headers)) {
+            return true
+        }
+
         return headers.any { (name, value) ->
             name.equals(PAIRING_TOKEN_HEADER, ignoreCase = true) && value == pairingToken
         }

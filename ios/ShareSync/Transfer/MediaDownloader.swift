@@ -38,13 +38,15 @@ final class MediaDownloader {
     private let downloadDirectory: URL
     private let availableCapacityProvider: (URL) throws -> Int64?
     private let now: () -> Date
+    private let requestSigner: RequestSigner
 
     init(
         session: MediaDataSession = LocalNetworkURLSessionFactory.mediaTransferSession(),
         fileManager: FileManager = .default,
         downloadDirectory: URL? = nil,
         availableCapacityProvider: @escaping (URL) throws -> Int64? = MediaDownloader.availableCapacity,
-        now: @escaping () -> Date = Date.init
+        now: @escaping () -> Date = Date.init,
+        requestSigner: RequestSigner = RequestSigner()
     ) {
         self.session = session
         self.fileManager = fileManager
@@ -52,6 +54,7 @@ final class MediaDownloader {
             ?? fileManager.temporaryDirectory.appendingPathComponent("ShareSyncDownloads", isDirectory: true)
         self.availableCapacityProvider = availableCapacityProvider
         self.now = now
+        self.requestSigner = requestSigner
     }
 
     func downloadMedia(
@@ -60,6 +63,7 @@ final class MediaDownloader {
         port: Int,
         stateStore: MediaDownloadStateStore,
         pairingToken: String? = nil,
+        signingContext: RequestSigningContext? = nil,
         progress: ((MediaDownloadProgress) async -> Void)? = nil
     ) async -> [MediaDownloadResult] {
         for asset in assets {
@@ -123,6 +127,7 @@ final class MediaDownloader {
                     host: host,
                     port: port,
                     pairingToken: pairingToken,
+                    signingContext: signingContext,
                     resumeRecord: record
                 )
                 stateStore.markDownloaded(
@@ -177,6 +182,7 @@ final class MediaDownloader {
         host: String,
         port: Int,
         pairingToken: String?,
+        signingContext: RequestSigningContext?,
         resumeRecord: MediaDownloadRecord?
     ) async throws -> MediaDownloadResult {
         guard let url = mediaURL(assetId: asset.assetId, host: host, port: port) else {
@@ -186,6 +192,9 @@ final class MediaDownloader {
         var request = URLRequest(url: url)
         if let pairingToken, !pairingToken.isEmpty {
             request.setValue(pairingToken, forHTTPHeaderField: "X-ShareSync-Pairing-Token")
+        }
+        if let signingContext {
+            requestSigner.sign(request: &request, context: signingContext)
         }
         let resume = resumablePrefix(for: resumeRecord)
         if resume.downloadedBytes > 0 {
@@ -244,6 +253,7 @@ final class MediaDownloader {
         host: String,
         port: Int,
         pairingToken: String?,
+        signingContext: RequestSigningContext?,
         resumeRecord: MediaDownloadRecord?
     ) async throws -> MediaDownloadResult {
         do {
@@ -252,6 +262,7 @@ final class MediaDownloader {
                 host: host,
                 port: port,
                 pairingToken: pairingToken,
+                signingContext: signingContext,
                 resumeRecord: resumeRecord
             )
         } catch {
@@ -264,6 +275,7 @@ final class MediaDownloader {
                 host: host,
                 port: port,
                 pairingToken: pairingToken,
+                signingContext: signingContext,
                 resumeRecord: resumeRecord
             )
         }

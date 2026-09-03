@@ -15,17 +15,23 @@ extension URLSession: SyncResultPostingSession {}
 final class SyncResultClient {
     private let session: SyncResultPostingSession
     private let encoder: JSONEncoder
+    private let requestSigner: RequestSigner
 
-    init(session: SyncResultPostingSession = LocalNetworkURLSessionFactory.shortRequestSession()) {
+    init(
+        session: SyncResultPostingSession = LocalNetworkURLSessionFactory.shortRequestSession(),
+        requestSigner: RequestSigner = RequestSigner()
+    ) {
         self.session = session
         self.encoder = JSONEncoder()
+        self.requestSigner = requestSigner
     }
 
     func postSyncResult(
         _ result: SyncResult,
         to host: String,
         port: Int,
-        pairingToken: String? = nil
+        pairingToken: String? = nil,
+        signingContext: RequestSigningContext? = nil
     ) async throws -> Int {
         var components = URLComponents()
         components.scheme = "http"
@@ -43,7 +49,11 @@ final class SyncResultClient {
         if let pairingToken, !pairingToken.isEmpty {
             request.setValue(pairingToken, forHTTPHeaderField: "X-ShareSync-Pairing-Token")
         }
-        request.httpBody = try encoder.encode(result)
+        let body = try encoder.encode(result)
+        request.httpBody = body
+        if let signingContext {
+            requestSigner.sign(request: &request, context: signingContext, body: body)
+        }
 
         let (_, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse else {

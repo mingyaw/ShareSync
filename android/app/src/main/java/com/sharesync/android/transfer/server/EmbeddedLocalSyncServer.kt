@@ -73,7 +73,10 @@ class EmbeddedLocalSyncServer(
                 writeApiResponse(socket.getOutputStream(), runBlocking { router.health() })
             }
             request.method == "GET" && request.path == "/v1/manifest" -> {
-                writeApiResponse(socket.getOutputStream(), runBlocking { router.manifest(request.headers) })
+                writeApiResponse(
+                    socket.getOutputStream(),
+                    runBlocking { router.manifest(headers = request.headers, path = request.path) },
+                )
             }
             request.method == "GET" && request.path.startsWith("/v1/media/") -> {
                 writeMediaResponse(socket.getOutputStream(), request)
@@ -81,7 +84,13 @@ class EmbeddedLocalSyncServer(
             request.method == "POST" && request.path == "/v1/sync/result" -> {
                 writeApiResponse(
                     socket.getOutputStream(),
-                    runBlocking { router.syncResult(request.body, request.headers) },
+                    runBlocking {
+                        router.syncResult(
+                            body = request.body,
+                            headers = request.headers,
+                            path = request.path,
+                        )
+                    },
                 )
             }
             request.method != "GET" && request.method != "POST" -> writeJsonError(socket.getOutputStream(), 405, "SS-NET-405")
@@ -96,6 +105,7 @@ class EmbeddedLocalSyncServer(
                 assetId = assetId,
                 rangeHeader = request.headers["range"],
                 headers = request.headers,
+                path = request.path,
             )
         }
 

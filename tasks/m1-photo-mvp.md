@@ -29,11 +29,12 @@ M1 keeps the main axis focused on photos only:
 - [x] Separate paired device identity from the mutable last-known network endpoint.
 - [x] Add local endpoint discovery for paired Android devices.
 - [x] Validate discovered or restored endpoints against the paired Android `deviceId` before syncing.
-- [ ] Replace M0 token-only protection with signed local requests.
-- [ ] Add request timestamp or nonce validation to reduce replay risk.
-- [ ] Add shared request-signing fixtures.
-- [ ] Add Android signature verification tests for manifest, media, and sync result endpoints.
-- [ ] Add iOS signed request generation tests.
+- [x] Add M1 transitional signed local requests while keeping M0 token fallback.
+- [x] Add request timestamp and nonce validation to reduce replay risk.
+- [x] Add shared request-signing fixtures.
+- [x] Add Android signature verification tests for manifest, media, and sync result endpoints.
+- [x] Add iOS signed request generation tests for manifest, media, and sync result requests.
+- [ ] Replace M0 token-only fallback with signed-request-only authorization.
 - [ ] Decide whether local HTTPS is required for M1 or remains a pre-release hardening branch.
 
 ### M1.2 Photo Sync History
@@ -135,3 +136,13 @@ Reduced the need to re-pair when Android receives a different local IP:
 - Added iOS local discovery before manifest fetch and sync-all actions.
 - Kept saved host and port as fallback when mDNS is unavailable.
 - Required `/v1/health.deviceId` to match the trusted Android device before using any discovered or restored endpoint.
+
+### 2026-09-03 Transitional Signed Requests
+
+Started replacing M0 token-only authorization with signed local requests:
+
+- Added a shared signing fixture for the canonical request payload.
+- Added Android HMAC-SHA256 request signature validation with timestamp skew and nonce replay protection.
+- Updated Android router authorization to accept signed requests first and keep token-only auth as a temporary M0 fallback.
+- Added iOS request signing for manifest fetch, media download, and sync result post.
+- Added Swift tests for signed request headers and Android tests for signature verification and replay rejection.

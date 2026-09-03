@@ -137,6 +137,69 @@ final class MediaDownloaderTests: XCTestCase {
         )
     }
 
+    func testDownloadMediaSendsSignedHeaders() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let data = Data("demo-photo".utf8)
+        let asset = makeAsset(
+            assetId: "mediastore-1-52",
+            fileName: "IMG_0052.jpg",
+            size: Int64(data.count),
+            sha256: sha256(data)
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        let session = StubMediaDataSession(
+            data: data,
+            response: HTTPURLResponse(
+                url: URL(string: "http://192.168.1.10:48291/v1/media/mediastore-1-52")!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+        )
+        let downloader = MediaDownloader(
+            session: session,
+            downloadDirectory: directory,
+            requestSigner: RequestSigner(
+                timestampProvider: { 1_800_000_000_000 },
+                nonceProvider: { "nonce-001" }
+            )
+        )
+
+        _ = await downloader.downloadMedia(
+            assets: [asset],
+            host: "192.168.1.10",
+            port: 48291,
+            stateStore: store,
+            pairingToken: "pairing-token-001",
+            signingContext: RequestSigningContext(
+                deviceId: "ios-local",
+                sessionId: "ios-photo-mvp",
+                secret: "pairing-token-001"
+            )
+        )
+
+        let request = try XCTUnwrap(session.requests.first)
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-ShareSync-Version"), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Device-Id"), "ios-local")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Session-Id"), "ios-photo-mvp")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Timestamp"), "1800000000000")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Nonce"), "nonce-001")
+        XCTAssertEqual(
+            request.value(forHTTPHeaderField: "X-Signature"),
+            RequestSigner.signature(
+                secret: "pairing-token-001",
+                method: "GET",
+                path: "/v1/media/mediastore-1-52",
+                timestamp: "1800000000000",
+                nonce: "nonce-001",
+                body: Data()
+            )
+        )
+    }
+
     func testChecksumMismatchMarksFailed() async throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("ShareSyncDownloaderTests-\(UUID().uuidString)", isDirectory: true)

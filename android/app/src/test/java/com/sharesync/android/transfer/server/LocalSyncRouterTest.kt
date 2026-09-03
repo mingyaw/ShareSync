@@ -32,6 +32,66 @@ class LocalSyncRouterTest {
     }
 
     @Test
+    fun manifestAcceptsSignedRequestWithoutPairingTokenHeader() {
+        val response = SuspendBridge.runBlocking {
+            router(
+                signatureValidator = RequestSignatureValidator(
+                    secretProvider = { "pairing-token-001" },
+                    clock = { 1_800_000_000_000L },
+                )
+            ).manifest(
+                headers = signedHeaders(
+                    signature = "V+Zfc9LZCzOl+H/8ZpZGbCjZ2WiZxwo2mgc17pPqPhY=",
+                )
+            )
+        }
+
+        assertEquals(200, response.statusCode)
+    }
+
+    @Test
+    fun manifestRejectsReplayedSignedRequest() {
+        val signatureValidator = RequestSignatureValidator(
+            secretProvider = { "pairing-token-001" },
+            clock = { 1_800_000_000_000L },
+        )
+        val router = router(signatureValidator = signatureValidator)
+        val headers = signedHeaders(signature = "V+Zfc9LZCzOl+H/8ZpZGbCjZ2WiZxwo2mgc17pPqPhY=")
+
+        SuspendBridge.runBlocking {
+            assertEquals(200, router.manifest(headers = headers).statusCode)
+            assertEquals(401, router.manifest(headers = headers).statusCode)
+        }
+    }
+
+    @Test
+    fun mediaAcceptsSignedRequestWithoutPairingTokenHeader() {
+        val response = SuspendBridge.runBlocking {
+            router(
+                signatureValidator = RequestSignatureValidator(
+                    secretProvider = { PAIRING_TOKEN },
+                    clock = { 1_800_000_000_000L },
+                )
+            ).media(
+                assetId = "media-001",
+                headers = signedHeaders(
+                    nonce = "media-nonce-001",
+                    signature = RequestSignatureValidator.sign(
+                        secret = PAIRING_TOKEN,
+                        method = "GET",
+                        path = "/v1/media/media-001",
+                        timestamp = "1800000000000",
+                        nonce = "media-nonce-001",
+                        body = "",
+                    )
+                )
+            )
+        }
+
+        assertEquals(200, (response as LocalMediaResponse.Found).statusCode)
+    }
+
+    @Test
     fun mediaRejectsWrongPairingToken() {
         val activityTracker = LocalRequestActivityTracker(clock = { 5678L })
         val response = SuspendBridge.runBlocking {
@@ -175,6 +235,37 @@ class LocalSyncRouterTest {
     }
 
     @Test
+    fun syncResultAcceptsSignedRequestWithoutPairingTokenHeader() {
+        val store = InMemorySyncResultStore()
+        val body = syncResultBody(status = "synced", errorCode = "null")
+        val response = SuspendBridge.runBlocking {
+            router(
+                syncResultStore = store,
+                signatureValidator = RequestSignatureValidator(
+                    secretProvider = { PAIRING_TOKEN },
+                    clock = { 1_800_000_000_000L },
+                )
+            ).syncResult(
+                body = body,
+                headers = signedHeaders(
+                    nonce = "result-nonce-001",
+                    signature = RequestSignatureValidator.sign(
+                        secret = PAIRING_TOKEN,
+                        method = "POST",
+                        path = "/v1/sync/result",
+                        timestamp = "1800000000000",
+                        nonce = "result-nonce-001",
+                        body = body,
+                    )
+                )
+            )
+        }
+
+        assertEquals(202, response.statusCode)
+        assertEquals("batch-001", SuspendBridge.runBlocking { store.latest() }?.syncBatchId)
+    }
+
+    @Test
     fun requestActivityCountsLocalRequestsAcrossEndpoints() {
         var now = 10_000L
         val activityTracker = LocalRequestActivityTracker(clock = { now })
@@ -248,6 +339,7 @@ class LocalSyncRouterTest {
     private fun router(
         requestActivityTracker: LocalRequestActivityTracker? = null,
         syncResultStore: InMemorySyncResultStore = InMemorySyncResultStore(),
+        signatureValidator: RequestSignatureValidator = RequestSignatureValidator(secretProvider = { PAIRING_TOKEN }),
     ): LocalSyncRouter {
         return LocalSyncRouter(
             deviceId = "android-device-001",
@@ -273,11 +365,26 @@ class LocalSyncRouterTest {
             },
             syncResultStore = syncResultStore,
             requestActivityTracker = requestActivityTracker,
+            signatureValidator = signatureValidator,
         )
     }
 
     private fun pairingHeaders(token: String = PAIRING_TOKEN): Map<String, String> {
         return mapOf(LocalSyncRouter.PAIRING_TOKEN_HEADER.lowercase() to token)
+    }
+
+    private fun signedHeaders(
+        nonce: String = "nonce-001",
+        signature: String,
+    ): Map<String, String> {
+        return mapOf(
+            RequestSignatureValidator.VERSION_HEADER to "1",
+            RequestSignatureValidator.DEVICE_ID_HEADER to "ios-local",
+            RequestSignatureValidator.SESSION_ID_HEADER to "ios-photo-mvp",
+            RequestSignatureValidator.TIMESTAMP_HEADER to "1800000000000",
+            RequestSignatureValidator.NONCE_HEADER to nonce,
+            RequestSignatureValidator.SIGNATURE_HEADER to signature,
+        )
     }
 
     private fun mediaAsset(assetId: String): MediaAsset {

@@ -5,14 +5,25 @@ import XCTest
 final class SyncResultClientTests: XCTestCase {
     func testPostSyncResultSendsJsonToAndroidEndpoint() async throws {
         let session = StubSyncResultPostingSession(statusCode: 202)
-        let client = SyncResultClient(session: session)
+        let client = SyncResultClient(
+            session: session,
+            requestSigner: RequestSigner(
+                timestampProvider: { 1_800_000_000_000 },
+                nonceProvider: { "nonce-001" }
+            )
+        )
         let result = makeResult()
 
         let statusCode = try await client.postSyncResult(
             result,
             to: "192.168.1.10",
             port: 48291,
-            pairingToken: "pairing-token-001"
+            pairingToken: "pairing-token-001",
+            signingContext: RequestSigningContext(
+                deviceId: "ios-local",
+                sessionId: "ios-photo-mvp",
+                secret: "pairing-token-001"
+            )
         )
 
         XCTAssertEqual(statusCode, 202)
@@ -24,10 +35,26 @@ final class SyncResultClientTests: XCTestCase {
             request.value(forHTTPHeaderField: "X-ShareSync-Pairing-Token"),
             "pairing-token-001"
         )
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-ShareSync-Version"), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Device-Id"), "ios-local")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Session-Id"), "ios-photo-mvp")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Timestamp"), "1800000000000")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Nonce"), "nonce-001")
 
         let body = try XCTUnwrap(request.httpBody)
         let decoded = try JSONDecoder().decode(SyncResult.self, from: body)
         XCTAssertEqual(decoded, result)
+        XCTAssertEqual(
+            request.value(forHTTPHeaderField: "X-Signature"),
+            RequestSigner.signature(
+                secret: "pairing-token-001",
+                method: "POST",
+                path: "/v1/sync/result",
+                timestamp: "1800000000000",
+                nonce: "nonce-001",
+                body: body
+            )
+        )
     }
 
     func testPostSyncResultRejectsNonSuccessfulStatusCode() async {

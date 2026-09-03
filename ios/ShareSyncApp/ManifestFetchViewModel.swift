@@ -178,7 +178,8 @@ final class ManifestFetchViewModel: ObservableObject {
                 let manifest = try await client.fetchManifest(
                     from: endpoint.host,
                     port: endpoint.port,
-                    pairingToken: pairingToken
+                    pairingToken: pairingToken,
+                    signingContext: requestSigningContext()
                 )
                 latestManifest = manifest
                 await reconcileMissingPhotoAssets(in: manifest)
@@ -218,7 +219,8 @@ final class ManifestFetchViewModel: ObservableObject {
                 let manifest = try await client.fetchManifest(
                     from: endpoint.host,
                     port: endpoint.port,
-                    pairingToken: pairingToken
+                    pairingToken: pairingToken,
+                    signingContext: requestSigningContext()
                 )
                 latestManifest = manifest
                 await reconcileMissingPhotoAssets(in: manifest)
@@ -505,6 +507,7 @@ final class ManifestFetchViewModel: ObservableObject {
                     port: portNumber,
                     stateStore: downloadStateStore,
                     pairingToken: pairingToken,
+                    signingContext: requestSigningContext(),
                     progress: { [weak self] progress in
                         await MainActor.run {
                             self?.downloadProgressSummary = DownloadProgressSummary(progress: progress)
@@ -754,7 +757,8 @@ final class ManifestFetchViewModel: ObservableObject {
                 result,
                 to: host,
                 port: port,
-                pairingToken: pairingToken
+                pairingToken: pairingToken,
+                signingContext: requestSigningContext()
             )
             return (
                 SyncResultSummary(result: result),
@@ -784,6 +788,18 @@ final class ManifestFetchViewModel: ObservableObject {
         photoTransferPlanner.syncResultRecords(
             in: manifest,
             stateStore: downloadStateStore
+        )
+    }
+
+    private func requestSigningContext() -> RequestSigningContext? {
+        guard let pairingToken, !pairingToken.isEmpty else {
+            return nil
+        }
+
+        return RequestSigningContext(
+            deviceId: "ios-local",
+            sessionId: "ios-photo-mvp",
+            secret: pairingToken
         )
     }
 

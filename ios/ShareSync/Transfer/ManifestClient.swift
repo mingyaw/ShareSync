@@ -33,18 +33,24 @@ extension URLSession: ManifestFetchingSession {}
 final class ManifestClient {
     private let session: ManifestFetchingSession
     private let decoder: JSONDecoder
+    private let requestSigner: RequestSigner
 
-    init(session: ManifestFetchingSession = LocalNetworkURLSessionFactory.shortRequestSession()) {
+    init(
+        session: ManifestFetchingSession = LocalNetworkURLSessionFactory.shortRequestSession(),
+        requestSigner: RequestSigner = RequestSigner()
+    ) {
         self.session = session
         self.decoder = JSONDecoder()
         self.decoder.dateDecodingStrategy = .iso8601
+        self.requestSigner = requestSigner
     }
 
     func fetchManifest(
         from host: String,
         port: Int,
         cursor: String? = nil,
-        pairingToken: String? = nil
+        pairingToken: String? = nil,
+        signingContext: RequestSigningContext? = nil
     ) async throws -> SyncManifest {
         var components = URLComponents()
         components.scheme = "http"
@@ -62,6 +68,9 @@ final class ManifestClient {
         var request = URLRequest(url: url)
         if let pairingToken, !pairingToken.isEmpty {
             request.setValue(pairingToken, forHTTPHeaderField: "X-ShareSync-Pairing-Token")
+        }
+        if let signingContext {
+            requestSigner.sign(request: &request, context: signingContext)
         }
 
         let (data, response) = try await session.data(for: request)

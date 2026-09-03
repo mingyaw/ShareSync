@@ -27,6 +27,7 @@
 		1000000000000000000000A1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000A0 /* Localizable.strings */; };
 		1000000000000000000000A6 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000A5 /* InfoPlist.strings */; };
 		1000000000000000000000A9 /* ShareSync/Discovery/LocalPeerDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000AA /* ShareSync/Discovery/LocalPeerDiscovery.swift */; };
+		1000000000000000000000AC /* ShareSync/Security/RequestSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000AD /* ShareSync/Security/RequestSigner.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +55,7 @@
 		1000000000000000000000A8 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		1000000000000000000000AA /* ShareSync/Discovery/LocalPeerDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Discovery/LocalPeerDiscovery.swift; sourceTree = "<group>"; };
 		1000000000000000000000AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1000000000000000000000AD /* ShareSync/Security/RequestSigner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Security/RequestSigner.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,6 +109,7 @@
 				100000000000000000000016 /* ShareSync/ImporterPhotos/PhotoImporter.swift */,
 				10000000000000000000001B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift */,
 				100000000000000000000017 /* ShareSync/Security/TrustedDevice.swift */,
+				1000000000000000000000AD /* ShareSync/Security/RequestSigner.swift */,
 			);
 			name = ShareSyncCore;
 			sourceTree = "<group>";
@@ -229,6 +232,7 @@
 				100000000000000000000006 /* ShareSync/ImporterPhotos/PhotoImporter.swift in Sources */,
 				10000000000000000000000B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift in Sources */,
 				100000000000000000000007 /* ShareSync/Security/TrustedDevice.swift in Sources */,
+				1000000000000000000000AC /* ShareSync/Security/RequestSigner.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

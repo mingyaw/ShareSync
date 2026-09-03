@@ -21,6 +21,36 @@ final class ManifestClientTests: XCTestCase {
         )
     }
 
+    func testFetchManifestSendsSignedHeaders() async throws {
+        let session = StubManifestFetchingSession(data: try fixtureData("sample-manifest", extension: "json"))
+        let client = ManifestClient(
+            session: session,
+            requestSigner: RequestSigner(
+                timestampProvider: { 1_800_000_000_000 },
+                nonceProvider: { "nonce-001" }
+            )
+        )
+
+        _ = try await client.fetchManifest(
+            from: "192.168.1.10",
+            port: 48291,
+            pairingToken: "pairing-token-001",
+            signingContext: RequestSigningContext(
+                deviceId: "ios-local",
+                sessionId: "ios-photo-mvp",
+                secret: "pairing-token-001"
+            )
+        )
+
+        let request = try XCTUnwrap(session.requests.first)
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-ShareSync-Version"), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Device-Id"), "ios-local")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Session-Id"), "ios-photo-mvp")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Timestamp"), "1800000000000")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Nonce"), "nonce-001")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Signature"), "V+Zfc9LZCzOl+H/8ZpZGbCjZ2WiZxwo2mgc17pPqPhY=")
+    }
+
     func testFetchManifestRejectsNonSuccessfulStatusCode() async {
         let session = StubManifestFetchingSession(data: Data(), statusCode: 401)
         let client = ManifestClient(session: session)

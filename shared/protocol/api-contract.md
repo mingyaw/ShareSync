@@ -23,6 +23,8 @@ M0 currently enforces this lightweight pairing header for protected endpoints:
 X-ShareSync-Pairing-Token: <pairing-token-from-qr-payload>
 ```
 
+M1 transitional signed requests use the same QR pairing token as an HMAC-SHA256 shared secret while the permanent key-exchange model is still being hardened. Android accepts signed requests first and keeps the M0 token-only header as a temporary fallback.
+
 Signature payload:
 
 ```text
@@ -32,6 +34,8 @@ X-Timestamp + "\n" +
 X-Nonce + "\n" +
 SHA256(body)
 ```
+
+`X-Signature` is base64-encoded HMAC-SHA256 over the signature payload. `X-Timestamp` is unix milliseconds and must be within the server skew window. `X-Nonce` is single-use for the active Android local server session.
 
 ## Endpoints
 
