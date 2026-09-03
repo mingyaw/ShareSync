@@ -1,6 +1,7 @@
 package com.sharesync.android.transfer.server
 
 import com.sharesync.android.SuspendBridge
+import com.sharesync.android.sync.InMemorySyncEventStore
 import com.sharesync.android.sync.InMemorySyncResultStore
 import com.sharesync.android.sync.MediaAsset
 import com.sharesync.android.sync.MediaType
@@ -271,10 +272,12 @@ class LocalSyncRouterTest {
     @Test
     fun syncResultAcceptsSignedRequestWithoutPairingTokenHeader() {
         val store = InMemorySyncResultStore()
+        val eventStore = InMemorySyncEventStore()
         val body = syncResultBody(status = "synced", errorCode = "null")
         val response = SuspendBridge.runBlocking {
             router(
                 syncResultStore = store,
+                syncEventStore = eventStore,
                 signatureValidator = RequestSignatureValidator(
                     secretProvider = { PAIRING_TOKEN },
                     clock = { 1_800_000_000_000L },
@@ -297,6 +300,10 @@ class LocalSyncRouterTest {
 
         assertEquals(202, response.statusCode)
         assertEquals("batch-001", SuspendBridge.runBlocking { store.latest() }?.syncBatchId)
+        val event = SuspendBridge.runBlocking { eventStore.latest() }
+        assertEquals("batch-001", event?.syncBatchId)
+        assertEquals(1, event?.syncedCount)
+        assertEquals(0, event?.failedCount)
     }
 
     @Test
@@ -379,6 +386,7 @@ class LocalSyncRouterTest {
     private fun router(
         requestActivityTracker: LocalRequestActivityTracker? = null,
         syncResultStore: InMemorySyncResultStore = InMemorySyncResultStore(),
+        syncEventStore: InMemorySyncEventStore? = null,
         signatureValidator: RequestSignatureValidator = RequestSignatureValidator(secretProvider = { PAIRING_TOKEN }),
         authorizationPolicy: AuthorizationPolicy = AuthorizationPolicy.SignedRequestsOnly,
     ): LocalSyncRouter {
@@ -405,6 +413,7 @@ class LocalSyncRouterTest {
                 }
             },
             syncResultStore = syncResultStore,
+            syncEventStore = syncEventStore,
             requestActivityTracker = requestActivityTracker,
             signatureValidator = signatureValidator,
             authorizationPolicy = authorizationPolicy,

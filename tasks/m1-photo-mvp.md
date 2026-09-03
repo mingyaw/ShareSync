@@ -39,11 +39,12 @@ M1 keeps the main axis focused on photos only:
 
 ### M1.2 Photo Sync History
 
-- [ ] Add durable Android sync event records for accepted iOS results.
+- [x] Add durable Android sync event records for accepted iOS results.
 - [ ] Add durable iOS sync event records for fetch, download, import, and result post.
-- [ ] Show latest successful sync time on Android.
+- [x] Show latest sync time on Android.
 - [ ] Show latest successful sync time on iOS.
-- [ ] Show latest transferred photo count without requiring copied JSON.
+- [x] Show latest transferred photo count on Android without requiring copied JSON.
+- [ ] Show latest transferred photo count on iOS without requiring copied JSON.
 - [ ] Keep raw JSON copy actions as diagnostics, not primary user feedback.
 
 ### M1.3 Repeat Sync Reliability
@@ -155,3 +156,19 @@ Finished the M1 production authorization switch away from token-only requests:
 - Kept token-only fallback behind an explicit legacy validation policy for narrow compatibility tests.
 - Added coverage proving token-only manifest requests are rejected by the default router.
 - Confirmed the iOS client sends signed headers on all protected photo sync requests.
+
+### 2026-09-03 Android Sync Event History
+
+Started the M1.2 sync history track on Android:
+
+- Added a durable Android sync event store for accepted iOS sync results.
+- Persisted the most recent 50 sync events under Android app storage.
+- Updated the Android product screen to show the latest sync time, transferred count, skipped count, and retry count without opening raw JSON diagnostics.
+- Cleared sync event history together with Android sync result state when the user resets ShareSync state.
+- Added Android unit coverage for event summarization, file persistence, retention trimming, and router event recording.
+
+Verified:
+
+```sh
+./scripts/check-m0.sh
+```

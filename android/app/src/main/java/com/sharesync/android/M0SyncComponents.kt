@@ -3,8 +3,10 @@ package com.sharesync.android
 import android.content.Context
 import com.sharesync.android.scanner.media.MediaStoreMediaScanner
 import com.sharesync.android.scanner.media.MediaStreamProvider
+import com.sharesync.android.sync.FileSyncEventStore
 import com.sharesync.android.sync.FileSyncResultStore
 import com.sharesync.android.sync.ManifestBuilder
+import com.sharesync.android.sync.SyncEventStore
 import com.sharesync.android.sync.SyncResultStore
 import com.sharesync.android.transfer.server.EmbeddedLocalServerBinder
 import com.sharesync.android.transfer.server.LocalRequestActivityTracker
@@ -16,6 +18,7 @@ class M0SyncComponents private constructor(
     val mediaStreamProvider: MediaStreamProvider,
     val manifestBuilder: ManifestBuilder,
     val syncResultStore: SyncResultStore,
+    val syncEventStore: SyncEventStore,
     val requestActivityTracker: LocalRequestActivityTracker,
     val router: LocalSyncRouter,
     val serverBinder: EmbeddedLocalServerBinder,
@@ -37,6 +40,9 @@ class M0SyncComponents private constructor(
             val syncResultStore = FileSyncResultStore(
                 file = FileSyncResultStore.defaultFile(context.applicationContext.filesDir),
             )
+            val syncEventStore = FileSyncEventStore(
+                file = FileSyncEventStore.defaultFile(context.applicationContext.filesDir),
+            )
             val manifestBuilder = ManifestBuilder(
                 sourceDeviceId = deviceId,
                 mediaScanner = mediaScanner,
@@ -53,6 +59,7 @@ class M0SyncComponents private constructor(
                 mediaStreamProvider = MediaStreamProvider(contentResolver),
                 manifestBuilder = manifestBuilder,
                 syncResultStore = syncResultStore,
+                syncEventStore = syncEventStore,
                 requestActivityTracker = requestActivityTracker,
                 router = LocalSyncRouter(
                     deviceId = deviceId,
@@ -61,6 +68,7 @@ class M0SyncComponents private constructor(
                     manifestProvider = manifestProvider,
                     mediaProvider = mediaScanner,
                     syncResultStore = syncResultStore,
+                    syncEventStore = syncEventStore,
                     requestActivityTracker = requestActivityTracker,
                 ),
                 serverBinder = EmbeddedLocalServerBinder(),

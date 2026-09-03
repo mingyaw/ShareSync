@@ -22,8 +22,11 @@ import android.widget.TextView
 import com.sharesync.android.pairing.QrCodeBitmapFactory
 import com.sharesync.android.security.DeviceIdentityStore
 import com.sharesync.android.security.SharedPreferencesDeviceIdentityStore
+import com.sharesync.android.sync.FileSyncEventStore
 import com.sharesync.android.sync.FileSyncResultStore
 import com.sharesync.android.sync.ManifestBuilder
+import com.sharesync.android.sync.SyncEvent
+import com.sharesync.android.sync.SyncEventStore
 import com.sharesync.android.sync.SyncItemStatus
 import com.sharesync.android.sync.SyncResult
 import com.sharesync.android.sync.SyncResultJsonCodec
@@ -40,6 +43,7 @@ class MainActivity : Activity() {
     private lateinit var notificationPermissionText: TextView
     private lateinit var screenLockText: TextView
     private lateinit var manifestSummaryText: TextView
+    private lateinit var syncEventText: TextView
     private lateinit var pairingInstructionText: TextView
     private lateinit var requestActivityText: TextView
     private lateinit var syncResultText: TextView
@@ -62,8 +66,10 @@ class MainActivity : Activity() {
     private var currentPairingPayloadJson: String? = null
     private var currentManifestPhotoCount: Int? = null
     private var currentSyncResult: SyncResult? = null
+    private var currentSyncEvent: SyncEvent? = null
     private var currentRequestActivity: LocalRequestActivity? = null
     private var syncResultStore: SyncResultStore? = null
+    private var syncEventStore: SyncEventStore? = null
     private var manifestBuilder: ManifestBuilder? = null
     private var requestActivityTracker: LocalRequestActivityTracker? = null
     private lateinit var deviceIdentityStore: DeviceIdentityStore
@@ -149,6 +155,7 @@ class MainActivity : Activity() {
         notificationPermissionText = bodyText()
         screenLockText = bodyText()
         manifestSummaryText = bodyText()
+        syncEventText = bodyText()
         pairingInstructionText = bodyText()
         requestActivityText = bodyText()
         syncResultText = bodyText()
@@ -213,7 +220,7 @@ class MainActivity : Activity() {
         root.addView(
             productPanel(
                 title = getString(R.string.m0_panel_pairing),
-                children = listOf(statusText, phaseText, manifestSummaryText, pairingInstructionText, pairingQrImage),
+                children = listOf(statusText, phaseText, manifestSummaryText, syncEventText, pairingInstructionText, pairingQrImage),
             ),
         )
         root.addView(
@@ -335,6 +342,8 @@ class MainActivity : Activity() {
             ?: getString(R.string.m0_request_activity_unavailable)
         syncResultText.text = currentSyncResult?.let(::formatSyncResult)
             ?: getString(R.string.m0_sync_result_unavailable)
+        syncEventText.text = currentSyncEvent?.let(::formatSyncEvent)
+            ?: getString(R.string.m1_sync_event_unavailable)
         refreshPairingQr()
 
         startButton.isEnabled = !isServerRunning && hasMediaPermission()
@@ -414,9 +423,11 @@ class MainActivity : Activity() {
                 )
                 server = session.server
                 syncResultStore = session.syncResultStore
+                syncEventStore = session.syncEventStore
                 manifestBuilder = session.manifestBuilder
                 requestActivityTracker = session.requestActivityTracker
                 currentSyncResult = SuspendBridge.runBlocking { session.syncResultStore.latest() }
+                currentSyncEvent = SuspendBridge.runBlocking { session.syncEventStore.latest() }
                 currentRequestActivity = session.requestActivityTracker.latest()
                 currentManifestPhotoCount = SuspendBridge.runBlocking {
                     session.manifestBuilder.buildM0Manifest().media.size
@@ -433,6 +444,7 @@ class MainActivity : Activity() {
                 AndroidM0ForegroundService.stop(applicationContext)
                 restorePersistedSyncResult()
                 manifestBuilder = null
+                syncEventStore = null
                 requestActivityTracker = null
                 currentRequestActivity = null
                 currentManifestPhotoCount = null
@@ -452,6 +464,7 @@ class MainActivity : Activity() {
         server = null
         AndroidM0ServerSessionRegistry.clear(currentSession)
         manifestBuilder = null
+        syncEventStore = null
         requestActivityTracker = null
         currentManifestPhotoCount = null
         currentRequestActivity = null
@@ -519,7 +532,11 @@ class MainActivity : Activity() {
         val store = syncResultStore ?: return
         Thread {
             SuspendBridge.runBlocking { store.clear() }
+            syncEventStore?.let { eventStore ->
+                SuspendBridge.runBlocking { eventStore.clear() }
+            }
             currentSyncResult = null
+            currentSyncEvent = null
             currentManifestPhotoCount = manifestBuilder?.let { builder ->
                 SuspendBridge.runBlocking { builder.buildM0Manifest().media.size }
             }
@@ -533,18 +550,25 @@ class MainActivity : Activity() {
         )
         syncResultStore = store
         currentSyncResult = SuspendBridge.runBlocking { store.latest() }
+        val eventStore = FileSyncEventStore(
+            file = FileSyncEventStore.defaultFile(applicationContext.filesDir),
+        )
+        syncEventStore = eventStore
+        currentSyncEvent = SuspendBridge.runBlocking { eventStore.latest() }
     }
 
     private fun restoreRunningServerSession() {
         val session = AndroidM0ServerSessionRegistry.current ?: return
         server = session.server
         syncResultStore = session.syncResultStore
+        syncEventStore = session.syncEventStore
         manifestBuilder = session.manifestBuilder
         requestActivityTracker = session.requestActivityTracker
         currentPairingPayloadJson = session.pairingPayloadJson
         isServerStarting = false
         isServerRunning = true
         currentSyncResult = SuspendBridge.runBlocking { session.syncResultStore.latest() }
+        currentSyncEvent = SuspendBridge.runBlocking { session.syncEventStore.latest() }
         currentRequestActivity = session.requestActivityTracker.latest()
         currentManifestPhotoCount = SuspendBridge.runBlocking {
             session.manifestBuilder.buildM0Manifest().media.size
@@ -583,6 +607,9 @@ class MainActivity : Activity() {
                     return@Thread
                 }
                 currentSyncResult = SuspendBridge.runBlocking { store.latest() }
+                currentSyncEvent = syncEventStore?.let { eventStore ->
+                    SuspendBridge.runBlocking { eventStore.latest() }
+                }
                 currentRequestActivity = requestActivityTracker?.latest()
                 currentManifestPhotoCount = manifestBuilder?.let { builder ->
                     SuspendBridge.runBlocking { builder.buildM0Manifest().media.size }
@@ -612,6 +639,16 @@ class MainActivity : Activity() {
         )
     }
 
+    private fun formatSyncEvent(event: SyncEvent): String {
+        return getString(
+            R.string.m1_sync_event_summary,
+            syncEventAgeLabel(event),
+            event.syncedCount,
+            event.skippedCount,
+            event.failedCount + event.conflictedCount,
+        )
+    }
+
     private fun formatRequestActivity(activity: LocalRequestActivity): String {
         return getString(
             R.string.m0_request_activity_summary,
@@ -628,6 +665,15 @@ class MainActivity : Activity() {
 
     private fun requestActivityAgeLabel(activity: LocalRequestActivity): String {
         val ageMillis = (System.currentTimeMillis() - activity.recordedAtEpochMillis).coerceAtLeast(0)
+        return ageLabel(ageMillis)
+    }
+
+    private fun syncEventAgeLabel(event: SyncEvent): String {
+        val ageMillis = (System.currentTimeMillis() - event.recordedAtEpochMillis).coerceAtLeast(0)
+        return ageLabel(ageMillis)
+    }
+
+    private fun ageLabel(ageMillis: Long): String {
         val ageSeconds = ageMillis / 1_000
         return when {
             ageSeconds < 60 -> "${ageSeconds}s ago"

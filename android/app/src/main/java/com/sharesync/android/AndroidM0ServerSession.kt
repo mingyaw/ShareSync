@@ -7,6 +7,7 @@ import com.sharesync.android.security.DeviceIdentity
 import com.sharesync.android.security.DeviceIdentityStore
 import com.sharesync.android.sync.ManifestBuilder
 import com.sharesync.android.sync.ManifestJsonEncoder
+import com.sharesync.android.sync.SyncEventStore
 import com.sharesync.android.sync.SyncResultStore
 import com.sharesync.android.transfer.server.LocalServerBinder
 import com.sharesync.android.transfer.server.LocalRequestActivityTracker
@@ -18,6 +19,7 @@ import java.util.UUID
 data class AndroidM0ServerSession(
     val server: LocalSyncServer,
     val syncResultStore: SyncResultStore,
+    val syncEventStore: SyncEventStore,
     val manifestBuilder: ManifestBuilder,
     val requestActivityTracker: LocalRequestActivityTracker,
     val discoveryAdvertiser: LocalPeerDiscoveryAdvertiser,
@@ -66,6 +68,7 @@ object AndroidM0ServerSessionController {
         val session = AndroidM0ServerSession(
             server = server,
             syncResultStore = components.syncResultStore,
+            syncEventStore = components.syncEventStore,
             manifestBuilder = components.manifestBuilder,
             requestActivityTracker = components.requestActivityTracker,
             discoveryAdvertiser = discoveryAdvertiser,

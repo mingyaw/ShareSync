@@ -40,6 +40,8 @@
     <string name="m0_request_activity_summary">Last request: %1$s #%2$d, HTTP %3$d, total #%4$d, %5$s.</string>
     <string name="m0_sync_result_unavailable">Sync result: waiting for iPhone report.</string>
     <string name="m0_sync_result_summary">Sync result: %1$s, synced %2$d, skipped %3$d, failed %4$d, last failure %5$s.</string>
+    <string name="m1_sync_event_unavailable">Last sync: waiting for iPhone.</string>
+    <string name="m1_sync_event_summary">Last sync: %1$s, synced %2$d, skipped %3$d, needs retry %4$d.</string>
     <string name="m0_sync_result_no_failure">none</string>
     <string name="m0_sync_result_copied">Sync result JSON copied.</string>
     <string name="m0_sync_state_cleared">Photo sync history cleared. Fetch from iPhone again to rebuild state.</string>

@@ -4,6 +4,8 @@ import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.sync.MediaAsset
 import com.sharesync.android.sync.SyncItemType
 import com.sharesync.android.sync.SyncItemStatus
+import com.sharesync.android.sync.SyncEvent
+import com.sharesync.android.sync.SyncEventStore
 import com.sharesync.android.sync.SyncResult
 import com.sharesync.android.sync.SyncResultJsonCodec
 import com.sharesync.android.sync.SyncResultStore
@@ -16,6 +18,7 @@ class LocalSyncRouter(
     private val manifestProvider: ManifestProvider,
     private val mediaProvider: MediaProvider,
     private val syncResultStore: SyncResultStore,
+    private val syncEventStore: SyncEventStore? = null,
     private val manifestJsonEncoder: ManifestJsonEncoder = ManifestJsonEncoder(),
     private val syncResultJsonCodec: SyncResultJsonCodec = SyncResultJsonCodec(),
     private val requestActivityTracker: LocalRequestActivityTracker? = null,
@@ -102,6 +105,7 @@ class LocalSyncRouter(
             val result = syncResultJsonCodec.decode(body)
             validateSyncResult(result)
             syncResultStore.save(result)
+            syncEventStore?.append(SyncEvent.fromResult(result, recordedAtEpochMillis = System.currentTimeMillis()))
             val response = LocalApiResponse.json(
                 statusCode = 202,
                 body = """
