@@ -40,11 +40,11 @@ M1 keeps the main axis focused on photos only:
 ### M1.2 Photo Sync History
 
 - [x] Add durable Android sync event records for accepted iOS results.
-- [ ] Add durable iOS sync event records for fetch, download, import, and result post.
+- [x] Add durable iOS sync event records for fetch, download, import, and result post.
 - [x] Show latest sync time on Android.
-- [ ] Show latest successful sync time on iOS.
+- [x] Show latest successful sync time on iOS.
 - [x] Show latest transferred photo count on Android without requiring copied JSON.
-- [ ] Show latest transferred photo count on iOS without requiring copied JSON.
+- [x] Show latest transferred photo count on iOS without requiring copied JSON.
 - [ ] Keep raw JSON copy actions as diagnostics, not primary user feedback.
 
 ### M1.3 Repeat Sync Reliability
@@ -166,6 +166,25 @@ Started the M1.2 sync history track on Android:
 - Updated the Android product screen to show the latest sync time, transferred count, skipped count, and retry count without opening raw JSON diagnostics.
 - Cleared sync event history together with Android sync result state when the user resets ShareSync state.
 - Added Android unit coverage for event summarization, file persistence, retention trimming, and router event recording.
+
+Verified:
+
+```sh
+./scripts/check-m0.sh
+```
+
+### 2026-09-03 iOS Sync Event History
+
+Completed the first iOS side of M1.2 sync history:
+
+- Added a durable iOS sync event store under app support storage.
+- Recorded fetch manifest, download, import, and sync result post events.
+- Kept the most recent 50 iOS sync events for restart-safe local history.
+- Restored the latest successful sync event on app launch.
+- Added an iOS status row for latest sync time, completed photo count, and retry count.
+- Cleared iOS sync events with the local ShareSync state reset.
+- Added Swift tests for result summary, file persistence, retention trimming, and clearing.
+- Added the new iOS sync event store to the Xcode app target.
 
 Verified:
 

@@ -54,6 +54,7 @@
 "ios.status.failed" = "Failed";
 "ios.status.imported" = "Imported";
 "ios.status.last_failure" = "Last Failure";
+"ios.status.last_sync" = "Last Sync";
 "ios.status.limited" = "Limited";
 "ios.status.loading" = "Loading";
 "ios.status.manifest" = "Manifest";
@@ -92,6 +93,7 @@
 "ios.value.none" = "None";
 "ios.value.photo_count_format" = "%@ photos";
 "ios.value.ready_device_format" = "Ready - %@ - v%@";
+"ios.value.last_sync_format" = "%@, done %@, retry %@";
 "ios.vm.enter_android_ip" = "Enter Android IP address.";
 "ios.vm.enter_valid_port" = "Enter a valid port.";
 "ios.vm.paste_pairing_payload" = "Paste the Android pairing payload.";

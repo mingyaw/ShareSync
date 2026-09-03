@@ -54,6 +54,7 @@
 "ios.status.failed" = "失敗";
 "ios.status.imported" = "已匯入";
 "ios.status.last_failure" = "最後失敗";
+"ios.status.last_sync" = "最近同步";
 "ios.status.limited" = "有限存取";
 "ios.status.loading" = "載入中";
 "ios.status.manifest" = "照片清單";
@@ -92,6 +93,7 @@
 "ios.value.none" = "無";
 "ios.value.photo_count_format" = "%@ 張照片";
 "ios.value.ready_device_format" = "就緒 - %@ - v%@";
+"ios.value.last_sync_format" = "%@，完成 %@，重試 %@";
 "ios.vm.enter_android_ip" = "請輸入 Android IP 位址。";
 "ios.vm.enter_valid_port" = "請輸入有效的連接埠。";
 "ios.vm.paste_pairing_payload" = "請貼上 Android 配對資料。";

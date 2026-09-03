@@ -308,6 +308,7 @@ struct ContentView: View {
                 StatusRow(title: "ios.status.pairing", value: pairedStatus)
                 StatusRow(title: "ios.status.photos_access", value: photosAccessStatus)
                 StatusRow(title: "ios.status.screen_lock", value: screenLockStatus)
+                StatusRow(title: "ios.status.last_sync", value: latestSyncText)
                 if let pairedDevice = viewModel.pairedDevice {
                     StatusRow(title: "ios.status.device", value: pairedDevice.deviceName)
                 }
@@ -566,6 +567,19 @@ struct ContentView: View {
         shouldKeepScreenAwake(for: viewModel.downloadState) ? localized("ios.status.paused") : localized("ios.status.normal")
     }
 
+    private var latestSyncText: String {
+        guard let event = viewModel.latestSyncEvent else {
+            return localized("ios.status.waiting")
+        }
+
+        return String(
+            format: localized("ios.value.last_sync_format"),
+            relativeDateFormatter.localizedString(for: event.recordedAt, relativeTo: Date()),
+            "\(event.successfulCount)",
+            "\(event.failedCount)"
+        )
+    }
+
     private func lastFailureText(code: String, fileName: String?) -> String {
         guard let fileName, !fileName.isEmpty else {
             return code
@@ -583,6 +597,12 @@ struct ContentView: View {
 
     private func androidPeerText(_ health: LocalPeerHealth) -> String {
         String(format: localized("ios.value.ready_device_format"), health.deviceId, "\(health.protocolVersion)")
+    }
+
+    private var relativeDateFormatter: RelativeDateTimeFormatter {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .short
+        return formatter
     }
 
     private func copySyncResult() {

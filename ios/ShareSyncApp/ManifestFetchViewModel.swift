@@ -74,6 +74,7 @@ final class ManifestFetchViewModel: ObservableObject {
     @Published private(set) var summary: ManifestSummary?
     @Published private(set) var syncResultSummary: SyncResultSummary?
     @Published private(set) var syncResultReturnSummary: SyncResultReturnSummary?
+    @Published private(set) var latestSyncEvent: SyncEvent?
     @Published private(set) var latestSyncResultJSON: String?
     @Published private(set) var downloadProgressSummary: DownloadProgressSummary?
     @Published private(set) var cancellationMessage: String?
@@ -90,6 +91,7 @@ final class ManifestFetchViewModel: ObservableObject {
     private let photoAssetPresenceChecker: PhotoAssetPresenceChecking
     private let downloadStateStore: MediaDownloadStateStore
     private let syncResultStore: SyncResultStore
+    private let syncEventStore: SyncEventStore
     private let syncResultClient: SyncResultClient
     private let pairedDeviceSessionStore: PairedDeviceSessionStore
     private let pairingPayloadParser: PairingPayloadParser
@@ -108,6 +110,7 @@ final class ManifestFetchViewModel: ObservableObject {
         pairingPayloadParser: PairingPayloadParser = PairingPayloadParser(),
         downloadStateStore: MediaDownloadStateStore = FileMediaDownloadStateStore(),
         syncResultStore: SyncResultStore = FileSyncResultStore(),
+        syncEventStore: SyncEventStore = FileSyncEventStore(),
         syncResultClient: SyncResultClient = SyncResultClient(),
         pairedDeviceSessionStore: PairedDeviceSessionStore = FilePairedDeviceSessionStore(),
         localPeerDiscovery: LocalPeerDiscovery? = nil
@@ -121,12 +124,14 @@ final class ManifestFetchViewModel: ObservableObject {
         self.pairingPayloadParser = pairingPayloadParser
         self.downloadStateStore = downloadStateStore
         self.syncResultStore = syncResultStore
+        self.syncEventStore = syncEventStore
         self.syncResultClient = syncResultClient
         self.pairedDeviceSessionStore = pairedDeviceSessionStore
         self.localPeerDiscovery = localPeerDiscovery ?? BonjourLocalPeerDiscovery()
         self.photoLibraryPermissionStatus = photoLibraryPermissionChecker.photoLibraryPermissionStatus()
         restorePairedDeviceSession()
         restoreLatestSyncResult()
+        restoreLatestSyncEvent()
     }
 
     var canFetch: Bool {
@@ -181,6 +186,11 @@ final class ManifestFetchViewModel: ObservableObject {
                     pairingToken: pairingToken,
                     signingContext: requestSigningContext()
                 )
+                recordSyncEvent(
+                    phase: .fetchManifest,
+                    status: .success,
+                    manifest: manifest
+                )
                 latestManifest = manifest
                 await reconcileMissingPhotoAssets(in: manifest)
                 summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
@@ -195,6 +205,11 @@ final class ManifestFetchViewModel: ObservableObject {
                 downloadState = .idle
                 state = .loaded
             } catch {
+                recordSyncEvent(
+                    phase: .fetchManifest,
+                    status: .failed,
+                    errorCode: Self.errorCode(for: error)
+                )
                 latestManifest = nil
                 localPeerHealth = nil
                 summary = nil
@@ -222,6 +237,11 @@ final class ManifestFetchViewModel: ObservableObject {
                     pairingToken: pairingToken,
                     signingContext: requestSigningContext()
                 )
+                recordSyncEvent(
+                    phase: .fetchManifest,
+                    status: .success,
+                    manifest: manifest
+                )
                 latestManifest = manifest
                 await reconcileMissingPhotoAssets(in: manifest)
                 summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
@@ -240,6 +260,11 @@ final class ManifestFetchViewModel: ObservableObject {
                 }
                 downloadNextMediaBatch(limit: manifest.media.count)
             } catch {
+                recordSyncEvent(
+                    phase: .fetchManifest,
+                    status: .failed,
+                    errorCode: Self.errorCode(for: error)
+                )
                 latestManifest = nil
                 localPeerHealth = nil
                 summary = nil
@@ -323,10 +348,12 @@ final class ManifestFetchViewModel: ObservableObject {
         activeDownloadTask = nil
         downloadStateStore.clear()
         try? syncResultStore.clear()
+        try? syncEventStore.clear()
         latestManifest = nil
         summary = nil
         syncResultSummary = nil
         syncResultReturnSummary = nil
+        latestSyncEvent = nil
         latestSyncResultJSON = nil
         downloadProgressSummary = nil
         cancellationMessage = nil
@@ -350,6 +377,7 @@ final class ManifestFetchViewModel: ObservableObject {
         summary = nil
         downloadProgressSummary = nil
         syncResultReturnSummary = nil
+        latestSyncEvent = nil
         cancellationMessage = nil
         downloadState = .idle
         state = .idle
@@ -375,6 +403,10 @@ final class ManifestFetchViewModel: ObservableObject {
         syncResultSummary = SyncResultSummary(result: result)
         latestSyncResultJSON = Self.jsonString(for: result)
         syncResultReturnSummary = SyncResultReturnSummary(status: Self.localized("ios.vm.not_posted"), httpStatusCode: nil)
+    }
+
+    private func restoreLatestSyncEvent() {
+        latestSyncEvent = try? syncEventStore.latestSuccessfulSync()
     }
 
     private func endpointCandidate() async throws -> PairedDeviceEndpoint {
@@ -514,6 +546,21 @@ final class ManifestFetchViewModel: ObservableObject {
                         }
                     }
                 )
+            let failedDownloadRecords = assetsToDownload.compactMap { asset -> MediaDownloadRecord? in
+                guard let record = downloadStateStore.record(for: asset),
+                      record.status == .failed else {
+                    return nil
+                }
+                return record
+            }
+            recordSyncEvent(
+                phase: .download,
+                status: failedDownloadRecords.isEmpty ? .success : .failed,
+                manifest: manifest,
+                syncedCount: results.count,
+                failedCount: failedDownloadRecords.count,
+                errorCode: failedDownloadRecords.first?.lastErrorCode
+            )
             summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
             let postDownloadPublishSummary = await publishSyncResultSummary(
                 for: manifest,
@@ -592,6 +639,15 @@ final class ManifestFetchViewModel: ObservableObject {
                 }
             }
 
+            recordSyncEvent(
+                phase: .importPhotos,
+                status: importResults.contains { $0.status == .failed } ? .failed : .success,
+                manifest: manifest,
+                syncedCount: importResults.filter { $0.status == .synced }.count,
+                failedCount: importResults.filter { $0.status == .failed }.count,
+                errorCode: importResults.first { $0.status == .failed }?.errorCode
+            )
+
             summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
             let completedPublishSummary = await publishSyncResultSummary(
                 for: manifest,
@@ -614,6 +670,34 @@ final class ManifestFetchViewModel: ObservableObject {
         }
 
         try? FileManager.default.removeItem(at: localFileURL)
+    }
+
+    private func recordSyncEvent(
+        phase: SyncEventPhase,
+        status: SyncEventStatus,
+        manifest: SyncManifest? = nil,
+        syncBatchId: String? = nil,
+        syncedCount: Int = 0,
+        skippedCount: Int = 0,
+        failedCount: Int = 0,
+        errorCode: String? = nil
+    ) {
+        let event = SyncEvent(
+            id: UUID(),
+            phase: phase,
+            status: status,
+            recordedAt: Date(),
+            sourceDeviceId: manifest?.sourceDeviceId,
+            targetDeviceId: "ios-local",
+            syncBatchId: syncBatchId ?? manifest.map { "m0-\($0.cursor)" },
+            photoCount: manifest?.media.count ?? 0,
+            syncedCount: syncedCount,
+            skippedCount: skippedCount,
+            failedCount: failedCount,
+            errorCode: errorCode
+        )
+        try? syncEventStore.append(event)
+        latestSyncEvent = try? syncEventStore.latestSuccessfulSync()
     }
 
     private static func message(for error: Error) -> String {
@@ -760,11 +844,17 @@ final class ManifestFetchViewModel: ObservableObject {
                 pairingToken: pairingToken,
                 signingContext: requestSigningContext()
             )
+            recordSyncResultPost(result: result, status: .success)
             return (
                 SyncResultSummary(result: result),
                 SyncResultReturnSummary(status: Self.localized("ios.vm.posted"), httpStatusCode: statusCode)
             )
         } catch {
+            recordSyncResultPost(
+                result: result,
+                status: .failed,
+                errorCode: Self.errorCode(for: error)
+            )
             return (
                 SyncResultSummary(result: result),
                 SyncResultReturnSummary(status: Self.localized("ios.status.failed"), httpStatusCode: Self.httpStatusCode(from: error))
@@ -782,6 +872,17 @@ final class ManifestFetchViewModel: ObservableObject {
         }
 
         return nil
+    }
+
+    private func recordSyncResultPost(result: SyncResult, status: SyncEventStatus, errorCode: String? = nil) {
+        let event = SyncEvent.fromResultPost(
+            result: result,
+            status: status,
+            recordedAt: Date(),
+            errorCode: errorCode
+        )
+        try? syncEventStore.append(event)
+        latestSyncEvent = try? syncEventStore.latestSuccessfulSync()
     }
 
     private func records(for manifest: SyncManifest) -> [MediaDownloadRecord] {
@@ -805,6 +906,29 @@ final class ManifestFetchViewModel: ObservableObject {
 
     private static func localized(_ key: String) -> String {
         NSLocalizedString(key, comment: "")
+    }
+
+    private static func errorCode(for error: Error) -> String {
+        if let syncResultClientError = error as? SyncResultClientError,
+           case .unacceptableStatusCode(let statusCode) = syncResultClientError {
+            return "HTTP-\(statusCode)"
+        }
+
+        if let manifestClientError = error as? ManifestClientError,
+           case .unacceptableStatusCode(let statusCode) = manifestClientError {
+            return "HTTP-\(statusCode)"
+        }
+
+        if let healthClientError = error as? HealthClientError,
+           case .unacceptableStatusCode(let statusCode) = healthClientError {
+            return "HTTP-\(statusCode)"
+        }
+
+        if let urlError = error as? URLError {
+            return urlError.code.rawValue.description
+        }
+
+        return String(describing: type(of: error))
     }
 }
 
