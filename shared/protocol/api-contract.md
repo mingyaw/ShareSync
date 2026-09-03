@@ -17,13 +17,13 @@ X-Nonce: <random-string>
 X-Signature: <base64-signature>
 ```
 
-M0 currently enforces this lightweight pairing header for protected endpoints:
+The QR pairing token is currently used as the M1 HMAC-SHA256 shared secret while the permanent key-exchange model is still being hardened. The token-only header is no longer sufficient for production local photo endpoints.
+
+Legacy validation mode can still enable this lightweight M0 header explicitly:
 
 ```text
 X-ShareSync-Pairing-Token: <pairing-token-from-qr-payload>
 ```
-
-M1 transitional signed requests use the same QR pairing token as an HMAC-SHA256 shared secret while the permanent key-exchange model is still being hardened. Android accepts signed requests first and keeps the M0 token-only header as a temporary fallback.
 
 Signature payload:
 
@@ -132,6 +132,6 @@ M0 implements only:
 - `GET /v1/media/{assetId}`
 - `POST /v1/sync/result`
 - local HTTP allowed only for first-device PoC
-- lightweight pairing-token header enforcement on protected endpoints
+- signed request enforcement on protected endpoints
 - photo media only
 - full HTTPS and signed requests remain required before MVP release

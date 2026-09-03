@@ -29,7 +29,7 @@ The current codebase contains:
 - Android QR pairing payload UI with stable local device identity and actual bound port.
 - Android can copy the current health endpoint for same-network or hotspot validation.
 - iOS QR scanner and manual pairing fallback.
-- M0 protected endpoints require the QR pairing token header for manifest, media, and sync result requests.
+- Protected photo endpoints require signed local requests after QR pairing.
 - iOS receive screen that fetches the Android photo manifest, downloads one or more photos, verifies checksums when available, and imports into the `ShareSync Backup` Photos album.
 - iOS local-network requests use explicit timeouts: short for health/manifest/result posts and longer for photo media transfers.
 - iOS receive screen can download the next item, a small batch, or all remaining manifest items for M0 device validation.
@@ -114,7 +114,7 @@ M0 may use plain local HTTP to reduce setup cost. MVP must upgrade to local HTTP
 M0 includes only:
 
 - QR pairing payload structure
-- pairing-token header enforcement for protected local endpoints
+- signed request enforcement for protected local endpoints
 - QR pairing scanner/manual fallback
 - Android photo manifest
 - Android photo download endpoint
@@ -206,7 +206,7 @@ iOS:
 - Run the `ShareSync` scheme on an iPhone connected to the same network.
 - Scan the Android QR code, or paste the manual pairing payload.
 - If ShareSync was previously paired, confirm the Android IP and port are restored on launch.
-- Use `Clear Pairing` before scanning a fresh Android QR code if Android restarted and generated a new M0 token.
+- Use `Clear Pairing` before scanning a fresh Android QR code if Android restarted and generated a new pairing secret.
 - Tap `Fetch Manifest`.
 - Tap `Download Next Item` or `Download 5 Items`.
 - Tap `Download Remaining` for the 100-item foreground transfer validation.

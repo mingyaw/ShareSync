@@ -29,12 +29,12 @@ M1 keeps the main axis focused on photos only:
 - [x] Separate paired device identity from the mutable last-known network endpoint.
 - [x] Add local endpoint discovery for paired Android devices.
 - [x] Validate discovered or restored endpoints against the paired Android `deviceId` before syncing.
-- [x] Add M1 transitional signed local requests while keeping M0 token fallback.
+- [x] Add M1 transitional signed local requests.
 - [x] Add request timestamp and nonce validation to reduce replay risk.
 - [x] Add shared request-signing fixtures.
 - [x] Add Android signature verification tests for manifest, media, and sync result endpoints.
 - [x] Add iOS signed request generation tests for manifest, media, and sync result requests.
-- [ ] Replace M0 token-only fallback with signed-request-only authorization.
+- [x] Replace M0 token-only fallback with signed-request-only authorization for production router wiring.
 - [ ] Decide whether local HTTPS is required for M1 or remains a pre-release hardening branch.
 
 ### M1.2 Photo Sync History
@@ -143,6 +143,15 @@ Started replacing M0 token-only authorization with signed local requests:
 
 - Added a shared signing fixture for the canonical request payload.
 - Added Android HMAC-SHA256 request signature validation with timestamp skew and nonce replay protection.
-- Updated Android router authorization to accept signed requests first and keep token-only auth as a temporary M0 fallback.
+- Updated Android router authorization to require signed requests by default, with token-only auth available only as an explicit legacy validation policy.
 - Added iOS request signing for manifest fetch, media download, and sync result post.
 - Added Swift tests for signed request headers and Android tests for signature verification and replay rejection.
+
+### 2026-09-03 Signed-Only Production Authorization
+
+Finished the M1 production authorization switch away from token-only requests:
+
+- Added an Android authorization policy so production router construction defaults to signed-request-only.
+- Kept token-only fallback behind an explicit legacy validation policy for narrow compatibility tests.
+- Added coverage proving token-only manifest requests are rejected by the default router.
+- Confirmed the iOS client sends signed headers on all protected photo sync requests.

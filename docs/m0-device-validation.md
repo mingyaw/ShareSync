@@ -43,7 +43,7 @@ This checklist validates the current main path: Android exposes recent photos ov
 
 Expected result: one Android photo is visible in iOS Photos, Android keeps showing the latest iOS sync result while the M0 server is running, and iCloud Photos can back it up through the normal iOS Photos pipeline.
 
-Note: `Fetch Manifest`, media downloads, and sync result return require the pairing token from the Android QR/payload. Re-scan or paste a fresh payload if iOS shows a token rejection message.
+Note: `Fetch Manifest`, media downloads, and sync result return require signed requests derived from the Android QR/payload pairing secret. Re-scan or paste a fresh payload if iOS shows a pairing rejection message.
 
 ## iOS Pairing Restore
 
@@ -53,11 +53,11 @@ Note: `Fetch Manifest`, media downloads, and sync result return require the pair
 4. Confirm the Android host, port, paired device name, and pairing status are restored without scanning again.
 5. Tap `Fetch Manifest` while the same Android M0 server session is still running.
 
-Expected result: iOS can reuse the persisted M0 pairing session after an app restart. If Android restarted the M0 server and generated a new token, iOS should show the token rejection message and require a fresh QR scan or pasted payload.
+Expected result: iOS can reuse the persisted M0 pairing session after an app restart. If Android restarted the M0 server and generated a new pairing secret, iOS should show a pairing rejection message and require a fresh QR scan or pasted payload.
 
 ## Clear Stale iOS Pairing
 
-Use this when Android restarted the M0 server and iOS still has the old endpoint or pairing token.
+Use this when Android restarted the M0 server and iOS still has the old endpoint or pairing secret.
 
 1. On iOS, tap `Clear Pairing`.
 2. Confirm `Pairing` returns to `Manual`.
@@ -65,7 +65,7 @@ Use this when Android restarted the M0 server and iOS still has the old endpoint
 4. Scan the fresh Android QR code, or paste the new manual pairing payload.
 5. Tap `Fetch Manifest`.
 
-Expected result: iOS forgets only the saved Android endpoint, device metadata, token, and pasted payload. Existing download/import mappings and latest sync result evidence remain intact, so clearing pairing does not by itself make previously imported photos re-download.
+Expected result: iOS forgets only the saved Android endpoint, device metadata, pairing secret, and pasted payload. Existing download/import mappings and latest sync result evidence remain intact, so clearing pairing does not by itself make previously imported photos re-download.
 
 ## Foreground Full Manifest Transfer
 
@@ -117,7 +117,7 @@ Use this only when rerunning M0 validation from a clean ShareSync state.
 
 Expected result: ShareSync local transfer mappings and latest result JSON are cleared on iOS, Android clears its persisted iOS result report, and the next manifest/result cycle is rebuilt from the current devices. Imported photos remain in iOS Photos and are not deleted by the reset controls.
 
-Note: use `Clear Pairing` instead when only the remembered Android endpoint or pairing token is stale.
+Note: use `Clear Pairing` instead when only the remembered Android endpoint or pairing secret is stale.
 
 ## Deleted Imported Photo
 

@@ -22,6 +22,7 @@ class LocalSyncRouter(
     private val signatureValidator: RequestSignatureValidator = RequestSignatureValidator(
         secretProvider = { pairingToken },
     ),
+    private val authorizationPolicy: AuthorizationPolicy = AuthorizationPolicy.SignedRequestsOnly,
 ) {
     suspend fun health(): LocalApiResponse {
         val response = LocalApiResponse.json(
@@ -146,6 +147,10 @@ class LocalSyncRouter(
             return true
         }
 
+        if (authorizationPolicy == AuthorizationPolicy.SignedRequestsOnly) {
+            return false
+        }
+
         return headers.any { (name, value) ->
             name.equals(PAIRING_TOKEN_HEADER, ignoreCase = true) && value == pairingToken
         }
@@ -154,6 +159,11 @@ class LocalSyncRouter(
     companion object {
         const val PAIRING_TOKEN_HEADER = "X-ShareSync-Pairing-Token"
     }
+}
+
+enum class AuthorizationPolicy {
+    SignedRequestsOnly,
+    SignedRequestsWithPairingTokenFallback,
 }
 
 interface MediaProvider {

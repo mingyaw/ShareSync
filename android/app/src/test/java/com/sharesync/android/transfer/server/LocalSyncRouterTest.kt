@@ -23,12 +23,25 @@ class LocalSyncRouterTest {
     fun manifestAcceptsExpectedPairingToken() {
         val activityTracker = LocalRequestActivityTracker(clock = { 1234L })
         val response = SuspendBridge.runBlocking {
-            router(requestActivityTracker = activityTracker)
+            router(
+                requestActivityTracker = activityTracker,
+                authorizationPolicy = AuthorizationPolicy.SignedRequestsWithPairingTokenFallback,
+            )
                 .manifest(mapOf(LocalSyncRouter.PAIRING_TOKEN_HEADER to PAIRING_TOKEN))
         }
 
         assertEquals(200, response.statusCode)
         assertEquals(LocalRequestActivity("manifest", 200, 1234L, 1, 1), activityTracker.latest())
+    }
+
+    @Test
+    fun manifestRejectsTokenOnlyWhenSignedRequestsAreRequired() {
+        val response = SuspendBridge.runBlocking {
+            router()
+                .manifest(mapOf(LocalSyncRouter.PAIRING_TOKEN_HEADER to PAIRING_TOKEN))
+        }
+
+        assertEquals(401, response.statusCode)
     }
 
     @Test
@@ -109,7 +122,10 @@ class LocalSyncRouterTest {
     fun syncResultRecordsBadRequestActivity() {
         val activityTracker = LocalRequestActivityTracker(clock = { 9012L })
         val response = SuspendBridge.runBlocking {
-            router(requestActivityTracker = activityTracker).syncResult(
+            router(
+                requestActivityTracker = activityTracker,
+                authorizationPolicy = AuthorizationPolicy.SignedRequestsWithPairingTokenFallback,
+            ).syncResult(
                 body = """{"bad": true}""",
                 headers = pairingHeaders(),
             )
@@ -123,7 +139,10 @@ class LocalSyncRouterTest {
     fun syncResultRejectsBlankRequiredFieldsWithoutPersisting() {
         val store = InMemorySyncResultStore()
         val response = SuspendBridge.runBlocking {
-            router(syncResultStore = store).syncResult(
+            router(
+                syncResultStore = store,
+                authorizationPolicy = AuthorizationPolicy.SignedRequestsWithPairingTokenFallback,
+            ).syncResult(
                 body = """
                     {
                       "syncBatchId": " ",
@@ -151,7 +170,10 @@ class LocalSyncRouterTest {
     fun syncResultRejectsBlankSourceItemIdsWithoutPersisting() {
         val store = InMemorySyncResultStore()
         val response = SuspendBridge.runBlocking {
-            router(syncResultStore = store).syncResult(
+            router(
+                syncResultStore = store,
+                authorizationPolicy = AuthorizationPolicy.SignedRequestsWithPairingTokenFallback,
+            ).syncResult(
                 body = """
                     {
                       "syncBatchId": "batch-001",
@@ -179,7 +201,10 @@ class LocalSyncRouterTest {
     fun syncResultRejectsNonMediaItemsWithoutPersisting() {
         val store = InMemorySyncResultStore()
         val response = SuspendBridge.runBlocking {
-            router(syncResultStore = store).syncResult(
+            router(
+                syncResultStore = store,
+                authorizationPolicy = AuthorizationPolicy.SignedRequestsWithPairingTokenFallback,
+            ).syncResult(
                 body = syncResultBody(itemType = "contact", status = "synced", errorCode = "null"),
                 headers = pairingHeaders(),
             )
@@ -193,7 +218,10 @@ class LocalSyncRouterTest {
     fun syncResultRejectsSuccessfulItemWithErrorCodeWithoutPersisting() {
         val store = InMemorySyncResultStore()
         val response = SuspendBridge.runBlocking {
-            router(syncResultStore = store).syncResult(
+            router(
+                syncResultStore = store,
+                authorizationPolicy = AuthorizationPolicy.SignedRequestsWithPairingTokenFallback,
+            ).syncResult(
                 body = syncResultBody(status = "synced", errorCode = """"SS-MEDIA-999""""),
                 headers = pairingHeaders(),
             )
@@ -207,7 +235,10 @@ class LocalSyncRouterTest {
     fun syncResultRejectsFailedItemWithoutErrorCodeWithoutPersisting() {
         val store = InMemorySyncResultStore()
         val response = SuspendBridge.runBlocking {
-            router(syncResultStore = store).syncResult(
+            router(
+                syncResultStore = store,
+                authorizationPolicy = AuthorizationPolicy.SignedRequestsWithPairingTokenFallback,
+            ).syncResult(
                 body = syncResultBody(status = "failed", errorCode = "null"),
                 headers = pairingHeaders(),
             )
@@ -221,7 +252,10 @@ class LocalSyncRouterTest {
     fun syncResultAcceptsFailedItemWithErrorCode() {
         val store = InMemorySyncResultStore()
         val response = SuspendBridge.runBlocking {
-            router(syncResultStore = store).syncResult(
+            router(
+                syncResultStore = store,
+                authorizationPolicy = AuthorizationPolicy.SignedRequestsWithPairingTokenFallback,
+            ).syncResult(
                 body = syncResultBody(status = "failed", errorCode = """"SS-MEDIA-999""""),
                 headers = pairingHeaders(),
             )
@@ -269,7 +303,10 @@ class LocalSyncRouterTest {
     fun requestActivityCountsLocalRequestsAcrossEndpoints() {
         var now = 10_000L
         val activityTracker = LocalRequestActivityTracker(clock = { now })
-        val router = router(requestActivityTracker = activityTracker)
+        val router = router(
+            requestActivityTracker = activityTracker,
+            authorizationPolicy = AuthorizationPolicy.SignedRequestsWithPairingTokenFallback,
+        )
 
         SuspendBridge.runBlocking {
             router.health()
@@ -287,10 +324,11 @@ class LocalSyncRouterTest {
     @Test
     fun mediaReturnsPartialRangeMetadata() {
         val response = SuspendBridge.runBlocking {
-            router().media(
+            legacyRouter().media(
                 assetId = "media-001",
                 rangeHeader = "bytes=100-199",
                 headers = pairingHeaders(),
+                path = "/v1/media/media-001",
             )
         } as LocalMediaResponse.Found
 
@@ -303,10 +341,11 @@ class LocalSyncRouterTest {
     @Test
     fun mediaSupportsSuffixRangeMetadata() {
         val response = SuspendBridge.runBlocking {
-            router().media(
+            legacyRouter().media(
                 assetId = "media-001",
                 rangeHeader = "bytes=-24",
                 headers = pairingHeaders(),
+                path = "/v1/media/media-001",
             )
         } as LocalMediaResponse.Found
 
@@ -319,10 +358,11 @@ class LocalSyncRouterTest {
     @Test
     fun mediaRejectsUnsatisfiableRange() {
         val response = SuspendBridge.runBlocking {
-            router().media(
+            legacyRouter().media(
                 assetId = "media-001",
                 rangeHeader = "bytes=2048-4096",
                 headers = pairingHeaders(),
+                path = "/v1/media/media-001",
             )
         }
 
@@ -340,6 +380,7 @@ class LocalSyncRouterTest {
         requestActivityTracker: LocalRequestActivityTracker? = null,
         syncResultStore: InMemorySyncResultStore = InMemorySyncResultStore(),
         signatureValidator: RequestSignatureValidator = RequestSignatureValidator(secretProvider = { PAIRING_TOKEN }),
+        authorizationPolicy: AuthorizationPolicy = AuthorizationPolicy.SignedRequestsOnly,
     ): LocalSyncRouter {
         return LocalSyncRouter(
             deviceId = "android-device-001",
@@ -366,7 +407,12 @@ class LocalSyncRouterTest {
             syncResultStore = syncResultStore,
             requestActivityTracker = requestActivityTracker,
             signatureValidator = signatureValidator,
+            authorizationPolicy = authorizationPolicy,
         )
+    }
+
+    private fun legacyRouter(): LocalSyncRouter {
+        return router(authorizationPolicy = AuthorizationPolicy.SignedRequestsWithPairingTokenFallback)
     }
 
     private fun pairingHeaders(token: String = PAIRING_TOKEN): Map<String, String> {
