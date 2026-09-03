@@ -1,6 +1,7 @@
 package com.sharesync.android
 
 import android.content.Context
+import com.sharesync.android.discovery.LocalPeerDiscoveryAdvertiser
 import com.sharesync.android.pairing.PairingPayloadFactory
 import com.sharesync.android.security.DeviceIdentity
 import com.sharesync.android.security.DeviceIdentityStore
@@ -19,6 +20,7 @@ data class AndroidM0ServerSession(
     val syncResultStore: SyncResultStore,
     val manifestBuilder: ManifestBuilder,
     val requestActivityTracker: LocalRequestActivityTracker,
+    val discoveryAdvertiser: LocalPeerDiscoveryAdvertiser,
     val pairingPayloadJson: String?,
 )
 
@@ -59,11 +61,14 @@ object AndroidM0ServerSessionController {
             router = components.router,
             mediaStreamProvider = components.mediaStreamProvider,
         )
+        val discoveryAdvertiser = LocalPeerDiscoveryAdvertiser(context.applicationContext)
+        discoveryAdvertiser.start(identity = identity, port = server.port)
         val session = AndroidM0ServerSession(
             server = server,
             syncResultStore = components.syncResultStore,
             manifestBuilder = components.manifestBuilder,
             requestActivityTracker = components.requestActivityTracker,
+            discoveryAdvertiser = discoveryAdvertiser,
             pairingPayloadJson = createPairingPayloadJson(
                 identity = identity,
                 port = server.port,
@@ -77,6 +82,7 @@ object AndroidM0ServerSessionController {
     fun stop(session: AndroidM0ServerSession?) {
         val activeSession = session ?: AndroidM0ServerSessionRegistry.current ?: return
         AndroidM0ServerSessionRegistry.clear(activeSession)
+        activeSession.discoveryAdvertiser.stop()
         SuspendBridge.runBlocking { activeSession.server.stop() }
     }
 

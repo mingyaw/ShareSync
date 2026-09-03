@@ -43,6 +43,22 @@ GET /v1/health
 
 Returns device and protocol readiness.
 
+### Local Discovery
+
+Android advertises the running local transfer endpoint with Bonjour/mDNS while the photo sharing server is active:
+
+```text
+Service type: _sharesync._tcp.
+Domain: local.
+TXT deviceId: <android-device-id>
+TXT platform: android
+TXT version: 1
+```
+
+iOS uses discovery only to refresh the last known network endpoint for an already paired Android phone. Discovery does not create trust by itself. Before fetching the manifest or downloading photos, iOS must call `GET /v1/health` on the discovered endpoint and verify the returned `deviceId` matches the saved paired device.
+
+If discovery fails, iOS may fall back to the saved host and port from the pairing session. This keeps the app usable on networks where mDNS is unavailable while avoiding a new QR scan for normal IP changes.
+
 ### Pairing
 
 ```http

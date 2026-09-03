@@ -26,6 +26,9 @@ M1 keeps the main axis focused on photos only:
 
 ### M1.1 Security Hardening
 
+- [x] Separate paired device identity from the mutable last-known network endpoint.
+- [x] Add local endpoint discovery for paired Android devices.
+- [x] Validate discovered or restored endpoints against the paired Android `deviceId` before syncing.
 - [ ] Replace M0 token-only protection with signed local requests.
 - [ ] Add request timestamp or nonce validation to reduce replay risk.
 - [ ] Add shared request-signing fixtures.
@@ -122,3 +125,13 @@ Moved the MVP closer to the intended product flow:
 - iOS now shows pairing first when no Android device is configured.
 - iOS shows the photo sync workflow after pairing, with auto-sync-all enabled by default and manual sync-all still available.
 - iOS advanced connection, status, and diagnostics controls are tucked behind a settings disclosure.
+
+### 2026-09-03 Paired Device Endpoint Refresh
+
+Reduced the need to re-pair when Android receives a different local IP:
+
+- Split the iOS paired session into trusted Android identity plus mutable last-known endpoint.
+- Added Android Bonjour/mDNS advertisement for the active local photo sharing endpoint.
+- Added iOS local discovery before manifest fetch and sync-all actions.
+- Kept saved host and port as fallback when mDNS is unavailable.
+- Required `/v1/health.deviceId` to match the trusted Android device before using any discovered or restored endpoint.

@@ -13,15 +13,67 @@ struct TrustedDevice: Codable, Equatable, Identifiable {
     let trustStatus: TrustStatus
 }
 
+struct PairedDeviceEndpoint: Codable, Equatable {
+    let host: String
+    let port: Int
+    let updatedAt: Date
+}
+
 enum TrustStatus: String, Codable {
     case trusted
     case revoked
 }
 
 struct PairedDeviceSession: Codable, Equatable {
-    let host: String
-    let port: Int
+    let lastKnownEndpoint: PairedDeviceEndpoint
     let device: TrustedDevice
+
+    var host: String { lastKnownEndpoint.host }
+    var port: Int { lastKnownEndpoint.port }
+
+    init(host: String, port: Int, device: TrustedDevice, endpointUpdatedAt: Date = Date()) {
+        self.lastKnownEndpoint = PairedDeviceEndpoint(
+            host: host,
+            port: port,
+            updatedAt: endpointUpdatedAt
+        )
+        self.device = device
+    }
+
+    init(lastKnownEndpoint: PairedDeviceEndpoint, device: TrustedDevice) {
+        self.lastKnownEndpoint = lastKnownEndpoint
+        self.device = device
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case host
+        case port
+        case lastKnownEndpoint
+        case device
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        device = try container.decode(TrustedDevice.self, forKey: .device)
+        if let endpoint = try container.decodeIfPresent(PairedDeviceEndpoint.self, forKey: .lastKnownEndpoint) {
+            lastKnownEndpoint = endpoint
+            return
+        }
+
+        lastKnownEndpoint = PairedDeviceEndpoint(
+            host: try container.decode(String.self, forKey: .host),
+            port: try container.decode(Int.self, forKey: .port),
+            updatedAt: device.pairedAt
+        )
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(lastKnownEndpoint, forKey: .lastKnownEndpoint)
+        try container.encode(lastKnownEndpoint.host, forKey: .host)
+        try container.encode(lastKnownEndpoint.port, forKey: .port)
+        try container.encode(device, forKey: .device)
+    }
 }
 
 protocol PairedDeviceSessionStore {

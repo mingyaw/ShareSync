@@ -100,6 +100,7 @@
 "ios.vm.fetch_manifest_before_download" = "下載前請先取得照片清單。";
 "ios.vm.transfer_stopped" = "傳輸已停止。已完成項目會保留紀錄，剩餘照片可重試。";
 "ios.vm.transfer_paused_background" = "ShareSync 離開前景，傳輸已暫停。已完成項目會保留紀錄，回到 App 後可繼續同步剩餘照片。";
+"ios.vm.unexpected_peer" = "此 endpoint 不是已綁定的 Android 手機。請重新整理配對，或確認兩支手機在同一個網路。";
 "ios.vm.not_posted" = "尚未回傳";
 "ios.vm.manifest_no_photos" = "照片清單沒有可下載照片。";
 "ios.vm.allow_photos" = "請允許照片權限以匯入 Android 照片。";

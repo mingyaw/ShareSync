@@ -18,6 +18,12 @@ final class ManifestFetchViewModel: ObservableObject {
         case failed(String)
     }
 
+    private enum EndpointResolutionError: Error {
+        case missingHost
+        case invalidPort
+        case unexpectedPeer
+    }
+
     struct ManifestSummary: Equatable {
         let sourceDeviceId: String
         let cursor: String
@@ -87,6 +93,7 @@ final class ManifestFetchViewModel: ObservableObject {
     private let syncResultClient: SyncResultClient
     private let pairedDeviceSessionStore: PairedDeviceSessionStore
     private let pairingPayloadParser: PairingPayloadParser
+    private let localPeerDiscovery: LocalPeerDiscovery
     private let photoTransferPlanner = M0PhotoTransferPlanner()
     private var latestManifest: SyncManifest?
     private var activeDownloadTask: Task<Void, Never>?
@@ -102,7 +109,8 @@ final class ManifestFetchViewModel: ObservableObject {
         downloadStateStore: MediaDownloadStateStore = FileMediaDownloadStateStore(),
         syncResultStore: SyncResultStore = FileSyncResultStore(),
         syncResultClient: SyncResultClient = SyncResultClient(),
-        pairedDeviceSessionStore: PairedDeviceSessionStore = FilePairedDeviceSessionStore()
+        pairedDeviceSessionStore: PairedDeviceSessionStore = FilePairedDeviceSessionStore(),
+        localPeerDiscovery: LocalPeerDiscovery? = nil
     ) {
         self.client = client
         self.healthClient = healthClient
@@ -115,6 +123,7 @@ final class ManifestFetchViewModel: ObservableObject {
         self.syncResultStore = syncResultStore
         self.syncResultClient = syncResultClient
         self.pairedDeviceSessionStore = pairedDeviceSessionStore
+        self.localPeerDiscovery = localPeerDiscovery ?? BonjourLocalPeerDiscovery()
         self.photoLibraryPermissionStatus = photoLibraryPermissionChecker.photoLibraryPermissionStatus()
         restorePairedDeviceSession()
         restoreLatestSyncResult()
@@ -157,26 +166,18 @@ final class ManifestFetchViewModel: ObservableObject {
     }
 
     func fetchManifest() {
-        let trimmedHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedHost.isEmpty else {
-            state = .failed(Self.localized("ios.vm.enter_android_ip"))
-            return
-        }
-
-        guard let portNumber = Int(port), (1...65535).contains(portNumber) else {
-            state = .failed(Self.localized("ios.vm.enter_valid_port"))
-            return
-        }
-
         state = .loading
 
         Task {
             do {
-                let health = try await healthClient.fetchHealth(from: trimmedHost, port: portNumber)
+                let endpoint = try await endpointCandidate()
+                let health = try await healthClient.fetchHealth(from: endpoint.host, port: endpoint.port)
+                try validatePairedPeer(health)
+                persistLastKnownEndpoint(endpoint, health: health)
                 localPeerHealth = health
                 let manifest = try await client.fetchManifest(
-                    from: trimmedHost,
-                    port: portNumber,
+                    from: endpoint.host,
+                    port: endpoint.port,
                     pairingToken: pairingToken
                 )
                 latestManifest = manifest
@@ -184,8 +185,8 @@ final class ManifestFetchViewModel: ObservableObject {
                 summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
                 let publishSummary = await publishSyncResultSummary(
                     for: manifest,
-                    host: trimmedHost,
-                    port: portNumber
+                    host: endpoint.host,
+                    port: endpoint.port
                 )
                 syncResultSummary = publishSummary.resultSummary
                 syncResultReturnSummary = publishSummary.returnSummary
@@ -205,26 +206,18 @@ final class ManifestFetchViewModel: ObservableObject {
     }
 
     func syncAllPhotos() {
-        let trimmedHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedHost.isEmpty else {
-            state = .failed(Self.localized("ios.vm.enter_android_ip"))
-            return
-        }
-
-        guard let portNumber = Int(port), (1...65535).contains(portNumber) else {
-            state = .failed(Self.localized("ios.vm.enter_valid_port"))
-            return
-        }
-
         state = .loading
 
         Task {
             do {
-                let health = try await healthClient.fetchHealth(from: trimmedHost, port: portNumber)
+                let endpoint = try await endpointCandidate()
+                let health = try await healthClient.fetchHealth(from: endpoint.host, port: endpoint.port)
+                try validatePairedPeer(health)
+                persistLastKnownEndpoint(endpoint, health: health)
                 localPeerHealth = health
                 let manifest = try await client.fetchManifest(
-                    from: trimmedHost,
-                    port: portNumber,
+                    from: endpoint.host,
+                    port: endpoint.port,
                     pairingToken: pairingToken
                 )
                 latestManifest = manifest
@@ -232,8 +225,8 @@ final class ManifestFetchViewModel: ObservableObject {
                 summary = ManifestSummary(manifest: manifest, stateStore: downloadStateStore)
                 let publishSummary = await publishSyncResultSummary(
                     for: manifest,
-                    host: trimmedHost,
-                    port: portNumber
+                    host: endpoint.host,
+                    port: endpoint.port
                 )
                 syncResultSummary = publishSummary.resultSummary
                 syncResultReturnSummary = publishSummary.returnSummary
@@ -380,6 +373,69 @@ final class ManifestFetchViewModel: ObservableObject {
         syncResultSummary = SyncResultSummary(result: result)
         latestSyncResultJSON = Self.jsonString(for: result)
         syncResultReturnSummary = SyncResultReturnSummary(status: Self.localized("ios.vm.not_posted"), httpStatusCode: nil)
+    }
+
+    private func endpointCandidate() async throws -> PairedDeviceEndpoint {
+        if let pairedDevice,
+           let discoveredEndpoint = await localPeerDiscovery.discoverEndpoint(
+            matchingDeviceId: pairedDevice.deviceId,
+            timeout: 2.5
+           ) {
+            return discoveredEndpoint
+        }
+
+        let trimmedHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedHost.isEmpty else {
+            throw EndpointResolutionError.missingHost
+        }
+
+        guard let portNumber = Int(port), (1...65535).contains(portNumber) else {
+            throw EndpointResolutionError.invalidPort
+        }
+
+        return PairedDeviceEndpoint(
+            host: trimmedHost,
+            port: portNumber,
+            updatedAt: Date()
+        )
+    }
+
+    private func validatePairedPeer(_ health: LocalPeerHealth) throws {
+        guard let pairedDevice else {
+            return
+        }
+
+        guard health.deviceId == pairedDevice.deviceId else {
+            throw EndpointResolutionError.unexpectedPeer
+        }
+    }
+
+    private func persistLastKnownEndpoint(_ endpoint: PairedDeviceEndpoint, health: LocalPeerHealth) {
+        guard let pairedDevice else {
+            host = endpoint.host
+            port = "\(endpoint.port)"
+            return
+        }
+
+        let updatedDevice = TrustedDevice(
+            deviceId: pairedDevice.deviceId,
+            deviceName: pairedDevice.deviceName,
+            platform: pairedDevice.platform,
+            publicKey: pairedDevice.publicKey,
+            pairingToken: pairedDevice.pairingToken,
+            pairedAt: pairedDevice.pairedAt,
+            lastSeenAt: Date(),
+            trustStatus: pairedDevice.trustStatus
+        )
+        let session = PairedDeviceSession(
+            lastKnownEndpoint: endpoint,
+            device: updatedDevice
+        )
+        try? pairedDeviceSessionStore.save(session)
+        self.pairedDevice = updatedDevice
+        host = endpoint.host
+        port = "\(endpoint.port)"
+        localPeerHealth = health
     }
 
     private func cancelDownload(reason: String) {
@@ -558,6 +614,17 @@ final class ManifestFetchViewModel: ObservableObject {
     }
 
     private static func message(for error: Error) -> String {
+        if let endpointError = error as? EndpointResolutionError {
+            switch endpointError {
+            case .missingHost:
+                return localized("ios.vm.enter_android_ip")
+            case .invalidPort:
+                return localized("ios.vm.enter_valid_port")
+            case .unexpectedPeer:
+                return localized("ios.vm.unexpected_peer")
+            }
+        }
+
         if let urlError = error as? URLError {
             switch urlError.code {
             case .cannotConnectToHost, .networkConnectionLost, .timedOut:

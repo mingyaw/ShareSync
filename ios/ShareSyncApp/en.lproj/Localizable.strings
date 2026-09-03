@@ -100,6 +100,7 @@
 "ios.vm.fetch_manifest_before_download" = "Fetch manifest before downloading.";
 "ios.vm.transfer_stopped" = "Transfer stopped. Completed items are kept; remaining items can be retried.";
 "ios.vm.transfer_paused_background" = "Transfer paused because ShareSync left the foreground. Completed items are kept; retry remaining photos when you return.";
+"ios.vm.unexpected_peer" = "This endpoint is not the paired Android phone. Refresh pairing or check both phones are on the same network.";
 "ios.vm.not_posted" = "Not posted";
 "ios.vm.manifest_no_photos" = "Manifest has no photos to download.";
 "ios.vm.allow_photos" = "Allow Photos access to import Android photos.";

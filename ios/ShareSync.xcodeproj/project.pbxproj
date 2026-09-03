@@ -26,6 +26,7 @@
 		10000000000000000000000C /* QRCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000001C /* QRCodeScannerView.swift */; };
 		1000000000000000000000A1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000A0 /* Localizable.strings */; };
 		1000000000000000000000A6 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000A5 /* InfoPlist.strings */; };
+		1000000000000000000000A9 /* ShareSync/Discovery/LocalPeerDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000AA /* ShareSync/Discovery/LocalPeerDiscovery.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -51,6 +52,8 @@
 		1000000000000000000000A3 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		1000000000000000000000A7 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1000000000000000000000A8 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		1000000000000000000000AA /* ShareSync/Discovery/LocalPeerDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Discovery/LocalPeerDiscovery.swift; sourceTree = "<group>"; };
+		1000000000000000000000AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +83,7 @@
 				100000000000000000000012 /* ContentView.swift */,
 				100000000000000000000019 /* ManifestFetchViewModel.swift */,
 				10000000000000000000001C /* QRCodeScannerView.swift */,
+				1000000000000000000000AB /* Info.plist */,
 				1000000000000000000000A0 /* Localizable.strings */,
 				1000000000000000000000A5 /* InfoPlist.strings */,
 			);
@@ -99,6 +103,7 @@
 				100000000000000000000018 /* ShareSync/Transfer/MediaDownloadState.swift */,
 				100000000000000000000023 /* ShareSync/Transfer/M0PhotoTransferPlanner.swift */,
 				10000000000000000000001A /* ShareSync/Transfer/MediaDownloader.swift */,
+				1000000000000000000000AA /* ShareSync/Discovery/LocalPeerDiscovery.swift */,
 				100000000000000000000016 /* ShareSync/ImporterPhotos/PhotoImporter.swift */,
 				10000000000000000000001B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift */,
 				100000000000000000000017 /* ShareSync/Security/TrustedDevice.swift */,
@@ -220,6 +225,7 @@
 				100000000000000000000008 /* ShareSync/Transfer/MediaDownloadState.swift in Sources */,
 				100000000000000000000024 /* ShareSync/Transfer/M0PhotoTransferPlanner.swift in Sources */,
 				10000000000000000000000A /* ShareSync/Transfer/MediaDownloader.swift in Sources */,
+				1000000000000000000000A9 /* ShareSync/Discovery/LocalPeerDiscovery.swift in Sources */,
 				100000000000000000000006 /* ShareSync/ImporterPhotos/PhotoImporter.swift in Sources */,
 				10000000000000000000000B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift in Sources */,
 				100000000000000000000007 /* ShareSync/Security/TrustedDevice.swift in Sources */,
@@ -236,15 +242,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 72HVCU235Z;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = ShareSync;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "ShareSync uses the camera to scan the Android pairing code.";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "ShareSync connects to your paired Android phone on the local network.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "ShareSync imports Android photos into your iPhone photo library.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "ShareSync creates a backup album and imports Android photos into your photo library.";
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ShareSyncApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sharesync.ios;
@@ -261,15 +260,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 72HVCU235Z;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = ShareSync;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "ShareSync uses the camera to scan the Android pairing code.";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "ShareSync connects to your paired Android phone on the local network.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "ShareSync imports Android photos into your iPhone photo library.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "ShareSync creates a backup album and imports Android photos into your photo library.";
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ShareSyncApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sharesync.ios;

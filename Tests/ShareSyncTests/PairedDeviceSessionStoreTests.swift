@@ -48,7 +48,44 @@ final class PairedDeviceSessionStoreTests: XCTestCase {
                 pairedAt: Date(timeIntervalSince1970: 1),
                 lastSeenAt: nil,
                 trustStatus: .trusted
-            )
+            ),
+            endpointUpdatedAt: Date(timeIntervalSince1970: 2)
         )
+    }
+}
+
+extension PairedDeviceSessionStoreTests {
+    func testPairedDeviceSessionDecodesLegacyHostAndPort() throws {
+        let json = """
+        {
+          "host": "192.168.1.20",
+          "port": 48291,
+          "device": {
+            "deviceId": "android-demo-device",
+            "deviceName": "Pixel Demo",
+            "platform": "android",
+            "publicKey": "m0-public-key",
+            "pairingToken": "pairing-token-001",
+            "pairedAt": "1970-01-01T00:00:01Z",
+            "lastSeenAt": null,
+            "trustStatus": "trusted"
+          }
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        let session = try JSONDecoder.pairedDeviceSessionTestDecoder.decode(PairedDeviceSession.self, from: data)
+
+        XCTAssertEqual(session.host, "192.168.1.20")
+        XCTAssertEqual(session.port, 48291)
+        XCTAssertEqual(session.lastKnownEndpoint.updatedAt, Date(timeIntervalSince1970: 1))
+        XCTAssertEqual(session.device.deviceId, "android-demo-device")
+    }
+}
+
+private extension JSONDecoder {
+    static var pairedDeviceSessionTestDecoder: JSONDecoder {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return decoder
     }
 }
