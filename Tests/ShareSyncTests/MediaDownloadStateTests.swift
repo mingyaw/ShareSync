@@ -323,6 +323,29 @@ final class MediaDownloadStateTests: XCTestCase {
         XCTAssertEqual(FileMediaDownloadStateStore(fileURL: fileURL).allRecords(), [])
     }
 
+    func testFileStoreClearDropsShareSyncStateWithoutDeletingImportedPhotoReference() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncStateTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let fileURL = directory.appendingPathComponent("media-download-state.json")
+        let asset = makeAsset(assetId: "media-001", size: 2048)
+        let store = FileMediaDownloadStateStore(fileURL: fileURL)
+
+        store.upsertQueued(asset: asset, now: Date(timeIntervalSince1970: 1))
+        store.markImported(
+            sourceAssetId: asset.assetId,
+            photoLocalIdentifier: "photo-local-001",
+            now: Date(timeIntervalSince1970: 2)
+        )
+        XCTAssertEqual(store.importedMappings().map(\.photoLocalIdentifier), ["photo-local-001"])
+
+        store.clear()
+
+        XCTAssertEqual(store.allRecords(), [])
+        XCTAssertEqual(store.importedMappings(), [])
+        XCTAssertEqual(FileMediaDownloadStateStore(fileURL: fileURL).allRecords(), [])
+    }
+
     func testFileStoreResumablePartialRecordsRequireExistingFile() throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("ShareSyncStateTests-\(UUID().uuidString)", isDirectory: true)
@@ -366,6 +389,45 @@ final class MediaDownloadStateTests: XCTestCase {
 
         XCTAssertEqual(store.record(for: "media-001")?.downloadedBytes, 512)
         XCTAssertEqual(store.resumablePartialRecords(), [])
+    }
+
+    func testDeletedImportedPhotoIsRetryableAfterStateReload() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncStateTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let fileURL = directory.appendingPathComponent("media-download-state.json")
+        let asset = makeAsset(assetId: "media-001", size: 2048)
+        let store = FileMediaDownloadStateStore(fileURL: fileURL)
+
+        store.upsertQueued(asset: asset, now: Date(timeIntervalSince1970: 1))
+        store.markImported(
+            sourceAssetId: asset.assetId,
+            photoLocalIdentifier: "photo-local-001",
+            now: Date(timeIntervalSince1970: 2)
+        )
+
+        let reloadedAfterImport = FileMediaDownloadStateStore(fileURL: fileURL)
+        reloadedAfterImport.markMissing(sourceAssetId: asset.assetId, now: Date(timeIntervalSince1970: 3))
+
+        let reloadedAfterDelete = FileMediaDownloadStateStore(fileURL: fileURL)
+        let manifest = SyncManifest(
+            version: 1,
+            sourceDeviceId: asset.sourceDeviceId,
+            generatedAt: Date(timeIntervalSince1970: 4),
+            cursor: "cursor-001",
+            media: [asset],
+            contacts: [],
+            files: []
+        )
+        let candidates = M0PhotoTransferPlanner().nextTransferCandidates(
+            in: manifest,
+            stateStore: reloadedAfterDelete,
+            limit: 10
+        )
+
+        XCTAssertEqual(reloadedAfterDelete.record(for: asset)?.status, .missing)
+        XCTAssertEqual(candidates.map(\.assetId), ["media-001"])
+        XCTAssertEqual(reloadedAfterDelete.importedMappings(), [])
     }
 
     private func makeAsset(

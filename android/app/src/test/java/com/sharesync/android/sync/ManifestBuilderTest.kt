@@ -4,6 +4,7 @@ import com.sharesync.android.SuspendBridge
 import com.sharesync.android.scanner.media.MediaScanner
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.io.File
 
 class ManifestBuilderTest {
     @Test
@@ -162,6 +163,91 @@ class ManifestBuilderTest {
 
         assertEquals(listOf("photo-001", "photo-002"), manifest.media.map { it.assetId })
         assertEquals(listOf(MediaType.photo, MediaType.photo), manifest.media.map { it.mediaType })
+    }
+
+    @Test
+    fun buildM0ManifestFiltersCompletedMediaAfterFileStoreReloadWithMixedStates() {
+        val scanner = FakeMediaScanner(
+            assets = listOf(
+                mediaAsset("media-synced"),
+                mediaAsset("media-skipped"),
+                mediaAsset("media-failed"),
+                mediaAsset("media-conflicted"),
+                mediaAsset("media-new"),
+            )
+        )
+        val directory = File(System.getProperty("java.io.tmpdir"), "ShareSyncManifestBuilderTest-${System.nanoTime()}")
+        val file = File(directory, "latest-sync-result.json")
+        val store = FileSyncResultStore(file = file)
+
+        try {
+            SuspendBridge.runBlocking {
+                store.save(
+                    SyncResult(
+                        syncBatchId = "batch-001",
+                        targetDeviceId = "ios-device-001",
+                        results = listOf(
+                            syncItem("media-synced", SyncItemStatus.synced),
+                            syncItem("media-skipped", SyncItemStatus.skipped),
+                            syncItem("media-failed", SyncItemStatus.failed),
+                            syncItem("media-conflicted", SyncItemStatus.conflicted),
+                        ),
+                    )
+                )
+            }
+
+            val manifest = SuspendBridge.runBlocking {
+                ManifestBuilder(
+                    sourceDeviceId = "android-device-001",
+                    mediaScanner = scanner,
+                    syncResultStore = FileSyncResultStore(file = file),
+                ).buildM0Manifest(limit = 100)
+            }
+
+            assertEquals(listOf("media-failed", "media-conflicted", "media-new"), manifest.media.map { it.assetId })
+        } finally {
+            file.delete()
+            directory.delete()
+        }
+    }
+
+    @Test
+    fun buildM0ManifestIncludesCompletedMediaAgainAfterFileStoreClear() {
+        val scanner = FakeMediaScanner(
+            assets = listOf(
+                mediaAsset("media-synced"),
+                mediaAsset("media-new"),
+            )
+        )
+        val directory = File(System.getProperty("java.io.tmpdir"), "ShareSyncManifestBuilderTest-${System.nanoTime()}")
+        val file = File(directory, "latest-sync-result.json")
+        val store = FileSyncResultStore(file = file)
+
+        try {
+            SuspendBridge.runBlocking {
+                store.save(
+                    SyncResult(
+                        syncBatchId = "batch-001",
+                        targetDeviceId = "ios-device-001",
+                        results = listOf(syncItem("media-synced", SyncItemStatus.synced)),
+                    )
+                )
+                store.clear()
+            }
+
+            val manifest = SuspendBridge.runBlocking {
+                ManifestBuilder(
+                    sourceDeviceId = "android-device-001",
+                    mediaScanner = scanner,
+                    syncResultStore = FileSyncResultStore(file = file),
+                ).buildM0Manifest(limit = 100)
+            }
+
+            assertEquals(listOf("media-synced", "media-new"), manifest.media.map { it.assetId })
+        } finally {
+            file.delete()
+            directory.delete()
+        }
     }
 
     private fun syncItem(sourceItemId: String, status: SyncItemStatus): SyncItemResult {

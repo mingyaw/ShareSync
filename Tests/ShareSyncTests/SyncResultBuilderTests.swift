@@ -140,6 +140,46 @@ final class SyncResultBuilderTests: XCTestCase {
         )
     }
 
+    func testBuildMediaResultAfterFileStoreReloadForRepeatedPosting() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncResultBuilderTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let fileURL = directory.appendingPathComponent("media-download-state.json")
+        let asset = makeAsset(assetId: "media-001")
+        let store = FileMediaDownloadStateStore(fileURL: fileURL)
+
+        store.upsertQueued(asset: asset, now: Date(timeIntervalSince1970: 1))
+        store.markImported(
+            sourceAssetId: asset.assetId,
+            photoLocalIdentifier: "photo-local-001",
+            now: Date(timeIntervalSince1970: 2)
+        )
+
+        let reloadedStore = FileMediaDownloadStateStore(fileURL: fileURL)
+        let result = SyncResultBuilder().buildMediaResult(
+            syncBatchId: "batch-reloaded",
+            targetDeviceId: "ios-device-001",
+            records: reloadedStore.allRecords()
+        )
+
+        XCTAssertEqual(
+            result,
+            SyncResult(
+                syncBatchId: "batch-reloaded",
+                targetDeviceId: "ios-device-001",
+                results: [
+                    SyncItemResult(
+                        itemType: .media,
+                        sourceItemId: "media-001",
+                        targetItemId: "photo-local-001",
+                        status: .synced,
+                        errorCode: nil
+                    )
+                ]
+            )
+        )
+    }
+
     private func makeRecord(
         sourceAssetId: String,
         status: MediaDownloadStatus,
@@ -158,6 +198,25 @@ final class SyncResultBuilderTests: XCTestCase {
             attemptCount: status == .failed ? 1 : 0,
             lastErrorCode: lastErrorCode,
             updatedAt: Date(timeIntervalSince1970: 1)
+        )
+    }
+
+    private func makeAsset(assetId: String) -> MediaAsset {
+        MediaAsset(
+            assetId: assetId,
+            sourceDeviceId: "android-device-001",
+            mediaType: .photo,
+            fileName: "\(assetId).jpg",
+            mimeType: "image/jpeg",
+            size: 2048,
+            sha256: nil,
+            createdAt: nil,
+            modifiedAt: nil,
+            takenAt: nil,
+            width: nil,
+            height: nil,
+            durationMs: nil,
+            relativePath: "DCIM/Camera"
         )
     }
 }

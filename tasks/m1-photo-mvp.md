@@ -45,15 +45,15 @@ M1 keeps the main axis focused on photos only:
 - [x] Show latest successful sync time on iOS.
 - [x] Show latest transferred photo count on Android without requiring copied JSON.
 - [x] Show latest transferred photo count on iOS without requiring copied JSON.
-- [ ] Keep raw JSON copy actions as diagnostics, not primary user feedback.
+- [x] Keep raw JSON copy actions as diagnostics, not primary user feedback.
 
 ### M1.3 Repeat Sync Reliability
 
-- [ ] Add automated coverage for repeated iOS result posting after app restart.
-- [ ] Add automated coverage for Android manifest filtering after file-store reload with mixed result states.
-- [ ] Add iOS coverage for deleted-photo retry after state reload.
-- [ ] Add iOS coverage for reset controls preserving imported Photos library items while clearing ShareSync state.
-- [ ] Add Android coverage for clear sync result followed by rebuilt manifest counts.
+- [x] Add automated coverage for repeated iOS result posting after app restart.
+- [x] Add automated coverage for Android manifest filtering after file-store reload with mixed result states.
+- [x] Add iOS coverage for deleted-photo retry after state reload.
+- [x] Add iOS coverage for reset controls preserving imported Photos library items while clearing ShareSync state.
+- [x] Add Android coverage for clear sync result followed by rebuilt manifest counts.
 
 ### M1.4 Product UI Polish
 
@@ -191,3 +191,13 @@ Verified:
 ```sh
 ./scripts/check-m0.sh
 ```
+
+### 2026-09-04 Repeat Sync Reliability Coverage
+
+Finished the M1.3 automated reliability slice for repeated photo-only sync:
+
+- Added iOS coverage that a persisted imported photo record can be rebuilt into a sync result after app restart, so result posting can repeat safely.
+- Added iOS coverage that an imported photo marked missing after state reload becomes retryable again and no longer reports as an imported mapping.
+- Added iOS coverage that ShareSync reset clears only local sync state and imported mappings, leaving Photos library assets outside the reset boundary.
+- Added Android coverage that manifest generation reloads file-backed sync results and filters only completed `synced` and `skipped` media.
+- Added Android coverage that clearing sync results causes previously completed media to appear in the rebuilt manifest again.
