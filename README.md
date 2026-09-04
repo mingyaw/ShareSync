@@ -107,6 +107,7 @@ tasks/
 - [M0 Validation Results](docs/m0-validation-results.md)
 - [M0 Photo PoC](tasks/m0-photo-poc.md)
 - [M1 Photo MVP Hardening](tasks/m1-photo-mvp.md)
+- [M2 Photo Product Reliability](tasks/m2-photo-product-reliability.md)
 
 ## M0 Rules
 

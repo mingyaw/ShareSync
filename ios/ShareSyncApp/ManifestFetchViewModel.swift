@@ -135,14 +135,11 @@ final class ManifestFetchViewModel: ObservableObject {
     }
 
     var canFetch: Bool {
-        !host.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && Int(port) != nil && state != .loading
+        readiness.canFetchManifest
     }
 
     var canSyncAll: Bool {
-        !host.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            && Int(port) != nil
-            && state != .loading
-            && !isTransferActive
+        readiness.canSyncAllPhotos
     }
 
     var canDownload: Bool {
@@ -161,6 +158,18 @@ final class ManifestFetchViewModel: ObservableObject {
 
     var isTransferActive: Bool {
         downloadState == .downloading || downloadState == .importing
+    }
+
+    var readiness: PhotoSyncReadiness {
+        PhotoSyncReadiness.evaluate(
+            hasPairedDevice: pairedDevice != nil,
+            host: host,
+            port: port,
+            photoLibraryPermissionStatus: photoLibraryPermissionStatus,
+            isFetchingManifest: state == .loading,
+            isTransferActive: isTransferActive,
+            hasManifest: latestManifest != nil
+        )
     }
 
     var canClearPairing: Bool {

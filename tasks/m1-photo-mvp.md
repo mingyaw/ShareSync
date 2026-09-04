@@ -1,6 +1,6 @@
 # M1 - Photo MVP Hardening
 
-Status: Active after M0 completion on 2026-09-02.
+Status: Completed on 2026-09-04. Follow-up main axis moves to `M2 - Photo Product Reliability`.
 
 Goal: turn the completed M0 Android-to-iOS photo PoC into a photo-only MVP that is safer, clearer, and easier to operate repeatedly on real devices.
 

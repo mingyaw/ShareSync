@@ -96,3 +96,93 @@ enum SyncItemStatus: String, Codable {
     case conflicted
 }
 
+struct PhotoSyncReadiness: Equatable {
+    enum BlockingReason: Equatable {
+        case pairingRequired
+        case endpointMissing
+        case invalidPort
+        case transferActive
+        case photosPermissionBlocked(PhotoLibraryPermissionStatus)
+    }
+
+    enum PrimaryAction: Equatable {
+        case pairAndroid
+        case enterEndpoint
+        case allowPhotos
+        case waitForTransfer
+        case fetchManifest
+        case syncAllPhotos
+    }
+
+    let canFetchManifest: Bool
+    let canSyncAllPhotos: Bool
+    let primaryAction: PrimaryAction
+    let blockingReason: BlockingReason?
+
+    static func evaluate(
+        hasPairedDevice: Bool,
+        host: String,
+        port: String,
+        photoLibraryPermissionStatus: PhotoLibraryPermissionStatus,
+        isFetchingManifest: Bool,
+        isTransferActive: Bool,
+        hasManifest: Bool
+    ) -> PhotoSyncReadiness {
+        let trimmedHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
+        let parsedPort = Int(port)
+        let hasValidPort = parsedPort.map { (1...65_535).contains($0) } == true
+        let hasEndpoint = !trimmedHost.isEmpty
+
+        if isTransferActive {
+            return PhotoSyncReadiness(
+                canFetchManifest: false,
+                canSyncAllPhotos: false,
+                primaryAction: .waitForTransfer,
+                blockingReason: .transferActive
+            )
+        }
+
+        if !hasPairedDevice && !hasEndpoint {
+            return PhotoSyncReadiness(
+                canFetchManifest: false,
+                canSyncAllPhotos: false,
+                primaryAction: .pairAndroid,
+                blockingReason: .pairingRequired
+            )
+        }
+
+        if !hasEndpoint {
+            return PhotoSyncReadiness(
+                canFetchManifest: false,
+                canSyncAllPhotos: false,
+                primaryAction: .enterEndpoint,
+                blockingReason: .endpointMissing
+            )
+        }
+
+        if !hasValidPort {
+            return PhotoSyncReadiness(
+                canFetchManifest: false,
+                canSyncAllPhotos: false,
+                primaryAction: .enterEndpoint,
+                blockingReason: .invalidPort
+            )
+        }
+
+        if photoLibraryPermissionStatus == .denied || photoLibraryPermissionStatus == .restricted {
+            return PhotoSyncReadiness(
+                canFetchManifest: !isFetchingManifest,
+                canSyncAllPhotos: false,
+                primaryAction: .allowPhotos,
+                blockingReason: .photosPermissionBlocked(photoLibraryPermissionStatus)
+            )
+        }
+
+        return PhotoSyncReadiness(
+            canFetchManifest: !isFetchingManifest,
+            canSyncAllPhotos: !isFetchingManifest,
+            primaryAction: hasManifest ? .syncAllPhotos : .fetchManifest,
+            blockingReason: nil
+        )
+    }
+}

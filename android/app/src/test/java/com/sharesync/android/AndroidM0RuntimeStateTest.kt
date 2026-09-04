@@ -115,6 +115,68 @@ class AndroidM0RuntimeStateTest {
         )
     }
 
+    @Test
+    fun readinessRequiresPhotosBeforeSharing() {
+        val readiness = runtimeState(
+            hasMediaPermission = false,
+            isServerRunning = true,
+            pendingPhotoCount = 4,
+        ).readiness()
+
+        assertEquals(AndroidPhotoSyncPrimaryAction.ALLOW_PHOTOS, readiness.primaryAction)
+        assertEquals(AndroidPhotoSyncBlockingReason.PHOTO_PERMISSION_REQUIRED, readiness.blockingReason)
+        assertEquals(false, readiness.canSharePhotos)
+    }
+
+    @Test
+    fun readinessStartsSharingWhenServerIsStopped() {
+        val readiness = runtimeState(
+            hasMediaPermission = true,
+            isServerRunning = false,
+        ).readiness()
+
+        assertEquals(AndroidPhotoSyncPrimaryAction.START_SHARING, readiness.primaryAction)
+        assertEquals(AndroidPhotoSyncBlockingReason.SERVER_STOPPED, readiness.blockingReason)
+        assertEquals(true, readiness.canSharePhotos)
+    }
+
+    @Test
+    fun readinessShowsPairingCodeWhenPhotosAreAvailable() {
+        val readiness = runtimeState(
+            isServerRunning = true,
+            pendingPhotoCount = 4,
+        ).readiness()
+
+        assertEquals(AndroidPhotoSyncPrimaryAction.SHOW_PAIRING_CODE, readiness.primaryAction)
+        assertEquals(null, readiness.blockingReason)
+        assertEquals(true, readiness.canSharePhotos)
+    }
+
+    @Test
+    fun readinessKeepsAndroidAvailableForRetry() {
+        val readiness = runtimeState(
+            isServerRunning = true,
+            pendingPhotoCount = 4,
+            latestSyncResult = syncResult(syncItem("photo-001", SyncItemStatus.failed)),
+        ).readiness()
+
+        assertEquals(AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_RETRY, readiness.primaryAction)
+        assertEquals(null, readiness.blockingReason)
+        assertEquals(true, readiness.canSharePhotos)
+    }
+
+    @Test
+    fun readinessWaitsForNewPhotosWhenTransferIsComplete() {
+        val readiness = runtimeState(
+            isServerRunning = true,
+            pendingPhotoCount = 0,
+        ).readiness()
+
+        assertEquals(AndroidPhotoSyncPrimaryAction.WAIT_FOR_NEW_PHOTOS, readiness.primaryAction)
+        assertEquals(null, readiness.blockingReason)
+        assertEquals(true, readiness.canSharePhotos)
+    }
+
     private fun runtimeState(
         hasMediaPermission: Boolean = true,
         isServerStarting: Boolean = false,
