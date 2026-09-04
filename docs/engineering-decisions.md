@@ -24,15 +24,14 @@ Decision: no third-party cloud relay in MVP.
 
 Reason: product value depends on private, local transfer.
 
-## ED-005 M0 Allows HTTP, MVP Requires HTTPS
+## ED-005 M1 Uses Signed Local HTTP, HTTPS Moves To Pre-Release Hardening
 
-Decision: M0 can use HTTP to validate local transfer and Photos import. MVP must use HTTPS and signed requests.
+Decision: M1 may use same-network local HTTP when every protected request is signed with the paired-device secret, timestamp, and nonce. Local HTTPS remains required before any broader beta, store review, or non-developer release.
 
-Reason: certificate and trust handling should not block the first technical proof, but production cannot ship cleartext transfer.
+Reason: self-signed local HTTPS certificate trust and rotation would add user-visible setup friction before the photo-only MVP is product-stable. Signed requests already prevent token-only access, stale endpoint reuse, and replay within the local network threat model, while keeping local HTTPS as an explicit pre-release hardening branch.
 
 ## ED-006 No Delete Sync in MVP
 
 Decision: MVP never deletes target data.
 
 Reason: duplicate prevention and conservative merge are safer than destructive sync while sync identity is still maturing.
-

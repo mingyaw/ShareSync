@@ -35,7 +35,7 @@ M1 keeps the main axis focused on photos only:
 - [x] Add Android signature verification tests for manifest, media, and sync result endpoints.
 - [x] Add iOS signed request generation tests for manifest, media, and sync result requests.
 - [x] Replace M0 token-only fallback with signed-request-only authorization for production router wiring.
-- [ ] Decide whether local HTTPS is required for M1 or remains a pre-release hardening branch.
+- [x] Decide whether local HTTPS is required for M1 or remains a pre-release hardening branch.
 
 ### M1.2 Photo Sync History
 
@@ -65,11 +65,11 @@ M1 keeps the main axis focused on photos only:
 
 ### M1.5 Release Readiness
 
-- [ ] Update privacy copy for local photo transfer and Photos import.
+- [x] Update privacy copy for local photo transfer and Photos import.
 - [x] Update permission rationale copy for Android photos, Android notifications, iOS camera, iOS Photos, and local network.
-- [ ] Add setup notes for release/debug build variants.
-- [ ] Add M1 manual regression checklist.
-- [ ] Keep post-M1 product branches explicitly separated.
+- [x] Add setup notes for release/debug build variants.
+- [x] Add M1 manual regression checklist.
+- [x] Keep post-M1 product branches explicitly separated.
 
 ## Post-M1 Product Branches
 
@@ -201,3 +201,13 @@ Finished the M1.3 automated reliability slice for repeated photo-only sync:
 - Added iOS coverage that ShareSync reset clears only local sync state and imported mappings, leaving Photos library assets outside the reset boundary.
 - Added Android coverage that manifest generation reloads file-backed sync results and filters only completed `synced` and `skipped` media.
 - Added Android coverage that clearing sync results causes previously completed media to appear in the rebuilt manifest again.
+
+### 2026-09-04 M1 Release Readiness Notes
+
+Closed the remaining M1 planning and release-readiness documentation:
+
+- Decided M1 can remain on signed same-network HTTP, with local HTTPS moved to an explicit pre-release hardening branch.
+- Added M1 privacy copy for local photo transfer, iOS Photos import, iCloud Photos handoff, reset behavior, and no cloud relay.
+- Added Android and iOS debug build notes plus release/beta preparation notes.
+- Added the M1 physical-device manual regression checklist.
+- Kept post-M1 product branches separated from the photo-only MVP scope.

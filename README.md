@@ -100,6 +100,7 @@ tasks/
 
 - [Product Development Plan](docs/product-development-plan.md)
 - [Implementation Spec](docs/implementation-spec.md)
+- [M1 Release Readiness](docs/m1-release-readiness.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Local API Contract](shared/protocol/api-contract.md)
 - [M0 Device Validation Checklist](docs/m0-device-validation.md)
@@ -109,7 +110,7 @@ tasks/
 
 ## M0 Rules
 
-M0 may use plain local HTTP to reduce setup cost. MVP must upgrade to local HTTPS and signed requests.
+M0 used plain local HTTP to reduce setup cost. M1 keeps transfer on the local network and requires signed requests for protected endpoints; local HTTPS is tracked as pre-release hardening before a broader beta or store-facing build.
 
 M0 includes only:
 
@@ -249,7 +250,7 @@ Swift Package core:
 ## Current Limitations
 
 - iOS background syncing is not implemented; keep the app open for M0.
-- Transfers are local-network only and currently use plain local HTTP.
+- Transfers are local-network only and currently use signed local HTTP; local HTTPS is a pre-release hardening branch.
 - Range retry is implemented for persisted partial download state; M0 still runs as a foreground transfer on iOS.
 - Duplicate prevention is based on app-local Android asset/import mapping.
 - Deleting the iOS app deletes the local mapping; Photos contents remain, but ShareSync may treat Android items as new.

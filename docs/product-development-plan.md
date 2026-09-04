@@ -279,7 +279,7 @@ Android 是主控端，負責：
 - 建立同步 manifest。
 - 管理同步 queue。
 - 發起同步。
-- 提供或請求本地 HTTPS 傳輸。
+- M1 提供或請求 signed local HTTP 傳輸；pre-release 階段再補 local HTTPS。
 - 維護配對裝置狀態。
 - 管理重試與失敗恢復。
 
@@ -298,7 +298,7 @@ iOS 是 gateway 端，負責：
 
 - 不經外部雲端。
 - 優先使用同 Wi-Fi 區網。
-- 大資料走 HTTPS。
+- M1 大資料走 signed local HTTP；pre-release 階段再升級 local HTTPS。
 - BLE 僅做發現、喚醒與狀態提示。
 - QR code 用於首次配對與保底連線。
 - Android hotspot 作為無共同 Wi-Fi 時的備援。
@@ -310,7 +310,8 @@ iOS 是 gateway 端，負責：
 ```text
 QR code = 首次配對與連線保底
 BLE = 裝置發現、狀態通知、喚醒提示
-Local HTTPS over Wi-Fi = 大量資料傳輸
+Signed local HTTP over Wi-Fi = M1 大量資料傳輸
+Local HTTPS over Wi-Fi = pre-release hardening
 Android hotspot = 無共同 Wi-Fi 時的備援
 ```
 
@@ -330,7 +331,7 @@ Android hotspot = 無共同 Wi-Fi 時的備援
 2. Android 透過 BLE 廣播「有待同步資料」。
 3. iPhone 若可用，回應或在下次醒來時建立 session。
 4. 雙方確認同一 Wi-Fi 或進入 hotspot 模式。
-5. iPhone 透過 HTTPS 拉取 Android manifest。
+5. iPhone 透過 signed local HTTP 拉取 Android manifest。
 6. iPhone 比對本地同步紀錄。
 7. iPhone 分批下載資料。
 8. iPhone 寫入 Photos、Contacts 或 Files。
@@ -778,7 +779,8 @@ iOS：
 
 ### 16.3 傳輸安全
 
-- Local HTTPS。
+- M1 使用 signed local HTTP。
+- Local HTTPS 作為 pre-release hardening。
 - 每次同步使用 session token。
 - Request signature。
 - Timestamp 防重放。
@@ -887,7 +889,7 @@ Android 有 128 張新照片待備份到 iCloud。點一下完成同步。
 範圍：
 
 - Android 掃描 DCIM。
-- Android 開 local HTTPS server。
+- Android 開 signed local HTTP server。
 - iOS 掃 QR code。
 - iOS 下載 100 張照片。
 - iOS 寫入 ShareSync Backup 相簿。
@@ -1097,7 +1099,8 @@ Android Engineer：
 - MediaStore。
 - ContactsProvider。
 - BLE。
-- Local HTTPS server/client。
+- Signed local HTTP server/client。
+- Local HTTPS server/client 作為 pre-release hardening。
 - Android UI。
 
 iOS Engineer：
@@ -1139,7 +1142,7 @@ Android：
 
 - 掃描 DCIM 最近 100 張照片。
 - 建立 manifest。
-- 開啟 local HTTPS server。
+- 開啟 signed local HTTP server。
 - 顯示 QR code。
 
 iOS：
@@ -1223,7 +1226,7 @@ ShareSync 的方向具備可行性與差異化，但必須尊重 iOS 背景限�
 
 最建議的第一步是立即啟動 Phase 0 PoC，優先驗證：
 
-1. Android local HTTPS server。
+1. Android signed local HTTP server。
 2. iOS background URLSession。
 3. iOS Photos 寫入。
 4. QR 安全配對。

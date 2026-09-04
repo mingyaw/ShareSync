@@ -23,8 +23,8 @@ M1 需完成：
 - 裝置信任資料儲存與解除配對。
 - Android 掃描照片。
 - Android 產生同步 manifest。
-- Android 開啟本地 HTTPS server。
-- iOS 透過 local HTTPS 拉取 manifest 與資料。
+- Android 開啟本地 signed HTTP server；local HTTPS 列為 pre-release hardening。
+- iOS 透過 signed local HTTP 拉取 manifest 與資料；beta/store 前需重新評估 local HTTPS。
 - iOS 將照片寫入 Photos。
 - 基礎去重。
 - 同步紀錄。
@@ -111,7 +111,7 @@ Android 是 MVP 的同步主控端。
 - 掃描資料變化。
 - 產生 manifest。
 - 維護 sync queue。
-- 開啟本地 HTTPS server。
+- 開啟本地 signed HTTP server；pre-release 階段再補 local HTTPS。
 - 發起裝置發現。
 - 顯示同步進度。
 - 管理重試與失敗恢復。
@@ -222,7 +222,7 @@ com.sharesync.android
 
 負責：
 
-- 啟動 local HTTPS server。
+- 啟動 local signed HTTP server；local HTTPS 留作 pre-release hardening。
 - 提供 manifest API。
 - 提供 media/file streaming API。
 - 提供 contacts export API。
@@ -407,7 +407,7 @@ SHA256(body)
 - session 不可過期。
 - signature 必須使用 trusted public key 驗證通過。
 
-## 10. Local HTTPS API
+## 10. Local Signed HTTP API
 
 ### 10.1 Health
 
@@ -1052,7 +1052,7 @@ Domain：
 2. 實作 QR payload 產生。
 3. 實作 MediaStore 掃描最近 100 張照片。
 4. 建立 manifest。
-5. 開啟 local HTTP server。PoC 可先使用 HTTP，MVP 必須升級 HTTPS。
+5. 開啟 local signed HTTP server。M1 使用 request signature、timestamp 與 nonce；local HTTPS 留到 pre-release hardening。
 6. 提供 `/v1/manifest`。
 7. 提供 `/v1/media/{assetId}`。
 8. 支援 basic range request。
@@ -1203,7 +1203,7 @@ MVP 固定決策：
 
 - Android 是主控端。
 - iOS 是接收端。
-- 大資料傳輸走 local HTTPS。
+- M1 大資料傳輸走 signed local HTTP；local HTTPS 留到 pre-release hardening。
 - BLE 不作為大檔案傳輸通道。
 - QR code 用於首次配對。
 - 不使用第三方雲端中繼。
