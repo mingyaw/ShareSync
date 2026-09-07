@@ -35,9 +35,9 @@ M2 keeps the main axis focused on photos only:
 ### M2.2 Guided Product Flow
 
 - [x] Reduce iOS primary actions to the next best action while keeping diagnostics under settings.
-- [ ] Make Android primary screen emphasize QR pairing, photo availability, and latest sync outcome.
-- [ ] Add clear blocked-state text for missing Wi-Fi/local network, Photos permission, Android permission, and unexpected paired device.
-- [ ] Keep manual endpoint and raw JSON copy tools available only as diagnostics.
+- [x] Make Android primary screen emphasize QR pairing, photo availability, and latest sync outcome.
+- [x] Add clear blocked-state text for missing Wi-Fi/local network, Photos permission, Android permission, and unexpected paired device.
+- [x] Keep manual endpoint and raw JSON copy tools available only as diagnostics.
 
 ### M2.3 Retry And Interruption Hardening
 
@@ -83,3 +83,5 @@ Started M2 after completing the M1 photo MVP hardening checklist:
 - Added the matching Android readiness/action model for permission, server, manifest, complete, and retry states.
 - Surfaced readiness reason copy in the iOS summary panel and Android pairing panel.
 - Reduced the iOS primary action area to one readiness-driven next action; moved manual fetch and small-batch validation actions into diagnostics.
+- Moved Android manual endpoint and raw pairing payload controls into diagnostics, keeping the primary screen focused on local network readiness, photo availability, pairing QR, and latest sync outcome.
+- Added primary blocked-state copy for Android photo permission and local Wi-Fi/hotspot reachability; kept iOS blocked states visible through readiness and endpoint validation errors.

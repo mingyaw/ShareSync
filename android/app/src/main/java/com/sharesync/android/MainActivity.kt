@@ -42,6 +42,7 @@ class MainActivity : Activity() {
     private lateinit var permissionText: TextView
     private lateinit var notificationPermissionText: TextView
     private lateinit var screenLockText: TextView
+    private lateinit var localNetworkText: TextView
     private lateinit var manifestSummaryText: TextView
     private lateinit var syncEventText: TextView
     private lateinit var pairingInstructionText: TextView
@@ -154,6 +155,7 @@ class MainActivity : Activity() {
         permissionText = bodyText()
         notificationPermissionText = bodyText()
         screenLockText = bodyText()
+        localNetworkText = bodyText()
         manifestSummaryText = bodyText()
         syncEventText = bodyText()
         pairingInstructionText = bodyText()
@@ -220,25 +222,36 @@ class MainActivity : Activity() {
         root.addView(
             productPanel(
                 title = getString(R.string.m0_panel_pairing),
-                children = listOf(statusText, phaseText, manifestSummaryText, syncEventText, pairingInstructionText, pairingQrImage),
+                children = listOf(
+                    statusText,
+                    phaseText,
+                    localNetworkText,
+                    manifestSummaryText,
+                    syncEventText,
+                    pairingInstructionText,
+                    pairingQrImage,
+                ),
             ),
         )
         root.addView(
             productPanel(
                 title = getString(R.string.m0_panel_settings),
-                children = listOf(grantButton, startButton, stopButton, endpointText, pairingPayloadText, copyPairingButton),
+                children = listOf(grantButton, startButton, stopButton),
             ),
         )
         root.addView(
             productPanel(
                 title = getString(R.string.m0_panel_diagnostics),
                 children = listOf(
+                    endpointText,
                     permissionText,
                     notificationPermissionText,
                     screenLockText,
                     requestActivityText,
                     syncResultText,
+                    pairingPayloadText,
                     copyEndpointButton,
+                    copyPairingButton,
                     copySyncResultButton,
                     clearSyncStateButton,
                 ),
@@ -327,6 +340,11 @@ class MainActivity : Activity() {
             getString(R.string.m0_screen_lock_paused)
         } else {
             getString(R.string.m0_screen_lock_normal)
+        }
+        localNetworkText.text = if (endpointUrl == null) {
+            getString(R.string.m2_local_network_unavailable)
+        } else {
+            getString(R.string.m2_local_network_ready)
         }
         pairingPayloadText.text = currentPairingPayloadJson
             ?: getString(R.string.m0_pairing_payload_unavailable)

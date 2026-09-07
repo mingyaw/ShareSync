@@ -31,6 +31,8 @@
     <string name="m0_notification_permission_missing">建議允許通知，Android 才能顯示傳輸狀態。</string>
     <string name="m0_screen_lock_normal">螢幕鎖定：正常。</string>
     <string name="m0_screen_lock_paused">螢幕鎖定：照片可接收期間暫停。</string>
+    <string name="m2_local_network_ready">本機網路：已準備好給已配對的 iPhone 連線。</string>
+    <string name="m2_local_network_unavailable">本機網路：請連上 Wi-Fi 或熱點，讓 iPhone 可以連到這支 Android 手機。</string>
     <string name="m0_manifest_unavailable">照片準備狀態：開始分享後會掃描這支手機。</string>
     <string name="m0_manifest_summary">照片準備狀態：%1$d，%2$s。</string>
     <string name="m0_manifest_status_ready">就緒</string>

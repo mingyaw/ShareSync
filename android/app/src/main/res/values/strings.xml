@@ -31,6 +31,8 @@
     <string name="m0_notification_permission_missing">Notifications are recommended so Android can show transfer status.</string>
     <string name="m0_screen_lock_normal">Screen lock: normal.</string>
     <string name="m0_screen_lock_paused">Screen lock: paused while photos are available.</string>
+    <string name="m2_local_network_ready">Local network: ready for the paired iPhone.</string>
+    <string name="m2_local_network_unavailable">Local network: connect to Wi-Fi or hotspot so the iPhone can reach this Android phone.</string>
     <string name="m0_manifest_unavailable">Photos ready: start sharing to scan this phone.</string>
     <string name="m0_manifest_summary">Photos ready: %1$d, %2$s.</string>
     <string name="m0_manifest_status_ready">Ready</string>
