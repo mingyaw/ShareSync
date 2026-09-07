@@ -133,6 +133,54 @@ class SyncResultStoreTest {
         }
     }
 
+    @Test
+    fun clearingResultStoreDoesNotClearEventStore() {
+        val directory = File(System.getProperty("java.io.tmpdir"), "ShareSyncStoreTest-${System.nanoTime()}")
+        val resultFile = File(directory, "latest-sync-result.json")
+        val eventFile = File(directory, "sync-events.json")
+        val resultStore = FileSyncResultStore(file = resultFile)
+        val eventStore = FileSyncEventStore(file = eventFile)
+
+        try {
+            SuspendBridge.runBlocking {
+                resultStore.save(syncResult("batch-001", syncItem("media-001", SyncItemStatus.synced)))
+                eventStore.append(syncEvent("batch-001", recordedAt = 1_000L))
+                resultStore.clear()
+            }
+
+            assertEquals(null, SuspendBridge.runBlocking { resultStore.latest() })
+            assertEquals("batch-001", SuspendBridge.runBlocking { eventStore.latest() }?.syncBatchId)
+        } finally {
+            resultFile.delete()
+            eventFile.delete()
+            directory.delete()
+        }
+    }
+
+    @Test
+    fun clearingEventStoreDoesNotClearResultStore() {
+        val directory = File(System.getProperty("java.io.tmpdir"), "ShareSyncStoreTest-${System.nanoTime()}")
+        val resultFile = File(directory, "latest-sync-result.json")
+        val eventFile = File(directory, "sync-events.json")
+        val resultStore = FileSyncResultStore(file = resultFile)
+        val eventStore = FileSyncEventStore(file = eventFile)
+
+        try {
+            SuspendBridge.runBlocking {
+                resultStore.save(syncResult("batch-001", syncItem("media-001", SyncItemStatus.synced)))
+                eventStore.append(syncEvent("batch-001", recordedAt = 1_000L))
+                eventStore.clear()
+            }
+
+            assertEquals("batch-001", SuspendBridge.runBlocking { resultStore.latest() }?.syncBatchId)
+            assertEquals(null, SuspendBridge.runBlocking { eventStore.latest() })
+        } finally {
+            resultFile.delete()
+            eventFile.delete()
+            directory.delete()
+        }
+    }
+
     private fun syncResult(batchId: String, vararg items: SyncItemResult): SyncResult {
         return SyncResult(
             syncBatchId = batchId,
@@ -148,6 +196,18 @@ class SyncResultStoreTest {
             targetItemId = null,
             status = status,
             errorCode = if (status == SyncItemStatus.failed || status == SyncItemStatus.conflicted) "SS-NET-002" else null,
+        )
+    }
+
+    private fun syncEvent(batchId: String, recordedAt: Long): SyncEvent {
+        return SyncEvent(
+            syncBatchId = batchId,
+            targetDeviceId = "ios-device-001",
+            recordedAtEpochMillis = recordedAt,
+            syncedCount = 1,
+            skippedCount = 0,
+            failedCount = 0,
+            conflictedCount = 0,
         )
     }
 }

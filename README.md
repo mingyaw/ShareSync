@@ -105,6 +105,7 @@ tasks/
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Error Recovery Matrix](docs/error-recovery-matrix.md)
 - [Sync History Summary](docs/sync-history-summary.md)
+- [Persistence And Reset Semantics](docs/persistence-reset-semantics.md)
 - [Local HTTPS Threat Model](docs/local-https-threat-model.md)
 - [Local API Contract](shared/protocol/api-contract.md)
 - [M0 Device Validation Checklist](docs/m0-device-validation.md)

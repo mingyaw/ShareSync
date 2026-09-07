@@ -48,10 +48,10 @@ M3 keeps the main axis focused on Android-to-iOS photo sync:
 
 ### M3.4 Persistence And Reset Safety
 
-- [ ] Document all persisted local state and reset semantics.
-- [ ] Add iOS tests for clear pairing vs reset local sync state boundaries.
-- [ ] Add Android tests for clearing latest result/event state boundaries.
-- [ ] Document app delete/reinstall behavior as a known limitation.
+- [x] Document all persisted local state and reset semantics.
+- [x] Add iOS tests for clear pairing vs reset local sync state boundaries.
+- [x] Add Android tests for clearing latest result/event state boundaries.
+- [x] Document app delete/reinstall behavior as a known limitation.
 
 ### M3.5 Security Implementation Spec
 
@@ -104,3 +104,11 @@ Completed the M3.3 sync history and audit view slice:
 - Defined shared sync history summary fields for batch id, target device, recorded time, total count, successful count, failed count, complete state, and retry state.
 - Added iOS and Android summary models with newest-first recent-history tests.
 - Surfaced the latest three sync history summaries in iOS status and Android pairing/status areas.
+
+### 2026-09-07 M3 Persistence And Reset Safety
+
+Completed the M3.4 persistence/reset safety slice:
+
+- Documented persisted iOS and Android state, clear/reset semantics, and app delete/reinstall behavior.
+- Added iOS store-boundary tests proving Clear Pairing does not clear sync state and Reset Local Sync State does not clear pairing.
+- Added Android store-boundary tests proving result and event stores can be cleared independently.
