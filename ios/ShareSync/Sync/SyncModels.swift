@@ -114,10 +114,36 @@ struct PhotoSyncReadiness: Equatable {
         case syncAllPhotos
     }
 
+    enum RecoveryGuidance: Equatable {
+        case scanAndroidQRCode
+        case reviewAndroidEndpoint
+        case allowIPhonePhotos
+        case waitForActiveTransfer
+        case fetchLatestManifest
+        case syncRemainingPhotos
+    }
+
     let canFetchManifest: Bool
     let canSyncAllPhotos: Bool
     let primaryAction: PrimaryAction
     let blockingReason: BlockingReason?
+
+    var recoveryGuidance: RecoveryGuidance {
+        switch primaryAction {
+        case .pairAndroid:
+            return .scanAndroidQRCode
+        case .enterEndpoint:
+            return .reviewAndroidEndpoint
+        case .allowPhotos:
+            return .allowIPhonePhotos
+        case .waitForTransfer:
+            return .waitForActiveTransfer
+        case .fetchManifest:
+            return .fetchLatestManifest
+        case .syncAllPhotos:
+            return .syncRemainingPhotos
+        }
+    }
 
     static func evaluate(
         hasPairedDevice: Bool,

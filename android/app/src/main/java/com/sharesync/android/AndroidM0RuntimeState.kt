@@ -101,7 +101,17 @@ data class AndroidPhotoSyncReadiness(
     val primaryAction: AndroidPhotoSyncPrimaryAction,
     val blockingReason: AndroidPhotoSyncBlockingReason?,
     val canSharePhotos: Boolean,
-)
+) {
+    val recoveryGuidance: AndroidPhotoSyncRecoveryGuidance
+        get() = when (primaryAction) {
+            AndroidPhotoSyncPrimaryAction.ALLOW_PHOTOS -> AndroidPhotoSyncRecoveryGuidance.ALLOW_ANDROID_PHOTOS
+            AndroidPhotoSyncPrimaryAction.START_SHARING -> AndroidPhotoSyncRecoveryGuidance.START_ANDROID_SHARING
+            AndroidPhotoSyncPrimaryAction.WAIT_FOR_SERVER -> AndroidPhotoSyncRecoveryGuidance.WAIT_FOR_ANDROID_SERVER
+            AndroidPhotoSyncPrimaryAction.SHOW_PAIRING_CODE -> AndroidPhotoSyncRecoveryGuidance.SCAN_PAIRING_CODE
+            AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_RETRY -> AndroidPhotoSyncRecoveryGuidance.KEEP_ANDROID_OPEN_FOR_RETRY
+            AndroidPhotoSyncPrimaryAction.WAIT_FOR_NEW_PHOTOS -> AndroidPhotoSyncRecoveryGuidance.WAIT_FOR_NEW_ANDROID_PHOTOS
+        }
+}
 
 enum class AndroidPhotoSyncPrimaryAction {
     ALLOW_PHOTOS,
@@ -116,6 +126,15 @@ enum class AndroidPhotoSyncBlockingReason {
     PHOTO_PERMISSION_REQUIRED,
     SERVER_STOPPED,
     SERVER_STARTING,
+}
+
+enum class AndroidPhotoSyncRecoveryGuidance {
+    ALLOW_ANDROID_PHOTOS,
+    START_ANDROID_SHARING,
+    WAIT_FOR_ANDROID_SERVER,
+    SCAN_PAIRING_CODE,
+    KEEP_ANDROID_OPEN_FOR_RETRY,
+    WAIT_FOR_NEW_ANDROID_PHOTOS,
 }
 
 private val SyncItemStatus.isRetryableFailure: Boolean

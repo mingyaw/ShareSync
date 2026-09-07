@@ -34,9 +34,9 @@ M3 keeps the main axis focused on Android-to-iOS photo sync:
 ### M3.2 Error And Recovery UX Matrix
 
 - [x] Create shared recovery matrix for common Android/iOS failure states.
-- [ ] Align Android UI copy with shared recovery matrix.
-- [ ] Align iOS UI copy with shared recovery matrix.
-- [ ] Add unit coverage for recovery guidance selection where logic exists.
+- [x] Align Android UI copy with shared recovery matrix.
+- [x] Align iOS UI copy with shared recovery matrix.
+- [x] Add unit coverage for recovery guidance selection where logic exists.
 
 ### M3.3 Sync History And Audit View
 
@@ -88,3 +88,11 @@ Started M3 after completing the M2 photo reliability checklist:
 - Kept M3 scoped to pre-release hardening for the existing photo MVP.
 - Added release-readiness consolidation as the first task so the repo can communicate current behavior clearly.
 - Added error/recovery UX, sync history, persistence/reset safety, security spec, and repo hygiene as the M3 work tracks.
+
+### 2026-09-07 M3 Recovery Guidance
+
+Completed the M3.2 recovery UX alignment slice:
+
+- Added iOS and Android readiness-level recovery guidance enums with unit coverage.
+- Updated iOS blocked/error copy to match the recovery matrix for pairing, endpoint, permissions, interruption, local network, and rejected requests.
+- Updated Android readiness copy for photo permission, local endpoint availability, pairing, and retry continuation.
