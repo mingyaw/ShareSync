@@ -29,3 +29,7 @@ SS-{DOMAIN}-{CODE}
 | SS-IOSBG-001 | iOS background time expired | Open the app to continue |
 | SS-MEDIA-002 | Imported Photos asset missing | The item can be imported again |
 | SS-MEDIA-999 | Unknown media transfer error | Retry the item |
+
+## Recovery UX
+
+Use [ShareSync Error Recovery Matrix](../../docs/error-recovery-matrix.md) as the shared Android/iOS baseline for user-facing recovery behavior.

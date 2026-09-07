@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 photo PoC and M1 photo MVP hardening are complete. The active main axis is M2 photo product reliability.
+Status: M0 photo PoC, M1 photo MVP hardening, and M2 photo product reliability are complete. The active main axis is M3 pre-release product hardening.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -16,7 +16,7 @@ The project intentionally uses native implementation:
 
 ## Current Stage
 
-The completed baseline is `M0 - Android to iOS Photo PoC`, followed by `M1 - Photo MVP Hardening`. Active follow-up work is now `M2 - Photo Product Reliability`, which keeps the product focused on photos before expanding to videos, contacts, files, or reverse sync.
+The completed baseline is `M0 - Android to iOS Photo PoC`, followed by `M1 - Photo MVP Hardening` and `M2 - Photo Product Reliability`. Active follow-up work is now `M3 - Pre-Release Product Hardening`, which keeps the product focused on photos before expanding to videos, contacts, files, or reverse sync.
 
 The current codebase contains:
 
@@ -101,7 +101,9 @@ tasks/
 - [Product Development Plan](docs/product-development-plan.md)
 - [Implementation Spec](docs/implementation-spec.md)
 - [M1 Release Readiness](docs/m1-release-readiness.md)
+- [M3 Pre-Release Readiness](docs/m3-release-readiness.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
+- [Error Recovery Matrix](docs/error-recovery-matrix.md)
 - [Local HTTPS Threat Model](docs/local-https-threat-model.md)
 - [Local API Contract](shared/protocol/api-contract.md)
 - [M0 Device Validation Checklist](docs/m0-device-validation.md)
@@ -111,6 +113,7 @@ tasks/
 - [M0 Photo PoC](tasks/m0-photo-poc.md)
 - [M1 Photo MVP Hardening](tasks/m1-photo-mvp.md)
 - [M2 Photo Product Reliability](tasks/m2-photo-product-reliability.md)
+- [M3 Pre-Release Product Hardening](tasks/m3-pre-release-product-hardening.md)
 
 ## M0 Rules
 

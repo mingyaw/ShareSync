@@ -41,7 +41,7 @@ Android 端負責自動掃描資料、建立同步清單、發起傳輸與排程
 
 ### 3.2 MVP 目標
 
-MVP 先以照片為唯一主軸。M0 已完成 Android 照片到 iOS Photos 的可行性驗證；M1 將此路徑硬化成可重複使用的照片 MVP。影片、聯絡人與文件放入 M1 之後的產品分支。
+MVP 先以照片為唯一主軸。M0 已完成 Android 照片到 iOS Photos 的可行性驗證；M1 將此路徑硬化成可重複使用的照片 MVP；M2 補齊產品可靠性、續傳、驗證證據與安全分支決策；M3 聚焦 pre-release product hardening。影片、聯絡人與文件放入 M3 之後的產品分支。
 
 1. Android 與 iPhone 首次安全配對。
 2. Android 掃描照片並產生同步 manifest。
