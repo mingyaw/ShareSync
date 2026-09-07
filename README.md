@@ -102,6 +102,7 @@ tasks/
 - [Implementation Spec](docs/implementation-spec.md)
 - [M1 Release Readiness](docs/m1-release-readiness.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
+- [Local HTTPS Threat Model](docs/local-https-threat-model.md)
 - [Local API Contract](shared/protocol/api-contract.md)
 - [M0 Device Validation Checklist](docs/m0-device-validation.md)
 - [M0 Validation Results](docs/m0-validation-results.md)

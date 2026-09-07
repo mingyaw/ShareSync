@@ -54,9 +54,9 @@ M2 keeps the main axis focused on photos only:
 
 ### M2.5 Pre-Release Security Branch Prep
 
-- [ ] Document local HTTPS threat model and certificate UX options.
-- [ ] Decide whether local HTTPS lands in M2 or a dedicated M3 security milestone.
-- [ ] Keep signed local HTTP as the tested M2 implementation until HTTPS is explicitly pulled in.
+- [x] Document local HTTPS threat model and certificate UX options.
+- [x] Decide whether local HTTPS lands in M2 or a dedicated M3 security milestone.
+- [x] Keep signed local HTTP as the tested M2 implementation until HTTPS is explicitly pulled in.
 
 ## Post-M2 Product Branches
 
@@ -107,3 +107,11 @@ Completed the M2.4 validation evidence structure:
 - Added a dedicated M2 physical-device validation results file.
 - Captured the required Android/iPhone OS matrix across same Wi-Fi, Android hotspot, and endpoint-change scenarios.
 - Added pass/fail evidence tables for single photo, all photos, deleted-photo retry, reset, app restart, and foreground/background interruption.
+
+### 2026-09-07 M2 Security Branch Prep
+
+Completed the M2.5 pre-release security preparation:
+
+- Documented local HTTPS threats, remaining signed-HTTP risks, and certificate UX options.
+- Kept local HTTPS out of M2 and moved it to the recommended M3/pre-release security milestone.
+- Updated the local API contract wording so M2 remains signed local HTTP while HTTPS is tracked as the next transport hardening step.

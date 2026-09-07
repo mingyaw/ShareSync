@@ -30,6 +30,8 @@ Decision: M1 may use same-network local HTTP when every protected request is sig
 
 Reason: self-signed local HTTPS certificate trust and rotation would add user-visible setup friction before the photo-only MVP is product-stable. Signed requests already prevent token-only access, stale endpoint reuse, and replay within the local network threat model, while keeping local HTTPS as an explicit pre-release hardening branch.
 
+M2 update: M2 continues to use the tested signed local HTTP implementation. Local HTTPS is not pulled into M2; it is prepared as a dedicated M3/pre-release security milestone. See [Local HTTPS Threat Model](local-https-threat-model.md).
+
 ## ED-006 No Delete Sync in MVP
 
 Decision: MVP never deletes target data.

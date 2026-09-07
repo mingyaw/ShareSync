@@ -1,8 +1,8 @@
 # ShareSync Local API Contract
 
-Version: 1  
-Transport: Local HTTPS over Wi-Fi or Android hotspot  
-M0 allowance: HTTP is allowed for prototype only; MVP must use HTTPS plus signed requests.
+Version: 1
+M2 transport: signed local HTTP over same Wi-Fi or Android hotspot
+Pre-release transport target: local HTTPS plus signed requests
 
 ## Common Headers
 
@@ -134,4 +134,4 @@ M0 implements only:
 - local HTTP allowed only for first-device PoC
 - signed request enforcement on protected endpoints
 - photo media only
-- full HTTPS and signed requests remain required before MVP release
+- full HTTPS remains tracked for the M3/pre-release security milestone
