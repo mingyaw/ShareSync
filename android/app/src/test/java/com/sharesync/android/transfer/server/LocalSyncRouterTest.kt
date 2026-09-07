@@ -307,6 +307,66 @@ class LocalSyncRouterTest {
     }
 
     @Test
+    fun syncResultMergesMultipleAcceptedBatchesAndRecordsEachEvent() {
+        val store = InMemorySyncResultStore()
+        val eventStore = InMemorySyncEventStore()
+        val router = router(
+            syncResultStore = store,
+            syncEventStore = eventStore,
+            authorizationPolicy = AuthorizationPolicy.SignedRequestsWithPairingTokenFallback,
+        )
+
+        SuspendBridge.runBlocking {
+            assertEquals(
+                202,
+                router.syncResult(
+                    body = syncResultBody(
+                        batchId = "batch-001",
+                        sourceItemId = "media-001",
+                        status = "synced",
+                        errorCode = "null",
+                    ),
+                    headers = pairingHeaders(),
+                ).statusCode,
+            )
+            assertEquals(
+                202,
+                router.syncResult(
+                    body = syncResultBody(
+                        batchId = "batch-002",
+                        sourceItemId = "media-002",
+                        status = "failed",
+                        errorCode = """"SS-NET-002"""",
+                    ),
+                    headers = pairingHeaders(),
+                ).statusCode,
+            )
+            assertEquals(
+                202,
+                router.syncResult(
+                    body = syncResultBody(
+                        batchId = "batch-003",
+                        sourceItemId = "media-002",
+                        targetItemId = "photo-local-002",
+                        status = "synced",
+                        errorCode = "null",
+                    ),
+                    headers = pairingHeaders(),
+                ).statusCode,
+            )
+        }
+
+        val latest = SuspendBridge.runBlocking { store.latest() }
+        val events = SuspendBridge.runBlocking { eventStore.all() }
+        assertEquals("batch-003", latest?.syncBatchId)
+        assertEquals(listOf("media-001", "media-002"), latest?.results?.map { it.sourceItemId })
+        assertEquals(listOf("synced", "synced"), latest?.results?.map { it.status.name })
+        assertEquals(listOf("batch-001", "batch-002", "batch-003"), events.map { it.syncBatchId })
+        assertEquals(listOf(1, 0, 1), events.map { it.syncedCount })
+        assertEquals(listOf(0, 1, 0), events.map { it.failedCount })
+    }
+
+    @Test
     fun requestActivityCountsLocalRequestsAcrossEndpoints() {
         var now = 10_000L
         val activityTracker = LocalRequestActivityTracker(clock = { now })
@@ -454,19 +514,22 @@ class LocalSyncRouterTest {
     }
 
     private fun syncResultBody(
+        batchId: String = "batch-001",
+        sourceItemId: String = "media-001",
+        targetItemId: String = "photo-local-001",
         itemType: String = "media",
         status: String,
         errorCode: String,
     ): String {
         return """
             {
-              "syncBatchId": "batch-001",
+              "syncBatchId": "$batchId",
               "targetDeviceId": "ios-device-001",
               "results": [
                 {
                   "itemType": "$itemType",
-                  "sourceItemId": "media-001",
-                  "targetItemId": "photo-local-001",
+                  "sourceItemId": "$sourceItemId",
+                  "targetItemId": "$targetItemId",
                   "status": "$status",
                   "errorCode": $errorCode
                 }

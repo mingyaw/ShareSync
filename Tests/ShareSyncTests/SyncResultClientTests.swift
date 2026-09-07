@@ -69,6 +69,24 @@ final class SyncResultClientTests: XCTestCase {
         }
     }
 
+    func testPostSyncResultCanSucceedAfterPreviousServerFailure() async throws {
+        let session = StubSyncResultPostingSession(statusCodes: [500, 202])
+        let client = SyncResultClient(session: session)
+        let result = makeResult()
+
+        do {
+            _ = try await client.postSyncResult(result, to: "192.168.1.10", port: 48291)
+            XCTFail("Expected first postSyncResult to throw.")
+        } catch {
+            XCTAssertEqual(error as? SyncResultClientError, .unacceptableStatusCode(500))
+        }
+
+        let statusCode = try await client.postSyncResult(result, to: "192.168.1.10", port: 48291)
+
+        XCTAssertEqual(statusCode, 202)
+        XCTAssertEqual(session.requests.count, 2)
+    }
+
     private func makeResult() -> SyncResult {
         SyncResult(
             syncBatchId: "batch-001",
@@ -87,15 +105,20 @@ final class SyncResultClientTests: XCTestCase {
 }
 
 private final class StubSyncResultPostingSession: SyncResultPostingSession {
-    private let statusCode: Int
+    private var statusCodes: [Int]
     private(set) var requests: [URLRequest] = []
 
     init(statusCode: Int) {
-        self.statusCode = statusCode
+        self.statusCodes = [statusCode]
+    }
+
+    init(statusCodes: [Int]) {
+        self.statusCodes = statusCodes
     }
 
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
         requests.append(request)
+        let statusCode = statusCodes.isEmpty ? 200 : statusCodes.removeFirst()
         return (
             Data(),
             HTTPURLResponse(

@@ -42,8 +42,8 @@ M2 keeps the main axis focused on photos only:
 ### M2.3 Retry And Interruption Hardening
 
 - [ ] Add coverage for iOS cancellation followed by sync-all resume.
-- [ ] Add coverage for post-result failure followed by next successful post.
-- [ ] Add Android coverage for multiple iOS result posts across batches.
+- [x] Add coverage for post-result failure followed by next successful post.
+- [x] Add Android coverage for multiple iOS result posts across batches.
 - [ ] Add manual checklist for app foreground/background transitions during large photo sync.
 
 ### M2.4 Validation Evidence
@@ -85,3 +85,10 @@ Started M2 after completing the M1 photo MVP hardening checklist:
 - Reduced the iOS primary action area to one readiness-driven next action; moved manual fetch and small-batch validation actions into diagnostics.
 - Moved Android manual endpoint and raw pairing payload controls into diagnostics, keeping the primary screen focused on local network readiness, photo availability, pairing QR, and latest sync outcome.
 - Added primary blocked-state copy for Android photo permission and local Wi-Fi/hotspot reachability; kept iOS blocked states visible through readiness and endpoint validation errors.
+
+### 2026-09-07 M2 Retry Result Coverage
+
+Started the M2.3 retry and interruption hardening slice:
+
+- Added iOS client coverage that a failed sync-result post does not poison the next successful post attempt.
+- Added Android router coverage for multiple accepted iOS result batches, proving latest merged state and per-batch event history remain intact.
