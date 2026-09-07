@@ -49,6 +49,12 @@
     <string name="m0_pairing_instruction_waiting">允許照片權限並保持 ShareSync 開啟，配對碼會自動顯示。</string>
     <string name="m0_pairing_instruction_ready">請用 iPhone 掃描此配對碼。配對後，只要 ShareSync 保持開啟，這支 Android 手機就會提供照片狀態。</string>
     <string name="m0_pairing_payload_copied">已複製配對碼，請貼到 iPhone ShareSync 接收畫面。</string>
+    <string name="m2_readiness_allow_photos">請允許照片權限，ShareSync 才能準備 Android 照片。</string>
+    <string name="m2_readiness_start_sharing">開始提供照片後，畫面會顯示配對碼。</string>
+    <string name="m2_readiness_wait_for_server">正在準備照片分享，請保持 ShareSync 開啟。</string>
+    <string name="m2_readiness_show_pairing_code">請用 iPhone 掃描此配對碼。ShareSync 開啟時會持續提供照片。</string>
+    <string name="m2_readiness_keep_available_for_retry">請保持 ShareSync 開啟，讓 iPhone 重試剩餘照片。</string>
+    <string name="m2_readiness_wait_for_new_photos">已回報的照片都完成了。可保持 ShareSync 開啟等待新照片。</string>
     <string name="m0_grant_permissions">允許照片權限</string>
     <string name="m0_start_server">提供照片</string>
     <string name="m0_stop_server">停止分享照片</string>

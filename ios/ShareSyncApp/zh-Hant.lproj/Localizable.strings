@@ -1,6 +1,7 @@
 "ios.action.clear_pairing" = "清除配對";
 "ios.action.auto_sync_all" = "配對後自動同步全部照片";
 "ios.action.auto_sync_after_pairing" = "配對後同步全部照片";
+"ios.action.allow_photos" = "允許照片權限";
 "ios.action.copy_sync_result" = "複製同步結果";
 "ios.action.fetch_manifest" = "取得照片清單";
 "ios.action.fetching" = "取得中";
@@ -10,6 +11,7 @@
 "ios.action.syncing_photos" = "照片同步中";
 "ios.action.importing_photos" = "匯入照片中";
 "ios.action.resume_photo_sync" = "繼續同步照片";
+"ios.action.review_connection" = "檢查連線設定";
 "ios.action.next" = "下一張";
 "ios.action.five_photos" = "5 張照片";
 "ios.action.reset_local_sync_state" = "重設本機同步狀態";
@@ -41,6 +43,11 @@
 "ios.qr.close" = "關閉";
 "ios.qr.preparing_camera" = "準備相機中";
 "ios.qr.scan_pairing_qr" = "掃描配對 QR Code";
+"ios.readiness.endpoint_missing" = "請輸入 Android endpoint，或重新掃描配對 QR Code。";
+"ios.readiness.invalid_port" = "同步前請確認 Android 連接埠。";
+"ios.readiness.pairing_required" = "請先將這支 iPhone 與 Android 手機配對。";
+"ios.readiness.photos_permission_blocked" = "同步前請到 iOS 設定允許照片權限。";
+"ios.readiness.transfer_active" = "照片同步已在進行中。";
 "ios.status.allowed" = "已允許";
 "ios.status.android_peer" = "Android 裝置";
 "ios.status.batch_downloaded" = "批次已下載";

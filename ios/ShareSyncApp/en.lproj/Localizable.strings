@@ -1,6 +1,7 @@
 "ios.action.clear_pairing" = "Clear Pairing";
 "ios.action.auto_sync_all" = "Auto sync all photos after pairing";
 "ios.action.auto_sync_after_pairing" = "Sync all photos after pairing";
+"ios.action.allow_photos" = "Allow Photos Access";
 "ios.action.copy_sync_result" = "Copy Sync Result";
 "ios.action.fetch_manifest" = "Fetch Manifest";
 "ios.action.fetching" = "Fetching";
@@ -10,6 +11,7 @@
 "ios.action.syncing_photos" = "Syncing Photos";
 "ios.action.importing_photos" = "Importing Photos";
 "ios.action.resume_photo_sync" = "Resume Photo Sync";
+"ios.action.review_connection" = "Review Connection";
 "ios.action.next" = "Next";
 "ios.action.five_photos" = "5 Photos";
 "ios.action.reset_local_sync_state" = "Reset Local Sync State";
@@ -41,6 +43,11 @@
 "ios.qr.close" = "Close";
 "ios.qr.preparing_camera" = "Preparing camera";
 "ios.qr.scan_pairing_qr" = "Scan Pairing QR";
+"ios.readiness.endpoint_missing" = "Enter the Android endpoint or scan the pairing QR code.";
+"ios.readiness.invalid_port" = "Check the Android port before syncing.";
+"ios.readiness.pairing_required" = "Pair this iPhone with your Android phone first.";
+"ios.readiness.photos_permission_blocked" = "Allow Photos access in iOS Settings before syncing.";
+"ios.readiness.transfer_active" = "A photo sync is already running.";
 "ios.status.allowed" = "Allowed";
 "ios.status.android_peer" = "Android Peer";
 "ios.status.batch_downloaded" = "Batch Downloaded";

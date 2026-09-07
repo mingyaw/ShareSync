@@ -78,6 +78,12 @@ struct ContentView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
+                        if let readinessReasonText {
+                            Text(readinessReasonText)
+                                .font(.footnote)
+                                .foregroundStyle(summaryTint)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                     Spacer(minLength: 12)
                     Image(systemName: summaryIconName)
@@ -105,47 +111,15 @@ struct ContentView: View {
                 .disabled(viewModel.isTransferActive)
 
                 Button {
-                    viewModel.syncAllPhotos()
+                    performPrimaryReadinessAction()
                 } label: {
-                    Label(primarySyncButtonTitle, systemImage: "arrow.triangle.2.circlepath")
+                    Label(primaryReadinessButtonTitle, systemImage: primaryReadinessButtonIcon)
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 46)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
-                .disabled(!viewModel.canSyncAll)
-
-                Button {
-                    viewModel.fetchManifest()
-                } label: {
-                    Label(buttonTitle, systemImage: "arrow.clockwise")
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 42)
-                }
-                .buttonStyle(.bordered)
-                .disabled(!viewModel.canFetch)
-
-                HStack(spacing: 12) {
-                    Button {
-                        viewModel.downloadFirstMedia()
-                    } label: {
-                        Label("ios.action.next", systemImage: "arrow.down.to.line")
-                            .frame(maxWidth: .infinity)
-                            .frame(minHeight: 42)
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(!viewModel.canDownload)
-
-                    Button {
-                        viewModel.downloadSmallMediaBatch()
-                    } label: {
-                        Label("ios.action.five_photos", systemImage: "square.stack.3d.down.right")
-                            .frame(maxWidth: .infinity)
-                            .frame(minHeight: 42)
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(!viewModel.canDownload)
-                }
+                .disabled(!primaryReadinessActionEnabled)
 
                 Button(role: .cancel) {
                     viewModel.cancelDownload()
@@ -265,6 +239,38 @@ struct ContentView: View {
 
     private var diagnosticsPanelContent: some View {
             VStack(alignment: .leading, spacing: 12) {
+                Button {
+                    viewModel.fetchManifest()
+                } label: {
+                    Label(buttonTitle, systemImage: "arrow.clockwise")
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 42)
+                }
+                .buttonStyle(.bordered)
+                .disabled(!viewModel.canFetch)
+
+                HStack(spacing: 12) {
+                    Button {
+                        viewModel.downloadFirstMedia()
+                    } label: {
+                        Label("ios.action.next", systemImage: "arrow.down.to.line")
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: 42)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(!viewModel.canDownload)
+
+                    Button {
+                        viewModel.downloadSmallMediaBatch()
+                    } label: {
+                        Label("ios.action.five_photos", systemImage: "square.stack.3d.down.right")
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: 42)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(!viewModel.canDownload)
+                }
+
                 Button {
                     copySyncResult()
                 } label: {
@@ -403,6 +409,55 @@ struct ContentView: View {
         }
     }
 
+    private var primaryReadinessButtonTitle: String {
+        switch viewModel.readiness.primaryAction {
+        case .pairAndroid:
+            return localized("ios.action.scan_pairing_qr")
+        case .enterEndpoint:
+            return localized("ios.action.review_connection")
+        case .allowPhotos:
+            return localized("ios.action.allow_photos")
+        case .waitForTransfer:
+            return primarySyncButtonTitle
+        case .fetchManifest:
+            return buttonTitle
+        case .syncAllPhotos:
+            return primarySyncButtonTitle
+        }
+    }
+
+    private var primaryReadinessButtonIcon: String {
+        switch viewModel.readiness.primaryAction {
+        case .pairAndroid:
+            return "qrcode.viewfinder"
+        case .enterEndpoint:
+            return "network"
+        case .allowPhotos:
+            return "photo.badge.checkmark"
+        case .waitForTransfer:
+            return "hourglass"
+        case .fetchManifest:
+            return "arrow.clockwise"
+        case .syncAllPhotos:
+            return "arrow.triangle.2.circlepath"
+        }
+    }
+
+    private var primaryReadinessActionEnabled: Bool {
+        switch viewModel.readiness.primaryAction {
+        case .pairAndroid, .enterEndpoint:
+            return true
+        case .allowPhotos:
+            return !viewModel.isTransferActive
+        case .waitForTransfer:
+            return false
+        case .fetchManifest:
+            return viewModel.canFetch
+        case .syncAllPhotos:
+            return viewModel.canSyncAll
+        }
+    }
+
     private var primarySyncButtonTitle: String {
         switch viewModel.downloadState {
         case .downloading:
@@ -413,6 +468,23 @@ struct ContentView: View {
             return localized("ios.action.resume_photo_sync")
         default:
             return localized("ios.action.sync_all_photos")
+        }
+    }
+
+    private func performPrimaryReadinessAction() {
+        switch viewModel.readiness.primaryAction {
+        case .pairAndroid:
+            isShowingPairingScanner = true
+        case .enterEndpoint:
+            isSettingsExpanded = true
+        case .allowPhotos:
+            viewModel.syncAllPhotos()
+        case .waitForTransfer:
+            break
+        case .fetchManifest:
+            viewModel.fetchManifest()
+        case .syncAllPhotos:
+            viewModel.syncAllPhotos()
         }
     }
 
@@ -435,6 +507,23 @@ struct ContentView: View {
         }
 
         return localized("ios.summary.fetch_latest")
+    }
+
+    private var readinessReasonText: String? {
+        switch viewModel.readiness.blockingReason {
+        case .pairingRequired:
+            return localized("ios.readiness.pairing_required")
+        case .endpointMissing:
+            return localized("ios.readiness.endpoint_missing")
+        case .invalidPort:
+            return localized("ios.readiness.invalid_port")
+        case .transferActive:
+            return localized("ios.readiness.transfer_active")
+        case .photosPermissionBlocked:
+            return localized("ios.readiness.photos_permission_blocked")
+        case nil:
+            return nil
+        }
     }
 
     private var summaryIconName: String {

@@ -331,9 +331,9 @@ class MainActivity : Activity() {
         pairingPayloadText.text = currentPairingPayloadJson
             ?: getString(R.string.m0_pairing_payload_unavailable)
         pairingInstructionText.text = if (currentPairingPayloadJson != null) {
-            getString(R.string.m0_pairing_instruction_ready)
+            readinessInstruction()
         } else {
-            getString(R.string.m0_pairing_instruction_waiting)
+            readinessInstruction()
         }
         manifestSummaryText.text = currentManifestPhotoCount?.let { count ->
             getString(R.string.m0_manifest_summary, count, manifestTransferStatus(count))
@@ -700,6 +700,17 @@ class MainActivity : Activity() {
             AndroidM0Phase.READY_TO_PAIR -> getString(R.string.m0_phase_ready_to_pair)
             AndroidM0Phase.RETRY_REQUIRED -> getString(R.string.m0_phase_retry_required)
             AndroidM0Phase.TRANSFER_COMPLETE -> getString(R.string.m0_phase_transfer_complete)
+        }
+    }
+
+    private fun readinessInstruction(): String {
+        return when (runtimeState().readiness().primaryAction) {
+            AndroidPhotoSyncPrimaryAction.ALLOW_PHOTOS -> getString(R.string.m2_readiness_allow_photos)
+            AndroidPhotoSyncPrimaryAction.START_SHARING -> getString(R.string.m2_readiness_start_sharing)
+            AndroidPhotoSyncPrimaryAction.WAIT_FOR_SERVER -> getString(R.string.m2_readiness_wait_for_server)
+            AndroidPhotoSyncPrimaryAction.SHOW_PAIRING_CODE -> getString(R.string.m2_readiness_show_pairing_code)
+            AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_RETRY -> getString(R.string.m2_readiness_keep_available_for_retry)
+            AndroidPhotoSyncPrimaryAction.WAIT_FOR_NEW_PHOTOS -> getString(R.string.m2_readiness_wait_for_new_photos)
         }
     }
 
