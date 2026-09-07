@@ -75,6 +75,7 @@ final class ManifestFetchViewModel: ObservableObject {
     @Published private(set) var syncResultSummary: SyncResultSummary?
     @Published private(set) var syncResultReturnSummary: SyncResultReturnSummary?
     @Published private(set) var latestSyncEvent: SyncEvent?
+    @Published private(set) var recentSyncHistory: [SyncHistorySummary] = []
     @Published private(set) var latestSyncResultJSON: String?
     @Published private(set) var downloadProgressSummary: DownloadProgressSummary?
     @Published private(set) var cancellationMessage: String?
@@ -131,7 +132,7 @@ final class ManifestFetchViewModel: ObservableObject {
         self.photoLibraryPermissionStatus = photoLibraryPermissionChecker.photoLibraryPermissionStatus()
         restorePairedDeviceSession()
         restoreLatestSyncResult()
-        restoreLatestSyncEvent()
+        restoreSyncHistory()
     }
 
     var canFetch: Bool {
@@ -363,6 +364,7 @@ final class ManifestFetchViewModel: ObservableObject {
         syncResultSummary = nil
         syncResultReturnSummary = nil
         latestSyncEvent = nil
+        recentSyncHistory = []
         latestSyncResultJSON = nil
         downloadProgressSummary = nil
         cancellationMessage = nil
@@ -387,6 +389,7 @@ final class ManifestFetchViewModel: ObservableObject {
         downloadProgressSummary = nil
         syncResultReturnSummary = nil
         latestSyncEvent = nil
+        recentSyncHistory = []
         cancellationMessage = nil
         downloadState = .idle
         state = .idle
@@ -414,8 +417,9 @@ final class ManifestFetchViewModel: ObservableObject {
         syncResultReturnSummary = SyncResultReturnSummary(status: Self.localized("ios.vm.not_posted"), httpStatusCode: nil)
     }
 
-    private func restoreLatestSyncEvent() {
+    private func restoreSyncHistory() {
         latestSyncEvent = try? syncEventStore.latestSuccessfulSync()
+        recentSyncHistory = (try? syncEventStore.recentHistorySummaries(limit: 3)) ?? []
     }
 
     private func endpointCandidate() async throws -> PairedDeviceEndpoint {
@@ -707,6 +711,7 @@ final class ManifestFetchViewModel: ObservableObject {
         )
         try? syncEventStore.append(event)
         latestSyncEvent = try? syncEventStore.latestSuccessfulSync()
+        recentSyncHistory = (try? syncEventStore.recentHistorySummaries(limit: 3)) ?? []
     }
 
     private static func message(for error: Error) -> String {
@@ -892,6 +897,7 @@ final class ManifestFetchViewModel: ObservableObject {
         )
         try? syncEventStore.append(event)
         latestSyncEvent = try? syncEventStore.latestSuccessfulSync()
+        recentSyncHistory = (try? syncEventStore.recentHistorySummaries(limit: 3)) ?? []
     }
 
     private func records(for manifest: SyncManifest) -> [MediaDownloadRecord] {

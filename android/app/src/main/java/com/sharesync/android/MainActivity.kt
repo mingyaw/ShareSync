@@ -27,10 +27,12 @@ import com.sharesync.android.sync.FileSyncResultStore
 import com.sharesync.android.sync.ManifestBuilder
 import com.sharesync.android.sync.SyncEvent
 import com.sharesync.android.sync.SyncEventStore
+import com.sharesync.android.sync.SyncHistorySummary
 import com.sharesync.android.sync.SyncItemStatus
 import com.sharesync.android.sync.SyncResult
 import com.sharesync.android.sync.SyncResultJsonCodec
 import com.sharesync.android.sync.SyncResultStore
+import com.sharesync.android.sync.recentHistorySummaries
 import com.sharesync.android.transfer.server.LocalRequestActivity
 import com.sharesync.android.transfer.server.LocalRequestActivityTracker
 import com.sharesync.android.transfer.server.LocalSyncServer
@@ -45,6 +47,7 @@ class MainActivity : Activity() {
     private lateinit var localNetworkText: TextView
     private lateinit var manifestSummaryText: TextView
     private lateinit var syncEventText: TextView
+    private lateinit var syncHistoryText: TextView
     private lateinit var pairingInstructionText: TextView
     private lateinit var requestActivityText: TextView
     private lateinit var syncResultText: TextView
@@ -68,6 +71,7 @@ class MainActivity : Activity() {
     private var currentManifestPhotoCount: Int? = null
     private var currentSyncResult: SyncResult? = null
     private var currentSyncEvent: SyncEvent? = null
+    private var currentSyncHistory: List<SyncHistorySummary> = emptyList()
     private var currentRequestActivity: LocalRequestActivity? = null
     private var syncResultStore: SyncResultStore? = null
     private var syncEventStore: SyncEventStore? = null
@@ -158,6 +162,7 @@ class MainActivity : Activity() {
         localNetworkText = bodyText()
         manifestSummaryText = bodyText()
         syncEventText = bodyText()
+        syncHistoryText = bodyText()
         pairingInstructionText = bodyText()
         requestActivityText = bodyText()
         syncResultText = bodyText()
@@ -228,6 +233,7 @@ class MainActivity : Activity() {
                     localNetworkText,
                     manifestSummaryText,
                     syncEventText,
+                    syncHistoryText,
                     pairingInstructionText,
                     pairingQrImage,
                 ),
@@ -362,6 +368,7 @@ class MainActivity : Activity() {
             ?: getString(R.string.m0_sync_result_unavailable)
         syncEventText.text = currentSyncEvent?.let(::formatSyncEvent)
             ?: getString(R.string.m1_sync_event_unavailable)
+        syncHistoryText.text = formatSyncHistory()
         refreshPairingQr()
 
         startButton.isEnabled = !isServerRunning && hasMediaPermission()
@@ -555,6 +562,7 @@ class MainActivity : Activity() {
             }
             currentSyncResult = null
             currentSyncEvent = null
+            currentSyncHistory = emptyList()
             currentManifestPhotoCount = manifestBuilder?.let { builder ->
                 SuspendBridge.runBlocking { builder.buildM0Manifest().media.size }
             }
@@ -573,6 +581,7 @@ class MainActivity : Activity() {
         )
         syncEventStore = eventStore
         currentSyncEvent = SuspendBridge.runBlocking { eventStore.latest() }
+        currentSyncHistory = SuspendBridge.runBlocking { eventStore.recentHistorySummaries(limit = 3) }
     }
 
     private fun restoreRunningServerSession() {
@@ -587,6 +596,7 @@ class MainActivity : Activity() {
         isServerRunning = true
         currentSyncResult = SuspendBridge.runBlocking { session.syncResultStore.latest() }
         currentSyncEvent = SuspendBridge.runBlocking { session.syncEventStore.latest() }
+        currentSyncHistory = SuspendBridge.runBlocking { session.syncEventStore.recentHistorySummaries(limit = 3) }
         currentRequestActivity = session.requestActivityTracker.latest()
         currentManifestPhotoCount = SuspendBridge.runBlocking {
             session.manifestBuilder.buildM0Manifest().media.size
@@ -628,6 +638,9 @@ class MainActivity : Activity() {
                 currentSyncEvent = syncEventStore?.let { eventStore ->
                     SuspendBridge.runBlocking { eventStore.latest() }
                 }
+                currentSyncHistory = syncEventStore?.let { eventStore ->
+                    SuspendBridge.runBlocking { eventStore.recentHistorySummaries(limit = 3) }
+                } ?: emptyList()
                 currentRequestActivity = requestActivityTracker?.latest()
                 currentManifestPhotoCount = manifestBuilder?.let { builder ->
                     SuspendBridge.runBlocking { builder.buildM0Manifest().media.size }
@@ -665,6 +678,21 @@ class MainActivity : Activity() {
             event.skippedCount,
             event.failedCount + event.conflictedCount,
         )
+    }
+
+    private fun formatSyncHistory(): String {
+        if (currentSyncHistory.isEmpty()) {
+            return getString(R.string.m3_sync_history_unavailable)
+        }
+
+        return currentSyncHistory.joinToString(separator = "\n") { summary ->
+            getString(
+                R.string.m3_sync_history_item,
+                summary.syncBatchId,
+                summary.successfulCount,
+                summary.failedCount,
+            )
+        }
     }
 
     private fun formatRequestActivity(activity: LocalRequestActivity): String {

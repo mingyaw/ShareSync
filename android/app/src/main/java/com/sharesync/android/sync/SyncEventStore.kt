@@ -34,11 +34,47 @@ data class SyncEvent(
     }
 }
 
+data class SyncHistorySummary(
+    val syncBatchId: String,
+    val targetDeviceId: String,
+    val recordedAtEpochMillis: Long,
+    val totalCount: Int,
+    val successfulCount: Int,
+    val failedCount: Int,
+) {
+    val isComplete: Boolean
+        get() = failedCount == 0
+
+    val needsRetry: Boolean
+        get() = failedCount > 0
+
+    companion object {
+        fun fromEvent(event: SyncEvent): SyncHistorySummary {
+            return SyncHistorySummary(
+                syncBatchId = event.syncBatchId,
+                targetDeviceId = event.targetDeviceId,
+                recordedAtEpochMillis = event.recordedAtEpochMillis,
+                totalCount = event.syncedCount + event.skippedCount + event.failedCount + event.conflictedCount,
+                successfulCount = event.successfulCount,
+                failedCount = event.failedCount + event.conflictedCount,
+            )
+        }
+    }
+}
+
 interface SyncEventStore {
     suspend fun append(event: SyncEvent)
     suspend fun latest(): SyncEvent?
     suspend fun all(): List<SyncEvent>
     suspend fun clear()
+}
+
+suspend fun SyncEventStore.recentHistorySummaries(limit: Int): List<SyncHistorySummary> {
+    if (limit <= 0) {
+        return emptyList()
+    }
+
+    return all().takeLast(limit).asReversed().map(SyncHistorySummary::fromEvent)
 }
 
 class InMemorySyncEventStore : SyncEventStore {

@@ -96,6 +96,37 @@ final class SyncEventStoreTests: XCTestCase {
         XCTAssertEqual(events.last?.syncBatchId, "batch-054")
     }
 
+    func testRecentHistorySummariesReturnNewestEventsFirst() throws {
+        let store = InMemorySyncEventStore()
+        try store.append(syncEvent(syncBatchId: "batch-001", recordedAt: Date(timeIntervalSince1970: 1)))
+        try store.append(
+            SyncEvent(
+                id: UUID(),
+                phase: .resultPost,
+                status: .success,
+                recordedAt: Date(timeIntervalSince1970: 2),
+                sourceDeviceId: "android-device-001",
+                targetDeviceId: "ios-device-001",
+                syncBatchId: "batch-002",
+                photoCount: 3,
+                syncedCount: 1,
+                skippedCount: 1,
+                failedCount: 1,
+                errorCode: "SS-NET-002"
+            )
+        )
+        try store.append(syncEvent(syncBatchId: "batch-003", recordedAt: Date(timeIntervalSince1970: 3)))
+
+        let summaries = try store.recentHistorySummaries(limit: 2)
+
+        XCTAssertEqual(summaries.map(\.syncBatchId), ["batch-003", "batch-002"])
+        XCTAssertEqual(summaries.last?.totalCount, 3)
+        XCTAssertEqual(summaries.last?.successfulCount, 2)
+        XCTAssertEqual(summaries.last?.failedCount, 1)
+        XCTAssertEqual(summaries.last?.isComplete, false)
+        XCTAssertEqual(summaries.last?.needsRetry, true)
+    }
+
     func testClearRemovesPersistedEvents() throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("ShareSyncEventStoreTests-\(UUID().uuidString)", isDirectory: true)

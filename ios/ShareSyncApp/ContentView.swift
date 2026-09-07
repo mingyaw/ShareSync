@@ -315,6 +315,9 @@ struct ContentView: View {
                 StatusRow(title: "ios.status.photos_access", value: photosAccessStatus)
                 StatusRow(title: "ios.status.screen_lock", value: screenLockStatus)
                 StatusRow(title: "ios.status.last_sync", value: latestSyncText)
+                if !viewModel.recentSyncHistory.isEmpty {
+                    StatusRow(title: "ios.status.recent_syncs", value: recentSyncHistoryText)
+                }
                 if let pairedDevice = viewModel.pairedDevice {
                     StatusRow(title: "ios.status.device", value: pairedDevice.deviceName)
                 }
@@ -667,6 +670,20 @@ struct ContentView: View {
             "\(event.successfulCount)",
             "\(event.failedCount)"
         )
+    }
+
+    private var recentSyncHistoryText: String {
+        viewModel.recentSyncHistory
+            .map { summary in
+                let batch = summary.syncBatchId ?? localized("ios.value.none")
+                return String(
+                    format: localized("ios.value.sync_history_item_format"),
+                    batch,
+                    "\(summary.successfulCount)",
+                    "\(summary.failedCount)"
+                )
+            }
+            .joined(separator: "\n")
     }
 
     private func lastFailureText(code: String, fileName: String?) -> String {

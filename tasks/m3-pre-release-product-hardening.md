@@ -40,11 +40,11 @@ M3 keeps the main axis focused on Android-to-iOS photo sync:
 
 ### M3.3 Sync History And Audit View
 
-- [ ] Define cross-platform sync history summary fields.
-- [ ] Add iOS history summary model and tests.
-- [ ] Add Android history summary model and tests.
-- [ ] Surface recent sync history in iOS settings/diagnostics.
-- [ ] Surface recent sync history in Android settings/diagnostics.
+- [x] Define cross-platform sync history summary fields.
+- [x] Add iOS history summary model and tests.
+- [x] Add Android history summary model and tests.
+- [x] Surface recent sync history in iOS settings/diagnostics.
+- [x] Surface recent sync history in Android settings/diagnostics.
 
 ### M3.4 Persistence And Reset Safety
 
@@ -96,3 +96,11 @@ Completed the M3.2 recovery UX alignment slice:
 - Added iOS and Android readiness-level recovery guidance enums with unit coverage.
 - Updated iOS blocked/error copy to match the recovery matrix for pairing, endpoint, permissions, interruption, local network, and rejected requests.
 - Updated Android readiness copy for photo permission, local endpoint availability, pairing, and retry continuation.
+
+### 2026-09-07 M3 Sync History Summary
+
+Completed the M3.3 sync history and audit view slice:
+
+- Defined shared sync history summary fields for batch id, target device, recorded time, total count, successful count, failed count, complete state, and retry state.
+- Added iOS and Android summary models with newest-first recent-history tests.
+- Surfaced the latest three sync history summaries in iOS status and Android pairing/status areas.

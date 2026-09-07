@@ -44,6 +44,8 @@
     <string name="m0_sync_result_summary">同步結果：%1$s，已同步 %2$d，略過 %3$d，失敗 %4$d，最後失敗 %5$s。</string>
     <string name="m1_sync_event_unavailable">最近同步：等待 iPhone。</string>
     <string name="m1_sync_event_summary">最近同步：%1$s，已同步 %2$d，略過 %3$d，需重試 %4$d。</string>
+    <string name="m3_sync_history_unavailable">最近同步紀錄：等待 iPhone。</string>
+    <string name="m3_sync_history_item">%1$s：完成 %2$d，重試 %3$d</string>
     <string name="m0_sync_result_no_failure">無</string>
     <string name="m0_sync_result_copied">已複製同步結果 JSON。</string>
     <string name="m0_sync_state_cleared">照片同步紀錄已清除。請從 iPhone 重新取得清單以重建狀態。</string>

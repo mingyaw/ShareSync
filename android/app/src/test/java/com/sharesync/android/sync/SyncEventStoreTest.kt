@@ -79,6 +79,36 @@ class SyncEventStoreTest {
         }
     }
 
+    @Test
+    fun recentHistorySummariesReturnNewestEventsFirst() {
+        val store = InMemorySyncEventStore()
+
+        SuspendBridge.runBlocking {
+            store.append(syncEvent("batch-001", recordedAt = 1_000L))
+            store.append(
+                SyncEvent(
+                    syncBatchId = "batch-002",
+                    targetDeviceId = "ios-device-001",
+                    recordedAtEpochMillis = 2_000L,
+                    syncedCount = 1,
+                    skippedCount = 1,
+                    failedCount = 1,
+                    conflictedCount = 1,
+                )
+            )
+            store.append(syncEvent("batch-003", recordedAt = 3_000L))
+        }
+
+        val summaries = SuspendBridge.runBlocking { store.recentHistorySummaries(limit = 2) }
+
+        assertEquals(listOf("batch-003", "batch-002"), summaries.map { it.syncBatchId })
+        assertEquals(4, summaries.last().totalCount)
+        assertEquals(2, summaries.last().successfulCount)
+        assertEquals(2, summaries.last().failedCount)
+        assertEquals(false, summaries.last().isComplete)
+        assertEquals(true, summaries.last().needsRetry)
+    }
+
     private fun syncEvent(batchId: String, recordedAt: Long): SyncEvent {
         return SyncEvent(
             syncBatchId = batchId,

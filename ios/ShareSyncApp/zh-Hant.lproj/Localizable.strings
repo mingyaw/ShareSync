@@ -76,6 +76,7 @@
 "ios.status.photos_access" = "照片權限";
 "ios.status.ready" = "就緒";
 "ios.status.remaining" = "剩餘";
+"ios.status.recent_syncs" = "最近同步紀錄";
 "ios.status.result_failed" = "結果失敗";
 "ios.status.result_return" = "結果回傳";
 "ios.status.restricted" = "受限制";
@@ -101,6 +102,7 @@
 "ios.value.photo_count_format" = "%@ 張照片";
 "ios.value.ready_device_format" = "就緒 - %@ - v%@";
 "ios.value.last_sync_format" = "%@，完成 %@，重試 %@";
+"ios.value.sync_history_item_format" = "%@：完成 %@，重試 %@";
 "ios.vm.enter_android_ip" = "找不到已配對的 Android 手機。請掃描最新 Android QR Code，或輸入已儲存的 endpoint。";
 "ios.vm.enter_valid_port" = "Android 連接埠看起來無效。請確認 Android ShareSync 畫面後再重試。";
 "ios.vm.paste_pairing_payload" = "請貼上 Android 配對資料。";

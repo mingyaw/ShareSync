@@ -56,12 +56,55 @@ struct SyncEvent: Codable, Equatable, Identifiable {
     }
 }
 
+struct SyncHistorySummary: Equatable, Identifiable {
+    var id: String {
+        "\(recordedAt.timeIntervalSince1970)-\(syncBatchId ?? "no-batch")"
+    }
+
+    let syncBatchId: String?
+    let targetDeviceId: String
+    let recordedAt: Date
+    let totalCount: Int
+    let successfulCount: Int
+    let failedCount: Int
+
+    var isComplete: Bool {
+        failedCount == 0
+    }
+
+    var needsRetry: Bool {
+        failedCount > 0
+    }
+
+    init(event: SyncEvent) {
+        syncBatchId = event.syncBatchId
+        targetDeviceId = event.targetDeviceId
+        recordedAt = event.recordedAt
+        totalCount = event.photoCount
+        successfulCount = event.successfulCount
+        failedCount = event.failedCount
+    }
+}
+
 protocol SyncEventStore {
     func append(_ event: SyncEvent) throws
     func latest() throws -> SyncEvent?
     func latestSuccessfulSync() throws -> SyncEvent?
     func all() throws -> [SyncEvent]
     func clear() throws
+}
+
+extension SyncEventStore {
+    func recentHistorySummaries(limit: Int) throws -> [SyncHistorySummary] {
+        guard limit > 0 else {
+            return []
+        }
+
+        return try all()
+            .suffix(limit)
+            .reversed()
+            .map(SyncHistorySummary.init(event:))
+    }
 }
 
 final class InMemorySyncEventStore: SyncEventStore {
