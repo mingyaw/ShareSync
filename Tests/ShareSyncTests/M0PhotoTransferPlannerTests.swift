@@ -156,6 +156,53 @@ final class M0PhotoTransferPlannerTests: XCTestCase {
         XCTAssertEqual(candidates.map(\.assetId), ["photo-downloaded"])
     }
 
+    func testSyncAllResumeAfterCancellationSkipsImportedAndContinuesRemainingPhotos() {
+        let importedPhoto = makeAsset(assetId: "photo-imported", mediaType: .photo)
+        let downloadedPhoto = makeAsset(assetId: "photo-downloaded", mediaType: .photo)
+        let interruptedPhoto = makeAsset(assetId: "photo-interrupted", mediaType: .photo)
+        let newPhoto = makeAsset(assetId: "photo-new", mediaType: .photo)
+        let manifest = makeManifest(
+            media: [
+                importedPhoto,
+                downloadedPhoto,
+                interruptedPhoto,
+                newPhoto,
+            ]
+        )
+        let store = InMemoryMediaDownloadStateStore()
+        store.upsertQueued(asset: importedPhoto, now: Date(timeIntervalSince1970: 1))
+        store.markImported(
+            sourceAssetId: importedPhoto.assetId,
+            photoLocalIdentifier: "photo-local-imported",
+            now: Date(timeIntervalSince1970: 2)
+        )
+        store.upsertQueued(asset: downloadedPhoto, now: Date(timeIntervalSince1970: 3))
+        store.markDownloaded(
+            sourceAssetId: downloadedPhoto.assetId,
+            localFileURL: URL(fileURLWithPath: "/tmp/photo-downloaded.jpg"),
+            downloadedBytes: downloadedPhoto.size,
+            now: Date(timeIntervalSince1970: 4)
+        )
+        store.upsertQueued(asset: interruptedPhoto, now: Date(timeIntervalSince1970: 5))
+        store.markDownloading(
+            sourceAssetId: interruptedPhoto.assetId,
+            downloadedBytes: interruptedPhoto.size / 2,
+            now: Date(timeIntervalSince1970: 6)
+        )
+
+        let candidates = M0PhotoTransferPlanner().nextTransferCandidates(
+            in: manifest,
+            stateStore: store,
+            limit: manifest.media.count
+        )
+
+        XCTAssertEqual(candidates.map(\.assetId), [
+            "photo-downloaded",
+            "photo-interrupted",
+            "photo-new",
+        ])
+    }
+
     func testSyncResultRecordsIncludePhotosOnlyInManifestOrder() {
         let firstPhoto = makeAsset(assetId: "photo-001", mediaType: .photo)
         let video = makeAsset(assetId: "video-001", mediaType: .video)

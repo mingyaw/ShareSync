@@ -41,16 +41,16 @@ M2 keeps the main axis focused on photos only:
 
 ### M2.3 Retry And Interruption Hardening
 
-- [ ] Add coverage for iOS cancellation followed by sync-all resume.
+- [x] Add coverage for iOS cancellation followed by sync-all resume.
 - [x] Add coverage for post-result failure followed by next successful post.
 - [x] Add Android coverage for multiple iOS result posts across batches.
-- [ ] Add manual checklist for app foreground/background transitions during large photo sync.
+- [x] Add manual checklist for app foreground/background transitions during large photo sync.
 
 ### M2.4 Validation Evidence
 
-- [ ] Add dedicated M2 physical-device validation results file.
-- [ ] Record required device matrix for Android/iPhone OS versions.
-- [ ] Track pass/fail evidence for single photo, all photos, deleted-photo retry, reset, and app restart.
+- [x] Add dedicated M2 physical-device validation results file.
+- [x] Record required device matrix for Android/iPhone OS versions.
+- [x] Track pass/fail evidence for single photo, all photos, deleted-photo retry, reset, and app restart.
 
 ### M2.5 Pre-Release Security Branch Prep
 
@@ -92,3 +92,18 @@ Started the M2.3 retry and interruption hardening slice:
 
 - Added iOS client coverage that a failed sync-result post does not poison the next successful post attempt.
 - Added Android router coverage for multiple accepted iOS result batches, proving latest merged state and per-batch event history remain intact.
+
+### 2026-09-07 M2 Cancellation Resume Coverage
+
+Completed the remaining M2.3 interruption hardening items:
+
+- Added planner coverage for the iOS sync-all resume path after cancellation: imported photos are skipped, downloaded-but-not-imported photos are prioritized, interrupted photos remain retryable, and new photos stay last.
+- Added a manual foreground/background transition checklist for large photo sync validation.
+
+### 2026-09-07 M2 Validation Evidence Template
+
+Completed the M2.4 validation evidence structure:
+
+- Added a dedicated M2 physical-device validation results file.
+- Captured the required Android/iPhone OS matrix across same Wi-Fi, Android hotspot, and endpoint-change scenarios.
+- Added pass/fail evidence tables for single photo, all photos, deleted-photo retry, reset, app restart, and foreground/background interruption.
