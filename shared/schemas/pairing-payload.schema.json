@@ -25,8 +25,26 @@
     "ip": { "type": "string", "minLength": 1 },
     "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
     "pairingToken": { "type": "string", "minLength": 16 },
-    "expiresAt": { "type": "string", "format": "date-time" }
+    "expiresAt": { "type": "string", "format": "date-time" },
+    "transportSecurity": {
+      "type": "object",
+      "required": [
+        "mode",
+        "certificateFingerprintSha256",
+        "certificateFingerprintEncoding"
+      ],
+      "properties": {
+        "mode": { "type": "string", "enum": ["signed_http", "qr_pinned_https"] },
+        "certificateFingerprintSha256": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}$"
+        },
+        "certificateFingerprintEncoding": { "type": "string", "const": "hex" },
+        "certificateNotBefore": { "type": "string", "format": "date-time" },
+        "certificateNotAfter": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    }
   },
   "additionalProperties": false
 }
-

@@ -23,6 +23,10 @@ class ManifestJsonEncoder {
             appendJsonField("pairingToken", payload.pairingToken)
             append(",")
             appendJsonField("expiresAt", payload.expiresAt)
+            payload.transportSecurity?.let { security ->
+                append(",\"transportSecurity\":")
+                appendTransportSecurity(security)
+            }
             append("}")
         }
     }
@@ -80,6 +84,24 @@ class ManifestJsonEncoder {
             append("}")
         }
         append("]")
+    }
+
+    private fun StringBuilder.appendTransportSecurity(security: PairingTransportSecurity) {
+        append("{")
+        appendJsonField("mode", security.mode.wireValue)
+        append(",")
+        appendJsonField("certificateFingerprintSha256", security.certificateFingerprintSha256)
+        append(",")
+        appendJsonField("certificateFingerprintEncoding", security.certificateFingerprintEncoding)
+        security.certificateNotBefore?.let {
+            append(",")
+            appendJsonField("certificateNotBefore", it)
+        }
+        security.certificateNotAfter?.let {
+            append(",")
+            appendJsonField("certificateNotAfter", it)
+        }
+        append("}")
     }
 
     private fun StringBuilder.appendJsonField(name: String, value: String) {

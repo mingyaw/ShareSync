@@ -11,7 +11,21 @@ data class PairingPayload(
     val port: Int,
     val pairingToken: String,
     val expiresAt: String,
+    val transportSecurity: PairingTransportSecurity? = null,
 )
+
+data class PairingTransportSecurity(
+    val mode: PairingTransportSecurityMode,
+    val certificateFingerprintSha256: String,
+    val certificateFingerprintEncoding: String = "hex",
+    val certificateNotBefore: String? = null,
+    val certificateNotAfter: String? = null,
+)
+
+enum class PairingTransportSecurityMode(val wireValue: String) {
+    signed_http("signed_http"),
+    qr_pinned_https("qr_pinned_https"),
+}
 
 data class SyncManifest(
     val version: Int = 1,

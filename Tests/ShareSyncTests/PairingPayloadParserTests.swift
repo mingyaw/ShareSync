@@ -16,6 +16,27 @@ final class PairingPayloadParserTests: XCTestCase {
         XCTAssertEqual(payload.platform, "android")
         XCTAssertEqual(payload.ip, "192.168.1.20")
         XCTAssertEqual(payload.port, 48291)
+        XCTAssertEqual(payload.transportSecurity?.mode, .qrPinnedHTTPS)
+        XCTAssertEqual(
+            payload.transportSecurity?.certificateFingerprintSha256,
+            "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        )
+    }
+
+    func testParseLegacyPayloadWithoutTransportSecurity() throws {
+        var payload = try JSONSerialization.jsonObject(
+            with: try fixtureData("sample-pairing-payload", extension: "json")
+        ) as! [String: Any]
+        payload.removeValue(forKey: "transportSecurity")
+        let data = try JSONSerialization.data(withJSONObject: payload)
+
+        let parsed = try PairingPayloadParser().parse(
+            data,
+            now: ISO8601DateFormatter().date(from: "2026-08-19T06:00:00Z")!
+        )
+
+        XCTAssertNil(parsed.transportSecurity)
+        XCTAssertEqual(parsed.deviceId, "android-demo-device")
     }
 
     func testRejectsExpiredPayload() throws {
@@ -43,4 +64,3 @@ final class PairingPayloadParserTests: XCTestCase {
         }
     }
 }
-

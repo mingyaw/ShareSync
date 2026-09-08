@@ -1,6 +1,7 @@
 package com.sharesync.android.pairing
 
 import com.sharesync.android.sync.PairingPayload
+import com.sharesync.android.sync.PairingTransportSecurity
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.UUID
@@ -12,6 +13,7 @@ class PairingPayloadFactory(
     private val localIpProvider: () -> String,
     private val portProvider: () -> Int,
     private val pairingTokenProvider: () -> String = { UUID.randomUUID().toString().replace("-", "") },
+    private val transportSecurityProvider: () -> PairingTransportSecurity? = { null },
 ) {
     fun createPayload(now: Instant = Instant.now()): PairingPayload {
         return PairingPayload(
@@ -22,6 +24,7 @@ class PairingPayloadFactory(
             port = portProvider(),
             pairingToken = pairingTokenProvider(),
             expiresAt = now.plus(10, ChronoUnit.MINUTES).toString(),
+            transportSecurity = transportSecurityProvider(),
         )
     }
 }

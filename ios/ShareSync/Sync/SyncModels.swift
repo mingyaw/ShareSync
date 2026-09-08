@@ -11,6 +11,20 @@ struct PairingPayload: Codable, Equatable {
     let port: Int
     let pairingToken: String
     let expiresAt: Date
+    let transportSecurity: PairingTransportSecurity?
+}
+
+struct PairingTransportSecurity: Codable, Equatable {
+    let mode: Mode
+    let certificateFingerprintSha256: String
+    let certificateFingerprintEncoding: String
+    let certificateNotBefore: Date?
+    let certificateNotAfter: Date?
+
+    enum Mode: String, Codable {
+        case signedHTTP = "signed_http"
+        case qrPinnedHTTPS = "qr_pinned_https"
+    }
 }
 
 struct SyncManifest: Codable, Equatable {

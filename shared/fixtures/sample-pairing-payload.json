@@ -8,6 +8,12 @@
   "ip": "192.168.1.20",
   "port": 48291,
   "pairingToken": "0123456789abcdef0123456789abcdef",
-  "expiresAt": "2099-08-19T06:30:00Z"
+  "expiresAt": "2099-08-19T06:30:00Z",
+  "transportSecurity": {
+    "mode": "qr_pinned_https",
+    "certificateFingerprintSha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    "certificateFingerprintEncoding": "hex",
+    "certificateNotBefore": "2026-09-08T00:00:00Z",
+    "certificateNotAfter": "2027-09-08T00:00:00Z"
+  }
 }
-

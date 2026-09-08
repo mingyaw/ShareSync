@@ -55,10 +55,10 @@ M3 keeps the main axis focused on Android-to-iOS photo sync:
 
 ### M3.5 Security Implementation Spec
 
-- [ ] Expand QR-pinned certificate implementation spec.
-- [ ] Define Android certificate generation/persistence/rotation behavior.
-- [ ] Define iOS certificate pinning storage and recovery UX.
-- [ ] Decide M3 implementation order for HTTPS vs response signing.
+- [x] Expand QR-pinned certificate implementation spec.
+- [x] Define Android certificate generation/persistence/rotation behavior.
+- [x] Define iOS certificate pinning storage and recovery UX.
+- [x] Decide M3 implementation order for HTTPS vs response signing.
 
 ### M3.6 Repo And Build Hygiene
 
@@ -112,3 +112,11 @@ Completed the M3.4 persistence/reset safety slice:
 - Documented persisted iOS and Android state, clear/reset semantics, and app delete/reinstall behavior.
 - Added iOS store-boundary tests proving Clear Pairing does not clear sync state and Reset Local Sync State does not clear pairing.
 - Added Android store-boundary tests proving result and event stores can be cleared independently.
+
+### 2026-09-08 M3 Security Implementation Spec
+
+Completed the M3.5 security implementation spec slice:
+
+- Added a local security implementation spec selecting QR-pinned HTTPS while preserving signed local HTTP compatibility during migration.
+- Extended the version 1 pairing payload schema and sample fixture with optional transport security metadata.
+- Added iOS and Android model/test coverage for optional QR-pinned HTTPS pairing metadata.
