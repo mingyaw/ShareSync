@@ -62,9 +62,9 @@ M3 keeps the main axis focused on Android-to-iOS photo sync:
 
 ### M3.6 Repo And Build Hygiene
 
-- [ ] Add concise developer quickstart for Android Studio and Xcode.
-- [ ] Add local check commands for targeted Android/iOS development.
-- [ ] Confirm no private identity, generated build output, or local machine paths are committed.
+- [x] Add concise developer quickstart for Android Studio and Xcode.
+- [x] Add local check commands for targeted Android/iOS development.
+- [x] Confirm no private identity, generated build output, or local machine paths are committed.
 
 ## Explicit Post-M3 Product Branches
 
@@ -120,3 +120,11 @@ Completed the M3.5 security implementation spec slice:
 - Added a local security implementation spec selecting QR-pinned HTTPS while preserving signed local HTTP compatibility during migration.
 - Extended the version 1 pairing payload schema and sample fixture with optional transport security metadata.
 - Added iOS and Android model/test coverage for optional QR-pinned HTTPS pairing metadata.
+
+### 2026-09-08 M3 Repo And Build Hygiene
+
+Completed the M3.6 repo/build hygiene slice:
+
+- Added a developer quickstart for opening Android Studio, Xcode, and the Swift package.
+- Documented targeted local check commands for fixture validation, Swift tests, Android unit tests, iOS builds, and the full main-axis check.
+- Added a repository hygiene script for author, sensitive identity, local machine path, generated artifact, and signing artifact checks.

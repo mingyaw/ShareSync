@@ -100,6 +100,7 @@ tasks/
 
 - [Product Development Plan](docs/product-development-plan.md)
 - [Implementation Spec](docs/implementation-spec.md)
+- [Developer Quickstart](docs/developer-quickstart.md)
 - [M1 Release Readiness](docs/m1-release-readiness.md)
 - [M3 Pre-Release Readiness](docs/m3-release-readiness.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
@@ -181,6 +182,12 @@ Run the full M0 check suite from the repository root:
 ./scripts/check-m0.sh
 ```
 
+Run repo hygiene checks before committing:
+
+```sh
+bash scripts/check-repo-hygiene.sh
+```
+
 Run checks individually when isolating a failure:
 
 ```sh
@@ -238,7 +245,7 @@ M0 real-device validation was completed by user report on 2026-09-02. Use [docs/
 If Gradle cannot find the Android SDK, create an untracked `android/local.properties`:
 
 ```properties
-sdk.dir=/Users/mingyao/Library/Android/sdk
+sdk.dir=/path/to/Android/sdk
 ```
 
 ## Opening Projects
