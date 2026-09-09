@@ -21,8 +21,8 @@ M4 keeps the same photo-only product axis:
 - [x] Add Android local certificate descriptor and provider abstraction.
 - [x] Add deterministic SHA-256 fingerprint calculation tests.
 - [x] Add transport security factory for QR-pinned HTTPS pairing metadata.
-- [ ] Add Android Keystore-backed certificate generation and persistence.
-- [ ] Define explicit certificate rotation behavior in Android runtime.
+- [x] Add Android Keystore-backed certificate generation and persistence.
+- [x] Define explicit certificate rotation behavior in Android runtime.
 
 ### M4.2 Android Pairing Integration
 
@@ -59,3 +59,11 @@ Started M4 with the lowest-risk Android foundation slice:
 - Added local certificate descriptor/provider abstractions without changing the running local server.
 - Added deterministic certificate fingerprint tests so QR-pinned HTTPS metadata has a stable contract.
 - Added a pairing transport security factory that can feed QR payload metadata once Android certificate persistence is wired in.
+
+### 2026-09-09 Android Keystore Provider
+
+Completed the Android certificate provider foundation:
+
+- Added an Android Keystore-backed local certificate provider under a stable ShareSync alias.
+- Defined current-certificate creation, persistence, and explicit rotation behavior.
+- Documented that certificate rotation is a deliberate recovery action and should not happen during ordinary sharing startup.

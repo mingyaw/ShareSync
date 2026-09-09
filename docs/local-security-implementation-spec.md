@@ -58,6 +58,13 @@ Certificate persistence:
 - Android app data deletion or uninstall creates a new device identity and new certificate.
 - Certificate rotation is explicit: stop sharing, generate new certificate, invalidate old QR payloads, and require iOS re-pairing.
 
+M4 Android implementation:
+
+- `LocalCertificateProvider.currentCertificate()` returns the existing local certificate when present, or creates one when missing.
+- `LocalCertificateProvider.rotateCertificate()` deletes the previous local certificate alias, creates a new local certificate, and returns the new descriptor.
+- `AndroidKeyStoreLocalCertificateProvider` stores key material under the `sharesync-local-transport` alias in Android Keystore.
+- Rotation must not happen automatically during ordinary sharing startup because it would break an already paired iPhone without an explicit recovery action.
+
 Server behavior:
 
 - Keep `/v1/health`, `/v1/manifest`, `/v1/media/{assetId}`, and `/v1/sync-result` behavior unchanged at the API level.
