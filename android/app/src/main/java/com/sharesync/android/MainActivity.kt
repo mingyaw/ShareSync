@@ -45,6 +45,7 @@ class MainActivity : Activity() {
     private lateinit var notificationPermissionText: TextView
     private lateinit var screenLockText: TextView
     private lateinit var localNetworkText: TextView
+    private lateinit var transportSecurityText: TextView
     private lateinit var manifestSummaryText: TextView
     private lateinit var syncEventText: TextView
     private lateinit var syncHistoryText: TextView
@@ -68,6 +69,7 @@ class MainActivity : Activity() {
     @Volatile
     private var syncResultPollThread: Thread? = null
     private var currentPairingPayloadJson: String? = null
+    private var currentTransportSecurityMode: AndroidM0TransportSecurityMode = AndroidM0TransportSecurityMode.SIGNED_HTTP
     private var currentManifestPhotoCount: Int? = null
     private var currentSyncResult: SyncResult? = null
     private var currentSyncEvent: SyncEvent? = null
@@ -160,6 +162,7 @@ class MainActivity : Activity() {
         notificationPermissionText = bodyText()
         screenLockText = bodyText()
         localNetworkText = bodyText()
+        transportSecurityText = bodyText()
         manifestSummaryText = bodyText()
         syncEventText = bodyText()
         syncHistoryText = bodyText()
@@ -250,6 +253,7 @@ class MainActivity : Activity() {
                 title = getString(R.string.m0_panel_diagnostics),
                 children = listOf(
                     endpointText,
+                    transportSecurityText,
                     permissionText,
                     notificationPermissionText,
                     screenLockText,
@@ -352,6 +356,7 @@ class MainActivity : Activity() {
         } else {
             getString(R.string.m2_local_network_ready)
         }
+        transportSecurityText.text = transportSecurityStatusText()
         pairingPayloadText.text = currentPairingPayloadJson
             ?: getString(R.string.m0_pairing_payload_unavailable)
         pairingInstructionText.text = if (currentPairingPayloadJson != null) {
@@ -460,6 +465,7 @@ class MainActivity : Activity() {
                 isServerStarting = false
                 isServerRunning = true
                 currentPairingPayloadJson = session.pairingPayloadJson
+                currentTransportSecurityMode = session.transportSecurityMode
                 AndroidM0ForegroundService.start(applicationContext)
                 runOnUiThread { refreshUi() }
                 pollSyncResultUpdates(session.syncResultStore)
@@ -476,6 +482,7 @@ class MainActivity : Activity() {
                 isServerStarting = false
                 isServerRunning = false
                 currentPairingPayloadJson = null
+                currentTransportSecurityMode = AndroidM0TransportSecurityMode.SIGNED_HTTP
                 runOnUiThread {
                     refreshUi(getString(R.string.m0_status_failed, error.message ?: "unknown error"))
                 }
@@ -496,6 +503,7 @@ class MainActivity : Activity() {
         isServerStarting = false
         isServerRunning = false
         currentPairingPayloadJson = null
+        currentTransportSecurityMode = AndroidM0TransportSecurityMode.SIGNED_HTTP
         restorePersistedSyncResult()
         syncResultPollThread?.interrupt()
         syncResultPollThread = null
@@ -592,6 +600,7 @@ class MainActivity : Activity() {
         manifestBuilder = session.manifestBuilder
         requestActivityTracker = session.requestActivityTracker
         currentPairingPayloadJson = session.pairingPayloadJson
+        currentTransportSecurityMode = session.transportSecurityMode
         isServerStarting = false
         isServerRunning = true
         currentSyncResult = SuspendBridge.runBlocking { session.syncResultStore.latest() }
@@ -704,6 +713,13 @@ class MainActivity : Activity() {
             activity.requestCount,
             requestActivityAgeLabel(activity),
         )
+    }
+
+    private fun transportSecurityStatusText(): String {
+        return when (currentTransportSecurityMode) {
+            AndroidM0TransportSecurityMode.SIGNED_HTTP -> getString(R.string.m4_transport_signed_http)
+            AndroidM0TransportSecurityMode.QR_PINNED_HTTPS -> getString(R.string.m4_transport_qr_pinned_https)
+        }
     }
 
     private val SyncItemStatus.isRetryableFailure: Boolean

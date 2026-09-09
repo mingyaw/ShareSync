@@ -26,9 +26,9 @@ M4 keeps the same photo-only product axis:
 
 ### M4.2 Android Pairing Integration
 
-- [ ] Wire persisted Android certificate fingerprint into pairing QR payload generation.
-- [ ] Keep signed HTTP pairing payload compatibility during migration.
-- [ ] Add Android UI/status copy for HTTPS-ready transport mode.
+- [x] Wire persisted Android certificate fingerprint into pairing QR payload generation.
+- [x] Keep signed HTTP pairing payload compatibility during migration.
+- [x] Add Android UI/status copy for HTTPS-ready transport mode.
 
 ### M4.3 iOS Certificate Pinning Foundation
 
@@ -67,3 +67,11 @@ Completed the Android certificate provider foundation:
 - Added an Android Keystore-backed local certificate provider under a stable ShareSync alias.
 - Defined current-certificate creation, persistence, and explicit rotation behavior.
 - Documented that certificate rotation is a deliberate recovery action and should not happen during ordinary sharing startup.
+
+### 2026-09-09 Android Pairing Integration
+
+Completed the Android pairing integration slice:
+
+- Wired QR-pinned HTTPS transport metadata into Android pairing payload generation behind an explicit migration switch.
+- Kept the default runtime pairing payload on signed local HTTP until the HTTPS server/client transport switch is implemented.
+- Added Android diagnostics copy that shows the current transport security mode.

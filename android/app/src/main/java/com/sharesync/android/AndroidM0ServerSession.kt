@@ -3,6 +3,8 @@ package com.sharesync.android
 import android.content.Context
 import com.sharesync.android.discovery.LocalPeerDiscoveryAdvertiser
 import com.sharesync.android.pairing.PairingPayloadFactory
+import com.sharesync.android.pairing.PairingTransportSecurityFactory
+import com.sharesync.android.security.AndroidKeyStoreLocalCertificateProvider
 import com.sharesync.android.security.DeviceIdentity
 import com.sharesync.android.security.DeviceIdentityStore
 import com.sharesync.android.sync.ManifestBuilder
@@ -24,7 +26,13 @@ data class AndroidM0ServerSession(
     val requestActivityTracker: LocalRequestActivityTracker,
     val discoveryAdvertiser: LocalPeerDiscoveryAdvertiser,
     val pairingPayloadJson: String?,
+    val transportSecurityMode: AndroidM0TransportSecurityMode,
 )
+
+enum class AndroidM0TransportSecurityMode {
+    SIGNED_HTTP,
+    QR_PINNED_HTTPS,
+}
 
 object AndroidM0ServerSessionRegistry {
     @Volatile
@@ -52,6 +60,11 @@ object AndroidM0ServerSessionController {
             deviceIdentityStore.getOrCreate()
         }
         val pairingToken = UUID.randomUUID().toString().replace("-", "")
+        val transportSecurityFactory = if (ENABLE_QR_PINNED_HTTPS_PAIRING) {
+            PairingTransportSecurityFactory(AndroidKeyStoreLocalCertificateProvider())
+        } else {
+            null
+        }
         val components = M0SyncComponents.create(
             context = context.applicationContext,
             deviceId = identity.deviceId,
@@ -76,7 +89,13 @@ object AndroidM0ServerSessionController {
                 identity = identity,
                 port = server.port,
                 pairingToken = pairingToken,
+                transportSecurityFactory = transportSecurityFactory,
             ),
+            transportSecurityMode = if (transportSecurityFactory == null) {
+                AndroidM0TransportSecurityMode.SIGNED_HTTP
+            } else {
+                AndroidM0TransportSecurityMode.QR_PINNED_HTTPS
+            },
         )
         AndroidM0ServerSessionRegistry.set(session)
         return session
@@ -132,6 +151,7 @@ object AndroidM0ServerSessionController {
         identity: DeviceIdentity,
         port: Int,
         pairingToken: String,
+        transportSecurityFactory: PairingTransportSecurityFactory?,
     ): String? {
         val ip = LocalNetworkAddresses.firstIpv4Address() ?: return null
         val payload = PairingPayloadFactory(
@@ -141,9 +161,11 @@ object AndroidM0ServerSessionController {
             localIpProvider = { ip },
             portProvider = { port },
             pairingTokenProvider = { pairingToken },
+            transportSecurityProvider = { transportSecurityFactory?.currentTransportSecurity() },
         ).createPayload()
         return ManifestJsonEncoder().encode(payload)
     }
 
     private const val AVAILABLE_PORT = 0
+    private const val ENABLE_QR_PINNED_HTTPS_PAIRING = false
 }
