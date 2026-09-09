@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 photo PoC, M1 photo MVP hardening, and M2 photo product reliability are complete. The active main axis is M3 pre-release product hardening.
+Status: M0 photo PoC, M1 photo MVP hardening, M2 photo product reliability, and M3 pre-release product hardening are complete. The active main axis is M4 QR-pinned HTTPS.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -16,7 +16,7 @@ The project intentionally uses native implementation:
 
 ## Current Stage
 
-The completed baseline is `M0 - Android to iOS Photo PoC`, followed by `M1 - Photo MVP Hardening` and `M2 - Photo Product Reliability`. Active follow-up work is now `M3 - Pre-Release Product Hardening`, which keeps the product focused on photos before expanding to videos, contacts, files, or reverse sync.
+The completed baseline is `M0 - Android to iOS Photo PoC`, followed by `M1 - Photo MVP Hardening`, `M2 - Photo Product Reliability`, and `M3 - Pre-Release Product Hardening`. Active follow-up work is now `M4 - QR-Pinned HTTPS`, which keeps the product focused on photos while implementing local transport security before expanding to videos, contacts, files, or reverse sync.
 
 The current codebase contains:
 
@@ -118,6 +118,7 @@ tasks/
 - [M1 Photo MVP Hardening](tasks/m1-photo-mvp.md)
 - [M2 Photo Product Reliability](tasks/m2-photo-product-reliability.md)
 - [M3 Pre-Release Product Hardening](tasks/m3-pre-release-product-hardening.md)
+- [M4 QR-Pinned HTTPS](tasks/m4-qr-pinned-https.md)
 
 ## M0 Rules
 
