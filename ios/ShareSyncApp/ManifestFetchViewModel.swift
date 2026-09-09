@@ -305,7 +305,8 @@ final class ManifestFetchViewModel: ObservableObject {
                 pairingToken: payload.pairingToken,
                 pairedAt: Date(),
                 lastSeenAt: nil,
-                trustStatus: .trusted
+                trustStatus: .trusted,
+                transportSecurity: payload.transportSecurity
             )
             pairedDevice = trustedDevice
             pairingToken = payload.pairingToken
@@ -472,7 +473,8 @@ final class ManifestFetchViewModel: ObservableObject {
             pairingToken: pairedDevice.pairingToken,
             pairedAt: pairedDevice.pairedAt,
             lastSeenAt: Date(),
-            trustStatus: pairedDevice.trustStatus
+            trustStatus: pairedDevice.trustStatus,
+            transportSecurity: pairedDevice.transportSecurity
         )
         let session = PairedDeviceSession(
             lastKnownEndpoint: endpoint,

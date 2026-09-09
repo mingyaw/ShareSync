@@ -11,6 +11,7 @@ struct TrustedDevice: Codable, Equatable, Identifiable {
     let pairedAt: Date
     let lastSeenAt: Date?
     let trustStatus: TrustStatus
+    let transportSecurity: PairingTransportSecurity?
 }
 
 struct PairedDeviceEndpoint: Codable, Equatable {

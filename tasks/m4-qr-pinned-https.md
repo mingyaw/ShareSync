@@ -32,10 +32,10 @@ M4 keeps the same photo-only product axis:
 
 ### M4.3 iOS Certificate Pinning Foundation
 
-- [ ] Store pairing transport security metadata with paired-device state.
-- [ ] Add iOS certificate fingerprint validator.
-- [ ] Add mismatch and no-downgrade recovery tests.
-- [ ] Confirm Clear Pairing removes pinning metadata while Reset Local Sync State preserves it.
+- [x] Store pairing transport security metadata with paired-device state.
+- [x] Add iOS certificate fingerprint validator.
+- [x] Add mismatch and no-downgrade recovery tests.
+- [x] Confirm Clear Pairing removes pinning metadata while Reset Local Sync State preserves it.
 
 ### M4.4 Transport Switch
 
@@ -75,3 +75,11 @@ Completed the Android pairing integration slice:
 - Wired QR-pinned HTTPS transport metadata into Android pairing payload generation behind an explicit migration switch.
 - Kept the default runtime pairing payload on signed local HTTP until the HTTPS server/client transport switch is implemented.
 - Added Android diagnostics copy that shows the current transport security mode.
+
+### 2026-09-09 iOS Certificate Pinning Foundation
+
+Completed the iOS certificate pinning foundation slice:
+
+- Persisted optional pairing transport security metadata with the trusted Android device.
+- Added a certificate fingerprint validator for QR-pinned HTTPS metadata, including malformed fingerprint, unsupported encoding, and mismatch paths.
+- Preserved legacy signed HTTP behavior for existing pairings and confirmed Reset Local Sync State does not clear pairing or pinning metadata.

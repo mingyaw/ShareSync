@@ -96,6 +96,14 @@ Recovery UX:
 - Network failure before TLS: keep existing endpoint/local-network guidance.
 - Invalid request signature after TLS: clear pairing and rescan.
 
+M4 iOS implementation:
+
+- `TrustedDevice.transportSecurity` persists the optional QR payload transport metadata with the paired Android device.
+- Legacy stored pairings without `transportSecurity` continue to decode and use the signed local HTTP path.
+- `CertificateFingerprintValidator` treats missing metadata and explicit `signed_http` as unpinned legacy transport.
+- `CertificateFingerprintValidator` accepts `qr_pinned_https` only when the presented certificate DER SHA-256 hash exactly matches the QR-pinned hex fingerprint.
+- Malformed pinned fingerprints, unsupported fingerprint encodings, and certificate mismatches return explicit validation results and must not trigger an automatic downgrade to HTTP.
+
 ## Implementation Order
 
 1. Extend shared pairing schema and fixtures with optional `transportSecurity`.

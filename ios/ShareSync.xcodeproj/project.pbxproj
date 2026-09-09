@@ -29,6 +29,7 @@
 		1000000000000000000000A6 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000A5 /* InfoPlist.strings */; };
 		1000000000000000000000A9 /* ShareSync/Discovery/LocalPeerDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000AA /* ShareSync/Discovery/LocalPeerDiscovery.swift */; };
 		1000000000000000000000AC /* ShareSync/Security/RequestSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000AD /* ShareSync/Security/RequestSigner.swift */; };
+		1000000000000000000000B0 /* ShareSync/Security/CertificateFingerprintValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B1 /* ShareSync/Security/CertificateFingerprintValidator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -58,6 +59,7 @@
 		1000000000000000000000AA /* ShareSync/Discovery/LocalPeerDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Discovery/LocalPeerDiscovery.swift; sourceTree = "<group>"; };
 		1000000000000000000000AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1000000000000000000000AD /* ShareSync/Security/RequestSigner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Security/RequestSigner.swift; sourceTree = "<group>"; };
+		1000000000000000000000B1 /* ShareSync/Security/CertificateFingerprintValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Security/CertificateFingerprintValidator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,6 +115,7 @@
 				10000000000000000000001B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift */,
 				100000000000000000000017 /* ShareSync/Security/TrustedDevice.swift */,
 				1000000000000000000000AD /* ShareSync/Security/RequestSigner.swift */,
+				1000000000000000000000B1 /* ShareSync/Security/CertificateFingerprintValidator.swift */,
 			);
 			name = ShareSyncCore;
 			sourceTree = "<group>";
@@ -237,6 +240,7 @@
 				10000000000000000000000B /* ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift in Sources */,
 				100000000000000000000007 /* ShareSync/Security/TrustedDevice.swift in Sources */,
 				1000000000000000000000AC /* ShareSync/Security/RequestSigner.swift in Sources */,
+				1000000000000000000000B0 /* ShareSync/Security/CertificateFingerprintValidator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

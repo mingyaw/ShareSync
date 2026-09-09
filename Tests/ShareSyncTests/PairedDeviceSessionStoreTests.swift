@@ -35,7 +35,28 @@ final class PairedDeviceSessionStoreTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
     }
 
-    private func makeSession() -> PairedDeviceSession {
+    func testFileStorePersistsTransportSecurityMetadata() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncPairedDeviceSessionTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let fileURL = directory.appendingPathComponent("paired-device-session.json")
+        let store = FilePairedDeviceSessionStore(fileURL: fileURL)
+        let transportSecurity = PairingTransportSecurity(
+            mode: .qrPinnedHTTPS,
+            certificateFingerprintSha256: String(repeating: "a", count: 64),
+            certificateFingerprintEncoding: "hex",
+            certificateNotBefore: Date(timeIntervalSince1970: 10),
+            certificateNotAfter: Date(timeIntervalSince1970: 20)
+        )
+        let session = makeSession(transportSecurity: transportSecurity)
+
+        try store.save(session)
+
+        let loaded = try XCTUnwrap(try store.load())
+        XCTAssertEqual(loaded.device.transportSecurity, transportSecurity)
+    }
+
+    private func makeSession(transportSecurity: PairingTransportSecurity? = nil) -> PairedDeviceSession {
         PairedDeviceSession(
             host: "192.168.1.20",
             port: 48291,
@@ -47,7 +68,8 @@ final class PairedDeviceSessionStoreTests: XCTestCase {
                 pairingToken: "pairing-token-001",
                 pairedAt: Date(timeIntervalSince1970: 1),
                 lastSeenAt: nil,
-                trustStatus: .trusted
+                trustStatus: .trusted,
+                transportSecurity: transportSecurity
             ),
             endpointUpdatedAt: Date(timeIntervalSince1970: 2)
         )
@@ -133,6 +155,7 @@ extension PairedDeviceSessionStoreTests {
         XCTAssertEqual(session.port, 48291)
         XCTAssertEqual(session.lastKnownEndpoint.updatedAt, Date(timeIntervalSince1970: 1))
         XCTAssertEqual(session.device.deviceId, "android-demo-device")
+        XCTAssertNil(session.device.transportSecurity)
     }
 
     private func mediaAsset() -> MediaAsset {
