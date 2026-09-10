@@ -33,7 +33,7 @@ protocol MediaDataSession {
 extension URLSession: MediaDataSession {}
 
 final class MediaDownloader {
-    private let session: MediaDataSession
+    private let session: MediaDataSession?
     private let fileManager: FileManager
     private let downloadDirectory: URL
     private let availableCapacityProvider: (URL) throws -> Int64?
@@ -41,7 +41,7 @@ final class MediaDownloader {
     private let requestSigner: RequestSigner
 
     init(
-        session: MediaDataSession = LocalNetworkURLSessionFactory.mediaTransferSession(),
+        session: MediaDataSession? = nil,
         fileManager: FileManager = .default,
         downloadDirectory: URL? = nil,
         availableCapacityProvider: @escaping (URL) throws -> Int64? = MediaDownloader.availableCapacity,
@@ -209,7 +209,10 @@ final class MediaDownloader {
             request.setValue("bytes=\(resume.downloadedBytes)-", forHTTPHeaderField: "Range")
         }
 
-        let (data, response) = try await session.data(for: request)
+        let activeSession = session ?? LocalNetworkURLSessionFactory.mediaTransferSession(
+            transportSecurity: transportSecurity
+        )
+        let (data, response) = try await activeSession.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse else {
             throw MediaDownloaderError.nonHTTPResponse
         }

@@ -13,12 +13,12 @@ protocol SyncResultPostingSession {
 extension URLSession: SyncResultPostingSession {}
 
 final class SyncResultClient {
-    private let session: SyncResultPostingSession
+    private let session: SyncResultPostingSession?
     private let encoder: JSONEncoder
     private let requestSigner: RequestSigner
 
     init(
-        session: SyncResultPostingSession = LocalNetworkURLSessionFactory.shortRequestSession(),
+        session: SyncResultPostingSession? = nil,
         requestSigner: RequestSigner = RequestSigner()
     ) {
         self.session = session
@@ -55,7 +55,10 @@ final class SyncResultClient {
             requestSigner.sign(request: &request, context: signingContext, body: body)
         }
 
-        let (_, response) = try await session.data(for: request)
+        let activeSession = session ?? LocalNetworkURLSessionFactory.shortRequestSession(
+            transportSecurity: transportSecurity
+        )
+        let (_, response) = try await activeSession.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse else {
             throw SyncResultClientError.nonHTTPResponse
         }

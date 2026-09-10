@@ -21,4 +21,30 @@ final class LocalNetworkURLSessionFactoryTests: XCTestCase {
         XCTAssertTrue(configuration.allowsExpensiveNetworkAccess)
         XCTAssertTrue(configuration.allowsConstrainedNetworkAccess)
     }
+
+    func testCertificatePinningDelegateIsOnlyUsedForQRCodePinnedHTTPS() {
+        XCTAssertNil(LocalNetworkURLSessionFactory.urlSessionDelegate(for: nil))
+        XCTAssertNil(
+            LocalNetworkURLSessionFactory.urlSessionDelegate(
+                for: PairingTransportSecurity(
+                    mode: .signedHTTP,
+                    certificateFingerprintSha256: "",
+                    certificateFingerprintEncoding: "hex",
+                    certificateNotBefore: nil,
+                    certificateNotAfter: nil
+                )
+            )
+        )
+        XCTAssertTrue(
+            LocalNetworkURLSessionFactory.urlSessionDelegate(
+                for: PairingTransportSecurity(
+                    mode: .qrPinnedHTTPS,
+                    certificateFingerprintSha256: String(repeating: "a", count: 64),
+                    certificateFingerprintEncoding: "hex",
+                    certificateNotBefore: nil,
+                    certificateNotAfter: nil
+                )
+            ) is CertificatePinningURLSessionDelegate
+        )
+    }
 }

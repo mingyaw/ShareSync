@@ -21,6 +21,7 @@ class EmbeddedLocalSyncServer(
     requestedPort: Int,
     private val router: LocalSyncRouter,
     private val mediaStreamProvider: MediaStreamProvider,
+    private val serverSocketFactory: (Int) -> ServerSocket = { port -> ServerSocket(port) },
 ) : LocalSyncServer {
     override var port: Int = requestedPort
         private set
@@ -34,7 +35,7 @@ class EmbeddedLocalSyncServer(
     override suspend fun start() {
         if (running) return
 
-        val socket = ServerSocket(port)
+        val socket = serverSocketFactory(port)
         port = socket.localPort
         serverSocket = socket
         running = true

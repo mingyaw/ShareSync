@@ -1,5 +1,6 @@
 package com.sharesync.android.transfer.server
 
+import com.sharesync.android.security.LocalServerTlsContextProvider
 import com.sharesync.android.sync.SyncManifest
 
 interface LocalSyncServer {
@@ -32,6 +33,27 @@ class EmbeddedLocalServerBinder : LocalServerBinder {
             requestedPort = port,
             router = router,
             mediaStreamProvider = mediaStreamProvider,
+        )
+    }
+}
+
+class EmbeddedLocalHttpsServerBinder(
+    private val tlsContextProvider: LocalServerTlsContextProvider,
+) : LocalServerBinder {
+    override suspend fun bind(
+        router: LocalSyncRouter,
+        mediaStreamProvider: com.sharesync.android.scanner.media.MediaStreamProvider,
+        port: Int,
+    ): LocalSyncServer {
+        return EmbeddedLocalSyncServer(
+            requestedPort = port,
+            router = router,
+            mediaStreamProvider = mediaStreamProvider,
+            serverSocketFactory = { requestedPort ->
+                tlsContextProvider.serverSSLContext()
+                    .serverSocketFactory
+                    .createServerSocket(requestedPort)
+            },
         )
     }
 }

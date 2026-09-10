@@ -1,6 +1,7 @@
 package com.sharesync.android.security
 
 import java.security.MessageDigest
+import javax.net.ssl.SSLContext
 
 data class LocalCertificateDescriptor(
     val alias: String,
@@ -20,6 +21,10 @@ data class LocalCertificateDescriptor(
 interface LocalCertificateProvider {
     fun currentCertificate(): LocalCertificateDescriptor
     fun rotateCertificate(): LocalCertificateDescriptor
+}
+
+interface LocalServerTlsContextProvider {
+    fun serverSSLContext(): SSLContext
 }
 
 object CertificateFingerprint {

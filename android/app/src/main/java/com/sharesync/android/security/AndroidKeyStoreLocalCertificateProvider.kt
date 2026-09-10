@@ -10,13 +10,15 @@ import java.security.spec.ECGenParameterSpec
 import java.time.Duration
 import java.time.Instant
 import java.util.Date
+import javax.net.ssl.KeyManagerFactory
+import javax.net.ssl.SSLContext
 import javax.security.auth.x500.X500Principal
 
 class AndroidKeyStoreLocalCertificateProvider(
     private val alias: String = DEFAULT_ALIAS,
     private val clock: () -> Instant = Instant::now,
     private val validity: Duration = DEFAULT_VALIDITY,
-) : LocalCertificateProvider {
+) : LocalCertificateProvider, LocalServerTlsContextProvider {
     private val lock = Any()
 
     init {
@@ -42,6 +44,18 @@ class AndroidKeyStoreLocalCertificateProvider(
             }
             generateKeyPair()
             return descriptorFrom(loadedKeyStore())
+        }
+    }
+
+    override fun serverSSLContext(): SSLContext {
+        synchronized(lock) {
+            currentCertificate()
+            val keyStore = loadedKeyStore()
+            val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
+            keyManagerFactory.init(keyStore, null)
+            return SSLContext.getInstance("TLS").apply {
+                init(keyManagerFactory.keyManagers, null, null)
+            }
         }
     }
 

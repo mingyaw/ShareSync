@@ -31,12 +31,12 @@ protocol ManifestFetchingSession {
 extension URLSession: ManifestFetchingSession {}
 
 final class ManifestClient {
-    private let session: ManifestFetchingSession
+    private let session: ManifestFetchingSession?
     private let decoder: JSONDecoder
     private let requestSigner: RequestSigner
 
     init(
-        session: ManifestFetchingSession = LocalNetworkURLSessionFactory.shortRequestSession(),
+        session: ManifestFetchingSession? = nil,
         requestSigner: RequestSigner = RequestSigner()
     ) {
         self.session = session
@@ -71,7 +71,10 @@ final class ManifestClient {
             requestSigner.sign(request: &request, context: signingContext)
         }
 
-        let (data, response) = try await session.data(for: request)
+        let activeSession = session ?? LocalNetworkURLSessionFactory.shortRequestSession(
+            transportSecurity: transportSecurity
+        )
+        let (data, response) = try await activeSession.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse else {
             throw ManifestClientError.nonHTTPResponse
         }
@@ -85,10 +88,10 @@ final class ManifestClient {
 }
 
 final class HealthClient {
-    private let session: ManifestFetchingSession
+    private let session: ManifestFetchingSession?
     private let decoder: JSONDecoder
 
-    init(session: ManifestFetchingSession = LocalNetworkURLSessionFactory.shortRequestSession()) {
+    init(session: ManifestFetchingSession? = nil) {
         self.session = session
         self.decoder = JSONDecoder()
     }
@@ -107,7 +110,10 @@ final class HealthClient {
             throw HealthClientError.invalidBaseURL
         }
 
-        let (data, response) = try await session.data(for: URLRequest(url: url))
+        let activeSession = session ?? LocalNetworkURLSessionFactory.shortRequestSession(
+            transportSecurity: transportSecurity
+        )
+        let (data, response) = try await activeSession.data(for: URLRequest(url: url))
         guard let httpResponse = response as? HTTPURLResponse else {
             throw HealthClientError.nonHTTPResponse
         }

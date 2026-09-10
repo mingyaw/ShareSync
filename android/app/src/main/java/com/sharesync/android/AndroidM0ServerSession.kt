@@ -7,10 +7,13 @@ import com.sharesync.android.pairing.PairingTransportSecurityFactory
 import com.sharesync.android.security.AndroidKeyStoreLocalCertificateProvider
 import com.sharesync.android.security.DeviceIdentity
 import com.sharesync.android.security.DeviceIdentityStore
+import com.sharesync.android.security.LocalCertificateProvider
+import com.sharesync.android.security.LocalServerTlsContextProvider
 import com.sharesync.android.sync.ManifestBuilder
 import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.sync.SyncEventStore
 import com.sharesync.android.sync.SyncResultStore
+import com.sharesync.android.transfer.server.EmbeddedLocalHttpsServerBinder
 import com.sharesync.android.transfer.server.EmbeddedLocalServerBinder
 import com.sharesync.android.transfer.server.LocalServerBinder
 import com.sharesync.android.transfer.server.LocalRequestActivityTracker
@@ -190,27 +193,15 @@ object AndroidM0TransportConfigurationFactory {
     }
 
     fun qrPinnedHttps(
-        certificateProvider: com.sharesync.android.security.LocalCertificateProvider,
+        certificateProvider: LocalCertificateProvider,
     ): AndroidM0TransportConfiguration {
+        require(certificateProvider is LocalServerTlsContextProvider) {
+            "QR-pinned HTTPS transport requires local TLS server context support."
+        }
         return AndroidM0TransportConfiguration(
             mode = AndroidM0TransportSecurityMode.QR_PINNED_HTTPS,
-            serverBinder = QrPinnedHttpsLocalServerBinder(certificateProvider),
+            serverBinder = EmbeddedLocalHttpsServerBinder(certificateProvider),
             transportSecurityFactory = PairingTransportSecurityFactory(certificateProvider),
-        )
-    }
-}
-
-class QrPinnedHttpsLocalServerBinder(
-    private val certificateProvider: com.sharesync.android.security.LocalCertificateProvider,
-) : LocalServerBinder {
-    override suspend fun bind(
-        router: LocalSyncRouter,
-        mediaStreamProvider: com.sharesync.android.scanner.media.MediaStreamProvider,
-        port: Int,
-    ): LocalSyncServer {
-        certificateProvider.currentCertificate()
-        throw UnsupportedOperationException(
-            "QR-pinned HTTPS server transport is staged but not enabled until the TLS socket binder is implemented."
         )
     }
 }

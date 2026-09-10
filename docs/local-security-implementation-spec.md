@@ -76,7 +76,9 @@ M4 transport switch staging:
 
 - Android runtime transport configuration must keep the selected server binder and pairing `transportSecurity` metadata coupled.
 - Signed HTTP remains the default transport until the TLS socket binder is complete.
-- The staged QR-pinned HTTPS Android path must fail fast instead of advertising HTTPS while serving HTTP.
+- The staged QR-pinned HTTPS Android path uses the same local router as signed HTTP so signed request validation remains active after TLS.
+- `AndroidKeyStoreLocalCertificateProvider` exposes a TLS server context backed by the persisted local certificate alias.
+- `EmbeddedLocalHttpsServerBinder` creates the HTTPS server socket from that TLS context behind the explicit QR-pinned HTTPS mode switch.
 
 ## iOS Responsibilities
 
@@ -110,6 +112,7 @@ M4 iOS implementation:
 - `CertificateFingerprintValidator` accepts `qr_pinned_https` only when the presented certificate DER SHA-256 hash exactly matches the QR-pinned hex fingerprint.
 - Malformed pinned fingerprints, unsupported fingerprint encodings, and certificate mismatches return explicit validation results and must not trigger an automatic downgrade to HTTP.
 - `LocalTransportURLBuilder` selects `http` for legacy/signed HTTP pairings and `https` for QR-pinned HTTPS pairings across health, manifest, media, and sync-result requests.
+- QR-pinned HTTPS URL sessions install a certificate pinning delegate; legacy and signed HTTP sessions keep default handling.
 
 ## Implementation Order
 
