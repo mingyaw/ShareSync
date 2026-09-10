@@ -50,18 +50,16 @@ final class ManifestClient {
         port: Int,
         cursor: String? = nil,
         pairingToken: String? = nil,
-        signingContext: RequestSigningContext? = nil
+        signingContext: RequestSigningContext? = nil,
+        transportSecurity: PairingTransportSecurity? = nil
     ) async throws -> SyncManifest {
-        var components = URLComponents()
-        components.scheme = "http"
-        components.host = host
-        components.port = port
-        components.path = "/v1/manifest"
-        if let cursor {
-            components.queryItems = [URLQueryItem(name: "sinceCursor", value: cursor)]
-        }
-
-        guard let url = components.url else {
+        guard let url = LocalTransportURLBuilder.url(
+            host: host,
+            port: port,
+            path: "/v1/manifest",
+            queryItems: cursor.map { [URLQueryItem(name: "sinceCursor", value: $0)] },
+            transportSecurity: transportSecurity
+        ) else {
             throw ManifestClientError.invalidBaseURL
         }
 
@@ -95,14 +93,17 @@ final class HealthClient {
         self.decoder = JSONDecoder()
     }
 
-    func fetchHealth(from host: String, port: Int) async throws -> LocalPeerHealth {
-        var components = URLComponents()
-        components.scheme = "http"
-        components.host = host
-        components.port = port
-        components.path = "/v1/health"
-
-        guard let url = components.url else {
+    func fetchHealth(
+        from host: String,
+        port: Int,
+        transportSecurity: PairingTransportSecurity? = nil
+    ) async throws -> LocalPeerHealth {
+        guard let url = LocalTransportURLBuilder.url(
+            host: host,
+            port: port,
+            path: "/v1/health",
+            transportSecurity: transportSecurity
+        ) else {
             throw HealthClientError.invalidBaseURL
         }
 

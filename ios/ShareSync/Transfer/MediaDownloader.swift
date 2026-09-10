@@ -64,6 +64,7 @@ final class MediaDownloader {
         stateStore: MediaDownloadStateStore,
         pairingToken: String? = nil,
         signingContext: RequestSigningContext? = nil,
+        transportSecurity: PairingTransportSecurity? = nil,
         progress: ((MediaDownloadProgress) async -> Void)? = nil
     ) async -> [MediaDownloadResult] {
         for asset in assets {
@@ -128,6 +129,7 @@ final class MediaDownloader {
                     port: port,
                     pairingToken: pairingToken,
                     signingContext: signingContext,
+                    transportSecurity: transportSecurity,
                     resumeRecord: record
                 )
                 stateStore.markDownloaded(
@@ -183,9 +185,15 @@ final class MediaDownloader {
         port: Int,
         pairingToken: String?,
         signingContext: RequestSigningContext?,
+        transportSecurity: PairingTransportSecurity?,
         resumeRecord: MediaDownloadRecord?
     ) async throws -> MediaDownloadResult {
-        guard let url = mediaURL(assetId: asset.assetId, host: host, port: port) else {
+        guard let url = mediaURL(
+            assetId: asset.assetId,
+            host: host,
+            port: port,
+            transportSecurity: transportSecurity
+        ) else {
             throw MediaDownloaderError.invalidMediaURL
         }
 
@@ -254,6 +262,7 @@ final class MediaDownloader {
         port: Int,
         pairingToken: String?,
         signingContext: RequestSigningContext?,
+        transportSecurity: PairingTransportSecurity?,
         resumeRecord: MediaDownloadRecord?
     ) async throws -> MediaDownloadResult {
         do {
@@ -263,6 +272,7 @@ final class MediaDownloader {
                 port: port,
                 pairingToken: pairingToken,
                 signingContext: signingContext,
+                transportSecurity: transportSecurity,
                 resumeRecord: resumeRecord
             )
         } catch {
@@ -276,6 +286,7 @@ final class MediaDownloader {
                 port: port,
                 pairingToken: pairingToken,
                 signingContext: signingContext,
+                transportSecurity: transportSecurity,
                 resumeRecord: resumeRecord
             )
         }
@@ -315,13 +326,18 @@ final class MediaDownloader {
         }
     }
 
-    private func mediaURL(assetId: String, host: String, port: Int) -> URL? {
-        var components = URLComponents()
-        components.scheme = "http"
-        components.host = host
-        components.port = port
-        components.path = "/v1/media/\(assetId)"
-        return components.url
+    private func mediaURL(
+        assetId: String,
+        host: String,
+        port: Int,
+        transportSecurity: PairingTransportSecurity?
+    ) -> URL? {
+        LocalTransportURLBuilder.url(
+            host: host,
+            port: port,
+            path: "/v1/media/\(assetId)",
+            transportSecurity: transportSecurity
+        )
     }
 
     private func localFileName(for asset: MediaAsset) -> String {

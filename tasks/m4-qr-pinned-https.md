@@ -83,3 +83,12 @@ Completed the iOS certificate pinning foundation slice:
 - Persisted optional pairing transport security metadata with the trusted Android device.
 - Added a certificate fingerprint validator for QR-pinned HTTPS metadata, including malformed fingerprint, unsupported encoding, and mismatch paths.
 - Preserved legacy signed HTTP behavior for existing pairings and confirmed Reset Local Sync State does not clear pairing or pinning metadata.
+
+### 2026-09-10 M4.4 Transport Switch Scaffolding
+
+Started the transport switch without enabling HTTPS by default:
+
+- Added an Android transport configuration layer that couples the server binder, pairing transport metadata, and visible transport mode.
+- Kept signed HTTP as the default Android runtime mode.
+- Added a QR-pinned HTTPS Android binder path that fails fast until the TLS socket binder can use local certificate key material.
+- Added iOS local transport URL selection so legacy/signed HTTP pairings use `http` and QR-pinned HTTPS pairings use `https` across health, manifest, media, and sync-result requests.

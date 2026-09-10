@@ -11,6 +11,7 @@ import com.sharesync.android.sync.ManifestBuilder
 import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.sync.SyncEventStore
 import com.sharesync.android.sync.SyncResultStore
+import com.sharesync.android.transfer.server.EmbeddedLocalServerBinder
 import com.sharesync.android.transfer.server.LocalServerBinder
 import com.sharesync.android.transfer.server.LocalRequestActivityTracker
 import com.sharesync.android.transfer.server.LocalSyncRouter
@@ -60,11 +61,9 @@ object AndroidM0ServerSessionController {
             deviceIdentityStore.getOrCreate()
         }
         val pairingToken = UUID.randomUUID().toString().replace("-", "")
-        val transportSecurityFactory = if (ENABLE_QR_PINNED_HTTPS_PAIRING) {
-            PairingTransportSecurityFactory(AndroidKeyStoreLocalCertificateProvider())
-        } else {
-            null
-        }
+        val transportConfiguration = AndroidM0TransportConfigurationFactory.create(
+            enableQrPinnedHttps = ENABLE_QR_PINNED_HTTPS_PAIRING,
+        )
         val components = M0SyncComponents.create(
             context = context.applicationContext,
             deviceId = identity.deviceId,
@@ -72,7 +71,7 @@ object AndroidM0ServerSessionController {
             pairingToken = pairingToken,
         )
         val server = startLocalServer(
-            serverBinder = components.serverBinder,
+            serverBinder = transportConfiguration.serverBinder,
             router = components.router,
             mediaStreamProvider = components.mediaStreamProvider,
         )
@@ -89,13 +88,9 @@ object AndroidM0ServerSessionController {
                 identity = identity,
                 port = server.port,
                 pairingToken = pairingToken,
-                transportSecurityFactory = transportSecurityFactory,
+                transportSecurityFactory = transportConfiguration.transportSecurityFactory,
             ),
-            transportSecurityMode = if (transportSecurityFactory == null) {
-                AndroidM0TransportSecurityMode.SIGNED_HTTP
-            } else {
-                AndroidM0TransportSecurityMode.QR_PINNED_HTTPS
-            },
+            transportSecurityMode = transportConfiguration.mode,
         )
         AndroidM0ServerSessionRegistry.set(session)
         return session
@@ -168,4 +163,54 @@ object AndroidM0ServerSessionController {
 
     private const val AVAILABLE_PORT = 0
     private const val ENABLE_QR_PINNED_HTTPS_PAIRING = false
+}
+
+data class AndroidM0TransportConfiguration(
+    val mode: AndroidM0TransportSecurityMode,
+    val serverBinder: LocalServerBinder,
+    val transportSecurityFactory: PairingTransportSecurityFactory?,
+)
+
+object AndroidM0TransportConfigurationFactory {
+    fun create(enableQrPinnedHttps: Boolean): AndroidM0TransportConfiguration {
+        if (!enableQrPinnedHttps) {
+            return signedHttp()
+        }
+
+        val certificateProvider = AndroidKeyStoreLocalCertificateProvider()
+        return qrPinnedHttps(certificateProvider)
+    }
+
+    fun signedHttp(): AndroidM0TransportConfiguration {
+        return AndroidM0TransportConfiguration(
+            mode = AndroidM0TransportSecurityMode.SIGNED_HTTP,
+            serverBinder = EmbeddedLocalServerBinder(),
+            transportSecurityFactory = null,
+        )
+    }
+
+    fun qrPinnedHttps(
+        certificateProvider: com.sharesync.android.security.LocalCertificateProvider,
+    ): AndroidM0TransportConfiguration {
+        return AndroidM0TransportConfiguration(
+            mode = AndroidM0TransportSecurityMode.QR_PINNED_HTTPS,
+            serverBinder = QrPinnedHttpsLocalServerBinder(certificateProvider),
+            transportSecurityFactory = PairingTransportSecurityFactory(certificateProvider),
+        )
+    }
+}
+
+class QrPinnedHttpsLocalServerBinder(
+    private val certificateProvider: com.sharesync.android.security.LocalCertificateProvider,
+) : LocalServerBinder {
+    override suspend fun bind(
+        router: LocalSyncRouter,
+        mediaStreamProvider: com.sharesync.android.scanner.media.MediaStreamProvider,
+        port: Int,
+    ): LocalSyncServer {
+        certificateProvider.currentCertificate()
+        throw UnsupportedOperationException(
+            "QR-pinned HTTPS server transport is staged but not enabled until the TLS socket binder is implemented."
+        )
+    }
 }

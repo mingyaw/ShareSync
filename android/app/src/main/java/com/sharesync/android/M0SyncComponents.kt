@@ -8,7 +8,6 @@ import com.sharesync.android.sync.FileSyncResultStore
 import com.sharesync.android.sync.ManifestBuilder
 import com.sharesync.android.sync.SyncEventStore
 import com.sharesync.android.sync.SyncResultStore
-import com.sharesync.android.transfer.server.EmbeddedLocalServerBinder
 import com.sharesync.android.transfer.server.LocalRequestActivityTracker
 import com.sharesync.android.transfer.server.LocalSyncRouter
 import com.sharesync.android.transfer.server.ManifestProvider
@@ -21,7 +20,6 @@ class M0SyncComponents private constructor(
     val syncEventStore: SyncEventStore,
     val requestActivityTracker: LocalRequestActivityTracker,
     val router: LocalSyncRouter,
-    val serverBinder: EmbeddedLocalServerBinder,
 ) {
     companion object {
         private const val M0_SERVER_PORT = 48291
@@ -71,7 +69,6 @@ class M0SyncComponents private constructor(
                     syncEventStore = syncEventStore,
                     requestActivityTracker = requestActivityTracker,
                 ),
-                serverBinder = EmbeddedLocalServerBinder(),
             )
         }
 

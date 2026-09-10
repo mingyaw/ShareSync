@@ -31,15 +31,15 @@ final class SyncResultClient {
         to host: String,
         port: Int,
         pairingToken: String? = nil,
-        signingContext: RequestSigningContext? = nil
+        signingContext: RequestSigningContext? = nil,
+        transportSecurity: PairingTransportSecurity? = nil
     ) async throws -> Int {
-        var components = URLComponents()
-        components.scheme = "http"
-        components.host = host
-        components.port = port
-        components.path = "/v1/sync/result"
-
-        guard let url = components.url else {
+        guard let url = LocalTransportURLBuilder.url(
+            host: host,
+            port: port,
+            path: "/v1/sync/result",
+            transportSecurity: transportSecurity
+        ) else {
             throw SyncResultClientError.invalidBaseURL
         }
 

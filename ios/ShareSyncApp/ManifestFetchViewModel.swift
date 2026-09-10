@@ -186,7 +186,11 @@ final class ManifestFetchViewModel: ObservableObject {
         Task {
             do {
                 let endpoint = try await endpointCandidate()
-                let health = try await healthClient.fetchHealth(from: endpoint.host, port: endpoint.port)
+                let health = try await healthClient.fetchHealth(
+                    from: endpoint.host,
+                    port: endpoint.port,
+                    transportSecurity: pairedDevice?.transportSecurity
+                )
                 try validatePairedPeer(health)
                 persistLastKnownEndpoint(endpoint, health: health)
                 localPeerHealth = health
@@ -194,7 +198,8 @@ final class ManifestFetchViewModel: ObservableObject {
                     from: endpoint.host,
                     port: endpoint.port,
                     pairingToken: pairingToken,
-                    signingContext: requestSigningContext()
+                    signingContext: requestSigningContext(),
+                    transportSecurity: pairedDevice?.transportSecurity
                 )
                 recordSyncEvent(
                     phase: .fetchManifest,
@@ -237,7 +242,11 @@ final class ManifestFetchViewModel: ObservableObject {
         Task {
             do {
                 let endpoint = try await endpointCandidate()
-                let health = try await healthClient.fetchHealth(from: endpoint.host, port: endpoint.port)
+                let health = try await healthClient.fetchHealth(
+                    from: endpoint.host,
+                    port: endpoint.port,
+                    transportSecurity: pairedDevice?.transportSecurity
+                )
                 try validatePairedPeer(health)
                 persistLastKnownEndpoint(endpoint, health: health)
                 localPeerHealth = health
@@ -245,7 +254,8 @@ final class ManifestFetchViewModel: ObservableObject {
                     from: endpoint.host,
                     port: endpoint.port,
                     pairingToken: pairingToken,
-                    signingContext: requestSigningContext()
+                    signingContext: requestSigningContext(),
+                    transportSecurity: pairedDevice?.transportSecurity
                 )
                 recordSyncEvent(
                     phase: .fetchManifest,
@@ -555,6 +565,7 @@ final class ManifestFetchViewModel: ObservableObject {
                     stateStore: downloadStateStore,
                     pairingToken: pairingToken,
                     signingContext: requestSigningContext(),
+                    transportSecurity: pairedDevice?.transportSecurity,
                     progress: { [weak self] progress in
                         await MainActor.run {
                             self?.downloadProgressSummary = DownloadProgressSummary(progress: progress)
@@ -858,7 +869,8 @@ final class ManifestFetchViewModel: ObservableObject {
                 to: host,
                 port: port,
                 pairingToken: pairingToken,
-                signingContext: requestSigningContext()
+                signingContext: requestSigningContext(),
+                transportSecurity: pairedDevice?.transportSecurity
             )
             recordSyncResultPost(result: result, status: .success)
             return (
