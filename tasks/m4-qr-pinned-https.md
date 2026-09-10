@@ -42,7 +42,7 @@ M4 keeps the same photo-only product axis:
 - [x] Add Android local HTTPS server path behind an explicit mode switch.
 - [x] Add iOS URL/session selection for signed HTTP vs QR-pinned HTTPS.
 - [x] Keep signed request validation active on HTTPS endpoints.
-- [ ] Add unit coverage for wrong certificate, stale token, and invalid signature paths.
+- [x] Add unit coverage for wrong certificate, stale token, and invalid signature paths.
 
 ### M4.5 Validation Readiness
 
@@ -101,3 +101,11 @@ Advanced the staged transport switch:
 - Replaced the fail-fast QR-pinned HTTPS binder with an embedded HTTPS server binder while keeping the runtime switch disabled by default.
 - Kept the same Android router on HTTP and HTTPS paths, preserving signed request validation for manifest, media, and sync-result endpoints.
 - Added iOS QR-pinned URLSession delegate creation so HTTPS requests cancel on pinned certificate validation failures and use the pinned credential only on exact fingerprint matches.
+
+### 2026-09-10 M4.4 Error Path Coverage
+
+Completed the transport-switch unit coverage pass:
+
+- Added Android coverage for stale signed requests and invalid signatures on manifest, media, and sync-result paths.
+- Added iOS delegate-level coverage that QR-pinned HTTPS accepts only the matching pinned certificate and cancels on wrong certificate data.
+- Left real-device HTTPS validation deferred to M4.5, per current testing scope.

@@ -79,6 +79,53 @@ class LocalSyncRouterTest {
     }
 
     @Test
+    fun manifestRejectsStaleSignedRequest() {
+        val response = SuspendBridge.runBlocking {
+            router(
+                signatureValidator = RequestSignatureValidator(
+                    secretProvider = { PAIRING_TOKEN },
+                    clock = { 1_800_000_600_001L },
+                )
+            ).manifest(
+                headers = signedHeaders(
+                    signature = RequestSignatureValidator.sign(
+                        secret = PAIRING_TOKEN,
+                        method = "GET",
+                        path = "/v1/manifest",
+                        timestamp = "1800000000000",
+                        nonce = "stale-manifest-nonce",
+                        body = "",
+                    ),
+                    nonce = "stale-manifest-nonce",
+                )
+            )
+        }
+
+        assertEquals(401, response.statusCode)
+        assertEquals("""{"errorCode":"SS-AUTH-001"}""", response.body)
+    }
+
+    @Test
+    fun manifestRejectsInvalidSignature() {
+        val response = SuspendBridge.runBlocking {
+            router(
+                signatureValidator = RequestSignatureValidator(
+                    secretProvider = { PAIRING_TOKEN },
+                    clock = { 1_800_000_000_000L },
+                )
+            ).manifest(
+                headers = signedHeaders(
+                    signature = "not-a-valid-signature",
+                    nonce = "invalid-manifest-signature",
+                )
+            )
+        }
+
+        assertEquals(401, response.statusCode)
+        assertEquals("""{"errorCode":"SS-AUTH-001"}""", response.body)
+    }
+
+    @Test
     fun mediaAcceptsSignedRequestWithoutPairingTokenHeader() {
         val response = SuspendBridge.runBlocking {
             router(
@@ -103,6 +150,27 @@ class LocalSyncRouterTest {
         }
 
         assertEquals(200, (response as LocalMediaResponse.Found).statusCode)
+    }
+
+    @Test
+    fun mediaRejectsInvalidSignature() {
+        val response = SuspendBridge.runBlocking {
+            router(
+                signatureValidator = RequestSignatureValidator(
+                    secretProvider = { PAIRING_TOKEN },
+                    clock = { 1_800_000_000_000L },
+                )
+            ).media(
+                assetId = "media-001",
+                headers = signedHeaders(
+                    nonce = "invalid-media-signature",
+                    signature = "not-a-valid-signature",
+                ),
+                path = "/v1/media/media-001",
+            )
+        }
+
+        assertEquals(LocalMediaResponse.Unauthorized(401, "SS-AUTH-001"), response)
     }
 
     @Test
@@ -304,6 +372,30 @@ class LocalSyncRouterTest {
         assertEquals("batch-001", event?.syncBatchId)
         assertEquals(1, event?.syncedCount)
         assertEquals(0, event?.failedCount)
+    }
+
+    @Test
+    fun syncResultRejectsInvalidSignatureWithoutPersisting() {
+        val store = InMemorySyncResultStore()
+        val response = SuspendBridge.runBlocking {
+            router(
+                syncResultStore = store,
+                signatureValidator = RequestSignatureValidator(
+                    secretProvider = { PAIRING_TOKEN },
+                    clock = { 1_800_000_000_000L },
+                )
+            ).syncResult(
+                body = syncResultBody(status = "synced", errorCode = "null"),
+                headers = signedHeaders(
+                    nonce = "invalid-result-signature",
+                    signature = "not-a-valid-signature",
+                )
+            )
+        }
+
+        assertEquals(401, response.statusCode)
+        assertEquals("""{"errorCode":"SS-AUTH-001"}""", response.body)
+        assertEquals(null, SuspendBridge.runBlocking { store.latest() })
     }
 
     @Test

@@ -47,6 +47,12 @@ enum LocalNetworkURLSessionFactory {
 }
 
 final class CertificatePinningURLSessionDelegate: NSObject, URLSessionDelegate {
+    enum AuthenticationDecision: Equatable {
+        case defaultHandling
+        case usePinnedCredential
+        case cancel
+    }
+
     private let transportSecurity: PairingTransportSecurity?
     private let validator: CertificateFingerprintValidator
 
@@ -70,13 +76,24 @@ final class CertificatePinningURLSessionDelegate: NSObject, URLSessionDelegate {
             return
         }
 
+        switch authenticationDecision(forCertificateDER: certificateDER) {
+        case .usePinnedCredential:
+            completionHandler(.useCredential, URLCredential(trust: serverTrust))
+        case .defaultHandling:
+            completionHandler(.performDefaultHandling, nil)
+        case .cancel:
+            completionHandler(.cancelAuthenticationChallenge, nil)
+        }
+    }
+
+    func authenticationDecision(forCertificateDER certificateDER: Data) -> AuthenticationDecision {
         switch validator.validate(certificateDER: certificateDER, transportSecurity: transportSecurity) {
         case .trusted:
-            completionHandler(.useCredential, URLCredential(trust: serverTrust))
+            return .usePinnedCredential
         case .notPinned:
-            completionHandler(.performDefaultHandling, nil)
+            return .defaultHandling
         case .mismatch, .invalidPinnedFingerprint, .unsupportedEncoding:
-            completionHandler(.cancelAuthenticationChallenge, nil)
+            return .cancel
         }
     }
 

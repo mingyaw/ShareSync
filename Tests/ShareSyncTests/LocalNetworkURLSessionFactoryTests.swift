@@ -47,4 +47,28 @@ final class LocalNetworkURLSessionFactoryTests: XCTestCase {
             ) is CertificatePinningURLSessionDelegate
         )
     }
+
+    func testCertificatePinningDelegateAcceptsOnlyMatchingPinnedCertificate() throws {
+        let certificateDER = Data("local-certificate".utf8)
+        let delegate = try XCTUnwrap(
+            LocalNetworkURLSessionFactory.urlSessionDelegate(
+                for: PairingTransportSecurity(
+                    mode: .qrPinnedHTTPS,
+                    certificateFingerprintSha256: CertificateFingerprintValidator.sha256Hex(certificateDER),
+                    certificateFingerprintEncoding: "hex",
+                    certificateNotBefore: nil,
+                    certificateNotAfter: nil
+                )
+            ) as? CertificatePinningURLSessionDelegate
+        )
+
+        XCTAssertEqual(
+            delegate.authenticationDecision(forCertificateDER: certificateDER),
+            .usePinnedCredential
+        )
+        XCTAssertEqual(
+            delegate.authenticationDecision(forCertificateDER: Data("wrong-certificate".utf8)),
+            .cancel
+        )
+    }
 }
