@@ -46,9 +46,9 @@ M4 keeps the same photo-only product axis:
 
 ### M4.5 Validation Readiness
 
-- [ ] Update M0/M2 validation documents with HTTPS-specific cases.
-- [ ] Keep `./scripts/check-m0.sh` green before real-device validation.
-- [ ] Defer real-device HTTPS signoff until explicitly requested.
+- [x] Update M0/M2 validation documents with HTTPS-specific cases.
+- [x] Keep `./scripts/check-m0.sh` green before real-device validation.
+- [x] Defer real-device HTTPS signoff until explicitly requested.
 
 ## Progress Log
 
@@ -109,3 +109,12 @@ Completed the transport-switch unit coverage pass:
 - Added Android coverage for stale signed requests and invalid signatures on manifest, media, and sync-result paths.
 - Added iOS delegate-level coverage that QR-pinned HTTPS accepts only the matching pinned certificate and cancels on wrong certificate data.
 - Left real-device HTTPS validation deferred to M4.5, per current testing scope.
+
+### 2026-09-11 M4.5 Validation Readiness
+
+Completed the no-real-device validation readiness pass:
+
+- Added QR-pinned HTTPS validation scenarios to the M0 device checklist.
+- Added deferred M4 security validation cases to the M2 physical-device results tracker.
+- Kept real-device HTTPS signoff explicitly deferred until requested.
+- Confirmed the full M0 local gate remains green after M4.4.

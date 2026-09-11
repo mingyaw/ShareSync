@@ -259,6 +259,37 @@ After Android receives a sync result, fetch `/v1/manifest` again.
 
 Expected result: photos reported as `synced` or `skipped` do not appear in the next Android manifest. Photos reported as `failed` remain eligible for retry.
 
+## M4 QR-Pinned HTTPS Readiness
+
+Use this section only when explicitly validating the staged QR-pinned HTTPS mode. The default M0 debug path remains signed local HTTP until the M4 HTTPS switch is deliberately enabled for a test build.
+
+1. Build Android with QR-pinned HTTPS pairing enabled for the validation run.
+2. Start the Android server.
+3. Confirm Android diagnostics show QR-pinned HTTPS as the active transport mode.
+4. Scan the Android QR code on iOS.
+5. Confirm the pairing payload includes `transportSecurity.mode = qr_pinned_https` and a 64-character hex certificate fingerprint.
+6. Tap `Fetch Manifest`.
+7. Confirm iOS reaches `Android Peer` ready and `Phase` ready-to-transfer over an `https` endpoint.
+8. Download one photo and confirm import into `ShareSync Backup`.
+9. Confirm Android receives the sync result with HTTP `202`.
+
+Expected result: the same photo-only M0 flow works over QR-pinned HTTPS, request signatures remain required, and no cloud relay is introduced.
+
+Wrong-certificate recovery validation:
+
+1. Pair iOS to Android over a QR-pinned HTTPS payload.
+2. Rotate or replace the Android local certificate without clearing iOS pairing.
+3. Tap `Fetch Manifest` on iOS.
+
+Expected result: iOS rejects the connection instead of silently downgrading to HTTP. Recovery is to clear pairing and scan the current Android QR code.
+
+Stale signed-request validation:
+
+1. During local API validation, send a signed manifest/media/sync-result request with a timestamp outside the allowed skew.
+2. Repeat with an invalid signature.
+
+Expected result: Android returns `401` with `SS-AUTH-001` and does not persist invalid sync-result bodies.
+
 ## Permission Negative Cases
 
 1. Deny Android photos permission.

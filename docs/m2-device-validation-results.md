@@ -123,9 +123,64 @@ Checklist: [M2 iOS Foreground/Background Checklist](m2-ios-foreground-background
 
 Expected result: leaving the iOS foreground pauses transfer, completed items stay recorded, remaining items can resume, and pairing is not required again for an unchanged paired Android device.
 
+### M4-SEC-001 QR-Pinned HTTPS One-Photo Smoke
+
+Purpose: confirm the M4 transport branch preserves the M2/M0 photo path when HTTPS is explicitly enabled for validation.
+
+| Field | Value |
+| --- | --- |
+| Date | Deferred until explicitly requested |
+| Devices | TBD |
+| Network | TBD |
+| Android transport mode | QR-pinned HTTPS |
+| iOS pairing metadata | Pending |
+| One-photo import | Pending |
+| Android latest result | Pending |
+| Pass/Fail | Pending |
+| Notes | Do not run as part of current no-real-device scope |
+
+Expected result: iOS uses the QR-pinned HTTPS endpoint, imports one photo, and Android receives a signed sync result.
+
+### M4-SEC-002 Wrong Certificate Recovery
+
+Purpose: confirm iOS rejects a paired HTTPS Android peer that presents a different certificate.
+
+| Field | Value |
+| --- | --- |
+| Date | Deferred until explicitly requested |
+| Devices | TBD |
+| Network | TBD |
+| Original fingerprint | TBD |
+| Replacement fingerprint | TBD |
+| iOS recovery message | Pending |
+| Automatic HTTP downgrade observed | Must be No |
+| Pass/Fail | Pending |
+| Notes | Use Clear Pairing plus fresh QR as recovery |
+
+Expected result: iOS cancels the connection, does not downgrade to HTTP, and recovery requires clearing pairing and scanning the current Android QR code.
+
+### M4-SEC-003 Signed Request Enforcement Over HTTPS
+
+Purpose: confirm HTTPS does not replace request authorization.
+
+| Field | Value |
+| --- | --- |
+| Date | Deferred until explicitly requested |
+| Devices | TBD |
+| Network | TBD |
+| Missing signature result | Pending |
+| Stale timestamp result | Pending |
+| Invalid signature result | Pending |
+| Replay nonce result | Pending |
+| Pass/Fail | Pending |
+| Notes | Expected server error code is `SS-AUTH-001` |
+
+Expected result: Android rejects missing, stale, invalid, or replayed signed requests even when the transport is HTTPS.
+
 ## Signoff Notes
 
 - M2 is photo-only. Do not use video, contacts, file sync, reverse sync, or unattended iOS background behavior as M2 blockers.
 - A failed endpoint discovery case can still pass if the app shows a clear recovery path and does not lose progress.
 - Any duplicated imported photo after resume is a blocker for M2.
 - Any successful iOS sync whose result is not visible on Android is a blocker for M2.
+- M4 QR-pinned HTTPS signoff is deferred until explicitly requested. The current document only defines the device evidence to collect later.
