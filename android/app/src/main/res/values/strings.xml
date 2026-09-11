@@ -68,4 +68,6 @@
     <string name="m0_copy_pairing_payload">Copy pairing code</string>
     <string name="m0_copy_sync_result">Copy sync result</string>
     <string name="m0_clear_sync_state">Clear sync history</string>
+    <string name="m5_copy_diagnostics">Copy diagnostics</string>
+    <string name="m5_diagnostics_copied">Diagnostics copied without pairing secrets.</string>
 </resources>

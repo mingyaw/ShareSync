@@ -281,6 +281,15 @@ struct ContentView: View {
                 .buttonStyle(.bordered)
                 .disabled(viewModel.latestSyncResultJSON == nil)
 
+                Button {
+                    copyDiagnosticsSummary()
+                } label: {
+                    Label("ios.action.copy_diagnostics", systemImage: "stethoscope")
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 42)
+                }
+                .buttonStyle(.bordered)
+
                 Button(role: .destructive) {
                     viewModel.resetLocalSyncState()
                 } label: {
@@ -731,6 +740,33 @@ struct ContentView: View {
 
         UIPasteboard.general.string = json
         syncResultCopyMessage = localized("ios.toast.sync_result_copied")
+    }
+
+    private func copyDiagnosticsSummary() {
+        UIPasteboard.general.string = diagnosticsSummary()
+        syncResultCopyMessage = localized("ios.toast.diagnostics_copied")
+    }
+
+    private func diagnosticsSummary() -> String {
+        let summary = viewModel.summary
+        let progress = viewModel.downloadProgressSummary
+        return [
+            "ShareSync iOS Diagnostics",
+            "phase=\(phaseStatus)",
+            "binding=\(bindingStatusText)",
+            "endpoint=\(pairedStatus)",
+            "photosAccess=\(photosAccessStatus)",
+            "screenLock=\(screenLockStatus)",
+            "manifest=\(manifestStatus)",
+            "photoCount=\(summary?.photoCount ?? 0)",
+            "remaining=\(summary?.remainingCount ?? 0)",
+            "downloaded=\(summary?.downloadedCount ?? 0)",
+            "imported=\(summary?.importedCount ?? 0)",
+            "failed=\(summary?.failedCount ?? 0)",
+            "partial=\(summary?.partialCount ?? 0)",
+            "batchProgress=\(progress?.progressText ?? "none")",
+            "syncResultReturn=\(viewModel.syncResultReturnSummary.map(syncResultReturnText) ?? localized("ios.vm.not_posted"))",
+        ].joined(separator: "\n")
     }
 
     private func updateIdleTimer(for state: ManifestFetchViewModel.DownloadState) {

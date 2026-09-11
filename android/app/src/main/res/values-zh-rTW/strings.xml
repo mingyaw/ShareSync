@@ -68,4 +68,6 @@
     <string name="m0_copy_pairing_payload">複製配對碼</string>
     <string name="m0_copy_sync_result">複製同步結果</string>
     <string name="m0_clear_sync_state">清除同步紀錄</string>
+    <string name="m5_copy_diagnostics">複製診斷資訊</string>
+    <string name="m5_diagnostics_copied">已複製診斷資訊，未包含配對密鑰。</string>
 </resources>

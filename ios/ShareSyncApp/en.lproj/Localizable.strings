@@ -3,6 +3,7 @@
 "ios.action.auto_sync_after_pairing" = "Sync all photos after pairing";
 "ios.action.allow_photos" = "Allow Photos Access";
 "ios.action.copy_sync_result" = "Copy Sync Result";
+"ios.action.copy_diagnostics" = "Copy Diagnostics";
 "ios.action.fetch_manifest" = "Fetch Manifest";
 "ios.action.fetching" = "Fetching";
 "ios.action.scan_pairing_qr" = "Scan Pairing QR";
@@ -98,6 +99,7 @@
 "ios.summary.retry_required" = "Some photos need attention before this sync is complete.";
 "ios.settings.advanced" = "Connection, status, and diagnostics";
 "ios.toast.sync_result_copied" = "Sync result JSON copied.";
+"ios.toast.diagnostics_copied" = "Diagnostics copied without pairing secrets.";
 "ios.transfer.cancelled_default" = "Transfer paused. Completed photos are kept; tap Resume Photo Sync to continue remaining photos.";
 "ios.value.none" = "None";
 "ios.value.photo_count_format" = "%@ photos";

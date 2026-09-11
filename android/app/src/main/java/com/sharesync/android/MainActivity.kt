@@ -59,6 +59,7 @@ class MainActivity : Activity() {
     private lateinit var copyEndpointButton: Button
     private lateinit var copyPairingButton: Button
     private lateinit var copySyncResultButton: Button
+    private lateinit var copyDiagnosticsButton: Button
     private lateinit var clearSyncStateButton: Button
 
     private var server: LocalSyncServer? = null
@@ -219,6 +220,12 @@ class MainActivity : Activity() {
             fullWidthButtonLayout()
         }
 
+        copyDiagnosticsButton = Button(this).apply {
+            text = getString(R.string.m5_copy_diagnostics)
+            setOnClickListener { copyDiagnosticsSummary() }
+            fullWidthButtonLayout()
+        }
+
         clearSyncStateButton = Button(this).apply {
             text = getString(R.string.m0_clear_sync_state)
             setOnClickListener { clearSyncState() }
@@ -263,6 +270,7 @@ class MainActivity : Activity() {
                     copyEndpointButton,
                     copyPairingButton,
                     copySyncResultButton,
+                    copyDiagnosticsButton,
                     clearSyncStateButton,
                 ),
             ),
@@ -381,6 +389,7 @@ class MainActivity : Activity() {
         copyEndpointButton.isEnabled = endpointUrl != null
         copyPairingButton.isEnabled = currentPairingPayloadJson != null
         copySyncResultButton.isEnabled = currentSyncResult != null
+        copyDiagnosticsButton.isEnabled = true
         clearSyncStateButton.isEnabled = currentSyncResult != null
         updateKeepScreenAwake()
     }
@@ -556,6 +565,33 @@ class MainActivity : Activity() {
         refreshUi(getString(R.string.m0_sync_result_copied))
     }
 
+    private fun copyDiagnosticsSummary() {
+        copyText(label = "ShareSync diagnostics", text = diagnosticsSummary())
+        refreshUi(getString(R.string.m5_diagnostics_copied))
+    }
+
+    private fun diagnosticsSummary(): String {
+        val result = currentSyncResult
+        val requestActivity = currentRequestActivity
+        return listOf(
+            "ShareSync Android Diagnostics",
+            "appVersion=${BuildConfig.VERSION_NAME}",
+            "phase=${phaseStatus()}",
+            "serverRunning=$isServerRunning",
+            "endpoint=${currentEndpointUrl() ?: "unavailable"}",
+            "transport=${currentTransportSecurityMode.name}",
+            "mediaPermission=${hasMediaPermission()}",
+            "notificationPermission=${hasNotificationPermission()}",
+            "pendingPhotos=${currentManifestPhotoCount ?: "unknown"}",
+            "latestRequest=${requestActivity?.endpoint ?: "none"}",
+            "latestRequestStatus=${requestActivity?.statusCode ?: "none"}",
+            "latestSyncBatch=${result?.syncBatchId ?: "none"}",
+            "latestSynced=${result?.results?.count { it.status == SyncItemStatus.synced } ?: 0}",
+            "latestSkipped=${result?.results?.count { it.status == SyncItemStatus.skipped } ?: 0}",
+            "latestFailed=${result?.results?.count { it.status == SyncItemStatus.failed || it.status == SyncItemStatus.conflicted } ?: 0}",
+        ).joinToString(separator = "\n")
+    }
+
     private fun copyText(label: String, text: String) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipboard.setPrimaryClip(ClipData.newPlainText(label, text))
@@ -616,7 +652,11 @@ class MainActivity : Activity() {
     private fun currentEndpointUrl(): String? {
         val ip = LocalNetworkAddresses.firstIpv4Address() ?: return null
         val displayPort = server?.port ?: M0SyncComponents.defaultPort()
-        return "http://$ip:$displayPort/v1/health"
+        val scheme = when (currentTransportSecurityMode) {
+            AndroidM0TransportSecurityMode.SIGNED_HTTP -> "http"
+            AndroidM0TransportSecurityMode.QR_PINNED_HTTPS -> "https"
+        }
+        return "$scheme://$ip:$displayPort/v1/health"
     }
 
     private fun updateKeepScreenAwake() {

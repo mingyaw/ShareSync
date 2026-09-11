@@ -29,9 +29,9 @@ Goal: turn the photo-only main axis into a safer release-candidate shape without
 
 ### M5.3 Diagnostics And Support Package
 
-- [ ] Add copyable environment summary on Android.
-- [ ] Add copyable environment summary on iOS.
-- [ ] Redact pairing token and request secrets from copied diagnostics.
+- [x] Add copyable environment summary on Android.
+- [x] Add copyable environment summary on iOS.
+- [x] Redact pairing token and request secrets from copied diagnostics.
 
 ### M5.4 Pre-Release Packaging Hygiene
 
@@ -56,3 +56,11 @@ Clarified the remembered-device product behavior:
 
 - Added iOS binding status copy that distinguishes remembered Android devices, manual endpoints, and no binding.
 - Updated Android pairing copy so the QR code is framed as first-time binding, endpoint refresh, or security refresh rather than something required before every sync.
+
+### 2026-09-11 M5.3 Diagnostics Copy
+
+Added copyable diagnostics for support and validation handoff:
+
+- Android can copy a redacted diagnostics summary with app version, server state, endpoint, transport mode, permissions, photo count, latest request, and sync counts.
+- iOS can copy a redacted diagnostics summary with phase, binding status, endpoint, Photos permission, manifest state, transfer counts, batch progress, and sync-result return state.
+- Pairing payloads, pairing tokens, request signatures, and shared secrets are intentionally excluded from diagnostics.

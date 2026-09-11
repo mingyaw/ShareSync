@@ -3,6 +3,7 @@
 "ios.action.auto_sync_after_pairing" = "配對後同步全部照片";
 "ios.action.allow_photos" = "允許照片權限";
 "ios.action.copy_sync_result" = "複製同步結果";
+"ios.action.copy_diagnostics" = "複製診斷資訊";
 "ios.action.fetch_manifest" = "取得照片清單";
 "ios.action.fetching" = "取得中";
 "ios.action.scan_pairing_qr" = "掃描配對 QR Code";
@@ -98,6 +99,7 @@
 "ios.summary.retry_required" = "部分照片需要處理後才能完成這次同步。";
 "ios.settings.advanced" = "連線、狀態與診斷";
 "ios.toast.sync_result_copied" = "已複製同步結果 JSON。";
+"ios.toast.diagnostics_copied" = "已複製診斷資訊，未包含配對密鑰。";
 "ios.transfer.cancelled_default" = "傳輸已暫停。已完成照片會保留紀錄，點選繼續同步照片即可接續剩餘照片。";
 "ios.value.none" = "無";
 "ios.value.photo_count_format" = "%@ 張照片";
