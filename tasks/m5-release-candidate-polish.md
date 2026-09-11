@@ -23,9 +23,9 @@ Goal: turn the photo-only main axis into a safer release-candidate shape without
 
 ### M5.2 Pairing And Device Binding Product Polish
 
-- [ ] Show clearer Android/iOS copy for remembered pairing versus new pairing.
+- [x] Show clearer Android/iOS copy for remembered pairing versus new pairing.
 - [ ] Keep IP changes recoverable through discovery, health validation, or QR refresh.
-- [ ] Document when a user should re-pair versus retry sync.
+- [x] Document when a user should re-pair versus retry sync.
 
 ### M5.3 Diagnostics And Support Package
 
@@ -49,3 +49,10 @@ Started M5 with the lowest-risk release-gate slice:
 - Kept default builds on signed local HTTP so staged HTTPS cannot accidentally become the default path before physical-device signoff.
 - Added unit coverage for the default transport flag.
 - Added a release-readiness check that blocks QR-pinned HTTPS release readiness while M4 physical-device validation remains deferred or pending.
+
+### 2026-09-11 M5.2 Binding Copy Started
+
+Clarified the remembered-device product behavior:
+
+- Added iOS binding status copy that distinguishes remembered Android devices, manual endpoints, and no binding.
+- Updated Android pairing copy so the QR code is framed as first-time binding, endpoint refresh, or security refresh rather than something required before every sync.

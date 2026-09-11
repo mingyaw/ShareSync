@@ -53,7 +53,7 @@
     <string name="m0_sync_state_cleared">照片同步紀錄已清除。請從 iPhone 重新取得清單以重建狀態。</string>
     <string name="m0_pairing_payload_unavailable">照片同步啟動後會顯示配對碼。</string>
     <string name="m0_pairing_instruction_waiting">允許照片權限並保持 ShareSync 開啟，配對碼會自動顯示。</string>
-    <string name="m0_pairing_instruction_ready">請用 iPhone 掃描此配對碼。配對後，只要 ShareSync 保持開啟，這支 Android 手機就會提供照片狀態。</string>
+    <string name="m0_pairing_instruction_ready">首次綁定、更新 endpoint 或更新安全資料時，請用 iPhone 掃描此配對碼。綁定後，只要 ShareSync 保持開啟，這支 Android 手機就會提供照片狀態。</string>
     <string name="m0_pairing_payload_copied">已複製配對碼，請貼到 iPhone ShareSync 接收畫面。</string>
     <string name="m2_readiness_allow_photos">分享照片給 iPhone 前，請先允許 Android 照片權限。</string>
     <string name="m2_readiness_start_sharing">開始提供照片後，畫面會顯示配對碼與本機 endpoint。</string>

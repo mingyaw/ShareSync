@@ -312,6 +312,7 @@ struct ContentView: View {
     private var statusSectionContent: some View {
             VStack(alignment: .leading, spacing: 12) {
                 StatusRow(title: "ios.status.pairing", value: pairedStatus)
+                StatusRow(title: "ios.status.binding", value: bindingStatusText)
                 StatusRow(title: "ios.status.photos_access", value: photosAccessStatus)
                 StatusRow(title: "ios.status.screen_lock", value: screenLockStatus)
                 StatusRow(title: "ios.status.last_sync", value: latestSyncText)
@@ -557,6 +558,18 @@ struct ContentView: View {
 
     private var pairedStatus: String {
         viewModel.host.isEmpty ? localized("ios.status.manual") : "\(viewModel.host):\(viewModel.port)"
+    }
+
+    private var bindingStatusText: String {
+        if let pairedDevice = viewModel.pairedDevice {
+            return String(format: localized("ios.value.remembered_binding_format"), pairedDevice.deviceName)
+        }
+
+        if !viewModel.host.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return localized("ios.value.manual_endpoint_binding")
+        }
+
+        return localized("ios.value.no_binding")
     }
 
     private var phaseStatus: String {

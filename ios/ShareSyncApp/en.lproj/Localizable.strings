@@ -53,6 +53,7 @@
 "ios.status.batch_downloaded" = "Batch Downloaded";
 "ios.status.batch_failed" = "Batch Failed";
 "ios.status.batch_progress" = "Batch Progress";
+"ios.status.binding" = "Binding";
 "ios.status.current_file" = "Current File";
 "ios.status.cursor" = "Cursor";
 "ios.status.denied" = "Denied";
@@ -102,6 +103,9 @@
 "ios.value.photo_count_format" = "%@ photos";
 "ios.value.ready_device_format" = "Ready - %@ - v%@";
 "ios.value.last_sync_format" = "%@, done %@, retry %@";
+"ios.value.manual_endpoint_binding" = "Manual endpoint only. Scan the Android QR code to remember this phone.";
+"ios.value.no_binding" = "No Android phone remembered.";
+"ios.value.remembered_binding_format" = "Remembered %@. IP changes can recover through discovery or a fresh QR code.";
 "ios.value.sync_history_item_format" = "%@: done %@, retry %@";
 "ios.vm.enter_android_ip" = "The paired Android phone was not found. Scan the latest Android QR code or enter the saved endpoint.";
 "ios.vm.enter_valid_port" = "The Android port looks invalid. Check the Android ShareSync screen, then retry.";

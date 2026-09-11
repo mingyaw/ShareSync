@@ -53,7 +53,7 @@
     <string name="m0_sync_state_cleared">Photo sync history cleared. Fetch from iPhone again to rebuild state.</string>
     <string name="m0_pairing_payload_unavailable">Pairing code appears after photo sync starts.</string>
     <string name="m0_pairing_instruction_waiting">Allow photo access and keep ShareSync open. The pairing code will appear automatically.</string>
-    <string name="m0_pairing_instruction_ready">Scan this pairing code from your iPhone. After pairing, this Android phone will keep photos available while ShareSync stays open.</string>
+    <string name="m0_pairing_instruction_ready">Scan this pairing code from your iPhone for first-time binding, endpoint refresh, or security refresh. After binding, this Android phone keeps photos available while ShareSync stays open.</string>
     <string name="m0_pairing_payload_copied">Pairing payload copied. Paste it into the iPhone ShareSync receive screen.</string>
     <string name="m2_readiness_allow_photos">Allow photo access on Android before sharing photos with iPhone.</string>
     <string name="m2_readiness_start_sharing">Start photo sharing to show the pairing code and local endpoint.</string>

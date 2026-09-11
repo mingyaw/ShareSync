@@ -53,6 +53,7 @@
 "ios.status.batch_downloaded" = "批次已下載";
 "ios.status.batch_failed" = "批次失敗";
 "ios.status.batch_progress" = "批次進度";
+"ios.status.binding" = "綁定";
 "ios.status.current_file" = "目前檔案";
 "ios.status.cursor" = "游標";
 "ios.status.denied" = "已拒絕";
@@ -102,6 +103,9 @@
 "ios.value.photo_count_format" = "%@ 張照片";
 "ios.value.ready_device_format" = "就緒 - %@ - v%@";
 "ios.value.last_sync_format" = "%@，完成 %@，重試 %@";
+"ios.value.manual_endpoint_binding" = "目前只有手動 endpoint。掃描 Android QR Code 後即可記住這支手機。";
+"ios.value.no_binding" = "尚未記住 Android 手機。";
+"ios.value.remembered_binding_format" = "已記住 %@。IP 改變時可透過探索或重新掃描 QR Code 復原。";
 "ios.value.sync_history_item_format" = "%@：完成 %@，重試 %@";
 "ios.vm.enter_android_ip" = "找不到已配對的 Android 手機。請掃描最新 Android QR Code，或輸入已儲存的 endpoint。";
 "ios.vm.enter_valid_port" = "Android 連接埠看起來無效。請確認 Android ShareSync 畫面後再重試。";
