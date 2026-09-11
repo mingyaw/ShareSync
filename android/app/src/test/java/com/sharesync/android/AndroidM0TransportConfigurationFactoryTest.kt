@@ -14,6 +14,11 @@ import javax.net.ssl.SSLContext
 
 class AndroidM0TransportConfigurationFactoryTest {
     @Test
+    fun qrPinnedHttpsBuildFlagDefaultsOff() {
+        assertEquals(false, AndroidM0TransportFlags.enableQrPinnedHttps)
+    }
+
+    @Test
     fun signedHttpConfigurationUsesHttpBinderWithoutTransportSecurityMetadata() {
         val configuration = AndroidM0TransportConfigurationFactory.signedHttp()
 

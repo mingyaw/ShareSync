@@ -33,4 +33,8 @@ fi
 echo "ok generated artifact scan"
 
 echo
+echo "== Release readiness gate =="
+bash scripts/check-release-readiness.sh --transport signed-http
+
+echo
 echo "Repo hygiene checks passed."

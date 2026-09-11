@@ -1,8 +1,8 @@
 # Developer Quickstart
 
-Status: M3 developer handoff guide.
+Status: M5 developer handoff guide.
 
-This guide is for local development only. ShareSync M3 remains a photo-only Android-to-iPhone local sync MVP and should not be treated as an App Store or Google Play release candidate.
+This guide is for local development only. ShareSync M5 remains a photo-only Android-to-iPhone local sync MVP and should not be treated as an App Store or Google Play release candidate.
 
 ## Prerequisites
 
@@ -76,6 +76,15 @@ cd android
 ./gradlew :app:testDebugUnitTest :app:compileDebugKotlin
 ```
 
+QR-pinned HTTPS validation build:
+
+```sh
+cd android
+./gradlew :app:assembleDebug -Psharesync.qrPinnedHttps=true
+```
+
+Only use this build when running the M4 QR-pinned HTTPS validation matrix. Default debug builds keep signed local HTTP active until physical-device HTTPS signoff is completed.
+
 Full current main-axis check:
 
 ```sh
@@ -88,10 +97,20 @@ Repository hygiene check:
 bash scripts/check-repo-hygiene.sh
 ```
 
+Release readiness gate:
+
+```sh
+bash scripts/check-release-readiness.sh --transport signed-http
+bash scripts/check-release-readiness.sh --transport qr-pinned-https
+```
+
+The QR-pinned HTTPS gate is expected to fail until M4 physical-device validation is completed and recorded.
+
 ## Before Committing
 
 - Run `git diff --check`.
 - Run `bash scripts/check-repo-hygiene.sh`.
+- Run `bash scripts/check-release-readiness.sh --transport signed-http`.
 - Run `./scripts/check-m0.sh` for main-axis changes.
 - Confirm `git config user.name` and `git config user.email` are set to the intended author.
 - Do not commit generated build output, local SDK paths, DerivedData, signing files, secrets, or local credentials.

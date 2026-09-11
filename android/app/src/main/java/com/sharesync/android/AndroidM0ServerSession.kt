@@ -65,7 +65,7 @@ object AndroidM0ServerSessionController {
         }
         val pairingToken = UUID.randomUUID().toString().replace("-", "")
         val transportConfiguration = AndroidM0TransportConfigurationFactory.create(
-            enableQrPinnedHttps = ENABLE_QR_PINNED_HTTPS_PAIRING,
+            enableQrPinnedHttps = AndroidM0TransportFlags.enableQrPinnedHttps,
         )
         val components = M0SyncComponents.create(
             context = context.applicationContext,
@@ -165,7 +165,11 @@ object AndroidM0ServerSessionController {
     }
 
     private const val AVAILABLE_PORT = 0
-    private const val ENABLE_QR_PINNED_HTTPS_PAIRING = false
+}
+
+object AndroidM0TransportFlags {
+    val enableQrPinnedHttps: Boolean
+        get() = BuildConfig.SHARESYNC_QR_PINNED_HTTPS
 }
 
 data class AndroidM0TransportConfiguration(

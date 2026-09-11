@@ -7,12 +7,22 @@ android {
     namespace = "com.sharesync.android"
     compileSdk = 35
 
+    val enableQrPinnedHttps = providers
+        .gradleProperty("sharesync.qrPinnedHttps")
+        .map { it.equals("true", ignoreCase = true) }
+        .orElse(false)
+
     defaultConfig {
         applicationId = "com.sharesync.android"
         minSdk = 29
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
+        buildConfigField("boolean", "SHARESYNC_QR_PINNED_HTTPS", enableQrPinnedHttps.get().toString())
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     kotlin {
