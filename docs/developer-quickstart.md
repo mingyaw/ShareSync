@@ -124,3 +124,4 @@ Use these documents when real-device testing resumes:
 - [M0 Device Validation Checklist](m0-device-validation.md)
 - [M2 Device Validation Results](m2-device-validation-results.md)
 - [M2 iOS Foreground/Background Checklist](m2-ios-foreground-background-checklist.md)
+- [M5 Release Candidate Readiness](m5-release-candidate-readiness.md)

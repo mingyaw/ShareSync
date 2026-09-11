@@ -103,6 +103,7 @@ tasks/
 - [Developer Quickstart](docs/developer-quickstart.md)
 - [M1 Release Readiness](docs/m1-release-readiness.md)
 - [M3 Pre-Release Readiness](docs/m3-release-readiness.md)
+- [M5 Release Candidate Readiness](docs/m5-release-candidate-readiness.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Error Recovery Matrix](docs/error-recovery-matrix.md)
 - [Sync History Summary](docs/sync-history-summary.md)
