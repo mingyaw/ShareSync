@@ -1,6 +1,6 @@
 # M5 - Release Candidate Polish
 
-Status: Active after M4 QR-pinned HTTPS readiness completion on 2026-09-11.
+Status: Complete on 2026-09-11.
 
 Goal: turn the photo-only main axis into a safer release-candidate shape without expanding scope beyond Android-to-iOS photo sync. M5 keeps real-device HTTPS signoff deferred until explicitly requested, but removes implementation rough edges that would make later validation or packaging risky.
 
@@ -24,7 +24,7 @@ Goal: turn the photo-only main axis into a safer release-candidate shape without
 ### M5.2 Pairing And Device Binding Product Polish
 
 - [x] Show clearer Android/iOS copy for remembered pairing versus new pairing.
-- [ ] Keep IP changes recoverable through discovery, health validation, or QR refresh.
+- [x] Keep IP changes recoverable through discovery, health validation, or QR refresh.
 - [x] Document when a user should re-pair versus retry sync.
 
 ### M5.3 Diagnostics And Support Package
@@ -56,6 +56,7 @@ Clarified the remembered-device product behavior:
 
 - Added iOS binding status copy that distinguishes remembered Android devices, manual endpoints, and no binding.
 - Updated Android pairing copy so the QR code is framed as first-time binding, endpoint refresh, or security refresh rather than something required before every sync.
+- Added endpoint resolver coverage so a remembered Android device prefers discovery after IP changes, falls back to the stored endpoint, and still rejects missing or invalid endpoint inputs.
 
 ### 2026-09-11 M5.3 Diagnostics Copy
 
@@ -73,3 +74,12 @@ Added the M5 release-candidate readiness document:
 - Documented signed-HTTP and QR-pinned HTTPS release gates.
 - Captured the pairing/IP recovery contract and diagnostics redaction policy.
 - Confirmed the full automated M0 gate remains green after M5 UI, diagnostics, release-gate, and documentation changes.
+
+### 2026-09-11 M5 Completed
+
+Closed the release-candidate polish milestone:
+
+- QR-pinned HTTPS is build-flagged and release-gated.
+- Pairing copy and endpoint recovery tests clarify remembered-device behavior.
+- Redacted diagnostics copy is available on both platforms.
+- M5 readiness documentation defines the current photo-only release-candidate boundary.

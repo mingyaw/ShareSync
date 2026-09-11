@@ -18,12 +18,6 @@ final class ManifestFetchViewModel: ObservableObject {
         case failed(String)
     }
 
-    private enum EndpointResolutionError: Error {
-        case missingHost
-        case invalidPort
-        case unexpectedPeer
-    }
-
     struct ManifestSummary: Equatable {
         let sourceDeviceId: String
         let cursor: String
@@ -97,6 +91,7 @@ final class ManifestFetchViewModel: ObservableObject {
     private let pairedDeviceSessionStore: PairedDeviceSessionStore
     private let pairingPayloadParser: PairingPayloadParser
     private let localPeerDiscovery: LocalPeerDiscovery
+    private let endpointResolver: PairedEndpointResolver
     private let photoTransferPlanner = M0PhotoTransferPlanner()
     private var latestManifest: SyncManifest?
     private var activeDownloadTask: Task<Void, Never>?
@@ -114,7 +109,8 @@ final class ManifestFetchViewModel: ObservableObject {
         syncEventStore: SyncEventStore = FileSyncEventStore(),
         syncResultClient: SyncResultClient = SyncResultClient(),
         pairedDeviceSessionStore: PairedDeviceSessionStore = FilePairedDeviceSessionStore(),
-        localPeerDiscovery: LocalPeerDiscovery? = nil
+        localPeerDiscovery: LocalPeerDiscovery? = nil,
+        endpointResolver: PairedEndpointResolver = PairedEndpointResolver()
     ) {
         self.client = client
         self.healthClient = healthClient
@@ -129,6 +125,7 @@ final class ManifestFetchViewModel: ObservableObject {
         self.syncResultClient = syncResultClient
         self.pairedDeviceSessionStore = pairedDeviceSessionStore
         self.localPeerDiscovery = localPeerDiscovery ?? BonjourLocalPeerDiscovery()
+        self.endpointResolver = endpointResolver
         self.photoLibraryPermissionStatus = photoLibraryPermissionChecker.photoLibraryPermissionStatus()
         restorePairedDeviceSession()
         restoreLatestSyncResult()
@@ -434,27 +431,11 @@ final class ManifestFetchViewModel: ObservableObject {
     }
 
     private func endpointCandidate() async throws -> PairedDeviceEndpoint {
-        if let pairedDevice,
-           let discoveredEndpoint = await localPeerDiscovery.discoverEndpoint(
-            matchingDeviceId: pairedDevice.deviceId,
-            timeout: 2.5
-           ) {
-            return discoveredEndpoint
-        }
-
-        let trimmedHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedHost.isEmpty else {
-            throw EndpointResolutionError.missingHost
-        }
-
-        guard let portNumber = Int(port), (1...65535).contains(portNumber) else {
-            throw EndpointResolutionError.invalidPort
-        }
-
-        return PairedDeviceEndpoint(
-            host: trimmedHost,
-            port: portNumber,
-            updatedAt: Date()
+        try await endpointResolver.endpointCandidate(
+            pairedDevice: pairedDevice,
+            host: host,
+            port: port,
+            discovery: localPeerDiscovery
         )
     }
 

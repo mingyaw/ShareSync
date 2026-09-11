@@ -5,6 +5,51 @@ protocol LocalPeerDiscovery {
     func discoverEndpoint(matchingDeviceId deviceId: String, timeout: TimeInterval) async -> PairedDeviceEndpoint?
 }
 
+enum EndpointResolutionError: Error {
+    case missingHost
+    case invalidPort
+    case unexpectedPeer
+}
+
+struct PairedEndpointResolver {
+    let discoveryTimeout: TimeInterval
+
+    init(discoveryTimeout: TimeInterval = 2.5) {
+        self.discoveryTimeout = discoveryTimeout
+    }
+
+    @MainActor
+    func endpointCandidate(
+        pairedDevice: TrustedDevice?,
+        host: String,
+        port: String,
+        discovery: LocalPeerDiscovery
+    ) async throws -> PairedDeviceEndpoint {
+        if let pairedDevice,
+           let discoveredEndpoint = await discovery.discoverEndpoint(
+            matchingDeviceId: pairedDevice.deviceId,
+            timeout: discoveryTimeout
+           ) {
+            return discoveredEndpoint
+        }
+
+        let trimmedHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedHost.isEmpty else {
+            throw EndpointResolutionError.missingHost
+        }
+
+        guard let portNumber = Int(port), (1...65535).contains(portNumber) else {
+            throw EndpointResolutionError.invalidPort
+        }
+
+        return PairedDeviceEndpoint(
+            host: trimmedHost,
+            port: portNumber,
+            updatedAt: Date()
+        )
+    }
+}
+
 @MainActor
 final class BonjourLocalPeerDiscovery: NSObject, LocalPeerDiscovery {
     private var browser: NetServiceBrowser?
