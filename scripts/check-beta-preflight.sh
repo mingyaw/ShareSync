@@ -44,6 +44,7 @@ Default checks:
   - git diff --check
   - scripts/check-release-readiness.sh
   - scripts/check-repo-hygiene.sh
+  - scripts/inspect-support-snapshot.py
   - scripts/generate-beta-handoff.sh
 
 Use --full to also run scripts/check-m0.sh.
@@ -76,6 +77,11 @@ bash scripts/check-release-readiness.sh --transport "$transport"
 echo
 echo "== Repository hygiene =="
 bash scripts/check-repo-hygiene.sh
+
+echo
+echo "== Support snapshot inspector =="
+python3 scripts/inspect-support-snapshot.py shared/fixtures/sample-support-snapshot-android.json --summary-only
+python3 scripts/inspect-support-snapshot.py shared/fixtures/sample-support-snapshot-ios.json --summary-only
 
 if [[ "$run_full" == "true" ]]; then
   echo

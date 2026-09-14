@@ -123,6 +123,13 @@ bash scripts/check-beta-preflight.sh --transport signed-http --full
 
 Use the default preflight for quick handoff checks and `--full` before sharing a source-code-backed beta build.
 
+Support snapshot inspection:
+
+```sh
+python3 scripts/inspect-support-snapshot.py shared/fixtures/sample-support-snapshot-android.json
+python3 scripts/inspect-support-snapshot.py shared/fixtures/sample-support-snapshot-ios.json --summary-only
+```
+
 Beta handoff record:
 
 ```sh
@@ -154,3 +161,4 @@ Use these documents when real-device testing resumes:
 - [M7 Internal Beta Handoff](m7-internal-beta-handoff.md)
 - [M8 Beta Preflight](m8-beta-preflight.md)
 - [M9 Support Snapshot](m9-support-snapshot.md)
+- [M10 Support Triage](m10-support-triage.md)

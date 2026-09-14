@@ -17,6 +17,7 @@ The default preflight runs:
 - Whitespace diff check.
 - Release-readiness gate.
 - Repository hygiene gate.
+- Support snapshot inspector validation.
 - Beta handoff record generation.
 
 The generated handoff record is printed to the terminal unless `--handoff-output` is provided.
