@@ -80,3 +80,19 @@ bash scripts/check-release-readiness.sh --transport qr-pinned-https
 ```
 
 The QR-pinned HTTPS gate is expected to fail until M4 physical-device security validation is completed and recorded.
+
+Generate a beta handoff record before sharing internal artifacts:
+
+```sh
+bash scripts/generate-beta-handoff.sh --transport signed-http
+```
+
+Use `--output` to write the record outside the repository alongside manually produced APK/IPA artifacts.
+
+Generate a beta handoff record before sharing internal artifacts:
+
+```sh
+bash scripts/generate-beta-handoff.sh --transport signed-http
+```
+
+Use `--output` to write the record outside the repository alongside manually produced APK/IPA artifacts.

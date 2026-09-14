@@ -106,6 +106,22 @@ bash scripts/check-release-readiness.sh --transport qr-pinned-https
 
 The QR-pinned HTTPS gate is expected to fail until M4 physical-device validation is completed and recorded.
 
+Beta handoff record:
+
+```sh
+bash scripts/generate-beta-handoff.sh --transport signed-http
+```
+
+Use `--output` only for an external handoff location. Do not commit generated handoff records or packaged app artifacts.
+
+Beta handoff record:
+
+```sh
+bash scripts/generate-beta-handoff.sh --transport signed-http
+```
+
+Use `--output` only for an external handoff location. Do not commit generated handoff records or packaged app artifacts.
+
 ## Before Committing
 
 - Run `git diff --check`.
@@ -126,3 +142,4 @@ Use these documents when real-device testing resumes:
 - [M2 iOS Foreground/Background Checklist](m2-ios-foreground-background-checklist.md)
 - [M5 Release Candidate Readiness](m5-release-candidate-readiness.md)
 - [M6 Beta Package Readiness](m6-beta-package-readiness.md)
+- [M7 Internal Beta Handoff](m7-internal-beta-handoff.md)
