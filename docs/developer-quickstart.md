@@ -1,8 +1,8 @@
 # Developer Quickstart
 
-Status: M15 developer handoff guide.
+Status: M16 developer handoff guide.
 
-This guide is for local development only. ShareSync M15 remains a photo-only Android-to-iPhone local sync MVP and should not be treated as an App Store or Google Play release candidate.
+This guide is for local development only. ShareSync M16 remains a photo-only Android-to-iPhone local sync MVP and should not be treated as an App Store or Google Play release candidate.
 
 ## Prerequisites
 
@@ -165,3 +165,4 @@ Use these documents when real-device testing resumes:
 - [M13 Support Next-Step Snapshot](m13-support-next-step-snapshot.md)
 - [M14 Support Snapshot Strict Next-Step Validation](m14-support-snapshot-strict-next-step.md)
 - [M15 Support Snapshot Inspector Tests](m15-support-snapshot-inspector-tests.md)
+- [M16 Platform-Specific Fixture Validation](m16-platform-specific-fixture-validation.md)

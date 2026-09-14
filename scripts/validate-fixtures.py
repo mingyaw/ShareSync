@@ -9,6 +9,22 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMAS = ROOT / "shared" / "schemas"
 FIXTURES = ROOT / "shared" / "fixtures"
+ANDROID_SUPPORT_NEXT_STEPS = {
+    "allow_android_photos",
+    "start_android_sharing",
+    "wait_for_android_server",
+    "scan_from_iphone",
+    "wait_for_retry_resume",
+    "wait_for_new_android_photos",
+}
+IOS_SUPPORT_NEXT_STEPS = {
+    "scan_android_qr",
+    "review_android_endpoint",
+    "allow_iphone_photos",
+    "keep_sharesync_open",
+    "fetch_latest_manifest",
+    "sync_remaining_photos",
+}
 
 
 def load_json(path: Path):
@@ -222,6 +238,10 @@ def validate_support_snapshot(fixture_name: str, expected_platform: str):
     assert snapshot["platform"] == expected_platform
     assert isinstance(snapshot["nextStep"], str)
     assert snapshot["nextStep"]
+    if expected_platform == "android":
+        assert snapshot["nextStep"] in ANDROID_SUPPORT_NEXT_STEPS
+    if expected_platform == "ios":
+        assert snapshot["nextStep"] in IOS_SUPPORT_NEXT_STEPS
     redaction = snapshot["redaction"]
     assert redaction["pairingToken"] == "excluded"
     assert redaction["requestSignature"] == "excluded"
