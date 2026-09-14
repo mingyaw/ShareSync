@@ -1,8 +1,8 @@
 # Developer Quickstart
 
-Status: M5 developer handoff guide.
+Status: M6 developer handoff guide.
 
-This guide is for local development only. ShareSync M5 remains a photo-only Android-to-iPhone local sync MVP and should not be treated as an App Store or Google Play release candidate.
+This guide is for local development only. ShareSync M6 remains a photo-only Android-to-iPhone local sync MVP and should not be treated as an App Store or Google Play release candidate.
 
 ## Prerequisites
 
@@ -125,3 +125,4 @@ Use these documents when real-device testing resumes:
 - [M2 Device Validation Results](m2-device-validation-results.md)
 - [M2 iOS Foreground/Background Checklist](m2-ios-foreground-background-checklist.md)
 - [M5 Release Candidate Readiness](m5-release-candidate-readiness.md)
+- [M6 Beta Package Readiness](m6-beta-package-readiness.md)

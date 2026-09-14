@@ -46,4 +46,70 @@ case "$transport" in
     ;;
 esac
 
+ios_info_plist="ios/ShareSyncApp/Info.plist"
+if [[ ! -f "$ios_info_plist" ]]; then
+  echo "Missing iOS Info.plist: $ios_info_plist" >&2
+  exit 1
+fi
+
+android_build_file="android/app/build.gradle.kts"
+ios_project_file="ios/ShareSync.xcodeproj/project.pbxproj"
+
+if [[ ! -f "$android_build_file" ]]; then
+  echo "Missing Android build file: $android_build_file" >&2
+  exit 1
+fi
+
+if [[ ! -f "$ios_project_file" ]]; then
+  echo "Missing iOS project file: $ios_project_file" >&2
+  exit 1
+fi
+
+android_version_name=$(awk -F'"' '/versionName =/ { print $2; exit }' "$android_build_file")
+android_version_code=$(awk -F'= ' '/versionCode =/ { print $2; exit }' "$android_build_file" | tr -d ' ')
+ios_marketing_versions=$(awk -F'= ' '/MARKETING_VERSION =/ { gsub(/;/, "", $2); print $2 }' "$ios_project_file" | sort -u)
+ios_build_versions=$(awk -F'= ' '/CURRENT_PROJECT_VERSION =/ { gsub(/;/, "", $2); print $2 }' "$ios_project_file" | sort -u)
+ios_marketing_version=$(printf '%s\n' "$ios_marketing_versions" | sed -n '1p')
+ios_build_version=$(printf '%s\n' "$ios_build_versions" | sed -n '1p')
+
+if [[ -z "$android_version_name" || -z "$android_version_code" || -z "$ios_marketing_version" || -z "$ios_build_version" ]]; then
+  echo "Missing app version metadata. Android versionName/versionCode and iOS MARKETING_VERSION/CURRENT_PROJECT_VERSION are required." >&2
+  exit 1
+fi
+
+if [[ "$(printf '%s\n' "$ios_marketing_versions" | sed '/^$/d' | wc -l | tr -d ' ')" != "1" ]]; then
+  echo "iOS MARKETING_VERSION values are inconsistent across build configurations:" >&2
+  printf '%s\n' "$ios_marketing_versions" >&2
+  exit 1
+fi
+
+if [[ "$(printf '%s\n' "$ios_build_versions" | sed '/^$/d' | wc -l | tr -d ' ')" != "1" ]]; then
+  echo "iOS CURRENT_PROJECT_VERSION values are inconsistent across build configurations:" >&2
+  printf '%s\n' "$ios_build_versions" >&2
+  exit 1
+fi
+
+if [[ "$android_version_name" != "$ios_marketing_version" ]]; then
+  echo "Android versionName ($android_version_name) must match iOS MARKETING_VERSION ($ios_marketing_version)." >&2
+  exit 1
+fi
+
+if [[ "$android_version_code" != "$ios_build_version" ]]; then
+  echo "Android versionCode ($android_version_code) must match iOS CURRENT_PROJECT_VERSION ($ios_build_version)." >&2
+  exit 1
+fi
+
+if /usr/libexec/PlistBuddy -c "Print :NSAppTransportSecurity:NSAllowsArbitraryLoads" "$ios_info_plist" >/dev/null 2>&1; then
+  echo "iOS ATS is too broad: NSAllowsArbitraryLoads must not be enabled for release readiness." >&2
+  exit 1
+fi
+
+if [[ "$transport" == "signed-http" ]]; then
+  local_networking=$(/usr/libexec/PlistBuddy -c "Print :NSAppTransportSecurity:NSAllowsLocalNetworking" "$ios_info_plist" 2>/dev/null || true)
+  if [[ "$local_networking" != "true" ]]; then
+    echo "Signed local HTTP requires NSAllowsLocalNetworking=true in $ios_info_plist." >&2
+    exit 1
+  fi
+fi
+
 echo "Release readiness checks passed for transport: $transport"

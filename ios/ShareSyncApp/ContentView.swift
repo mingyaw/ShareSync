@@ -752,6 +752,7 @@ struct ContentView: View {
         let progress = viewModel.downloadProgressSummary
         return [
             "ShareSync iOS Diagnostics",
+            "appVersion=\(appVersionText)",
             "phase=\(phaseStatus)",
             "binding=\(bindingStatusText)",
             "endpoint=\(pairedStatus)",
@@ -767,6 +768,19 @@ struct ContentView: View {
             "batchProgress=\(progress?.progressText ?? "none")",
             "syncResultReturn=\(viewModel.syncResultReturnSummary.map(syncResultReturnText) ?? localized("ios.vm.not_posted"))",
         ].joined(separator: "\n")
+    }
+
+    private var appVersionText: String {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+        switch (version, build) {
+        case let (.some(version), .some(build)):
+            return "\(version) (\(build))"
+        case let (.some(version), .none):
+            return version
+        default:
+            return localized("ios.status.unknown")
+        }
     }
 
     private func updateIdleTimer(for state: ManifestFetchViewModel.DownloadState) {

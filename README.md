@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 photo PoC, M1 photo MVP hardening, M2 photo product reliability, M3 pre-release product hardening, and M4 QR-pinned HTTPS readiness are complete. The active main axis is M5 release-candidate polish.
+Status: M0 photo PoC, M1 photo MVP hardening, M2 photo product reliability, M3 pre-release product hardening, M4 QR-pinned HTTPS readiness, M5 release-candidate polish, and M6 beta package readiness are complete.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -16,7 +16,7 @@ The project intentionally uses native implementation:
 
 ## Current Stage
 
-The completed baseline is `M0 - Android to iOS Photo PoC`, followed by `M1 - Photo MVP Hardening`, `M2 - Photo Product Reliability`, `M3 - Pre-Release Product Hardening`, and `M4 - QR-Pinned HTTPS`. Active follow-up work is now `M5 - Release Candidate Polish`, which keeps the product focused on photos while tightening release gates, diagnostics, pairing recovery, and handoff quality before expanding to videos, contacts, files, or reverse sync.
+The completed baseline is `M0 - Android to iOS Photo PoC`, followed by `M1 - Photo MVP Hardening`, `M2 - Photo Product Reliability`, `M3 - Pre-Release Product Hardening`, `M4 - QR-Pinned HTTPS`, `M5 - Release Candidate Polish`, and `M6 - Beta Package Readiness`. The product remains focused on photos while privacy, package-readiness, and support traceability are now guarded before expanding to videos, contacts, files, or reverse sync.
 
 The current codebase contains:
 
@@ -104,6 +104,7 @@ tasks/
 - [M1 Release Readiness](docs/m1-release-readiness.md)
 - [M3 Pre-Release Readiness](docs/m3-release-readiness.md)
 - [M5 Release Candidate Readiness](docs/m5-release-candidate-readiness.md)
+- [M6 Beta Package Readiness](docs/m6-beta-package-readiness.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Error Recovery Matrix](docs/error-recovery-matrix.md)
 - [Sync History Summary](docs/sync-history-summary.md)
@@ -121,6 +122,7 @@ tasks/
 - [M3 Pre-Release Product Hardening](tasks/m3-pre-release-product-hardening.md)
 - [M4 QR-Pinned HTTPS](tasks/m4-qr-pinned-https.md)
 - [M5 Release Candidate Polish](tasks/m5-release-candidate-polish.md)
+- [M6 Beta Package Readiness](tasks/m6-beta-package-readiness.md)
 
 ## M0 Rules
 
