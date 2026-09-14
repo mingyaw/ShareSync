@@ -18,6 +18,7 @@ final class PhotoSyncReadinessTests: XCTestCase {
         XCTAssertEqual(readiness.primaryAction, .pairAndroid)
         XCTAssertEqual(readiness.blockingReason, .pairingRequired)
         XCTAssertEqual(readiness.recoveryGuidance, .scanAndroidQRCode)
+        XCTAssertEqual(readiness.nextStep, .scanAndroidQRCode)
     }
 
     func testInvalidPortBlocksFetchAndSync() {
@@ -36,6 +37,7 @@ final class PhotoSyncReadinessTests: XCTestCase {
         XCTAssertEqual(readiness.primaryAction, .enterEndpoint)
         XCTAssertEqual(readiness.blockingReason, .invalidPort)
         XCTAssertEqual(readiness.recoveryGuidance, .reviewAndroidEndpoint)
+        XCTAssertEqual(readiness.nextStep, .reviewAndroidEndpoint)
     }
 
     func testDeniedPhotosBlocksSyncButAllowsManifestRefresh() {
@@ -54,6 +56,7 @@ final class PhotoSyncReadinessTests: XCTestCase {
         XCTAssertEqual(readiness.primaryAction, .allowPhotos)
         XCTAssertEqual(readiness.blockingReason, .photosPermissionBlocked(.denied))
         XCTAssertEqual(readiness.recoveryGuidance, .allowIPhonePhotos)
+        XCTAssertEqual(readiness.nextStep, .allowIPhonePhotos)
     }
 
     func testActiveTransferBlocksNewActions() {
@@ -72,6 +75,7 @@ final class PhotoSyncReadinessTests: XCTestCase {
         XCTAssertEqual(readiness.primaryAction, .waitForTransfer)
         XCTAssertEqual(readiness.blockingReason, .transferActive)
         XCTAssertEqual(readiness.recoveryGuidance, .waitForActiveTransfer)
+        XCTAssertEqual(readiness.nextStep, .keepShareSyncOpen)
     }
 
     func testReadyStateFetchesBeforeManifestAndSyncsAfterManifest() {
@@ -99,10 +103,12 @@ final class PhotoSyncReadinessTests: XCTestCase {
         XCTAssertEqual(readyToFetch.primaryAction, .fetchManifest)
         XCTAssertNil(readyToFetch.blockingReason)
         XCTAssertEqual(readyToFetch.recoveryGuidance, .fetchLatestManifest)
+        XCTAssertEqual(readyToFetch.nextStep, .fetchLatestManifest)
         XCTAssertTrue(readyToSync.canFetchManifest)
         XCTAssertTrue(readyToSync.canSyncAllPhotos)
         XCTAssertEqual(readyToSync.primaryAction, .syncAllPhotos)
         XCTAssertNil(readyToSync.blockingReason)
         XCTAssertEqual(readyToSync.recoveryGuidance, .syncRemainingPhotos)
+        XCTAssertEqual(readyToSync.nextStep, .syncRemainingPhotos)
     }
 }

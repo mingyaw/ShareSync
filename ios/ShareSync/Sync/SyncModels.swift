@@ -137,6 +137,15 @@ struct PhotoSyncReadiness: Equatable {
         case syncRemainingPhotos
     }
 
+    enum NextStep: Equatable {
+        case scanAndroidQRCode
+        case reviewAndroidEndpoint
+        case allowIPhonePhotos
+        case keepShareSyncOpen
+        case fetchLatestManifest
+        case syncRemainingPhotos
+    }
+
     let canFetchManifest: Bool
     let canSyncAllPhotos: Bool
     let primaryAction: PrimaryAction
@@ -152,6 +161,23 @@ struct PhotoSyncReadiness: Equatable {
             return .allowIPhonePhotos
         case .waitForTransfer:
             return .waitForActiveTransfer
+        case .fetchManifest:
+            return .fetchLatestManifest
+        case .syncAllPhotos:
+            return .syncRemainingPhotos
+        }
+    }
+
+    var nextStep: NextStep {
+        switch primaryAction {
+        case .pairAndroid:
+            return .scanAndroidQRCode
+        case .enterEndpoint:
+            return .reviewAndroidEndpoint
+        case .allowPhotos:
+            return .allowIPhonePhotos
+        case .waitForTransfer:
+            return .keepShareSyncOpen
         case .fetchManifest:
             return .fetchLatestManifest
         case .syncAllPhotos:

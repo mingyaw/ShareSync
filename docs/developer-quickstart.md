@@ -1,8 +1,8 @@
 # Developer Quickstart
 
-Status: M11 developer handoff guide.
+Status: M12 developer handoff guide.
 
-This guide is for local development only. ShareSync M11 remains a photo-only Android-to-iPhone local sync MVP and should not be treated as an App Store or Google Play release candidate.
+This guide is for local development only. ShareSync M12 remains a photo-only Android-to-iPhone local sync MVP and should not be treated as an App Store or Google Play release candidate.
 
 ## Prerequisites
 
@@ -163,3 +163,4 @@ Use these documents when real-device testing resumes:
 - [M9 Support Snapshot](m9-support-snapshot.md)
 - [M10 Support Triage](m10-support-triage.md)
 - [M11 Beta UX Readiness](m11-beta-ux-readiness.md)
+- [M12 Readiness Presenter Hardening](m12-readiness-presenter-hardening.md)

@@ -127,6 +127,7 @@ class AndroidM0RuntimeStateTest {
         assertEquals(AndroidPhotoSyncBlockingReason.PHOTO_PERMISSION_REQUIRED, readiness.blockingReason)
         assertEquals(false, readiness.canSharePhotos)
         assertEquals(AndroidPhotoSyncRecoveryGuidance.ALLOW_ANDROID_PHOTOS, readiness.recoveryGuidance)
+        assertEquals(AndroidPhotoSyncNextStep.ALLOW_ANDROID_PHOTOS, readiness.nextStep)
     }
 
     @Test
@@ -140,6 +141,7 @@ class AndroidM0RuntimeStateTest {
         assertEquals(AndroidPhotoSyncBlockingReason.SERVER_STOPPED, readiness.blockingReason)
         assertEquals(true, readiness.canSharePhotos)
         assertEquals(AndroidPhotoSyncRecoveryGuidance.START_ANDROID_SHARING, readiness.recoveryGuidance)
+        assertEquals(AndroidPhotoSyncNextStep.START_ANDROID_SHARING, readiness.nextStep)
     }
 
     @Test
@@ -153,6 +155,7 @@ class AndroidM0RuntimeStateTest {
         assertEquals(null, readiness.blockingReason)
         assertEquals(true, readiness.canSharePhotos)
         assertEquals(AndroidPhotoSyncRecoveryGuidance.SCAN_PAIRING_CODE, readiness.recoveryGuidance)
+        assertEquals(AndroidPhotoSyncNextStep.SCAN_FROM_IPHONE, readiness.nextStep)
     }
 
     @Test
@@ -167,6 +170,7 @@ class AndroidM0RuntimeStateTest {
         assertEquals(null, readiness.blockingReason)
         assertEquals(true, readiness.canSharePhotos)
         assertEquals(AndroidPhotoSyncRecoveryGuidance.KEEP_ANDROID_OPEN_FOR_RETRY, readiness.recoveryGuidance)
+        assertEquals(AndroidPhotoSyncNextStep.KEEP_ANDROID_OPEN_FOR_RETRY, readiness.nextStep)
     }
 
     @Test
@@ -180,6 +184,7 @@ class AndroidM0RuntimeStateTest {
         assertEquals(null, readiness.blockingReason)
         assertEquals(true, readiness.canSharePhotos)
         assertEquals(AndroidPhotoSyncRecoveryGuidance.WAIT_FOR_NEW_ANDROID_PHOTOS, readiness.recoveryGuidance)
+        assertEquals(AndroidPhotoSyncNextStep.WAIT_FOR_NEW_ANDROID_PHOTOS, readiness.nextStep)
     }
 
     private fun runtimeState(

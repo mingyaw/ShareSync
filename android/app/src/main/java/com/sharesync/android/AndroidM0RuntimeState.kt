@@ -111,6 +111,16 @@ data class AndroidPhotoSyncReadiness(
             AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_RETRY -> AndroidPhotoSyncRecoveryGuidance.KEEP_ANDROID_OPEN_FOR_RETRY
             AndroidPhotoSyncPrimaryAction.WAIT_FOR_NEW_PHOTOS -> AndroidPhotoSyncRecoveryGuidance.WAIT_FOR_NEW_ANDROID_PHOTOS
         }
+
+    val nextStep: AndroidPhotoSyncNextStep
+        get() = when (primaryAction) {
+            AndroidPhotoSyncPrimaryAction.ALLOW_PHOTOS -> AndroidPhotoSyncNextStep.ALLOW_ANDROID_PHOTOS
+            AndroidPhotoSyncPrimaryAction.START_SHARING -> AndroidPhotoSyncNextStep.START_ANDROID_SHARING
+            AndroidPhotoSyncPrimaryAction.WAIT_FOR_SERVER -> AndroidPhotoSyncNextStep.WAIT_FOR_ANDROID_SERVER
+            AndroidPhotoSyncPrimaryAction.SHOW_PAIRING_CODE -> AndroidPhotoSyncNextStep.SCAN_FROM_IPHONE
+            AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_RETRY -> AndroidPhotoSyncNextStep.KEEP_ANDROID_OPEN_FOR_RETRY
+            AndroidPhotoSyncPrimaryAction.WAIT_FOR_NEW_PHOTOS -> AndroidPhotoSyncNextStep.WAIT_FOR_NEW_ANDROID_PHOTOS
+        }
 }
 
 enum class AndroidPhotoSyncPrimaryAction {
@@ -133,6 +143,15 @@ enum class AndroidPhotoSyncRecoveryGuidance {
     START_ANDROID_SHARING,
     WAIT_FOR_ANDROID_SERVER,
     SCAN_PAIRING_CODE,
+    KEEP_ANDROID_OPEN_FOR_RETRY,
+    WAIT_FOR_NEW_ANDROID_PHOTOS,
+}
+
+enum class AndroidPhotoSyncNextStep {
+    ALLOW_ANDROID_PHOTOS,
+    START_ANDROID_SHARING,
+    WAIT_FOR_ANDROID_SERVER,
+    SCAN_FROM_IPHONE,
     KEEP_ANDROID_OPEN_FOR_RETRY,
     WAIT_FOR_NEW_ANDROID_PHOTOS,
 }

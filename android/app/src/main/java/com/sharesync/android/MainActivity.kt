@@ -860,13 +860,13 @@ class MainActivity : Activity() {
     }
 
     private fun nextStepInstruction(): String {
-        return when (runtimeState().readiness().primaryAction) {
-            AndroidPhotoSyncPrimaryAction.ALLOW_PHOTOS -> getString(R.string.m11_next_step_allow_photos)
-            AndroidPhotoSyncPrimaryAction.START_SHARING -> getString(R.string.m11_next_step_start_sharing)
-            AndroidPhotoSyncPrimaryAction.WAIT_FOR_SERVER -> getString(R.string.m11_next_step_wait_for_server)
-            AndroidPhotoSyncPrimaryAction.SHOW_PAIRING_CODE -> getString(R.string.m11_next_step_scan_from_iphone)
-            AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_RETRY -> getString(R.string.m11_next_step_keep_open_for_retry)
-            AndroidPhotoSyncPrimaryAction.WAIT_FOR_NEW_PHOTOS -> getString(R.string.m11_next_step_wait_for_new_photos)
+        return when (runtimeState().readiness().nextStep) {
+            AndroidPhotoSyncNextStep.ALLOW_ANDROID_PHOTOS -> getString(R.string.m11_next_step_allow_photos)
+            AndroidPhotoSyncNextStep.START_ANDROID_SHARING -> getString(R.string.m11_next_step_start_sharing)
+            AndroidPhotoSyncNextStep.WAIT_FOR_ANDROID_SERVER -> getString(R.string.m11_next_step_wait_for_server)
+            AndroidPhotoSyncNextStep.SCAN_FROM_IPHONE -> getString(R.string.m11_next_step_scan_from_iphone)
+            AndroidPhotoSyncNextStep.KEEP_ANDROID_OPEN_FOR_RETRY -> getString(R.string.m11_next_step_keep_open_for_retry)
+            AndroidPhotoSyncNextStep.WAIT_FOR_NEW_ANDROID_PHOTOS -> getString(R.string.m11_next_step_wait_for_new_photos)
         }
     }
 

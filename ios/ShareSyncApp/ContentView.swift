@@ -478,18 +478,18 @@ struct ContentView: View {
     }
 
     private var nextStepIconName: String {
-        switch viewModel.readiness.primaryAction {
-        case .pairAndroid:
+        switch viewModel.readiness.nextStep {
+        case .scanAndroidQRCode:
             return "qrcode.viewfinder"
-        case .enterEndpoint:
+        case .reviewAndroidEndpoint:
             return "wifi.exclamationmark"
-        case .allowPhotos:
+        case .allowIPhonePhotos:
             return "photo.badge.checkmark"
-        case .waitForTransfer:
+        case .keepShareSyncOpen:
             return "hourglass"
-        case .fetchManifest:
+        case .fetchLatestManifest:
             return "arrow.clockwise"
-        case .syncAllPhotos:
+        case .syncRemainingPhotos:
             return "arrow.triangle.2.circlepath"
         }
     }
@@ -561,18 +561,18 @@ struct ContentView: View {
     }
 
     private var nextStepText: String {
-        switch viewModel.readiness.primaryAction {
-        case .pairAndroid:
+        switch viewModel.readiness.nextStep {
+        case .scanAndroidQRCode:
             return localized("ios.next_step.pair_android")
-        case .enterEndpoint:
+        case .reviewAndroidEndpoint:
             return localized("ios.next_step.review_connection")
-        case .allowPhotos:
+        case .allowIPhonePhotos:
             return localized("ios.next_step.allow_photos")
-        case .waitForTransfer:
+        case .keepShareSyncOpen:
             return localized("ios.next_step.keep_open")
-        case .fetchManifest:
+        case .fetchLatestManifest:
             return localized("ios.next_step.fetch_manifest")
-        case .syncAllPhotos:
+        case .syncRemainingPhotos:
             return localized("ios.next_step.sync_all")
         }
     }
