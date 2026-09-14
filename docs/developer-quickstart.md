@@ -1,8 +1,8 @@
 # Developer Quickstart
 
-Status: M14 developer handoff guide.
+Status: M15 developer handoff guide.
 
-This guide is for local development only. ShareSync M14 remains a photo-only Android-to-iPhone local sync MVP and should not be treated as an App Store or Google Play release candidate.
+This guide is for local development only. ShareSync M15 remains a photo-only Android-to-iPhone local sync MVP and should not be treated as an App Store or Google Play release candidate.
 
 ## Prerequisites
 
@@ -52,6 +52,12 @@ Fixture and protocol validation:
 python3 scripts/validate-fixtures.py
 python3 scripts/compare-sync-results.py shared/fixtures/sample-sync-result.json shared/fixtures/sample-sync-result.json
 python3 scripts/validate-m0-results.py
+```
+
+Support snapshot inspector regression tests:
+
+```sh
+bash scripts/test-support-snapshot-inspector.sh
 ```
 
 iOS core tests:
@@ -130,14 +136,6 @@ python3 scripts/inspect-support-snapshot.py shared/fixtures/sample-support-snaps
 python3 scripts/inspect-support-snapshot.py shared/fixtures/sample-support-snapshot-ios.json --summary-only
 ```
 
-Beta handoff record:
-
-```sh
-bash scripts/generate-beta-handoff.sh --transport signed-http
-```
-
-Use `--output` only for an external handoff location. Do not commit generated handoff records or packaged app artifacts.
-
 ## Before Committing
 
 - Run `git diff --check`.
@@ -166,3 +164,4 @@ Use these documents when real-device testing resumes:
 - [M12 Readiness Presenter Hardening](m12-readiness-presenter-hardening.md)
 - [M13 Support Next-Step Snapshot](m13-support-next-step-snapshot.md)
 - [M14 Support Snapshot Strict Next-Step Validation](m14-support-snapshot-strict-next-step.md)
+- [M15 Support Snapshot Inspector Tests](m15-support-snapshot-inspector-tests.md)

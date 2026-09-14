@@ -83,6 +83,10 @@ echo "== Support snapshot inspector =="
 python3 scripts/inspect-support-snapshot.py shared/fixtures/sample-support-snapshot-android.json --summary-only
 python3 scripts/inspect-support-snapshot.py shared/fixtures/sample-support-snapshot-ios.json --summary-only
 
+echo
+echo "== Support snapshot inspector tests =="
+bash scripts/test-support-snapshot-inspector.sh
+
 if [[ "$run_full" == "true" ]]; then
   echo
   echo "== Full M0 gate =="
