@@ -199,11 +199,42 @@ def validate_sync_result():
     print("ok fixture: shared/fixtures/sample-sync-result.json")
 
 
+def validate_support_snapshot(fixture_name: str, expected_platform: str):
+    snapshot = load_json(FIXTURES / fixture_name)
+    require_keys(
+        fixture_name,
+        snapshot,
+        [
+            "schemaVersion",
+            "type",
+            "platform",
+            "generatedAt",
+            "appVersion",
+            "phase",
+            "transport",
+            "sync",
+            "redaction",
+        ],
+    )
+    assert snapshot["schemaVersion"] == 1
+    assert snapshot["type"] == "sharesync_support_snapshot"
+    assert snapshot["platform"] == expected_platform
+    redaction = snapshot["redaction"]
+    assert redaction["pairingToken"] == "excluded"
+    assert redaction["requestSignature"] == "excluded"
+    assert redaction["sharedSecret"] == "excluded"
+
+    validate_fixture_against_schema(fixture_name, "support-snapshot.schema.json")
+    print(f"ok fixture: shared/fixtures/{fixture_name}")
+
+
 def main():
     validate_schema_files()
     validate_pairing_payload()
     validate_manifest()
     validate_sync_result()
+    validate_support_snapshot("sample-support-snapshot-android.json", "android")
+    validate_support_snapshot("sample-support-snapshot-ios.json", "ios")
 
 
 if __name__ == "__main__":

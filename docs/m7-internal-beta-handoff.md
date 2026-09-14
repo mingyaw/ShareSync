@@ -1,6 +1,6 @@
 # M7 Internal Beta Handoff
 
-Status: Active internal beta handoff guide for the photo-only MVP.
+Status: Complete internal beta handoff guide for the photo-only MVP.
 
 M7 makes package handoff repeatable without committing app binaries, signing material, generated handoff records, or local build output.
 

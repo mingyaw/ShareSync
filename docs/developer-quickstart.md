@@ -1,8 +1,8 @@
 # Developer Quickstart
 
-Status: M6 developer handoff guide.
+Status: M9 developer handoff guide.
 
-This guide is for local development only. ShareSync M6 remains a photo-only Android-to-iPhone local sync MVP and should not be treated as an App Store or Google Play release candidate.
+This guide is for local development only. ShareSync M9 remains a photo-only Android-to-iPhone local sync MVP and should not be treated as an App Store or Google Play release candidate.
 
 ## Prerequisites
 
@@ -153,3 +153,4 @@ Use these documents when real-device testing resumes:
 - [M6 Beta Package Readiness](m6-beta-package-readiness.md)
 - [M7 Internal Beta Handoff](m7-internal-beta-handoff.md)
 - [M8 Beta Preflight](m8-beta-preflight.md)
+- [M9 Support Snapshot](m9-support-snapshot.md)

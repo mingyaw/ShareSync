@@ -750,24 +750,46 @@ struct ContentView: View {
     private func diagnosticsSummary() -> String {
         let summary = viewModel.summary
         let progress = viewModel.downloadProgressSummary
-        return [
-            "ShareSync iOS Diagnostics",
-            "appVersion=\(appVersionText)",
-            "phase=\(phaseStatus)",
-            "binding=\(bindingStatusText)",
-            "endpoint=\(pairedStatus)",
-            "photosAccess=\(photosAccessStatus)",
-            "screenLock=\(screenLockStatus)",
-            "manifest=\(manifestStatus)",
-            "photoCount=\(summary?.photoCount ?? 0)",
-            "remaining=\(summary?.remainingCount ?? 0)",
-            "downloaded=\(summary?.downloadedCount ?? 0)",
-            "imported=\(summary?.importedCount ?? 0)",
-            "failed=\(summary?.failedCount ?? 0)",
-            "partial=\(summary?.partialCount ?? 0)",
-            "batchProgress=\(progress?.progressText ?? "none")",
-            "syncResultReturn=\(viewModel.syncResultReturnSummary.map(syncResultReturnText) ?? localized("ios.vm.not_posted"))",
-        ].joined(separator: "\n")
+        let snapshot: [String: Any] = [
+            "schemaVersion": 1,
+            "type": "sharesync_support_snapshot",
+            "platform": "ios",
+            "generatedAt": ISO8601DateFormatter().string(from: Date()),
+            "appVersion": appVersionText,
+            "phase": phaseStatus,
+            "transport": viewModel.pairedDevice?.transportSecurity?.mode.rawValue ?? "signed_http",
+            "endpoint": pairedStatus,
+            "binding": bindingStatusText,
+            "permissions": [
+                "photos": photosAccessStatus,
+            ],
+            "ios": [
+                "screenLock": screenLockStatus,
+                "manifest": manifestStatus,
+                "batchProgress": progress?.progressText ?? "none",
+                "syncResultReturn": viewModel.syncResultReturnSummary.map(syncResultReturnText) ?? localized("ios.vm.not_posted"),
+            ],
+            "sync": [
+                "photoCount": summary?.photoCount ?? 0,
+                "remaining": summary?.remainingCount ?? 0,
+                "downloaded": summary?.downloadedCount ?? 0,
+                "imported": summary?.importedCount ?? 0,
+                "failed": summary?.failedCount ?? 0,
+                "partial": summary?.partialCount ?? 0,
+            ],
+            "redaction": [
+                "pairingToken": "excluded",
+                "requestSignature": "excluded",
+                "sharedSecret": "excluded",
+            ],
+        ]
+
+        guard JSONSerialization.isValidJSONObject(snapshot),
+              let data = try? JSONSerialization.data(withJSONObject: snapshot, options: [.prettyPrinted, .sortedKeys]),
+              let json = String(data: data, encoding: .utf8) else {
+            return "{}"
+        }
+        return json
     }
 
     private var appVersionText: String {

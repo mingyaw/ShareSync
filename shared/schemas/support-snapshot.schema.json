@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sharesync.local/schemas/support-snapshot.schema.json",
+  "title": "ShareSync Support Snapshot",
+  "type": "object",
+  "required": ["schemaVersion", "type", "platform", "generatedAt", "appVersion", "phase", "transport", "sync", "redaction"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "type": { "type": "string", "const": "sharesync_support_snapshot" },
+    "platform": { "type": "string", "enum": ["android", "ios"] },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "appVersion": { "type": "string", "minLength": 1 },
+    "buildNumber": { "type": "integer" },
+    "phase": { "type": "string", "minLength": 1 },
+    "transport": { "type": "string", "minLength": 1 },
+    "endpoint": { "type": ["string", "null"] },
+    "binding": { "type": "string" },
+    "permissions": {
+      "type": "object"
+    },
+    "android": {
+      "type": "object"
+    },
+    "ios": {
+      "type": "object"
+    },
+    "latestRequest": {
+      "type": "object"
+    },
+    "sync": {
+      "type": "object"
+    },
+    "redaction": {
+      "type": "object",
+      "required": ["pairingToken", "requestSignature", "sharedSecret"],
+      "properties": {
+        "pairingToken": { "type": "string", "const": "excluded" },
+        "requestSignature": { "type": "string", "const": "excluded" },
+        "sharedSecret": { "type": "string", "const": "excluded" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

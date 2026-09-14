@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 photo PoC, M1 photo MVP hardening, M2 photo product reliability, M3 pre-release product hardening, M4 QR-pinned HTTPS readiness, M5 release-candidate polish, M6 beta package readiness, M7 internal beta handoff, and M8 beta preflight are complete.
+Status: M0 photo PoC, M1 photo MVP hardening, M2 photo product reliability, M3 pre-release product hardening, M4 QR-pinned HTTPS readiness, M5 release-candidate polish, M6 beta package readiness, M7 internal beta handoff, M8 beta preflight, and M9 support snapshot are complete.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -16,7 +16,7 @@ The project intentionally uses native implementation:
 
 ## Current Stage
 
-The completed baseline is `M0 - Android to iOS Photo PoC`, followed by `M1 - Photo MVP Hardening`, `M2 - Photo Product Reliability`, `M3 - Pre-Release Product Hardening`, `M4 - QR-Pinned HTTPS`, `M5 - Release Candidate Polish`, `M6 - Beta Package Readiness`, `M7 - Internal Beta Handoff`, and `M8 - Beta Preflight`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, and beta preflight automation.
+The completed baseline is `M0 - Android to iOS Photo PoC`, followed by `M1 - Photo MVP Hardening`, `M2 - Photo Product Reliability`, `M3 - Pre-Release Product Hardening`, `M4 - QR-Pinned HTTPS`, `M5 - Release Candidate Polish`, `M6 - Beta Package Readiness`, `M7 - Internal Beta Handoff`, `M8 - Beta Preflight`, and `M9 - Support Snapshot`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, beta preflight automation, and redacted JSON diagnostics for internal beta reports.
 
 The current codebase contains:
 
@@ -55,6 +55,7 @@ The current codebase contains:
 - Android merged sync result history across M0 batches.
 - iOS paired Android host, port, device metadata, and M0 pairing token persistence across app restarts.
 - iOS clear-pairing control for refreshing stale Android M0 endpoint/token state without deleting the app.
+- Android and iOS copied diagnostics use a shared redacted support snapshot JSON format.
 
 M0 validates the riskiest path:
 
@@ -107,6 +108,7 @@ tasks/
 - [M6 Beta Package Readiness](docs/m6-beta-package-readiness.md)
 - [M7 Internal Beta Handoff](docs/m7-internal-beta-handoff.md)
 - [M8 Beta Preflight](docs/m8-beta-preflight.md)
+- [M9 Support Snapshot](docs/m9-support-snapshot.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Error Recovery Matrix](docs/error-recovery-matrix.md)
 - [Sync History Summary](docs/sync-history-summary.md)
@@ -127,6 +129,7 @@ tasks/
 - [M6 Beta Package Readiness](tasks/m6-beta-package-readiness.md)
 - [M7 Internal Beta Handoff](tasks/m7-internal-beta-handoff.md)
 - [M8 Beta Preflight](tasks/m8-beta-preflight.md)
+- [M9 Support Snapshot](tasks/m9-support-snapshot.md)
 
 ## M0 Rules
 

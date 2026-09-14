@@ -36,6 +36,8 @@ import com.sharesync.android.sync.recentHistorySummaries
 import com.sharesync.android.transfer.server.LocalRequestActivity
 import com.sharesync.android.transfer.server.LocalRequestActivityTracker
 import com.sharesync.android.transfer.server.LocalSyncServer
+import org.json.JSONObject
+import java.time.Instant
 
 class MainActivity : Activity() {
     private lateinit var statusText: TextView
@@ -573,23 +575,56 @@ class MainActivity : Activity() {
     private fun diagnosticsSummary(): String {
         val result = currentSyncResult
         val requestActivity = currentRequestActivity
-        return listOf(
-            "ShareSync Android Diagnostics",
-            "appVersion=${BuildConfig.VERSION_NAME}",
-            "phase=${phaseStatus()}",
-            "serverRunning=$isServerRunning",
-            "endpoint=${currentEndpointUrl() ?: "unavailable"}",
-            "transport=${currentTransportSecurityMode.name}",
-            "mediaPermission=${hasMediaPermission()}",
-            "notificationPermission=${hasNotificationPermission()}",
-            "pendingPhotos=${currentManifestPhotoCount ?: "unknown"}",
-            "latestRequest=${requestActivity?.endpoint ?: "none"}",
-            "latestRequestStatus=${requestActivity?.statusCode ?: "none"}",
-            "latestSyncBatch=${result?.syncBatchId ?: "none"}",
-            "latestSynced=${result?.results?.count { it.status == SyncItemStatus.synced } ?: 0}",
-            "latestSkipped=${result?.results?.count { it.status == SyncItemStatus.skipped } ?: 0}",
-            "latestFailed=${result?.results?.count { it.status == SyncItemStatus.failed || it.status == SyncItemStatus.conflicted } ?: 0}",
-        ).joinToString(separator = "\n")
+        val latestSynced = result?.results?.count { it.status == SyncItemStatus.synced } ?: 0
+        val latestSkipped = result?.results?.count { it.status == SyncItemStatus.skipped } ?: 0
+        val latestFailed = result?.results?.count {
+            it.status == SyncItemStatus.failed || it.status == SyncItemStatus.conflicted
+        } ?: 0
+
+        return JSONObject()
+            .put("schemaVersion", 1)
+            .put("type", "sharesync_support_snapshot")
+            .put("platform", "android")
+            .put("generatedAt", Instant.now().toString())
+            .put("appVersion", BuildConfig.VERSION_NAME)
+            .put("buildNumber", BuildConfig.VERSION_CODE)
+            .put("phase", phaseStatus())
+            .put("transport", currentTransportSecurityMode.name)
+            .put("endpoint", currentEndpointUrl() ?: JSONObject.NULL)
+            .put(
+                "permissions",
+                JSONObject()
+                    .put("media", hasMediaPermission())
+                    .put("notification", hasNotificationPermission()),
+            )
+            .put(
+                "android",
+                JSONObject()
+                    .put("serverRunning", isServerRunning)
+                    .put("pendingPhotos", currentManifestPhotoCount ?: JSONObject.NULL),
+            )
+            .put(
+                "latestRequest",
+                JSONObject()
+                    .put("endpoint", requestActivity?.endpoint ?: JSONObject.NULL)
+                    .put("statusCode", requestActivity?.statusCode ?: JSONObject.NULL),
+            )
+            .put(
+                "sync",
+                JSONObject()
+                    .put("latestBatch", result?.syncBatchId ?: JSONObject.NULL)
+                    .put("synced", latestSynced)
+                    .put("skipped", latestSkipped)
+                    .put("failed", latestFailed),
+            )
+            .put(
+                "redaction",
+                JSONObject()
+                    .put("pairingToken", "excluded")
+                    .put("requestSignature", "excluded")
+                    .put("sharedSecret", "excluded"),
+            )
+            .toString(2)
     }
 
     private fun copyText(label: String, text: String) {
