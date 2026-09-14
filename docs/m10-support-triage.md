@@ -35,7 +35,7 @@ The inspector verifies:
 - `type` is `sharesync_support_snapshot`.
 - `platform` is `android` or `ios`.
 - `generatedAt` is an RFC3339 timestamp.
-- `nextStep` is present for beta support triage.
+- `nextStep` is present and valid for the snapshot platform.
 - `sync` exists.
 - Redaction markers confirm pairing token, request signature, and shared secret are excluded.
 - Sensitive marker names do not appear outside the `redaction` section.

@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 photo PoC, M1 photo MVP hardening, M2 photo product reliability, M3 pre-release product hardening, M4 QR-pinned HTTPS readiness, M5 release-candidate polish, M6 beta package readiness, M7 internal beta handoff, M8 beta preflight, M9 support snapshot, M10 support triage, M11 beta UX readiness, M12 readiness presenter hardening, and M13 support next-step snapshot are complete.
+Status: M0 photo PoC, M1 photo MVP hardening, M2 photo product reliability, M3 pre-release product hardening, M4 QR-pinned HTTPS readiness, M5 release-candidate polish, M6 beta package readiness, M7 internal beta handoff, M8 beta preflight, M9 support snapshot, M10 support triage, M11 beta UX readiness, M12 readiness presenter hardening, M13 support next-step snapshot, and M14 support snapshot strict next-step validation are complete.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -16,7 +16,7 @@ The project intentionally uses native implementation:
 
 ## Current Stage
 
-The completed baseline is `M0 - Android to iOS Photo PoC`, followed by `M1 - Photo MVP Hardening`, `M2 - Photo Product Reliability`, `M3 - Pre-Release Product Hardening`, `M4 - QR-Pinned HTTPS`, `M5 - Release Candidate Polish`, `M6 - Beta Package Readiness`, `M7 - Internal Beta Handoff`, `M8 - Beta Preflight`, `M9 - Support Snapshot`, `M10 - Support Triage`, `M11 - Beta UX Readiness`, `M12 - Readiness Presenter Hardening`, and `M13 - Support Next-Step Snapshot`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, beta preflight automation, redacted JSON diagnostics, local support snapshot triage, product-focused next-step guidance, tested readiness presenter state, and next-step support snapshot evidence.
+The completed baseline is `M0 - Android to iOS Photo PoC`, followed by `M1 - Photo MVP Hardening`, `M2 - Photo Product Reliability`, `M3 - Pre-Release Product Hardening`, `M4 - QR-Pinned HTTPS`, `M5 - Release Candidate Polish`, `M6 - Beta Package Readiness`, `M7 - Internal Beta Handoff`, `M8 - Beta Preflight`, `M9 - Support Snapshot`, `M10 - Support Triage`, `M11 - Beta UX Readiness`, `M12 - Readiness Presenter Hardening`, `M13 - Support Next-Step Snapshot`, and `M14 - Support Snapshot Strict Next-Step Validation`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, beta preflight automation, redacted JSON diagnostics, local support snapshot triage, product-focused next-step guidance, tested readiness presenter state, and strictly validated next-step support snapshot evidence.
 
 The current codebase contains:
 
@@ -61,6 +61,7 @@ The current codebase contains:
 - iOS clear-pairing control for refreshing stale Android M0 endpoint/token state without deleting the app.
 - Android and iOS copied diagnostics use a shared redacted support snapshot JSON format.
 - Android and iOS support snapshots include stable next-step action codes for beta triage.
+- The support snapshot inspector rejects invalid platform-specific next-step action codes.
 - Support snapshots can be validated and summarized locally for internal beta triage.
 
 M0 validates the riskiest path:
@@ -119,6 +120,7 @@ tasks/
 - [M11 Beta UX Readiness](docs/m11-beta-ux-readiness.md)
 - [M12 Readiness Presenter Hardening](docs/m12-readiness-presenter-hardening.md)
 - [M13 Support Next-Step Snapshot](docs/m13-support-next-step-snapshot.md)
+- [M14 Support Snapshot Strict Next-Step Validation](docs/m14-support-snapshot-strict-next-step.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Error Recovery Matrix](docs/error-recovery-matrix.md)
 - [Sync History Summary](docs/sync-history-summary.md)
@@ -144,6 +146,7 @@ tasks/
 - [M11 Beta UX Readiness](tasks/m11-beta-ux-readiness.md)
 - [M12 Readiness Presenter Hardening](tasks/m12-readiness-presenter-hardening.md)
 - [M13 Support Next-Step Snapshot](tasks/m13-support-next-step-snapshot.md)
+- [M14 Support Snapshot Strict Next-Step Validation](tasks/m14-support-snapshot-strict-next-step.md)
 
 ## M0 Rules
 

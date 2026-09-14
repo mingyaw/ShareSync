@@ -17,6 +17,22 @@ SENSITIVE_MARKERS = (
     "authorization",
     "x-sharesync-signature",
 )
+ANDROID_NEXT_STEPS = {
+    "allow_android_photos",
+    "start_android_sharing",
+    "wait_for_android_server",
+    "scan_from_iphone",
+    "wait_for_retry_resume",
+    "wait_for_new_android_photos",
+}
+IOS_NEXT_STEPS = {
+    "scan_android_qr",
+    "review_android_endpoint",
+    "allow_iphone_photos",
+    "keep_sharesync_open",
+    "fetch_latest_manifest",
+    "sync_remaining_photos",
+}
 
 
 def load_json(path: Path | None) -> dict[str, Any]:
@@ -47,14 +63,20 @@ def validate_snapshot(snapshot: dict[str, Any]) -> list[str]:
         errors.append("schemaVersion must be 1")
     if snapshot.get("type") != "sharesync_support_snapshot":
         errors.append("type must be sharesync_support_snapshot")
-    if snapshot.get("platform") not in ("android", "ios"):
+    platform = snapshot.get("platform")
+    if platform not in ("android", "ios"):
         errors.append("platform must be android or ios")
     if not isinstance(snapshot.get("appVersion"), str) or not snapshot.get("appVersion"):
         errors.append("appVersion must be a non-empty string")
     if not isinstance(snapshot.get("phase"), str) or not snapshot.get("phase"):
         errors.append("phase must be a non-empty string")
-    if not isinstance(snapshot.get("nextStep"), str) or not snapshot.get("nextStep"):
+    next_step = snapshot.get("nextStep")
+    if not isinstance(next_step, str) or not next_step:
         errors.append("nextStep must be a non-empty string")
+    elif platform == "android" and next_step not in ANDROID_NEXT_STEPS:
+        errors.append(f"nextStep is not valid for android: {next_step}")
+    elif platform == "ios" and next_step not in IOS_NEXT_STEPS:
+        errors.append(f"nextStep is not valid for ios: {next_step}")
     if not isinstance(snapshot.get("transport"), str) or not snapshot.get("transport"):
         errors.append("transport must be a non-empty string")
 

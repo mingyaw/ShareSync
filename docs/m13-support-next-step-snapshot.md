@@ -13,6 +13,8 @@ Support snapshots now include:
 
 The `nextStep` field is intentionally not localized. Support tooling and beta notes can rely on stable values even when the app is running in Traditional Chinese or English.
 
+The support snapshot inspector rejects next-step values that do not belong to the snapshot platform.
+
 ## Android Values
 
 Android can report:
