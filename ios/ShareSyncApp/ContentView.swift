@@ -98,6 +98,27 @@ struct ContentView: View {
                         MetricView(title: "ios.metric.left", value: "\(summary.remainingCount)")
                     }
                 }
+
+                Divider()
+
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: nextStepIconName)
+                        .font(.headline)
+                        .foregroundStyle(summaryTint)
+                        .frame(width: 22, alignment: .center)
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("ios.next_step.title")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.secondary)
+                            .textCase(.uppercase)
+                        Text(nextStepText)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
             }
         }
     }
@@ -456,6 +477,23 @@ struct ContentView: View {
         }
     }
 
+    private var nextStepIconName: String {
+        switch viewModel.readiness.primaryAction {
+        case .pairAndroid:
+            return "qrcode.viewfinder"
+        case .enterEndpoint:
+            return "wifi.exclamationmark"
+        case .allowPhotos:
+            return "photo.badge.checkmark"
+        case .waitForTransfer:
+            return "hourglass"
+        case .fetchManifest:
+            return "arrow.clockwise"
+        case .syncAllPhotos:
+            return "arrow.triangle.2.circlepath"
+        }
+    }
+
     private var primaryReadinessActionEnabled: Bool {
         switch viewModel.readiness.primaryAction {
         case .pairAndroid, .enterEndpoint:
@@ -520,6 +558,23 @@ struct ContentView: View {
         }
 
         return localized("ios.summary.fetch_latest")
+    }
+
+    private var nextStepText: String {
+        switch viewModel.readiness.primaryAction {
+        case .pairAndroid:
+            return localized("ios.next_step.pair_android")
+        case .enterEndpoint:
+            return localized("ios.next_step.review_connection")
+        case .allowPhotos:
+            return localized("ios.next_step.allow_photos")
+        case .waitForTransfer:
+            return localized("ios.next_step.keep_open")
+        case .fetchManifest:
+            return localized("ios.next_step.fetch_manifest")
+        case .syncAllPhotos:
+            return localized("ios.next_step.sync_all")
+        }
     }
 
     private var readinessReasonText: String? {

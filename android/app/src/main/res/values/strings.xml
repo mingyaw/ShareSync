@@ -55,6 +55,13 @@
     <string name="m0_pairing_instruction_waiting">Allow photo access and keep ShareSync open. The pairing code will appear automatically.</string>
     <string name="m0_pairing_instruction_ready">Scan this pairing code from your iPhone for first-time binding, endpoint refresh, or security refresh. After binding, this Android phone keeps photos available while ShareSync stays open.</string>
     <string name="m0_pairing_payload_copied">Pairing payload copied. Paste it into the iPhone ShareSync receive screen.</string>
+    <string name="m11_next_step">Next step: %1$s</string>
+    <string name="m11_next_step_allow_photos">Allow photo access so this phone can prepare the photo list.</string>
+    <string name="m11_next_step_start_sharing">Tap Make Photos Available to show the pairing QR code.</string>
+    <string name="m11_next_step_wait_for_server">Keep ShareSync open while the photo list and local server are prepared.</string>
+    <string name="m11_next_step_scan_from_iphone">Open ShareSync on iPhone and scan this QR code.</string>
+    <string name="m11_next_step_keep_open_for_retry">Keep this screen open so iPhone can resume failed or remaining photos.</string>
+    <string name="m11_next_step_wait_for_new_photos">All reported photos are complete; keep sharing only if you expect new photos.</string>
     <string name="m2_readiness_allow_photos">Allow photo access on Android before sharing photos with iPhone.</string>
     <string name="m2_readiness_start_sharing">Start photo sharing to show the pairing code and local endpoint.</string>
     <string name="m2_readiness_wait_for_server">Preparing photo sharing. Keep ShareSync open.</string>

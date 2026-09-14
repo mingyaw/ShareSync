@@ -42,6 +42,7 @@ import java.time.Instant
 class MainActivity : Activity() {
     private lateinit var statusText: TextView
     private lateinit var phaseText: TextView
+    private lateinit var nextStepText: TextView
     private lateinit var endpointText: TextView
     private lateinit var permissionText: TextView
     private lateinit var notificationPermissionText: TextView
@@ -160,6 +161,11 @@ class MainActivity : Activity() {
 
         statusText = bodyText()
         phaseText = bodyText()
+        nextStepText = bodyText().apply {
+            textSize = 17f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(Color.rgb(28, 28, 30))
+        }
         endpointText = bodyText()
         permissionText = bodyText()
         notificationPermissionText = bodyText()
@@ -242,6 +248,7 @@ class MainActivity : Activity() {
                 children = listOf(
                     statusText,
                     phaseText,
+                    nextStepText,
                     localNetworkText,
                     manifestSummaryText,
                     syncEventText,
@@ -345,6 +352,7 @@ class MainActivity : Activity() {
 
         statusText.text = status
         phaseText.text = getString(R.string.m0_phase, phaseStatus())
+        nextStepText.text = getString(R.string.m11_next_step, nextStepInstruction())
         endpointText.text = endpoint
         permissionText.text = if (hasMediaPermission()) {
             getString(R.string.m0_permission_granted)
@@ -848,6 +856,17 @@ class MainActivity : Activity() {
             AndroidPhotoSyncPrimaryAction.SHOW_PAIRING_CODE -> getString(R.string.m2_readiness_show_pairing_code)
             AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_RETRY -> getString(R.string.m2_readiness_keep_available_for_retry)
             AndroidPhotoSyncPrimaryAction.WAIT_FOR_NEW_PHOTOS -> getString(R.string.m2_readiness_wait_for_new_photos)
+        }
+    }
+
+    private fun nextStepInstruction(): String {
+        return when (runtimeState().readiness().primaryAction) {
+            AndroidPhotoSyncPrimaryAction.ALLOW_PHOTOS -> getString(R.string.m11_next_step_allow_photos)
+            AndroidPhotoSyncPrimaryAction.START_SHARING -> getString(R.string.m11_next_step_start_sharing)
+            AndroidPhotoSyncPrimaryAction.WAIT_FOR_SERVER -> getString(R.string.m11_next_step_wait_for_server)
+            AndroidPhotoSyncPrimaryAction.SHOW_PAIRING_CODE -> getString(R.string.m11_next_step_scan_from_iphone)
+            AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_RETRY -> getString(R.string.m11_next_step_keep_open_for_retry)
+            AndroidPhotoSyncPrimaryAction.WAIT_FOR_NEW_PHOTOS -> getString(R.string.m11_next_step_wait_for_new_photos)
         }
     }
 

@@ -25,6 +25,13 @@
 "ios.metric.left" = "剩餘";
 "ios.metric.photos" = "照片";
 "ios.nav.receive_photos" = "接收照片";
+"ios.next_step.title" = "下一步";
+"ios.next_step.allow_photos" = "允許照片權限後，同步所有可用的 Android 照片。";
+"ios.next_step.fetch_manifest" = "先取得最新 Android 照片清單，再開始同步。";
+"ios.next_step.keep_open" = "保持 ShareSync 開啟，直到目前傳輸完成。";
+"ios.next_step.pair_android" = "掃描一次 Android QR Code，將這支 iPhone 綁定。";
+"ios.next_step.review_connection" = "檢查已儲存的 Android endpoint，或重新掃描 QR Code。";
+"ios.next_step.sync_all" = "將剩餘照片同步到照片 App，交由 iCloud 備份。";
 "ios.panel.connection" = "連線";
 "ios.panel.diagnostics" = "診斷";
 "ios.panel.settings" = "設定";

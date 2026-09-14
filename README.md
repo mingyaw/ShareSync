@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 photo PoC, M1 photo MVP hardening, M2 photo product reliability, M3 pre-release product hardening, M4 QR-pinned HTTPS readiness, M5 release-candidate polish, M6 beta package readiness, M7 internal beta handoff, M8 beta preflight, M9 support snapshot, and M10 support triage are complete.
+Status: M0 photo PoC, M1 photo MVP hardening, M2 photo product reliability, M3 pre-release product hardening, M4 QR-pinned HTTPS readiness, M5 release-candidate polish, M6 beta package readiness, M7 internal beta handoff, M8 beta preflight, M9 support snapshot, M10 support triage, and M11 beta UX readiness are complete.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -16,7 +16,7 @@ The project intentionally uses native implementation:
 
 ## Current Stage
 
-The completed baseline is `M0 - Android to iOS Photo PoC`, followed by `M1 - Photo MVP Hardening`, `M2 - Photo Product Reliability`, `M3 - Pre-Release Product Hardening`, `M4 - QR-Pinned HTTPS`, `M5 - Release Candidate Polish`, `M6 - Beta Package Readiness`, `M7 - Internal Beta Handoff`, `M8 - Beta Preflight`, `M9 - Support Snapshot`, and `M10 - Support Triage`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, beta preflight automation, redacted JSON diagnostics, and local support snapshot triage.
+The completed baseline is `M0 - Android to iOS Photo PoC`, followed by `M1 - Photo MVP Hardening`, `M2 - Photo Product Reliability`, `M3 - Pre-Release Product Hardening`, `M4 - QR-Pinned HTTPS`, `M5 - Release Candidate Polish`, `M6 - Beta Package Readiness`, `M7 - Internal Beta Handoff`, `M8 - Beta Preflight`, `M9 - Support Snapshot`, `M10 - Support Triage`, and `M11 - Beta UX Readiness`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, beta preflight automation, redacted JSON diagnostics, local support snapshot triage, and product-focused next-step guidance.
 
 The current codebase contains:
 
@@ -34,6 +34,7 @@ The current codebase contains:
 - iOS local-network requests use explicit timeouts: short for health/manifest/result posts and longer for photo media transfers.
 - iOS receive screen can download the next item, a small batch, or all remaining manifest items for M0 device validation.
 - iOS receive screen shows a concise phase status for pairing, fetch, transfer, retry, and completion validation.
+- iOS receive screen shows a product-focused next-step instruction derived from the primary readiness action.
 - iOS receive screen shows a manifest transfer status for ready, retry, complete, or no-photo validation.
 - iOS receive screen shows live batch progress, downloaded count, failed count, and current file during foreground transfer.
 - iOS receive screen shows resumable partial photo count for interrupted-transfer validation.
@@ -49,6 +50,7 @@ The current codebase contains:
 - Android starts a foreground data-sync service while the M0 local server is running.
 - Android can reconnect the M0 screen to an already running in-process server session after Activity recreation.
 - Android M0 screen shows a concise phase status for permission, server start, pairing, retry, and completion validation.
+- Android M0 screen shows a product-focused next-step instruction derived from the runtime readiness state.
 - Android M0 screen shows pending manifest photo count, manifest transfer status, latest local request activity, and latest failed sync result code.
 - Android can copy the latest sync result JSON for real-device validation records.
 - Android manifest filtering for media already reported as synced or skipped.
@@ -111,6 +113,7 @@ tasks/
 - [M8 Beta Preflight](docs/m8-beta-preflight.md)
 - [M9 Support Snapshot](docs/m9-support-snapshot.md)
 - [M10 Support Triage](docs/m10-support-triage.md)
+- [M11 Beta UX Readiness](docs/m11-beta-ux-readiness.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Error Recovery Matrix](docs/error-recovery-matrix.md)
 - [Sync History Summary](docs/sync-history-summary.md)
@@ -133,6 +136,7 @@ tasks/
 - [M8 Beta Preflight](tasks/m8-beta-preflight.md)
 - [M9 Support Snapshot](tasks/m9-support-snapshot.md)
 - [M10 Support Triage](tasks/m10-support-triage.md)
+- [M11 Beta UX Readiness](tasks/m11-beta-ux-readiness.md)
 
 ## M0 Rules
 

@@ -25,6 +25,13 @@
 "ios.metric.left" = "Left";
 "ios.metric.photos" = "Photos";
 "ios.nav.receive_photos" = "Receive Photos";
+"ios.next_step.title" = "Next step";
+"ios.next_step.allow_photos" = "Allow Photos access, then sync all available Android photos.";
+"ios.next_step.fetch_manifest" = "Fetch the latest Android photo list before syncing.";
+"ios.next_step.keep_open" = "Keep ShareSync open until the current transfer finishes.";
+"ios.next_step.pair_android" = "Scan the Android QR code once to bind this iPhone.";
+"ios.next_step.review_connection" = "Review the saved Android endpoint or scan a fresh QR code.";
+"ios.next_step.sync_all" = "Sync all remaining photos into Photos for iCloud backup.";
 "ios.panel.connection" = "Connection";
 "ios.panel.diagnostics" = "Diagnostics";
 "ios.panel.settings" = "Settings";
