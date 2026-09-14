@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 photo PoC, M1 photo MVP hardening, M2 photo product reliability, M3 pre-release product hardening, M4 QR-pinned HTTPS readiness, M5 release-candidate polish, M6 beta package readiness, and M7 internal beta handoff are complete.
+Status: M0 photo PoC, M1 photo MVP hardening, M2 photo product reliability, M3 pre-release product hardening, M4 QR-pinned HTTPS readiness, M5 release-candidate polish, M6 beta package readiness, M7 internal beta handoff, and M8 beta preflight are complete.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -16,7 +16,7 @@ The project intentionally uses native implementation:
 
 ## Current Stage
 
-The completed baseline is `M0 - Android to iOS Photo PoC`, followed by `M1 - Photo MVP Hardening`, `M2 - Photo Product Reliability`, `M3 - Pre-Release Product Hardening`, `M4 - QR-Pinned HTTPS`, `M5 - Release Candidate Polish`, `M6 - Beta Package Readiness`, and `M7 - Internal Beta Handoff`. The product remains focused on repeatable, traceable photo-only handoff without expanding to videos, contacts, files, or reverse sync.
+The completed baseline is `M0 - Android to iOS Photo PoC`, followed by `M1 - Photo MVP Hardening`, `M2 - Photo Product Reliability`, `M3 - Pre-Release Product Hardening`, `M4 - QR-Pinned HTTPS`, `M5 - Release Candidate Polish`, `M6 - Beta Package Readiness`, `M7 - Internal Beta Handoff`, and `M8 - Beta Preflight`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, and beta preflight automation.
 
 The current codebase contains:
 
@@ -106,6 +106,7 @@ tasks/
 - [M5 Release Candidate Readiness](docs/m5-release-candidate-readiness.md)
 - [M6 Beta Package Readiness](docs/m6-beta-package-readiness.md)
 - [M7 Internal Beta Handoff](docs/m7-internal-beta-handoff.md)
+- [M8 Beta Preflight](docs/m8-beta-preflight.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Error Recovery Matrix](docs/error-recovery-matrix.md)
 - [Sync History Summary](docs/sync-history-summary.md)
@@ -125,6 +126,7 @@ tasks/
 - [M5 Release Candidate Polish](tasks/m5-release-candidate-polish.md)
 - [M6 Beta Package Readiness](tasks/m6-beta-package-readiness.md)
 - [M7 Internal Beta Handoff](tasks/m7-internal-beta-handoff.md)
+- [M8 Beta Preflight](tasks/m8-beta-preflight.md)
 
 ## M0 Rules
 

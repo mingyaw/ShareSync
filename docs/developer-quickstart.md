@@ -114,6 +114,15 @@ bash scripts/generate-beta-handoff.sh --transport signed-http
 
 Use `--output` only for an external handoff location. Do not commit generated handoff records or packaged app artifacts.
 
+Beta preflight:
+
+```sh
+bash scripts/check-beta-preflight.sh --transport signed-http
+bash scripts/check-beta-preflight.sh --transport signed-http --full
+```
+
+Use the default preflight for quick handoff checks and `--full` before sharing a source-code-backed beta build.
+
 Beta handoff record:
 
 ```sh
@@ -143,3 +152,4 @@ Use these documents when real-device testing resumes:
 - [M5 Release Candidate Readiness](m5-release-candidate-readiness.md)
 - [M6 Beta Package Readiness](m6-beta-package-readiness.md)
 - [M7 Internal Beta Handoff](m7-internal-beta-handoff.md)
+- [M8 Beta Preflight](m8-beta-preflight.md)
