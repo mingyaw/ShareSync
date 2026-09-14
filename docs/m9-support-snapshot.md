@@ -16,6 +16,7 @@ Required top-level fields:
 - `generatedAt`: RFC3339 timestamp.
 - `appVersion`: user-visible app version.
 - `phase`: current user-facing app phase.
+- `nextStep`: machine-readable next user action.
 - `transport`: current local transport mode.
 - `sync`: latest sync counts or status.
 - `redaction`: explicit confirmation that sensitive fields are excluded.
@@ -43,6 +44,7 @@ Android `Copy diagnostics` now copies support snapshot JSON with:
 - Server state.
 - Endpoint.
 - Transport mode.
+- Next-step action code.
 - Media and notification permission state.
 - Pending photo count.
 - Latest request endpoint/status.
@@ -53,6 +55,7 @@ iOS `Copy diagnostics` now copies support snapshot JSON with:
 - App version/build.
 - Pairing/binding state.
 - Endpoint display.
+- Next-step action code.
 - Photos permission state.
 - Screen-lock status.
 - Manifest and batch progress.

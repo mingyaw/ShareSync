@@ -53,6 +53,8 @@ def validate_snapshot(snapshot: dict[str, Any]) -> list[str]:
         errors.append("appVersion must be a non-empty string")
     if not isinstance(snapshot.get("phase"), str) or not snapshot.get("phase"):
         errors.append("phase must be a non-empty string")
+    if not isinstance(snapshot.get("nextStep"), str) or not snapshot.get("nextStep"):
+        errors.append("nextStep must be a non-empty string")
     if not isinstance(snapshot.get("transport"), str) or not snapshot.get("transport"):
         errors.append("transport must be a non-empty string")
 
@@ -122,6 +124,7 @@ def summarize(snapshot: dict[str, Any]) -> str:
         f"- Platform: {platform}",
         f"- Version: {version_text}",
         f"- Phase: {snapshot.get('phase', 'unknown')}",
+        f"- Next step: {snapshot.get('nextStep', 'unknown')}",
         f"- Transport: {snapshot.get('transport', 'unknown')}",
         f"- Endpoint: {snapshot.get('endpoint', 'not provided')}",
     ]

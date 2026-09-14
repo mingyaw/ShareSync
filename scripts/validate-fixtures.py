@@ -211,6 +211,7 @@ def validate_support_snapshot(fixture_name: str, expected_platform: str):
             "generatedAt",
             "appVersion",
             "phase",
+            "nextStep",
             "transport",
             "sync",
             "redaction",
@@ -219,6 +220,8 @@ def validate_support_snapshot(fixture_name: str, expected_platform: str):
     assert snapshot["schemaVersion"] == 1
     assert snapshot["type"] == "sharesync_support_snapshot"
     assert snapshot["platform"] == expected_platform
+    assert isinstance(snapshot["nextStep"], str)
+    assert snapshot["nextStep"]
     redaction = snapshot["redaction"]
     assert redaction["pairingToken"] == "excluded"
     assert redaction["requestSignature"] == "excluded"

@@ -3,7 +3,7 @@
   "$id": "https://sharesync.local/schemas/support-snapshot.schema.json",
   "title": "ShareSync Support Snapshot",
   "type": "object",
-  "required": ["schemaVersion", "type", "platform", "generatedAt", "appVersion", "phase", "transport", "sync", "redaction"],
+  "required": ["schemaVersion", "type", "platform", "generatedAt", "appVersion", "phase", "nextStep", "transport", "sync", "redaction"],
   "properties": {
     "schemaVersion": { "type": "integer", "const": 1 },
     "type": { "type": "string", "const": "sharesync_support_snapshot" },
@@ -12,6 +12,23 @@
     "appVersion": { "type": "string", "minLength": 1 },
     "buildNumber": { "type": "integer" },
     "phase": { "type": "string", "minLength": 1 },
+    "nextStep": {
+      "type": "string",
+      "enum": [
+        "allow_android_photos",
+        "start_android_sharing",
+        "wait_for_android_server",
+        "scan_from_iphone",
+        "wait_for_retry_resume",
+        "wait_for_new_android_photos",
+        "scan_android_qr",
+        "review_android_endpoint",
+        "allow_iphone_photos",
+        "keep_sharesync_open",
+        "fetch_latest_manifest",
+        "sync_remaining_photos"
+      ]
+    },
     "transport": { "type": "string", "minLength": 1 },
     "endpoint": { "type": ["string", "null"] },
     "binding": { "type": "string" },

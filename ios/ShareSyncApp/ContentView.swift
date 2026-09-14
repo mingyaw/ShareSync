@@ -812,6 +812,7 @@ struct ContentView: View {
             "generatedAt": ISO8601DateFormatter().string(from: Date()),
             "appVersion": appVersionText,
             "phase": phaseStatus,
+            "nextStep": supportSnapshotNextStep,
             "transport": viewModel.pairedDevice?.transportSecurity?.mode.rawValue ?? "signed_http",
             "endpoint": pairedStatus,
             "binding": bindingStatusText,
@@ -857,6 +858,23 @@ struct ContentView: View {
             return version
         default:
             return localized("ios.status.unknown")
+        }
+    }
+
+    private var supportSnapshotNextStep: String {
+        switch viewModel.readiness.nextStep {
+        case .scanAndroidQRCode:
+            return "scan_android_qr"
+        case .reviewAndroidEndpoint:
+            return "review_android_endpoint"
+        case .allowIPhonePhotos:
+            return "allow_iphone_photos"
+        case .keepShareSyncOpen:
+            return "keep_sharesync_open"
+        case .fetchLatestManifest:
+            return "fetch_latest_manifest"
+        case .syncRemainingPhotos:
+            return "sync_remaining_photos"
         }
     }
 

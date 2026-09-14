@@ -35,6 +35,7 @@ The inspector verifies:
 - `type` is `sharesync_support_snapshot`.
 - `platform` is `android` or `ios`.
 - `generatedAt` is an RFC3339 timestamp.
+- `nextStep` is present for beta support triage.
 - `sync` exists.
 - Redaction markers confirm pairing token, request signature, and shared secret are excluded.
 - Sensitive marker names do not appear outside the `redaction` section.
@@ -45,6 +46,7 @@ The summary highlights the parts most useful for internal beta support:
 
 - Platform and app version.
 - Current phase.
+- Next-step action code.
 - Transport mode.
 - Local endpoint.
 - Android server/request/sync counts.

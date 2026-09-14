@@ -5,6 +5,7 @@
   "generatedAt": "2026-09-14T05:55:00Z",
   "appVersion": "0.1.0 (1)",
   "phase": "Ready",
+  "nextStep": "sync_remaining_photos",
   "transport": "signed_http",
   "endpoint": "Android Pixel - 192.168.1.10:48291",
   "binding": "Paired Android",

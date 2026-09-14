@@ -6,6 +6,7 @@
   "appVersion": "0.1.0",
   "buildNumber": 1,
   "phase": "ready",
+  "nextStep": "scan_from_iphone",
   "transport": "SIGNED_HTTP",
   "endpoint": "http://192.168.1.10:48291/v1/health",
   "permissions": {

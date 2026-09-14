@@ -597,6 +597,7 @@ class MainActivity : Activity() {
             .put("appVersion", BuildConfig.VERSION_NAME)
             .put("buildNumber", BuildConfig.VERSION_CODE)
             .put("phase", phaseStatus())
+            .put("nextStep", supportSnapshotNextStep())
             .put("transport", currentTransportSecurityMode.name)
             .put("endpoint", currentEndpointUrl() ?: JSONObject.NULL)
             .put(
@@ -867,6 +868,17 @@ class MainActivity : Activity() {
             AndroidPhotoSyncNextStep.SCAN_FROM_IPHONE -> getString(R.string.m11_next_step_scan_from_iphone)
             AndroidPhotoSyncNextStep.KEEP_ANDROID_OPEN_FOR_RETRY -> getString(R.string.m11_next_step_keep_open_for_retry)
             AndroidPhotoSyncNextStep.WAIT_FOR_NEW_ANDROID_PHOTOS -> getString(R.string.m11_next_step_wait_for_new_photos)
+        }
+    }
+
+    private fun supportSnapshotNextStep(): String {
+        return when (runtimeState().readiness().nextStep) {
+            AndroidPhotoSyncNextStep.ALLOW_ANDROID_PHOTOS -> "allow_android_photos"
+            AndroidPhotoSyncNextStep.START_ANDROID_SHARING -> "start_android_sharing"
+            AndroidPhotoSyncNextStep.WAIT_FOR_ANDROID_SERVER -> "wait_for_android_server"
+            AndroidPhotoSyncNextStep.SCAN_FROM_IPHONE -> "scan_from_iphone"
+            AndroidPhotoSyncNextStep.KEEP_ANDROID_OPEN_FOR_RETRY -> "wait_for_retry_resume"
+            AndroidPhotoSyncNextStep.WAIT_FOR_NEW_ANDROID_PHOTOS -> "wait_for_new_android_photos"
         }
     }
 
