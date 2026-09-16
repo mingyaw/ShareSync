@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 photo PoC, M1 photo MVP hardening, M2 photo product reliability, M3 pre-release product hardening, M4 QR-pinned HTTPS readiness, M5 release-candidate polish, M6 beta package readiness, M7 internal beta handoff, M8 beta preflight, M9 support snapshot, M10 support triage, M11 beta UX readiness, M12 readiness presenter hardening, M13 support next-step snapshot, M14 support snapshot strict next-step validation, M15 support snapshot inspector tests, and M16 platform-specific fixture validation are complete.
+Status: M0 photo PoC through M20 static beta freeze are complete for the photo-only MVP source-code track.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -16,7 +16,7 @@ The project intentionally uses native implementation:
 
 ## Current Stage
 
-The completed baseline is `M0 - Android to iOS Photo PoC`, followed by `M1 - Photo MVP Hardening`, `M2 - Photo Product Reliability`, `M3 - Pre-Release Product Hardening`, `M4 - QR-Pinned HTTPS`, `M5 - Release Candidate Polish`, `M6 - Beta Package Readiness`, `M7 - Internal Beta Handoff`, `M8 - Beta Preflight`, `M9 - Support Snapshot`, `M10 - Support Triage`, `M11 - Beta UX Readiness`, `M12 - Readiness Presenter Hardening`, `M13 - Support Next-Step Snapshot`, `M14 - Support Snapshot Strict Next-Step Validation`, `M15 - Support Snapshot Inspector Tests`, and `M16 - Platform-Specific Fixture Validation`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, beta preflight automation, redacted JSON diagnostics, local support snapshot triage, product-focused next-step guidance, tested readiness presenter state, strictly validated next-step support snapshot evidence, support snapshot inspector regression tests, and platform-aware support snapshot fixture validation.
+The completed baseline is `M0 - Android to iOS Photo PoC` through `M20 - Static Beta Freeze`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, beta preflight automation, redacted JSON diagnostics, local support snapshot triage, product-focused next-step guidance, tested readiness presenter state, strictly validated next-step support snapshot evidence, support snapshot inspector regression tests, platform-aware support snapshot fixture validation, beta handoff quality notes, main-axis check boundaries, error recovery alignment, and a source-code static beta freeze checkpoint.
 
 The current codebase contains:
 
@@ -64,6 +64,8 @@ The current codebase contains:
 - The support snapshot inspector rejects invalid platform-specific next-step action codes.
 - Support snapshot inspector regression tests cover valid fixtures, missing next-step data, cross-platform next-step data, and sensitive marker leakage.
 - Fixture validation rejects support snapshot examples whose next-step action does not belong to the example platform.
+- Beta handoff output includes support snapshot summaries and explicit deferred validation notes.
+- Error recovery documentation is aligned with support snapshot next-step evidence.
 - Support snapshots can be validated and summarized locally for internal beta triage.
 
 M0 validates the riskiest path:
@@ -125,6 +127,10 @@ tasks/
 - [M14 Support Snapshot Strict Next-Step Validation](docs/m14-support-snapshot-strict-next-step.md)
 - [M15 Support Snapshot Inspector Tests](docs/m15-support-snapshot-inspector-tests.md)
 - [M16 Platform-Specific Fixture Validation](docs/m16-platform-specific-fixture-validation.md)
+- [M17 Beta Handoff Quality](docs/m17-beta-handoff-quality.md)
+- [M18 Main-Axis Check Boundaries](docs/m18-main-axis-check-boundaries.md)
+- [M19 Error Recovery Alignment](docs/m19-error-recovery-alignment.md)
+- [M20 Static Beta Freeze](docs/m20-static-beta-freeze.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Error Recovery Matrix](docs/error-recovery-matrix.md)
 - [Sync History Summary](docs/sync-history-summary.md)
@@ -153,6 +159,10 @@ tasks/
 - [M14 Support Snapshot Strict Next-Step Validation](tasks/m14-support-snapshot-strict-next-step.md)
 - [M15 Support Snapshot Inspector Tests](tasks/m15-support-snapshot-inspector-tests.md)
 - [M16 Platform-Specific Fixture Validation](tasks/m16-platform-specific-fixture-validation.md)
+- [M17 Beta Handoff Quality](tasks/m17-beta-handoff-quality.md)
+- [M18 Main-Axis Check Boundaries](tasks/m18-main-axis-check-boundaries.md)
+- [M19 Error Recovery Alignment](tasks/m19-error-recovery-alignment.md)
+- [M20 Static Beta Freeze](tasks/m20-static-beta-freeze.md)
 
 ## M0 Rules
 

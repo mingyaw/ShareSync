@@ -44,10 +44,11 @@ Default checks:
   - git diff --check
   - scripts/check-release-readiness.sh
   - scripts/check-repo-hygiene.sh
+  - scripts/test-support-snapshot-inspector.sh
   - scripts/inspect-support-snapshot.py
   - scripts/generate-beta-handoff.sh
 
-Use --full to also run scripts/check-m0.sh.
+Use --full to also run scripts/check-m0.sh. Real-device validation is intentionally not run by this script.
 USAGE
       exit 0
       ;;

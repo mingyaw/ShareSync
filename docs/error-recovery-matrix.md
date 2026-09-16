@@ -1,8 +1,8 @@
 # ShareSync Error Recovery Matrix
 
-Status: M3 shared UX baseline.
+Status: M19 shared UX and support snapshot baseline.
 
-Use this matrix to keep Android and iOS recovery behavior consistent. UI copy can be shorter than this table, but the next action must stay aligned.
+Use this matrix to keep Android and iOS recovery behavior consistent. UI copy can be shorter than this table, but the next action and support snapshot evidence must stay aligned.
 
 | State | Typical Trigger | Error Code | User-Facing Message Direction | Primary Recovery |
 | --- | --- | --- | --- | --- |
@@ -30,3 +30,29 @@ Use this matrix to keep Android and iOS recovery behavior consistent. UI copy ca
 - Keep copy honest about iOS foreground limits.
 - Never imply that ShareSync backs up directly to iCloud before iOS Photos import completes.
 - Never clear local sync state automatically as a recovery action.
+
+## Support Snapshot Alignment
+
+Support snapshots should make the current recovery state obvious without exposing pairing secrets or request signatures.
+
+| Recovery Area | Android Next-Step Evidence | iOS Next-Step Evidence | Support Use |
+| --- | --- | --- | --- |
+| Android permission missing | `allow_android_photos` | N/A | Confirm Android cannot prepare the photo list yet. |
+| Android server not ready | `start_android_sharing` or `wait_for_android_server` | `scan_android_qr` or `review_android_endpoint` | Confirm whether Android is waiting for local server setup or iPhone is using stale pairing data. |
+| Ready to pair | `scan_from_iphone` | `scan_android_qr` | Confirm the Android QR screen is ready and iPhone should scan once. |
+| iOS Photos permission missing | N/A | `allow_iphone_photos` | Confirm iPhone cannot import to Photos yet. |
+| Ready to fetch manifest | N/A | `fetch_latest_manifest` | Confirm pairing is present but the latest Android photo list has not been fetched. |
+| Ready to sync remaining photos | `wait_for_retry_resume` or `wait_for_new_android_photos` | `sync_remaining_photos` | Confirm whether Android is waiting for iPhone resume or all reported photos are complete. |
+| Active transfer | `wait_for_retry_resume` | `keep_sharesync_open` | Confirm iPhone must stay foreground until current transfer completes or pauses safely. |
+
+## Out-Of-Scope Recovery Branches
+
+These branches remain product follow-ups and must not block the photo-only MVP static beta freeze:
+
+- Videos.
+- Contacts.
+- Files or iCloud Drive documents.
+- Reverse iOS-to-Android sync.
+- Delete propagation.
+- Fully unattended iOS background sync.
+- Direct iCloud, Apple ID, or iCloud credential access.

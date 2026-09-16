@@ -68,6 +68,8 @@ else
 fi
 
 readiness_output=$(bash scripts/check-release-readiness.sh --transport "$transport")
+android_support_summary=$(python3 scripts/inspect-support-snapshot.py shared/fixtures/sample-support-snapshot-android.json --summary-only)
+ios_support_summary=$(python3 scripts/inspect-support-snapshot.py shared/fixtures/sample-support-snapshot-ios.json --summary-only)
 
 artifact_rows=""
 if [[ "$artifact_count" -gt 0 ]]; then
@@ -117,10 +119,31 @@ Generated at: $generated_at
 
 - Release readiness gate: passed
 - Validation status: $validation_status
+- Support snapshot triage: Android and iOS sample snapshots passed local validation.
 
 \`\`\`text
 $readiness_output
 \`\`\`
+
+## Support Snapshot Triage
+
+Android sample:
+
+\`\`\`text
+$android_support_summary
+\`\`\`
+
+iOS sample:
+
+\`\`\`text
+$ios_support_summary
+\`\`\`
+
+## Deferred Validation
+
+- Real-device Android photo scanning, local network transfer, iOS Photos import, and iCloud Photos observation remain deferred unless the validation status above says otherwise.
+- QR-pinned HTTPS release readiness remains deferred until M4 physical-device validation is completed and recorded.
+- App Store and Google Play packaging, signing, and review checks are outside this source-code handoff record.
 
 ## Artifact Checksums
 

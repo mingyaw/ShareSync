@@ -1,8 +1,8 @@
 # Developer Quickstart
 
-Status: M16 developer handoff guide.
+Status: M20 developer handoff guide.
 
-This guide is for local development only. ShareSync M16 remains a photo-only Android-to-iPhone local sync MVP and should not be treated as an App Store or Google Play release candidate.
+This guide is for local development only. ShareSync M20 remains a photo-only Android-to-iPhone local sync MVP source-code freeze checkpoint and should not be treated as an App Store or Google Play release candidate.
 
 ## Prerequisites
 
@@ -129,6 +129,14 @@ bash scripts/check-beta-preflight.sh --transport signed-http --full
 
 Use the default preflight for quick handoff checks and `--full` before sharing a source-code-backed beta build.
 
+Static beta freeze check:
+
+```sh
+python3 scripts/validate-fixtures.py
+bash scripts/test-support-snapshot-inspector.sh
+bash scripts/check-beta-preflight.sh --transport signed-http
+```
+
 Support snapshot inspection:
 
 ```sh
@@ -166,3 +174,7 @@ Use these documents when real-device testing resumes:
 - [M14 Support Snapshot Strict Next-Step Validation](m14-support-snapshot-strict-next-step.md)
 - [M15 Support Snapshot Inspector Tests](m15-support-snapshot-inspector-tests.md)
 - [M16 Platform-Specific Fixture Validation](m16-platform-specific-fixture-validation.md)
+- [M17 Beta Handoff Quality](m17-beta-handoff-quality.md)
+- [M18 Main-Axis Check Boundaries](m18-main-axis-check-boundaries.md)
+- [M19 Error Recovery Alignment](m19-error-recovery-alignment.md)
+- [M20 Static Beta Freeze](m20-static-beta-freeze.md)
