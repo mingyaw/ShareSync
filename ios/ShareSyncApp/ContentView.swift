@@ -26,7 +26,7 @@ struct ContentView: View {
                 .padding(.vertical, 18)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
             }
-            .background(Color(.systemGroupedBackground))
+            .background(ShareSyncTheme.background)
             .scrollDismissesKeyboard(.interactively)
             .navigationTitle("ios.nav.receive_photos")
             .fullScreenCover(isPresented: $isShowingPairingScanner) {
@@ -81,21 +81,21 @@ struct ContentView: View {
                         if let readinessReasonText {
                             Text(readinessReasonText)
                                 .font(.footnote)
-                                .foregroundStyle(summaryTint)
+                                .foregroundStyle(summaryTone.color)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }
                     Spacer(minLength: 12)
                     Image(systemName: summaryIconName)
                         .font(.title2)
-                        .foregroundStyle(summaryTint)
+                        .foregroundStyle(summaryTone.color)
                 }
 
                 if let summary = viewModel.summary {
                     HStack(spacing: 10) {
-                        MetricView(title: "ios.metric.photos", value: "\(summary.photoCount)")
-                        MetricView(title: "ios.metric.done", value: "\(summary.importedCount + summary.downloadedCount)")
-                        MetricView(title: "ios.metric.left", value: "\(summary.remainingCount)")
+                        MetricView(title: "ios.metric.photos", value: "\(summary.photoCount)", tone: .info)
+                        MetricView(title: "ios.metric.done", value: "\(summary.importedCount + summary.downloadedCount)", tone: .success)
+                        MetricView(title: "ios.metric.left", value: "\(summary.remainingCount)", tone: .primary)
                     }
                 }
 
@@ -104,7 +104,7 @@ struct ContentView: View {
                 HStack(alignment: .top, spacing: 10) {
                     Image(systemName: nextStepIconName)
                         .font(.headline)
-                        .foregroundStyle(summaryTint)
+                        .foregroundStyle(summaryTone.color)
                         .frame(width: 22, alignment: .center)
 
                     VStack(alignment: .leading, spacing: 3) {
@@ -607,16 +607,16 @@ struct ContentView: View {
         }
     }
 
-    private var summaryTint: Color {
+    private var summaryTone: ShareSyncTone {
         switch phaseKind {
         case .transferComplete:
-            return .green
+            return .success
         case .retryRequired, .transferError, .fetchError:
-            return .orange
+            return .warning
         case .transferActive, .fetchingManifest:
-            return .blue
+            return .primary
         default:
-            return .secondary
+            return .neutral
         }
     }
 
@@ -917,6 +917,47 @@ private enum PhaseKind {
     case transferError
 }
 
+private enum ShareSyncTone {
+    case primary
+    case success
+    case warning
+    case error
+    case info
+    case neutral
+
+    var color: Color {
+        switch self {
+        case .primary:
+            return ShareSyncTheme.primary
+        case .success:
+            return ShareSyncTheme.success
+        case .warning:
+            return ShareSyncTheme.warning
+        case .error:
+            return ShareSyncTheme.error
+        case .info:
+            return ShareSyncTheme.info
+        case .neutral:
+            return .secondary
+        }
+    }
+
+    var softBackground: Color {
+        color.opacity(0.10)
+    }
+}
+
+private enum ShareSyncTheme {
+    static let primary = Color(red: 37 / 255, green: 99 / 255, blue: 235 / 255)
+    static let success = Color(red: 22 / 255, green: 163 / 255, blue: 74 / 255)
+    static let warning = Color(red: 217 / 255, green: 119 / 255, blue: 6 / 255)
+    static let error = Color(red: 220 / 255, green: 38 / 255, blue: 38 / 255)
+    static let info = Color(red: 8 / 255, green: 145 / 255, blue: 178 / 255)
+    static let background = Color(.systemGroupedBackground)
+    static let surface = Color(.secondarySystemGroupedBackground)
+    static let divider = Color.secondary.opacity(0.18)
+}
+
 private struct StatusRow: View {
     let title: LocalizedStringKey
     let value: String
@@ -936,7 +977,7 @@ private struct StatusRow: View {
         .padding(.vertical, 12)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(Color.secondary.opacity(0.2))
+                .fill(ShareSyncTheme.divider)
                 .frame(height: 1)
         }
     }
@@ -962,7 +1003,11 @@ private struct ProductPanel<Content: View>: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(ShareSyncTheme.surface)
+        .overlay {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(ShareSyncTheme.divider, lineWidth: 1)
+        }
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 }
@@ -970,12 +1015,14 @@ private struct ProductPanel<Content: View>: View {
 private struct MetricView: View {
     let title: LocalizedStringKey
     let value: String
+    let tone: ShareSyncTone
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(value)
                 .font(.headline)
                 .fontWeight(.semibold)
+                .foregroundStyle(tone.color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
             Text(title)
@@ -986,7 +1033,11 @@ private struct MetricView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 10)
         .padding(.horizontal, 12)
-        .background(Color(.tertiarySystemGroupedBackground))
+        .background(tone.softBackground)
+        .overlay {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(tone.color.opacity(0.18), lineWidth: 1)
+        }
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 }

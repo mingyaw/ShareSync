@@ -1,8 +1,8 @@
 # Developer Quickstart
 
-Status: M23 developer handoff guide.
+Status: M25 developer handoff guide.
 
-This guide is for local development only. ShareSync M23 remains a photo-only Android-to-iPhone local sync MVP source-code checkpoint and should not be treated as an App Store or Google Play release candidate.
+This guide is for local development only. ShareSync M25 remains a photo-only Android-to-iPhone local sync MVP source-code checkpoint and should not be treated as an App Store or Google Play release candidate.
 
 ## Prerequisites
 
@@ -181,3 +181,5 @@ Use these documents when real-device testing resumes:
 - [M21 UI Information Architecture](m21-ui-information-architecture.md)
 - [M22 UI Visual Polish](m22-ui-visual-polish.md)
 - [M23 UX Copy And Flow](m23-ux-copy-flow.md)
+- [M24 Visual Design System](m24-visual-design-system.md)
+- [M25 Screen Polish](m25-screen-polish.md)

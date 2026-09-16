@@ -40,6 +40,19 @@ import org.json.JSONObject
 import java.time.Instant
 
 class MainActivity : Activity() {
+    private object ShareSyncTheme {
+        val primary = Color.rgb(37, 99, 235)
+        val success = Color.rgb(22, 163, 74)
+        val warning = Color.rgb(217, 119, 6)
+        val info = Color.rgb(8, 145, 178)
+        val textPrimary = Color.rgb(17, 24, 39)
+        val textSecondary = Color.rgb(107, 114, 128)
+        val background = Color.rgb(248, 250, 252)
+        val surface = Color.WHITE
+        val surfaceAlt = Color.rgb(239, 246, 255)
+        val divider = Color.rgb(229, 231, 235)
+    }
+
     private lateinit var statusText: TextView
     private lateinit var phaseText: TextView
     private lateinit var nextStepText: TextView
@@ -129,7 +142,7 @@ class MainActivity : Activity() {
 
         val scrollView = ScrollView(this).apply {
             isFillViewport = true
-            setBackgroundColor(Color.rgb(242, 242, 247))
+            setBackgroundColor(ShareSyncTheme.background)
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -149,13 +162,13 @@ class MainActivity : Activity() {
         val title = TextView(this).apply {
             text = getString(R.string.app_name)
             textSize = 28f
-            setTextColor(getColor(android.R.color.black))
+            setTextColor(ShareSyncTheme.textPrimary)
             typeface = Typeface.DEFAULT_BOLD
         }
         val subtitle = TextView(this).apply {
             text = getString(R.string.m0_android_subtitle)
             textSize = 15f
-            setTextColor(Color.rgb(99, 99, 102))
+            setTextColor(ShareSyncTheme.textSecondary)
             setPadding(0, (4 * density).toInt(), 0, (18 * density).toInt())
         }
 
@@ -164,7 +177,7 @@ class MainActivity : Activity() {
         nextStepText = bodyText().apply {
             textSize = 17f
             typeface = Typeface.DEFAULT_BOLD
-            setTextColor(Color.rgb(28, 28, 30))
+            setTextColor(ShareSyncTheme.textPrimary)
         }
         endpointText = bodyText()
         permissionText = bodyText()
@@ -181,7 +194,7 @@ class MainActivity : Activity() {
         pairingPayloadText = bodyText()
         pairingQrImage = ImageView(this).apply {
             adjustViewBounds = true
-            setBackgroundColor(getColor(android.R.color.white))
+            background = panelBackground(accentColor = ShareSyncTheme.primary, filled = false)
             setPadding(8, 8, 8, 8)
             visibility = ImageView.GONE
             layoutParams = LinearLayout.LayoutParams(
@@ -245,6 +258,7 @@ class MainActivity : Activity() {
         root.addView(
             productPanel(
                 title = getString(R.string.m0_panel_summary),
+                accentColor = ShareSyncTheme.primary,
                 children = listOf(
                     statusText,
                     phaseText,
@@ -258,12 +272,14 @@ class MainActivity : Activity() {
         root.addView(
             productPanel(
                 title = getString(R.string.m0_panel_actions),
+                accentColor = ShareSyncTheme.success,
                 children = listOf(grantButton, startButton, stopButton),
             ),
         )
         root.addView(
             productPanel(
                 title = getString(R.string.m0_panel_pairing),
+                accentColor = ShareSyncTheme.info,
                 children = listOf(
                     pairingInstructionText,
                     pairingQrImage,
@@ -273,6 +289,7 @@ class MainActivity : Activity() {
         root.addView(
             productPanel(
                 title = getString(R.string.m0_panel_settings),
+                accentColor = ShareSyncTheme.warning,
                 children = listOf(
                     localNetworkText,
                     endpointText,
@@ -288,6 +305,7 @@ class MainActivity : Activity() {
         root.addView(
             productPanel(
                 title = getString(R.string.m0_panel_diagnostics),
+                accentColor = ShareSyncTheme.textSecondary,
                 children = listOf(
                     requestActivityText,
                     syncResultText,
@@ -305,12 +323,16 @@ class MainActivity : Activity() {
     private fun bodyText(): TextView {
         return TextView(this).apply {
             textSize = 16f
-            setTextColor(Color.rgb(99, 99, 102))
+            setTextColor(ShareSyncTheme.textSecondary)
             setPadding(0, (8 * resources.displayMetrics.density).toInt(), 0, 0)
         }
     }
 
-    private fun productPanel(title: String, children: List<android.view.View>): LinearLayout {
+    private fun productPanel(
+        title: String,
+        accentColor: Int = ShareSyncTheme.primary,
+        children: List<android.view.View>,
+    ): LinearLayout {
         val density = resources.displayMetrics.density
         return LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -320,10 +342,7 @@ class MainActivity : Activity() {
                 (16 * density).toInt(),
                 (16 * density).toInt(),
             )
-            background = GradientDrawable().apply {
-                setColor(Color.WHITE)
-                cornerRadius = 8 * density
-            }
+            background = panelBackground(accentColor = accentColor)
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -335,10 +354,28 @@ class MainActivity : Activity() {
                 text = title
                 textSize = 18f
                 typeface = Typeface.DEFAULT_BOLD
-                setTextColor(Color.rgb(28, 28, 30))
+                setTextColor(ShareSyncTheme.textPrimary)
                 setPadding(0, 0, 0, (4 * density).toInt())
             })
+            addView(android.view.View(context).apply {
+                setBackgroundColor(accentColor)
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    (3 * density).toInt().coerceAtLeast(2),
+                ).apply {
+                    bottomMargin = (8 * density).toInt()
+                }
+            })
             children.forEach(::addView)
+        }
+    }
+
+    private fun panelBackground(accentColor: Int, filled: Boolean = true): GradientDrawable {
+        val density = resources.displayMetrics.density
+        return GradientDrawable().apply {
+            setColor(if (filled) ShareSyncTheme.surface else ShareSyncTheme.surfaceAlt)
+            cornerRadius = 8 * density
+            setStroke(1, if (filled) ShareSyncTheme.divider else accentColor)
         }
     }
 

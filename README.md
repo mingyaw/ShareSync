@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 photo PoC through M23 UX copy and flow are complete for the photo-only MVP source-code track.
+Status: M0 photo PoC through M25 screen polish are complete for the photo-only MVP source-code track.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -16,7 +16,7 @@ The project intentionally uses native implementation:
 
 ## Current Stage
 
-The completed baseline is `M0 - Android to iOS Photo PoC` through `M23 - UX Copy And Flow`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, beta preflight automation, redacted JSON diagnostics, local support snapshot triage, product-focused next-step guidance, tested readiness presenter state, strictly validated next-step support snapshot evidence, support snapshot inspector regression tests, platform-aware support snapshot fixture validation, beta handoff quality notes, main-axis check boundaries, error recovery alignment, a source-code static beta freeze checkpoint, and a first-pass product UI/UX flow.
+The completed baseline is `M0 - Android to iOS Photo PoC` through `M25 - Screen Polish`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, beta preflight automation, redacted JSON diagnostics, local support snapshot triage, product-focused next-step guidance, tested readiness presenter state, strictly validated next-step support snapshot evidence, support snapshot inspector regression tests, platform-aware support snapshot fixture validation, beta handoff quality notes, main-axis check boundaries, error recovery alignment, a source-code static beta freeze checkpoint, a first-pass product UI/UX flow, and lightweight native visual theme tokens.
 
 The current codebase contains:
 
@@ -67,6 +67,7 @@ The current codebase contains:
 - Beta handoff output includes support snapshot summaries and explicit deferred validation notes.
 - Error recovery documentation is aligned with support snapshot next-step evidence.
 - Android and iOS primary UI copy now emphasizes photo status, pairing, syncing, and support instead of protocol terminology.
+- Android and iOS screens now use lightweight visual theme tokens for status colors, surfaces, dividers, and panel polish.
 - Support snapshots can be validated and summarized locally for internal beta triage.
 
 M0 validates the riskiest path:
@@ -135,6 +136,8 @@ tasks/
 - [M21 UI Information Architecture](docs/m21-ui-information-architecture.md)
 - [M22 UI Visual Polish](docs/m22-ui-visual-polish.md)
 - [M23 UX Copy And Flow](docs/m23-ux-copy-flow.md)
+- [M24 Visual Design System](docs/m24-visual-design-system.md)
+- [M25 Screen Polish](docs/m25-screen-polish.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Error Recovery Matrix](docs/error-recovery-matrix.md)
 - [Sync History Summary](docs/sync-history-summary.md)
@@ -170,6 +173,8 @@ tasks/
 - [M21 UI Information Architecture](tasks/m21-ui-information-architecture.md)
 - [M22 UI Visual Polish](tasks/m22-ui-visual-polish.md)
 - [M23 UX Copy And Flow](tasks/m23-ux-copy-flow.md)
+- [M24 Visual Design System](tasks/m24-visual-design-system.md)
+- [M25 Screen Polish](tasks/m25-screen-polish.md)
 
 ## M0 Rules
 
