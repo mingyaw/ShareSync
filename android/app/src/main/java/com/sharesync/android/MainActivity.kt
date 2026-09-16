@@ -244,15 +244,27 @@ class MainActivity : Activity() {
         root.addView(subtitle)
         root.addView(
             productPanel(
-                title = getString(R.string.m0_panel_pairing),
+                title = getString(R.string.m0_panel_summary),
                 children = listOf(
                     statusText,
                     phaseText,
                     nextStepText,
-                    localNetworkText,
                     manifestSummaryText,
                     syncEventText,
                     syncHistoryText,
+                ),
+            ),
+        )
+        root.addView(
+            productPanel(
+                title = getString(R.string.m0_panel_actions),
+                children = listOf(grantButton, startButton, stopButton),
+            ),
+        )
+        root.addView(
+            productPanel(
+                title = getString(R.string.m0_panel_pairing),
+                children = listOf(
                     pairingInstructionText,
                     pairingQrImage,
                 ),
@@ -261,23 +273,25 @@ class MainActivity : Activity() {
         root.addView(
             productPanel(
                 title = getString(R.string.m0_panel_settings),
-                children = listOf(grantButton, startButton, stopButton),
+                children = listOf(
+                    localNetworkText,
+                    endpointText,
+                    permissionText,
+                    notificationPermissionText,
+                    screenLockText,
+                    transportSecurityText,
+                    copyEndpointButton,
+                    copyPairingButton,
+                ),
             ),
         )
         root.addView(
             productPanel(
                 title = getString(R.string.m0_panel_diagnostics),
                 children = listOf(
-                    endpointText,
-                    transportSecurityText,
-                    permissionText,
-                    notificationPermissionText,
-                    screenLockText,
                     requestActivityText,
                     syncResultText,
                     pairingPayloadText,
-                    copyEndpointButton,
-                    copyPairingButton,
                     copySyncResultButton,
                     copyDiagnosticsButton,
                     clearSyncStateButton,

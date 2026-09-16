@@ -1,8 +1,8 @@
 # Developer Quickstart
 
-Status: M20 developer handoff guide.
+Status: M23 developer handoff guide.
 
-This guide is for local development only. ShareSync M20 remains a photo-only Android-to-iPhone local sync MVP source-code freeze checkpoint and should not be treated as an App Store or Google Play release candidate.
+This guide is for local development only. ShareSync M23 remains a photo-only Android-to-iPhone local sync MVP source-code checkpoint and should not be treated as an App Store or Google Play release candidate.
 
 ## Prerequisites
 
@@ -178,3 +178,6 @@ Use these documents when real-device testing resumes:
 - [M18 Main-Axis Check Boundaries](m18-main-axis-check-boundaries.md)
 - [M19 Error Recovery Alignment](m19-error-recovery-alignment.md)
 - [M20 Static Beta Freeze](m20-static-beta-freeze.md)
+- [M21 UI Information Architecture](m21-ui-information-architecture.md)
+- [M22 UI Visual Polish](m22-ui-visual-polish.md)
+- [M23 UX Copy And Flow](m23-ux-copy-flow.md)

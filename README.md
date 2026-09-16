@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 photo PoC through M20 static beta freeze are complete for the photo-only MVP source-code track.
+Status: M0 photo PoC through M23 UX copy and flow are complete for the photo-only MVP source-code track.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -16,7 +16,7 @@ The project intentionally uses native implementation:
 
 ## Current Stage
 
-The completed baseline is `M0 - Android to iOS Photo PoC` through `M20 - Static Beta Freeze`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, beta preflight automation, redacted JSON diagnostics, local support snapshot triage, product-focused next-step guidance, tested readiness presenter state, strictly validated next-step support snapshot evidence, support snapshot inspector regression tests, platform-aware support snapshot fixture validation, beta handoff quality notes, main-axis check boundaries, error recovery alignment, and a source-code static beta freeze checkpoint.
+The completed baseline is `M0 - Android to iOS Photo PoC` through `M23 - UX Copy And Flow`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, beta preflight automation, redacted JSON diagnostics, local support snapshot triage, product-focused next-step guidance, tested readiness presenter state, strictly validated next-step support snapshot evidence, support snapshot inspector regression tests, platform-aware support snapshot fixture validation, beta handoff quality notes, main-axis check boundaries, error recovery alignment, a source-code static beta freeze checkpoint, and a first-pass product UI/UX flow.
 
 The current codebase contains:
 
@@ -66,6 +66,7 @@ The current codebase contains:
 - Fixture validation rejects support snapshot examples whose next-step action does not belong to the example platform.
 - Beta handoff output includes support snapshot summaries and explicit deferred validation notes.
 - Error recovery documentation is aligned with support snapshot next-step evidence.
+- Android and iOS primary UI copy now emphasizes photo status, pairing, syncing, and support instead of protocol terminology.
 - Support snapshots can be validated and summarized locally for internal beta triage.
 
 M0 validates the riskiest path:
@@ -131,6 +132,9 @@ tasks/
 - [M18 Main-Axis Check Boundaries](docs/m18-main-axis-check-boundaries.md)
 - [M19 Error Recovery Alignment](docs/m19-error-recovery-alignment.md)
 - [M20 Static Beta Freeze](docs/m20-static-beta-freeze.md)
+- [M21 UI Information Architecture](docs/m21-ui-information-architecture.md)
+- [M22 UI Visual Polish](docs/m22-ui-visual-polish.md)
+- [M23 UX Copy And Flow](docs/m23-ux-copy-flow.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Error Recovery Matrix](docs/error-recovery-matrix.md)
 - [Sync History Summary](docs/sync-history-summary.md)
@@ -163,6 +167,9 @@ tasks/
 - [M18 Main-Axis Check Boundaries](tasks/m18-main-axis-check-boundaries.md)
 - [M19 Error Recovery Alignment](tasks/m19-error-recovery-alignment.md)
 - [M20 Static Beta Freeze](tasks/m20-static-beta-freeze.md)
+- [M21 UI Information Architecture](tasks/m21-ui-information-architecture.md)
+- [M22 UI Visual Polish](tasks/m22-ui-visual-polish.md)
+- [M23 UX Copy And Flow](tasks/m23-ux-copy-flow.md)
 
 ## M0 Rules
 

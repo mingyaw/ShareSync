@@ -2,11 +2,11 @@
 <resources>
     <string name="app_name">ShareSync</string>
     <string name="m0_android_subtitle">Share Android photos to your paired iPhone over the local network.</string>
-    <string name="m0_panel_summary">Photo Sync</string>
-    <string name="m0_panel_actions">Actions</string>
-    <string name="m0_panel_pairing">Pairing</string>
-    <string name="m0_panel_settings">Settings</string>
-    <string name="m0_panel_diagnostics">Diagnostics</string>
+    <string name="m0_panel_summary">Photo Status</string>
+    <string name="m0_panel_actions">Share Photos</string>
+    <string name="m0_panel_pairing">Pair iPhone</string>
+    <string name="m0_panel_settings">Connection Settings</string>
+    <string name="m0_panel_diagnostics">Support</string>
     <string name="m0_status_ready">Photo sharing is off. Allow photo access, then make Android photos available on port %1$d.</string>
     <string name="m0_status_starting">Starting photo sync...</string>
     <string name="m0_status_running">Android photos are ready for your iPhone.</string>
@@ -15,14 +15,14 @@
     <string name="m0_foreground_channel_description">Keeps local Android-to-iOS photo transfer available while ShareSync is open or backgrounded.</string>
     <string name="m0_foreground_notification_title">ShareSync photo transfer</string>
     <string name="m0_foreground_notification_text">Android photos are available to the paired iPhone on this local network.</string>
-    <string name="m0_phase">Status: %1$s.</string>
+    <string name="m0_phase">Current state: %1$s.</string>
     <string name="m0_phase_permission_required">Photo Access Needed</string>
     <string name="m0_phase_ready_to_start">Ready To Share Photos</string>
     <string name="m0_phase_server_starting">Starting Photo Sync</string>
     <string name="m0_phase_ready_to_pair">Ready For iPhone</string>
     <string name="m0_phase_retry_required">Retry Required</string>
     <string name="m0_phase_transfer_complete">Transfer Complete</string>
-    <string name="m0_endpoint">Local endpoint: %1$s</string>
+    <string name="m0_endpoint">Connection address: %1$s</string>
     <string name="m0_endpoint_unavailable">No local IPv4 address found. Connect this Android phone to Wi-Fi or hotspot so the iPhone can reach it.</string>
     <string name="m0_endpoint_copied">Endpoint copied for local connection checks.</string>
     <string name="m0_permission_granted">Photo access: allowed.</string>
@@ -35,8 +35,8 @@
     <string name="m2_local_network_unavailable">Local network: connect to Wi-Fi or hotspot so the iPhone can reach this Android phone.</string>
     <string name="m4_transport_signed_http">Transport security: signed local HTTP. QR-pinned HTTPS is prepared for migration.</string>
     <string name="m4_transport_qr_pinned_https">Transport security: QR-pinned HTTPS metadata is included in the pairing code.</string>
-    <string name="m0_manifest_unavailable">Photos ready: start sharing to scan this phone.</string>
-    <string name="m0_manifest_summary">Photos ready: %1$d, %2$s.</string>
+    <string name="m0_manifest_unavailable">Photos ready: start sharing to check this phone.</string>
+    <string name="m0_manifest_summary">Photos ready for iPhone: %1$d, %2$s.</string>
     <string name="m0_manifest_status_ready">Ready</string>
     <string name="m0_manifest_status_complete">Complete</string>
     <string name="m0_manifest_status_needs_retry">Needs retry</string>
@@ -53,9 +53,9 @@
     <string name="m0_sync_state_cleared">Photo sync history cleared. Fetch from iPhone again to rebuild state.</string>
     <string name="m0_pairing_payload_unavailable">Pairing code appears after photo sync starts.</string>
     <string name="m0_pairing_instruction_waiting">Allow photo access and keep ShareSync open. The pairing code will appear automatically.</string>
-    <string name="m0_pairing_instruction_ready">Scan this pairing code from your iPhone for first-time binding, endpoint refresh, or security refresh. After binding, this Android phone keeps photos available while ShareSync stays open.</string>
+    <string name="m0_pairing_instruction_ready">Scan this code from iPhone to bind or refresh this Android phone. After binding, keep ShareSync open while photos are available.</string>
     <string name="m0_pairing_payload_copied">Pairing payload copied. Paste it into the iPhone ShareSync receive screen.</string>
-    <string name="m11_next_step">Next step: %1$s</string>
+    <string name="m11_next_step">Next: %1$s</string>
     <string name="m11_next_step_allow_photos">Allow photo access so this phone can prepare the photo list.</string>
     <string name="m11_next_step_start_sharing">Tap Make Photos Available to show the pairing QR code.</string>
     <string name="m11_next_step_wait_for_server">Keep ShareSync open while the photo list and local server are prepared.</string>
@@ -71,10 +71,10 @@
     <string name="m0_grant_permissions">Allow Photo Access</string>
     <string name="m0_start_server">Make Photos Available</string>
     <string name="m0_stop_server">Stop Sharing Photos</string>
-    <string name="m0_copy_endpoint">Copy endpoint</string>
+    <string name="m0_copy_endpoint">Copy connection address</string>
     <string name="m0_copy_pairing_payload">Copy pairing code</string>
-    <string name="m0_copy_sync_result">Copy sync result</string>
-    <string name="m0_clear_sync_state">Clear sync history</string>
-    <string name="m5_copy_diagnostics">Copy diagnostics</string>
+    <string name="m0_copy_sync_result">Copy support result</string>
+    <string name="m0_clear_sync_state">Clear photo history</string>
+    <string name="m5_copy_diagnostics">Copy support snapshot</string>
     <string name="m5_diagnostics_copied">Diagnostics copied without pairing secrets.</string>
 </resources>
