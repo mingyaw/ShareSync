@@ -151,3 +151,13 @@
 "ios.vm.health_rejected" = "Android 健康檢查被拒絕。";
 "ios.vm.android_not_ready" = "Android 照片分享尚未就緒。請重新開啟 Android ShareSync，確認照片已可接收。";
 "ios.vm.posted" = "已回傳";
+"ios.welcome.title" = "設定私密照片同步";
+"ios.welcome.local" = "請讓兩支手機連上同一 Wi-Fi 或 Android 熱點。";
+"ios.welcome.private" = "照片會直接從 Android 傳送，不經 ShareSync 雲端中繼。";
+"ios.welcome.foreground" = "同步照片時，請保持 iPhone 上的 ShareSync 開啟。";
+"ios.welcome.start" = "掃描 Android QR Code";
+"ios.privacy.title" = "隱私與本機資料";
+"ios.privacy.local_transfer" = "傳輸只會在區域網路上的已配對手機之間進行。";
+"ios.privacy.no_relay" = "ShareSync 不會將照片上傳到自己的雲端服務。";
+"ios.privacy.local_history" = "配對與照片完成紀錄會保留在這支 iPhone。";
+"ios.privacy.icloud_note" = "照片匯入後，由照片 App 與你現有的 iCloud 照片設定決定是否備份到 iCloud。";

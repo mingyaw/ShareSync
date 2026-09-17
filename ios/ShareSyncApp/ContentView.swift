@@ -4,6 +4,7 @@ import UIKit
 struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("autoSyncAllPhotos") private var autoSyncAllPhotos = true
+    @AppStorage("hasCompletedWelcome") private var hasCompletedWelcome = false
     @StateObject private var viewModel = ManifestFetchViewModel()
     @State private var isShowingPairingScanner = false
     @State private var syncResultCopyMessage: String?
@@ -15,6 +16,9 @@ struct ContentView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     headerSection
+                    if !hasCompletedWelcome && !isPaired {
+                        welcomePanel
+                    }
                     transferSummaryPanel
                     if isPaired {
                         primaryActions
@@ -57,6 +61,11 @@ struct ContentView: View {
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase != .active {
                     viewModel.cancelDownloadForBackground()
+                }
+            }
+            .onChange(of: isPaired) { _, paired in
+                if paired {
+                    hasCompletedWelcome = true
                 }
             }
             .onDisappear {
@@ -140,6 +149,27 @@ struct ContentView: View {
         }
     }
 
+    private var welcomePanel: some View {
+        ProductPanel(title: "ios.welcome.title") {
+            VStack(alignment: .leading, spacing: 12) {
+                Label("ios.welcome.local", systemImage: "wifi")
+                Label("ios.welcome.private", systemImage: "lock.shield")
+                Label("ios.welcome.foreground", systemImage: "iphone")
+
+                Button {
+                    hasCompletedWelcome = true
+                    isShowingPairingScanner = true
+                } label: {
+                    Label("ios.welcome.start", systemImage: "qrcode.viewfinder")
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 46)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+            }
+        }
+    }
+
     private var primaryActions: some View {
         ProductPanel {
             VStack(alignment: .leading, spacing: 12) {
@@ -217,6 +247,8 @@ struct ContentView: View {
         ProductPanel(title: "ios.panel.settings") {
             DisclosureGroup(isExpanded: $isSettingsExpanded) {
                 VStack(alignment: .leading, spacing: 16) {
+                    privacyPanelContent
+                    Divider()
                     connectionPanelContent
                     statusSectionContent
                     diagnosticsPanelContent
@@ -227,6 +259,21 @@ struct ContentView: View {
                     .font(.subheadline)
                     .fontWeight(.medium)
             }
+        }
+    }
+
+    private var privacyPanelContent: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("ios.privacy.title")
+                .font(.headline)
+                .accessibilityAddTraits(.isHeader)
+            Label("ios.privacy.local_transfer", systemImage: "network")
+            Label("ios.privacy.no_relay", systemImage: "icloud.slash")
+            Label("ios.privacy.local_history", systemImage: "internaldrive")
+            Text("ios.privacy.icloud_note")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 

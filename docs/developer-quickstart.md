@@ -1,8 +1,8 @@
 # Developer Quickstart
 
-Status: M30 developer handoff guide.
+Status: M35 developer handoff guide.
 
-This guide is for local development only. ShareSync M30 remains a photo-only Android-to-iPhone local sync MVP source-code checkpoint and should not be treated as an App Store or Google Play release candidate.
+This guide is for local development only. ShareSync M35 remains a photo-only Android-to-iPhone local sync MVP source-code checkpoint and should not be treated as an App Store or Google Play release candidate until deferred physical-device, signing, packaging, privacy declaration, and store review work is completed.
 
 ## Prerequisites
 
@@ -188,3 +188,9 @@ Use these documents when real-device testing resumes:
 - [M28 Safe Destructive Actions](m28-safe-destructive-actions.md)
 - [M29 Consistent Feedback States](m29-consistent-feedback-states.md)
 - [M30 UI Beta Freeze](m30-ui-beta-freeze.md)
+- [M31 App Identity](m31-app-identity.md)
+- [M32 First-Run Setup](m32-first-run-setup.md)
+- [M33 Privacy Center](m33-privacy-center.md)
+- [M34 Release Configuration](m34-release-configuration.md)
+- [M35 Pre-release Product Freeze](m35-pre-release-product-freeze.md)
+- [Privacy Data Summary](privacy-data-summary.md)

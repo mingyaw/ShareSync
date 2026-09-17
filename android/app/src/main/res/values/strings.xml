@@ -82,4 +82,10 @@
     <string name="m28_clear_history_message">Previously completed photos can appear available again after this history is cleared. Photos already stored on either phone are not deleted.</string>
     <string name="m28_clear_history_confirm">Clear History</string>
     <string name="m28_cancel">Cancel</string>
+    <string name="m32_onboarding_title">Set up private photo sync</string>
+    <string name="m32_onboarding_body">1. Allow Android photo access. 2. Keep both phones on the same Wi-Fi or Android hotspot. 3. Scan the QR code once from ShareSync on iPhone.</string>
+    <string name="m32_onboarding_privacy">Photos travel directly to your paired iPhone. ShareSync does not upload them through a cloud relay.</string>
+    <string name="m32_onboarding_continue">Continue to Photo Sharing</string>
+    <string name="m33_privacy_summary">Private local transfer: photos are sent only to the paired iPhone on the local network.</string>
+    <string name="m33_privacy_storage">Local data: this phone stores device identity, pairing state, and photo completion history. Clearing history does not delete photos.</string>
 </resources>

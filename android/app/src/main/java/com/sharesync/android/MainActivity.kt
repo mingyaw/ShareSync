@@ -277,6 +277,30 @@ class MainActivity : Activity() {
 
         root.addView(title)
         root.addView(subtitle)
+        if (!hasCompletedOnboarding()) {
+            val onboardingText = bodyText().apply {
+                text = getString(R.string.m32_onboarding_body)
+            }
+            val onboardingPrivacyText = bodyText().apply {
+                text = getString(R.string.m32_onboarding_privacy)
+            }
+            val onboardingButton = Button(this).apply {
+                text = getString(R.string.m32_onboarding_continue)
+                setOnClickListener {
+                    completeOnboarding()
+                    renderContent()
+                    refreshUi()
+                }
+                fullWidthButtonLayout()
+            }
+            root.addView(
+                productPanel(
+                    title = getString(R.string.m32_onboarding_title),
+                    accentColor = shareSyncTheme.info,
+                    children = listOf(onboardingText, onboardingPrivacyText, onboardingButton),
+                ),
+            )
+        }
         root.addView(
             productPanel(
                 title = getString(R.string.m0_panel_summary),
@@ -313,6 +337,8 @@ class MainActivity : Activity() {
                 title = getString(R.string.m0_panel_settings),
                 accentColor = shareSyncTheme.warning,
                 children = listOf(
+                    bodyText().apply { text = getString(R.string.m33_privacy_summary) },
+                    bodyText().apply { text = getString(R.string.m33_privacy_storage) },
                     localNetworkText,
                     endpointText,
                     permissionText,
@@ -501,6 +527,18 @@ class MainActivity : Activity() {
         requestPermissions(missing, REQUEST_MEDIA_PERMISSION)
     }
 
+    private fun hasCompletedOnboarding(): Boolean {
+        return getSharedPreferences(ONBOARDING_PREFERENCES, Context.MODE_PRIVATE)
+            .getBoolean(ONBOARDING_COMPLETE_KEY, false)
+    }
+
+    private fun completeOnboarding() {
+        getSharedPreferences(ONBOARDING_PREFERENCES, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(ONBOARDING_COMPLETE_KEY, true)
+            .apply()
+    }
+
     private fun hasMediaPermission(): Boolean {
         return requiredMediaPermissions().all { permission ->
             checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
@@ -552,7 +590,7 @@ class MainActivity : Activity() {
                 val session = AndroidM0ServerSessionController.start(
                     context = applicationContext,
                     deviceIdentityStore = deviceIdentityStore,
-                    appVersion = "0.1.0",
+                    appVersion = BuildConfig.VERSION_NAME,
                 )
                 server = session.server
                 syncResultStore = session.syncResultStore
@@ -989,6 +1027,8 @@ class MainActivity : Activity() {
     }
 
     private companion object {
+        const val ONBOARDING_PREFERENCES = "sharesync_onboarding"
+        const val ONBOARDING_COMPLETE_KEY = "completed"
         const val REQUEST_MEDIA_PERMISSION = 1001
         const val SYNC_RESULT_POLL_INTERVAL_MS = 2_000L
     }

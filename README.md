@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 photo PoC through M30 UI beta freeze are complete for the photo-only MVP source-code track.
+Status: M0 photo PoC through M35 pre-release product freeze are complete for the photo-only MVP source-code track.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -16,7 +16,7 @@ The project intentionally uses native implementation:
 
 ## Current Stage
 
-The completed baseline is `M0 - Android to iOS Photo PoC` through `M30 - UI Beta Freeze`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, beta preflight automation, redacted JSON diagnostics, local support snapshot triage, product-focused next-step guidance, tested readiness presenter state, strictly validated next-step support snapshot evidence, support snapshot inspector regression tests, platform-aware support snapshot fixture validation, beta handoff quality notes, main-axis check boundaries, error recovery alignment, a source-code static beta freeze checkpoint, adaptive native UI, light and dark appearance support, guarded destructive actions, consistent feedback states, and a repeatable UI quality gate.
+The completed baseline is `M0 - Android to iOS Photo PoC` through `M35 - Pre-release Product Freeze`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, beta preflight automation, redacted JSON diagnostics, local support snapshot triage, product-focused next-step guidance, tested readiness presenter state, strictly validated support evidence, error recovery alignment, adaptive native UI, branded app identity, first-run setup guidance, bilingual privacy explanations, guarded destructive actions, Debug/Beta/Release boundaries, and repeatable UI and product readiness gates.
 
 The current codebase contains:
 
@@ -74,6 +74,11 @@ The current codebase contains:
 - Photo-history reset and paired-phone removal explain their consequences before changing local state.
 - iOS transfer, pause, success, and failure feedback use one consistent visual component.
 - Beta preflight now validates UI resources, bilingual confirmation copy, adaptive layouts, and feedback-state coverage.
+- Android and iOS now share a branded two-phone sync identity, including an iOS AppIcon asset catalog and Android adaptive icon.
+- First-run guidance explains pairing, same-network requirements, foreground transfer, and the absence of a ShareSync cloud relay.
+- Settings explain local history, Photos import, and the boundary between ShareSync and iCloud Photos.
+- Debug, Beta, and Release builds use explicit channels and distinct non-release application identifiers.
+- Product readiness automation validates icon assets, bilingual setup/privacy copy, build channels, and release safety settings.
 - Support snapshots can be validated and summarized locally for internal beta triage.
 
 M0 validates the riskiest path:
@@ -149,6 +154,12 @@ tasks/
 - [M28 Safe Destructive Actions](docs/m28-safe-destructive-actions.md)
 - [M29 Consistent Feedback States](docs/m29-consistent-feedback-states.md)
 - [M30 UI Beta Freeze](docs/m30-ui-beta-freeze.md)
+- [M31 App Identity](docs/m31-app-identity.md)
+- [M32 First-Run Setup](docs/m32-first-run-setup.md)
+- [M33 Privacy Center](docs/m33-privacy-center.md)
+- [M34 Release Configuration](docs/m34-release-configuration.md)
+- [M35 Pre-release Product Freeze](docs/m35-pre-release-product-freeze.md)
+- [Privacy Data Summary](docs/privacy-data-summary.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Error Recovery Matrix](docs/error-recovery-matrix.md)
 - [Sync History Summary](docs/sync-history-summary.md)
@@ -191,6 +202,11 @@ tasks/
 - [M28 Safe Destructive Actions](tasks/m28-safe-destructive-actions.md)
 - [M29 Consistent Feedback States](tasks/m29-consistent-feedback-states.md)
 - [M30 UI Beta Freeze](tasks/m30-ui-beta-freeze.md)
+- [M31 App Identity](tasks/m31-app-identity.md)
+- [M32 First-Run Setup](tasks/m32-first-run-setup.md)
+- [M33 Privacy Center](tasks/m33-privacy-center.md)
+- [M34 Release Configuration](tasks/m34-release-configuration.md)
+- [M35 Pre-release Product Freeze](tasks/m35-pre-release-product-freeze.md)
 
 ## M0 Rules
 

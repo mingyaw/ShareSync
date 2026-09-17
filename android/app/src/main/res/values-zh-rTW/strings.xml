@@ -82,4 +82,10 @@
     <string name="m28_clear_history_message">清除後，先前已完成的照片可能再次顯示為可同步。兩支手機上已儲存的照片都不會被刪除。</string>
     <string name="m28_clear_history_confirm">清除紀錄</string>
     <string name="m28_cancel">取消</string>
+    <string name="m32_onboarding_title">設定私密照片同步</string>
+    <string name="m32_onboarding_body">1. 允許 Android 照片權限。2. 讓兩支手機連上同一 Wi-Fi 或 Android 熱點。3. 使用 iPhone 上的 ShareSync 掃描一次 QR Code。</string>
+    <string name="m32_onboarding_privacy">照片會直接傳送到已配對的 iPhone，ShareSync 不會透過雲端中繼上傳。</string>
+    <string name="m32_onboarding_continue">繼續設定照片分享</string>
+    <string name="m33_privacy_summary">私密本機傳輸：照片只會透過區域網路傳送到已配對的 iPhone。</string>
+    <string name="m33_privacy_storage">本機資料：這支手機會儲存裝置識別、配對狀態與照片完成紀錄。清除紀錄不會刪除照片。</string>
 </resources>

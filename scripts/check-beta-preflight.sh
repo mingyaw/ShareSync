@@ -43,6 +43,7 @@ Runs beta handoff preflight checks and generates a handoff record.
 Default checks:
   - git diff --check
   - scripts/check-ui-quality.sh
+  - scripts/check-product-readiness.sh
   - scripts/check-release-readiness.sh
   - scripts/check-repo-hygiene.sh
   - scripts/test-support-snapshot-inspector.sh
@@ -75,6 +76,10 @@ git diff --check
 echo
 echo "== UI quality =="
 bash scripts/check-ui-quality.sh
+
+echo
+echo "== Product readiness =="
+bash scripts/check-product-readiness.sh
 
 echo
 echo "== Release readiness =="

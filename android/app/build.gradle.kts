@@ -19,6 +19,27 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         buildConfigField("boolean", "SHARESYNC_QR_PINNED_HTTPS", enableQrPinnedHttps.get().toString())
+        buildConfigField("String", "SHARESYNC_CHANNEL", "\"release\"")
+    }
+
+    buildTypes {
+        getByName("debug") {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            buildConfigField("String", "SHARESYNC_CHANNEL", "\"debug\"")
+        }
+        create("beta") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".beta"
+            versionNameSuffix = "-beta"
+            matchingFallbacks += listOf("debug")
+            buildConfigField("String", "SHARESYNC_CHANNEL", "\"beta\"")
+        }
+        getByName("release") {
+            isDebuggable = false
+            isMinifyEnabled = false
+            buildConfigField("String", "SHARESYNC_CHANNEL", "\"release\"")
+        }
     }
 
     buildFeatures {
