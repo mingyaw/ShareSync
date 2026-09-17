@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 photo PoC through M35 pre-release product freeze are complete for the photo-only MVP source-code track.
+Status: M0 photo PoC through M36 product navigation redesign are complete for the photo-only MVP source-code track.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -16,7 +16,7 @@ The project intentionally uses native implementation:
 
 ## Current Stage
 
-The completed baseline is `M0 - Android to iOS Photo PoC` through `M35 - Pre-release Product Freeze`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, beta preflight automation, redacted JSON diagnostics, local support snapshot triage, product-focused next-step guidance, tested readiness presenter state, strictly validated support evidence, error recovery alignment, adaptive native UI, branded app identity, first-run setup guidance, bilingual privacy explanations, guarded destructive actions, Debug/Beta/Release boundaries, and repeatable UI and product readiness gates.
+The completed baseline is `M0 - Android to iOS Photo PoC` through `M36 - Product Navigation Redesign`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, beta preflight automation, redacted JSON diagnostics, local support snapshot triage, product-focused next-step guidance, tested readiness presenter state, strictly validated support evidence, error recovery alignment, adaptive native UI, branded app identity, first-run setup guidance, bilingual privacy explanations, guarded destructive actions, Debug/Beta/Release boundaries, repeatable UI and product readiness gates, and task-focused three-section navigation on both platforms.
 
 The current codebase contains:
 
@@ -79,6 +79,8 @@ The current codebase contains:
 - Settings explain local history, Photos import, and the boundary between ShareSync and iCloud Photos.
 - Debug, Beta, and Release builds use explicit channels and distinct non-release application identifiers.
 - Product readiness automation validates icon assets, bilingual setup/privacy copy, build channels, and release safety settings.
+- Android separates photo sync, recent activity, and settings while showing only the action relevant to the current state.
+- iOS separates receiving, activity, and settings; pairing and photo sync remain the only primary home actions.
 - Support snapshots can be validated and summarized locally for internal beta triage.
 
 M0 validates the riskiest path:
@@ -159,6 +161,7 @@ tasks/
 - [M33 Privacy Center](docs/m33-privacy-center.md)
 - [M34 Release Configuration](docs/m34-release-configuration.md)
 - [M35 Pre-release Product Freeze](docs/m35-pre-release-product-freeze.md)
+- [M36 Product Navigation Redesign](docs/m36-product-navigation-redesign.md)
 - [Privacy Data Summary](docs/privacy-data-summary.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Error Recovery Matrix](docs/error-recovery-matrix.md)
@@ -207,6 +210,7 @@ tasks/
 - [M33 Privacy Center](tasks/m33-privacy-center.md)
 - [M34 Release Configuration](tasks/m34-release-configuration.md)
 - [M35 Pre-release Product Freeze](tasks/m35-pre-release-product-freeze.md)
+- [M36 Product Navigation Redesign](tasks/m36-product-navigation-redesign.md)
 
 ## M0 Rules
 

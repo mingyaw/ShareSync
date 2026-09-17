@@ -10,75 +10,151 @@ struct ContentView: View {
     @State private var syncResultCopyMessage: String?
     @State private var isSettingsExpanded = false
     @State private var pendingDestructiveAction: DestructiveAction?
+    @State private var selectedTab: AppTab = .receive
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    headerSection
-                    if !hasCompletedWelcome && !isPaired {
-                        welcomePanel
-                    }
+        TabView(selection: $selectedTab) {
+            NavigationStack {
+                receiveScreen
+                    .navigationTitle("ShareSync")
+                    .navigationBarTitleDisplayMode(.large)
+            }
+            .tabItem {
+                Label("ios.tab.receive", systemImage: "arrow.down.circle")
+            }
+            .tag(AppTab.receive)
+
+            NavigationStack {
+                activityScreen
+                    .navigationTitle("ios.tab.activity")
+                    .navigationBarTitleDisplayMode(.large)
+            }
+            .tabItem {
+                Label("ios.tab.activity", systemImage: "clock.arrow.circlepath")
+            }
+            .tag(AppTab.activity)
+
+            NavigationStack {
+                settingsScreen
+                    .navigationTitle("ios.tab.settings")
+                    .navigationBarTitleDisplayMode(.large)
+            }
+            .tabItem {
+                Label("ios.tab.settings", systemImage: "gearshape")
+            }
+            .tag(AppTab.settings)
+        }
+        .tint(ShareSyncTheme.primary)
+        .fullScreenCover(isPresented: $isShowingPairingScanner) {
+            QRCodeScannerView { payload in
+                viewModel.pairingPayloadText = payload
+                viewModel.applyPairingPayload()
+                if autoSyncAllPhotos {
+                    viewModel.syncAllPhotos()
+                }
+            }
+        }
+        .confirmationDialog(
+            destructiveDialogTitle,
+            isPresented: isShowingDestructiveConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(destructiveConfirmLabel, role: .destructive) {
+                performPendingDestructiveAction()
+            }
+            Button("ios.confirm.cancel", role: .cancel) {}
+        } message: {
+            Text(destructiveDialogMessage)
+        }
+        .onChange(of: viewModel.downloadState) { _, newState in
+            updateIdleTimer(for: newState)
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase != .active {
+                viewModel.cancelDownloadForBackground()
+            }
+        }
+        .onChange(of: isPaired) { _, paired in
+            if paired {
+                hasCompletedWelcome = true
+                selectedTab = .receive
+            }
+        }
+        .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
+        }
+    }
+
+    private var receiveScreen: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                headerSection
+                if !hasCompletedWelcome && !isPaired {
+                    welcomePanel
+                } else {
                     transferSummaryPanel
                     if isPaired {
                         primaryActions
                     } else {
                         pairingPanel
                     }
-                    settingsSection
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 18)
-                .frame(maxWidth: .infinity, alignment: .topLeading)
-            }
-            .background(ShareSyncTheme.background)
-            .scrollDismissesKeyboard(.interactively)
-            .navigationTitle("ios.nav.receive_photos")
-            .fullScreenCover(isPresented: $isShowingPairingScanner) {
-                QRCodeScannerView { payload in
-                    viewModel.pairingPayloadText = payload
-                    viewModel.applyPairingPayload()
-                    if autoSyncAllPhotos {
-                        viewModel.syncAllPhotos()
-                    }
                 }
             }
-            .confirmationDialog(
-                destructiveDialogTitle,
-                isPresented: isShowingDestructiveConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button(destructiveConfirmLabel, role: .destructive) {
-                    performPendingDestructiveAction()
-                }
-                Button("ios.confirm.cancel", role: .cancel) {}
-            } message: {
-                Text(destructiveDialogMessage)
-            }
-            .onChange(of: viewModel.downloadState) { _, newState in
-                updateIdleTimer(for: newState)
-            }
-            .onChange(of: scenePhase) { _, newPhase in
-                if newPhase != .active {
-                    viewModel.cancelDownloadForBackground()
-                }
-            }
-            .onChange(of: isPaired) { _, paired in
-                if paired {
-                    hasCompletedWelcome = true
-                }
-            }
-            .onDisappear {
-                UIApplication.shared.isIdleTimerDisabled = false
-            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .frame(maxWidth: 680, alignment: .topLeading)
+            .frame(maxWidth: .infinity)
         }
+        .background(ShareSyncTheme.background)
+    }
+
+    private var activityScreen: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                ProductPanel(title: "ios.activity.summary") {
+                    statusSectionContent
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .frame(maxWidth: 680, alignment: .topLeading)
+            .frame(maxWidth: .infinity)
+        }
+        .background(ShareSyncTheme.background)
+    }
+
+    private var settingsScreen: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                ProductPanel(title: "ios.settings.sync") {
+                    Toggle("ios.action.auto_sync_all", isOn: $autoSyncAllPhotos)
+                        .disabled(viewModel.isTransferActive)
+                    Text("ios.settings.auto_sync_note")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+
+                ProductPanel(title: "ios.privacy.title") {
+                    privacyPanelContent
+                }
+
+                settingsSection
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .frame(maxWidth: 680, alignment: .topLeading)
+            .frame(maxWidth: .infinity)
+        }
+        .background(ShareSyncTheme.background)
+        .scrollDismissesKeyboard(.interactively)
     }
 
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("ShareSync")
-                .font(.largeTitle)
+            Label(isPaired ? "ios.home.connected" : "ios.home.not_connected", systemImage: isPaired ? "checkmark.circle.fill" : "iphone.and.arrow.forward")
+                .font(.subheadline)
                 .fontWeight(.semibold)
+                .foregroundStyle(isPaired ? ShareSyncTheme.success : ShareSyncTheme.info)
                 .accessibilityAddTraits(.isHeader)
 
             Text("ios.header.subtitle")
@@ -173,11 +249,6 @@ struct ContentView: View {
     private var primaryActions: some View {
         ProductPanel {
             VStack(alignment: .leading, spacing: 12) {
-                Toggle(isOn: $autoSyncAllPhotos) {
-                    Text("ios.action.auto_sync_all")
-                }
-                .disabled(viewModel.isTransferActive)
-
                 Button {
                     performPrimaryReadinessAction()
                 } label: {
@@ -189,15 +260,16 @@ struct ContentView: View {
                 .controlSize(.large)
                 .disabled(!primaryReadinessActionEnabled)
 
-                Button(role: .cancel) {
-                    viewModel.cancelDownload()
-                } label: {
-                    Label("ios.action.stop_transfer", systemImage: "stop.circle")
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 42)
+                if viewModel.canCancelDownload {
+                    Button(role: .cancel) {
+                        viewModel.cancelDownload()
+                    } label: {
+                        Label("ios.action.stop_transfer", systemImage: "stop.circle")
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: 42)
+                    }
+                    .buttonStyle(.bordered)
                 }
-                .buttonStyle(.bordered)
-                .disabled(!viewModel.canCancelDownload)
 
                 if viewModel.isTransferActive {
                     HStack(spacing: 10) {
@@ -219,7 +291,7 @@ struct ContentView: View {
     }
 
     private var pairingPanel: some View {
-        ProductPanel {
+        ProductPanel(title: "ios.pairing.title") {
             VStack(alignment: .leading, spacing: 12) {
                 Text("ios.pairing.prompt")
                     .font(.subheadline)
@@ -236,26 +308,24 @@ struct ContentView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
 
-                Toggle(isOn: $autoSyncAllPhotos) {
-                    Text("ios.action.auto_sync_after_pairing")
-                }
+                Label("ios.pairing.same_network", systemImage: "wifi")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
         }
     }
 
     private var settingsSection: some View {
-        ProductPanel(title: "ios.panel.settings") {
+        ProductPanel(title: "ios.settings.support") {
             DisclosureGroup(isExpanded: $isSettingsExpanded) {
                 VStack(alignment: .leading, spacing: 16) {
-                    privacyPanelContent
-                    Divider()
                     connectionPanelContent
-                    statusSectionContent
+                    Divider()
                     diagnosticsPanelContent
                 }
                 .padding(.top, 10)
             } label: {
-                Text("ios.settings.advanced")
+                Label("ios.settings.advanced", systemImage: "wrench.and.screwdriver")
                     .font(.subheadline)
                     .fontWeight(.medium)
             }
@@ -264,9 +334,6 @@ struct ContentView: View {
 
     private var privacyPanelContent: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("ios.privacy.title")
-                .font(.headline)
-                .accessibilityAddTraits(.isHeader)
             Label("ios.privacy.local_transfer", systemImage: "network")
             Label("ios.privacy.no_relay", systemImage: "icloud.slash")
             Label("ios.privacy.local_history", systemImage: "internaldrive")
@@ -1040,6 +1107,12 @@ struct ContentView: View {
             return localized("ios.status.ready")
         }
     }
+}
+
+private enum AppTab {
+    case receive
+    case activity
+    case settings
 }
 
 private enum PhaseKind {

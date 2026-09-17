@@ -52,7 +52,11 @@ for key in \
   ios.confirm.forget_phone.title \
   ios.confirm.forget_phone.message \
   ios.confirm.forget_phone.confirm \
-  ios.feedback.transfer_active; do
+  ios.feedback.transfer_active \
+  ios.tab.receive \
+  ios.tab.activity \
+  ios.tab.settings \
+  ios.settings.support; do
   rg -q "\"${key}\"[[:space:]]*=" "$ios_en"
   rg -q "\"${key}\"[[:space:]]*=" "$ios_zh"
 done
@@ -61,7 +65,24 @@ rg -q 'adaptive\(light:' ios/ShareSyncApp/ContentView.swift
 rg -q 'ViewThatFits\(in: \.horizontal\)' ios/ShareSyncApp/ContentView.swift
 rg -q 'FeedbackMessage' ios/ShareSyncApp/ContentView.swift
 rg -q 'confirmationDialog' ios/ShareSyncApp/ContentView.swift
+rg -Fq 'TabView(selection: $selectedTab)' ios/ShareSyncApp/ContentView.swift
+rg -q 'case receive' ios/ShareSyncApp/ContentView.swift
+rg -q 'case activity' ios/ShareSyncApp/ContentView.swift
+rg -q 'case settings' ios/ShareSyncApp/ContentView.swift
 
-echo "ok iOS adaptive appearance and feedback states"
+for key in \
+  m36_nav_sync \
+  m36_nav_activity \
+  m36_nav_settings; do
+  rg -q "name=\"${key}\"" android/app/src/main/res/values/strings.xml
+  rg -q "name=\"${key}\"" android/app/src/main/res/values-zh-rTW/strings.xml
+done
+
+rg -q 'private fun bottomNavigation' android/app/src/main/java/com/sharesync/android/MainActivity.kt
+rg -q 'MainSection.SYNC' android/app/src/main/java/com/sharesync/android/MainActivity.kt
+rg -q 'MainSection.ACTIVITY' android/app/src/main/java/com/sharesync/android/MainActivity.kt
+rg -q 'MainSection.SETTINGS' android/app/src/main/java/com/sharesync/android/MainActivity.kt
+
+echo "ok adaptive appearance, feedback states, and three-section navigation"
 echo
 echo "UI quality checks passed."

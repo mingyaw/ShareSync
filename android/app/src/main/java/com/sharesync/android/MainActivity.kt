@@ -41,6 +41,16 @@ import org.json.JSONObject
 import java.time.Instant
 
 class MainActivity : Activity() {
+    private enum class MainSection(
+        val titleRes: Int,
+        val subtitleRes: Int,
+        val navigationRes: Int,
+    ) {
+        SYNC(R.string.m36_sync_title, R.string.m36_sync_subtitle, R.string.m36_nav_sync),
+        ACTIVITY(R.string.m36_activity_title, R.string.m36_activity_subtitle, R.string.m36_nav_activity),
+        SETTINGS(R.string.m36_settings_title, R.string.m36_settings_subtitle, R.string.m36_nav_settings),
+    }
+
     private data class ShareSyncTheme(
         val primary: Int,
         val success: Int,
@@ -88,6 +98,7 @@ class MainActivity : Activity() {
     private lateinit var syncResultText: TextView
     private lateinit var pairingPayloadText: TextView
     private lateinit var pairingQrImage: ImageView
+    private lateinit var grantButton: Button
     private lateinit var startButton: Button
     private lateinit var stopButton: Button
     private lateinit var copyEndpointButton: Button
@@ -115,9 +126,14 @@ class MainActivity : Activity() {
     private var manifestBuilder: ManifestBuilder? = null
     private var requestActivityTracker: LocalRequestActivityTracker? = null
     private lateinit var deviceIdentityStore: DeviceIdentityStore
+    private var currentSection = MainSection.SYNC
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        currentSection = savedInstanceState
+            ?.getString(STATE_MAIN_SECTION)
+            ?.let { stored -> MainSection.entries.firstOrNull { it.name == stored } }
+            ?: MainSection.SYNC
         deviceIdentityStore = SharedPreferencesDeviceIdentityStore(this)
         restorePersistedSyncResult()
         restoreRunningServerSession()
@@ -126,6 +142,11 @@ class MainActivity : Activity() {
         if (hasMediaPermission() && !isServerRunning) {
             startServer()
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString(STATE_MAIN_SECTION, currentSection.name)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onDestroy() {
@@ -158,13 +179,23 @@ class MainActivity : Activity() {
         val density = resources.displayMetrics.density
         val padding = (20 * density).toInt()
 
-        val scrollView = ScrollView(this).apply {
-            isFillViewport = true
+        val screen = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
             setBackgroundColor(shareSyncTheme.background)
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
             )
+        }
+
+        val scrollView = ScrollView(this).apply {
+            isFillViewport = true
+            setBackgroundColor(shareSyncTheme.background)
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0,
+                1f,
+            ).apply { height = 0 }
         }
 
         val root = LinearLayout(this).apply {
@@ -178,14 +209,14 @@ class MainActivity : Activity() {
         }
 
         val title = TextView(this).apply {
-            text = getString(R.string.app_name)
+            text = getString(currentSection.titleRes)
             textSize = 28f
             setTextColor(shareSyncTheme.textPrimary)
             typeface = Typeface.DEFAULT_BOLD
             isAccessibilityHeading = true
         }
         val subtitle = TextView(this).apply {
-            text = getString(R.string.m0_android_subtitle)
+            text = getString(currentSection.subtitleRes)
             textSize = 15f
             setTextColor(shareSyncTheme.textSecondary)
             setPadding(0, (4 * density).toInt(), 0, (18 * density).toInt())
@@ -194,6 +225,12 @@ class MainActivity : Activity() {
         statusText = bodyText()
         statusText.accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         phaseText = bodyText()
+        phaseText.apply {
+            textSize = 22f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(shareSyncTheme.textPrimary)
+            isAccessibilityHeading = true
+        }
         nextStepText = bodyText().apply {
             textSize = 17f
             typeface = Typeface.DEFAULT_BOLD
@@ -227,7 +264,7 @@ class MainActivity : Activity() {
             }
         }
 
-        val grantButton = Button(this).apply {
+        grantButton = Button(this).apply {
             text = getString(R.string.m0_grant_permissions)
             setOnClickListener { requestM0Permissions() }
             fullWidthButtonLayout()
@@ -277,7 +314,7 @@ class MainActivity : Activity() {
 
         root.addView(title)
         root.addView(subtitle)
-        if (!hasCompletedOnboarding()) {
+        if (currentSection == MainSection.SYNC && !hasCompletedOnboarding()) {
             val onboardingText = bodyText().apply {
                 text = getString(R.string.m32_onboarding_body)
             }
@@ -301,71 +338,134 @@ class MainActivity : Activity() {
                 ),
             )
         }
-        root.addView(
-            productPanel(
-                title = getString(R.string.m0_panel_summary),
-                accentColor = shareSyncTheme.primary,
-                children = listOf(
-                    statusText,
-                    phaseText,
-                    nextStepText,
-                    manifestSummaryText,
-                    syncEventText,
-                    syncHistoryText,
-                ),
-            ),
-        )
-        root.addView(
-            productPanel(
-                title = getString(R.string.m0_panel_actions),
-                accentColor = shareSyncTheme.success,
-                children = listOf(grantButton, startButton, stopButton),
-            ),
-        )
-        root.addView(
-            productPanel(
-                title = getString(R.string.m0_panel_pairing),
-                accentColor = shareSyncTheme.info,
-                children = listOf(
-                    pairingInstructionText,
-                    pairingQrImage,
-                ),
-            ),
-        )
-        root.addView(
-            productPanel(
-                title = getString(R.string.m0_panel_settings),
-                accentColor = shareSyncTheme.warning,
-                children = listOf(
-                    bodyText().apply { text = getString(R.string.m33_privacy_summary) },
-                    bodyText().apply { text = getString(R.string.m33_privacy_storage) },
-                    localNetworkText,
-                    endpointText,
-                    permissionText,
-                    notificationPermissionText,
-                    screenLockText,
-                    transportSecurityText,
-                    copyEndpointButton,
-                    copyPairingButton,
-                ),
-            ),
-        )
-        root.addView(
-            productPanel(
-                title = getString(R.string.m0_panel_diagnostics),
-                accentColor = shareSyncTheme.textSecondary,
-                children = listOf(
-                    requestActivityText,
-                    syncResultText,
-                    pairingPayloadText,
-                    copySyncResultButton,
-                    copyDiagnosticsButton,
-                    clearSyncStateButton,
-                ),
-            ),
-        )
+        when (currentSection) {
+            MainSection.SYNC -> {
+                root.addView(
+                    productPanel(
+                        title = getString(R.string.m0_panel_summary),
+                        accentColor = shareSyncTheme.primary,
+                        children = listOf(phaseText, statusText, nextStepText, manifestSummaryText),
+                    ),
+                )
+                root.addView(
+                    productPanel(
+                        title = getString(R.string.m0_panel_actions),
+                        accentColor = shareSyncTheme.success,
+                        children = listOf(grantButton, startButton, stopButton),
+                    ),
+                )
+                root.addView(
+                    productPanel(
+                        title = getString(R.string.m0_panel_pairing),
+                        accentColor = shareSyncTheme.info,
+                        children = listOf(pairingInstructionText, pairingQrImage),
+                    ),
+                )
+            }
+
+            MainSection.ACTIVITY -> {
+                root.addView(
+                    productPanel(
+                        title = getString(R.string.m36_recent_activity),
+                        accentColor = shareSyncTheme.primary,
+                        children = listOf(syncEventText, syncHistoryText, manifestSummaryText),
+                    ),
+                )
+                root.addView(
+                    productPanel(
+                        title = getString(R.string.m36_transfer_details),
+                        accentColor = shareSyncTheme.info,
+                        children = listOf(requestActivityText, syncResultText),
+                    ),
+                )
+            }
+
+            MainSection.SETTINGS -> {
+                root.addView(
+                    productPanel(
+                        title = getString(R.string.m36_privacy_connection),
+                        accentColor = shareSyncTheme.info,
+                        children = listOf(
+                            bodyText().apply { text = getString(R.string.m33_privacy_summary) },
+                            bodyText().apply { text = getString(R.string.m33_privacy_storage) },
+                            localNetworkText,
+                            permissionText,
+                            notificationPermissionText,
+                            screenLockText,
+                            transportSecurityText,
+                        ),
+                    ),
+                )
+                root.addView(
+                    productPanel(
+                        title = getString(R.string.m36_connection_tools),
+                        accentColor = shareSyncTheme.warning,
+                        children = listOf(endpointText, copyEndpointButton, copyPairingButton),
+                    ),
+                )
+                root.addView(
+                    productPanel(
+                        title = getString(R.string.m0_panel_diagnostics),
+                        accentColor = shareSyncTheme.textSecondary,
+                        children = listOf(
+                            copySyncResultButton,
+                            copyDiagnosticsButton,
+                            clearSyncStateButton,
+                        ),
+                    ),
+                )
+            }
+        }
         scrollView.addView(root)
-        setContentView(scrollView)
+        screen.addView(scrollView)
+        screen.addView(bottomNavigation())
+        setContentView(screen)
+    }
+
+    private fun bottomNavigation(): LinearLayout {
+        val density = resources.displayMetrics.density
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setPadding(
+                (8 * density).toInt(),
+                (6 * density).toInt(),
+                (8 * density).toInt(),
+                (8 * density).toInt(),
+            )
+            setBackgroundColor(shareSyncTheme.surface)
+            elevation = 8 * density
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            )
+            MainSection.entries.forEach { section ->
+                addView(Button(context).apply {
+                    text = getString(section.navigationRes)
+                    isAllCaps = false
+                    textSize = 13f
+                    setTextColor(if (section == currentSection) shareSyncTheme.primary else shareSyncTheme.textSecondary)
+                    typeface = if (section == currentSection) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+                    minHeight = (48 * density).toInt()
+                    background = if (section == currentSection) {
+                        panelBackground(accentColor = shareSyncTheme.primary)
+                    } else {
+                        GradientDrawable().apply { setColor(shareSyncTheme.surface) }
+                    }
+                    layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                        marginStart = (3 * density).toInt()
+                        marginEnd = (3 * density).toInt()
+                    }
+                    setOnClickListener {
+                        if (currentSection != section) {
+                            currentSection = section
+                            renderContent()
+                            refreshUi()
+                        }
+                    }
+                })
+            }
+        }
     }
 
     private fun bodyText(): TextView {
@@ -460,7 +560,7 @@ class MainActivity : Activity() {
                 else -> shareSyncTheme.textSecondary
             },
         )
-        phaseText.text = getString(R.string.m0_phase, phaseStatus())
+        phaseText.text = phaseStatus()
         phaseText.setTextColor(if (isServerRunning) shareSyncTheme.primary else shareSyncTheme.textSecondary)
         nextStepText.text = getString(R.string.m11_next_step, nextStepInstruction())
         endpointText.text = endpoint
@@ -504,8 +604,11 @@ class MainActivity : Activity() {
         syncHistoryText.text = formatSyncHistory()
         refreshPairingQr()
 
-        startButton.isEnabled = !isServerRunning && hasMediaPermission()
+        startButton.isEnabled = !isServerRunning && !isServerStarting && hasMediaPermission()
         stopButton.isEnabled = isServerRunning
+        grantButton.visibility = if (hasMediaPermission()) View.GONE else View.VISIBLE
+        startButton.visibility = if (hasMediaPermission() && !isServerRunning) View.VISIBLE else View.GONE
+        stopButton.visibility = if (isServerRunning) View.VISIBLE else View.GONE
         copyEndpointButton.isEnabled = endpointUrl != null
         copyPairingButton.isEnabled = currentPairingPayloadJson != null
         copySyncResultButton.isEnabled = currentSyncResult != null
@@ -1027,6 +1130,7 @@ class MainActivity : Activity() {
     }
 
     private companion object {
+        const val STATE_MAIN_SECTION = "sharesync.mainSection"
         const val ONBOARDING_PREFERENCES = "sharesync_onboarding"
         const val ONBOARDING_COMPLETE_KEY = "completed"
         const val REQUEST_MEDIA_PERMISSION = 1001

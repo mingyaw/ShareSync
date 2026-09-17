@@ -88,4 +88,17 @@
     <string name="m32_onboarding_continue">Continue to Photo Sharing</string>
     <string name="m33_privacy_summary">Private local transfer: photos are sent only to the paired iPhone on the local network.</string>
     <string name="m33_privacy_storage">Local data: this phone stores device identity, pairing state, and photo completion history. Clearing history does not delete photos.</string>
+    <string name="m36_nav_sync">Sync</string>
+    <string name="m36_nav_activity">Activity</string>
+    <string name="m36_nav_settings">Settings</string>
+    <string name="m36_sync_title">Photo sync</string>
+    <string name="m36_sync_subtitle">Keep this screen ready while your iPhone receives Android photos.</string>
+    <string name="m36_activity_title">Activity</string>
+    <string name="m36_activity_subtitle">Review completed transfers and items that may need attention.</string>
+    <string name="m36_settings_title">Settings</string>
+    <string name="m36_settings_subtitle">Manage local connection, privacy, and support tools.</string>
+    <string name="m36_recent_activity">Recent photo syncs</string>
+    <string name="m36_transfer_details">Latest transfer details</string>
+    <string name="m36_privacy_connection">Privacy &amp; connection</string>
+    <string name="m36_connection_tools">Connection tools</string>
 </resources>

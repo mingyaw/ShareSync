@@ -161,3 +161,14 @@
 "ios.privacy.no_relay" = "ShareSync does not upload photos to its own cloud service.";
 "ios.privacy.local_history" = "Pairing and photo completion history stay on this iPhone.";
 "ios.privacy.icloud_note" = "After import, the Photos app and your existing iCloud Photos settings control iCloud backup.";
+"ios.tab.receive" = "Receive";
+"ios.tab.activity" = "Activity";
+"ios.tab.settings" = "Settings";
+"ios.home.connected" = "Android phone paired";
+"ios.home.not_connected" = "Connect your Android phone";
+"ios.activity.summary" = "Photo sync activity";
+"ios.settings.sync" = "Sync preferences";
+"ios.settings.auto_sync_note" = "When enabled, ShareSync starts receiving all available photos after a successful pairing.";
+"ios.settings.support" = "Connection & support";
+"ios.pairing.title" = "Pair your Android phone";
+"ios.pairing.same_network" = "Keep both phones on the same Wi-Fi or Android hotspot.";

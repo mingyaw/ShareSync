@@ -1,8 +1,8 @@
 # Developer Quickstart
 
-Status: M35 developer handoff guide.
+Status: M36 developer handoff guide.
 
-This guide is for local development only. ShareSync M35 remains a photo-only Android-to-iPhone local sync MVP source-code checkpoint and should not be treated as an App Store or Google Play release candidate until deferred physical-device, signing, packaging, privacy declaration, and store review work is completed.
+This guide is for local development only. ShareSync M36 remains a photo-only Android-to-iPhone local sync MVP source-code checkpoint and should not be treated as an App Store or Google Play release candidate until deferred physical-device, signing, packaging, privacy declaration, and store review work is completed.
 
 ## Prerequisites
 
@@ -193,4 +193,5 @@ Use these documents when real-device testing resumes:
 - [M33 Privacy Center](m33-privacy-center.md)
 - [M34 Release Configuration](m34-release-configuration.md)
 - [M35 Pre-release Product Freeze](m35-pre-release-product-freeze.md)
+- [M36 Product Navigation Redesign](m36-product-navigation-redesign.md)
 - [Privacy Data Summary](privacy-data-summary.md)

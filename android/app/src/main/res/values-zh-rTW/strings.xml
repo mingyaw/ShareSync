@@ -88,4 +88,17 @@
     <string name="m32_onboarding_continue">繼續設定照片分享</string>
     <string name="m33_privacy_summary">私密本機傳輸：照片只會透過區域網路傳送到已配對的 iPhone。</string>
     <string name="m33_privacy_storage">本機資料：這支手機會儲存裝置識別、配對狀態與照片完成紀錄。清除紀錄不會刪除照片。</string>
+    <string name="m36_nav_sync">同步</string>
+    <string name="m36_nav_activity">紀錄</string>
+    <string name="m36_nav_settings">設定</string>
+    <string name="m36_sync_title">照片同步</string>
+    <string name="m36_sync_subtitle">iPhone 接收 Android 照片時，請保持此畫面準備就緒。</string>
+    <string name="m36_activity_title">同步紀錄</string>
+    <string name="m36_activity_subtitle">查看已完成傳輸，以及可能需要處理的照片。</string>
+    <string name="m36_settings_title">設定</string>
+    <string name="m36_settings_subtitle">管理本機連線、隱私與支援工具。</string>
+    <string name="m36_recent_activity">最近照片同步</string>
+    <string name="m36_transfer_details">最近傳輸詳情</string>
+    <string name="m36_privacy_connection">隱私與連線</string>
+    <string name="m36_connection_tools">連線工具</string>
 </resources>

@@ -161,3 +161,14 @@
 "ios.privacy.no_relay" = "ShareSync 不會將照片上傳到自己的雲端服務。";
 "ios.privacy.local_history" = "配對與照片完成紀錄會保留在這支 iPhone。";
 "ios.privacy.icloud_note" = "照片匯入後，由照片 App 與你現有的 iCloud 照片設定決定是否備份到 iCloud。";
+"ios.tab.receive" = "接收";
+"ios.tab.activity" = "活動";
+"ios.tab.settings" = "設定";
+"ios.home.connected" = "已配對 Android 手機";
+"ios.home.not_connected" = "連接 Android 手機";
+"ios.activity.summary" = "照片同步活動";
+"ios.settings.sync" = "同步偏好設定";
+"ios.settings.auto_sync_note" = "開啟後，配對成功時會自動開始接收所有可用照片。";
+"ios.settings.support" = "連線與支援";
+"ios.pairing.title" = "配對 Android 手機";
+"ios.pairing.same_network" = "請讓兩支手機連上同一 Wi-Fi 或 Android 熱點。";
