@@ -78,4 +78,8 @@
     <string name="m5_copy_diagnostics">複製支援快照</string>
     <string name="m5_diagnostics_copied">已複製診斷資訊，未包含配對密鑰。</string>
     <string name="m26_pairing_qr_accessibility">配對 QR Code，請使用 iPhone 上的 ShareSync 掃描。</string>
+    <string name="m28_clear_history_title">要清除照片紀錄嗎？</string>
+    <string name="m28_clear_history_message">清除後，先前已完成的照片可能再次顯示為可同步。兩支手機上已儲存的照片都不會被刪除。</string>
+    <string name="m28_clear_history_confirm">清除紀錄</string>
+    <string name="m28_cancel">取消</string>
 </resources>

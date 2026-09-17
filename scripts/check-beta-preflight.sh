@@ -42,6 +42,7 @@ Runs beta handoff preflight checks and generates a handoff record.
 
 Default checks:
   - git diff --check
+  - scripts/check-ui-quality.sh
   - scripts/check-release-readiness.sh
   - scripts/check-repo-hygiene.sh
   - scripts/test-support-snapshot-inspector.sh
@@ -70,6 +71,10 @@ esac
 
 echo "== Whitespace check =="
 git diff --check
+
+echo
+echo "== UI quality =="
+bash scripts/check-ui-quality.sh
 
 echo
 echo "== Release readiness =="

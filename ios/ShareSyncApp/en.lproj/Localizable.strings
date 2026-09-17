@@ -17,9 +17,17 @@
 "ios.action.five_photos" = "Sync 5 Photos";
 "ios.action.reset_local_sync_state" = "Reset Photo History";
 "ios.action.use_pairing_payload" = "Use Pairing Code";
+"ios.confirm.cancel" = "Cancel";
+"ios.confirm.reset_history.title" = "Reset photo history?";
+"ios.confirm.reset_history.message" = "Completed photos may appear available again after the local history is reset. Photos already stored on either phone are not deleted.";
+"ios.confirm.reset_history.confirm" = "Reset History";
+"ios.confirm.forget_phone.title" = "Forget this Android phone?";
+"ios.confirm.forget_phone.message" = "You will need to scan the Android QR code again before the next sync. Imported photos are not deleted.";
+"ios.confirm.forget_phone.confirm" = "Forget Phone";
 "ios.connection.android_ip" = "Android IP";
 "ios.connection.port" = "Port";
 "ios.footer.foreground" = "Keep ShareSync open while photos sync. If iOS pauses the app, completed items stay recorded and the remaining photos can resume.";
+"ios.feedback.transfer_active" = "Keep ShareSync open while the current photo transfer finishes.";
 "ios.header.subtitle" = "Back up Android photos to iCloud through this iPhone.";
 "ios.metric.done" = "Done";
 "ios.metric.left" = "Left";

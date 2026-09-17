@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 photo PoC through M26 accessibility and adaptive layout are complete for the photo-only MVP source-code track.
+Status: M0 photo PoC through M30 UI beta freeze are complete for the photo-only MVP source-code track.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -16,7 +16,7 @@ The project intentionally uses native implementation:
 
 ## Current Stage
 
-The completed baseline is `M0 - Android to iOS Photo PoC` through `M26 - Accessibility And Adaptive Layout`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, beta preflight automation, redacted JSON diagnostics, local support snapshot triage, product-focused next-step guidance, tested readiness presenter state, strictly validated next-step support snapshot evidence, support snapshot inspector regression tests, platform-aware support snapshot fixture validation, beta handoff quality notes, main-axis check boundaries, error recovery alignment, a source-code static beta freeze checkpoint, a first-pass product UI/UX flow, lightweight native visual theme tokens, and adaptive accessibility behavior for compact screens and larger system text.
+The completed baseline is `M0 - Android to iOS Photo PoC` through `M30 - UI Beta Freeze`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, beta preflight automation, redacted JSON diagnostics, local support snapshot triage, product-focused next-step guidance, tested readiness presenter state, strictly validated next-step support snapshot evidence, support snapshot inspector regression tests, platform-aware support snapshot fixture validation, beta handoff quality notes, main-axis check boundaries, error recovery alignment, a source-code static beta freeze checkpoint, adaptive native UI, light and dark appearance support, guarded destructive actions, consistent feedback states, and a repeatable UI quality gate.
 
 The current codebase contains:
 
@@ -70,6 +70,10 @@ The current codebase contains:
 - Android and iOS screens now use lightweight visual theme tokens for status colors, surfaces, dividers, and panel polish.
 - Android and iOS primary screens now expose section headings and status semantics to assistive technologies.
 - iOS summary metrics, status rows, and paired actions adapt from horizontal to vertical layouts when content or system text requires more room.
+- Android and iOS use appearance-aware status colors; the Android pairing QR remains on a scan-safe white surface in dark mode.
+- Photo-history reset and paired-phone removal explain their consequences before changing local state.
+- iOS transfer, pause, success, and failure feedback use one consistent visual component.
+- Beta preflight now validates UI resources, bilingual confirmation copy, adaptive layouts, and feedback-state coverage.
 - Support snapshots can be validated and summarized locally for internal beta triage.
 
 M0 validates the riskiest path:
@@ -141,6 +145,10 @@ tasks/
 - [M24 Visual Design System](docs/m24-visual-design-system.md)
 - [M25 Screen Polish](docs/m25-screen-polish.md)
 - [M26 Accessibility And Adaptive Layout](docs/m26-accessibility-adaptive-layout.md)
+- [M27 Adaptive Appearance](docs/m27-adaptive-appearance.md)
+- [M28 Safe Destructive Actions](docs/m28-safe-destructive-actions.md)
+- [M29 Consistent Feedback States](docs/m29-consistent-feedback-states.md)
+- [M30 UI Beta Freeze](docs/m30-ui-beta-freeze.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Error Recovery Matrix](docs/error-recovery-matrix.md)
 - [Sync History Summary](docs/sync-history-summary.md)
@@ -179,6 +187,10 @@ tasks/
 - [M24 Visual Design System](tasks/m24-visual-design-system.md)
 - [M25 Screen Polish](tasks/m25-screen-polish.md)
 - [M26 Accessibility And Adaptive Layout](tasks/m26-accessibility-adaptive-layout.md)
+- [M27 Adaptive Appearance](tasks/m27-adaptive-appearance.md)
+- [M28 Safe Destructive Actions](tasks/m28-safe-destructive-actions.md)
+- [M29 Consistent Feedback States](tasks/m29-consistent-feedback-states.md)
+- [M30 UI Beta Freeze](tasks/m30-ui-beta-freeze.md)
 
 ## M0 Rules
 

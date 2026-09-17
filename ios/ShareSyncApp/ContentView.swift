@@ -8,6 +8,7 @@ struct ContentView: View {
     @State private var isShowingPairingScanner = false
     @State private var syncResultCopyMessage: String?
     @State private var isSettingsExpanded = false
+    @State private var pendingDestructiveAction: DestructiveAction?
 
     var body: some View {
         NavigationStack {
@@ -37,6 +38,18 @@ struct ContentView: View {
                         viewModel.syncAllPhotos()
                     }
                 }
+            }
+            .confirmationDialog(
+                destructiveDialogTitle,
+                isPresented: isShowingDestructiveConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button(destructiveConfirmLabel, role: .destructive) {
+                    performPendingDestructiveAction()
+                }
+                Button("ios.confirm.cancel", role: .cancel) {}
+            } message: {
+                Text(destructiveDialogMessage)
             }
             .onChange(of: viewModel.downloadState) { _, newState in
                 updateIdleTimer(for: newState)
@@ -155,6 +168,17 @@ struct ContentView: View {
                 }
                 .buttonStyle(.bordered)
                 .disabled(!viewModel.canCancelDownload)
+
+                if viewModel.isTransferActive {
+                    HStack(spacing: 10) {
+                        ProgressView()
+                            .tint(ShareSyncTheme.primary)
+                        Text("ios.feedback.transfer_active")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    .accessibilityElement(children: .combine)
+                }
 
                 Text("ios.footer.foreground")
                     .font(.footnote)
@@ -305,7 +329,7 @@ struct ContentView: View {
                 .buttonStyle(.bordered)
 
                 Button(role: .destructive) {
-                    viewModel.resetLocalSyncState()
+                    pendingDestructiveAction = .resetHistory
                 } label: {
                     Label("ios.action.reset_local_sync_state", systemImage: "arrow.counterclockwise")
                         .frame(maxWidth: .infinity)
@@ -315,7 +339,7 @@ struct ContentView: View {
                 .disabled(viewModel.isTransferActive)
 
                 Button(role: .destructive) {
-                    viewModel.clearPairing()
+                    pendingDestructiveAction = .forgetPhone
                 } label: {
                     Label("ios.action.clear_pairing", systemImage: "xmark.circle")
                         .frame(maxWidth: .infinity)
@@ -420,35 +444,22 @@ struct ContentView: View {
                 }
 
                 if viewModel.latestSyncResultJSON != nil, let syncResultCopyMessage {
-                    Text(syncResultCopyMessage)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.top, 4)
+                    FeedbackMessage(message: syncResultCopyMessage, tone: .success)
                 }
 
                 if case .cancelled = viewModel.downloadState {
-                    Text(viewModel.cancellationMessage ?? localized("ios.transfer.cancelled_default"))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.top, 4)
+                    FeedbackMessage(
+                        message: viewModel.cancellationMessage ?? localized("ios.transfer.cancelled_default"),
+                        tone: .warning
+                    )
                 }
 
                 if case .failed(let message) = viewModel.state {
-                    Text(message)
-                        .font(.footnote)
-                        .foregroundStyle(.red)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.top, 4)
+                    FeedbackMessage(message: message, tone: .error)
                 }
 
                 if case .failed(let message) = viewModel.downloadState {
-                    Text(message)
-                        .font(.footnote)
-                        .foregroundStyle(.red)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.top, 4)
+                    FeedbackMessage(message: message, tone: .error)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -456,6 +467,62 @@ struct ContentView: View {
 
     private var isPaired: Bool {
         !viewModel.host.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var isShowingDestructiveConfirmation: Binding<Bool> {
+        Binding(
+            get: { pendingDestructiveAction != nil },
+            set: { isPresented in
+                if !isPresented {
+                    pendingDestructiveAction = nil
+                }
+            }
+        )
+    }
+
+    private var destructiveDialogTitle: LocalizedStringKey {
+        switch pendingDestructiveAction {
+        case .resetHistory:
+            return "ios.confirm.reset_history.title"
+        case .forgetPhone:
+            return "ios.confirm.forget_phone.title"
+        case nil:
+            return ""
+        }
+    }
+
+    private var destructiveDialogMessage: LocalizedStringKey {
+        switch pendingDestructiveAction {
+        case .resetHistory:
+            return "ios.confirm.reset_history.message"
+        case .forgetPhone:
+            return "ios.confirm.forget_phone.message"
+        case nil:
+            return ""
+        }
+    }
+
+    private var destructiveConfirmLabel: LocalizedStringKey {
+        switch pendingDestructiveAction {
+        case .resetHistory:
+            return "ios.confirm.reset_history.confirm"
+        case .forgetPhone:
+            return "ios.confirm.forget_phone.confirm"
+        case nil:
+            return ""
+        }
+    }
+
+    private func performPendingDestructiveAction() {
+        defer { pendingDestructiveAction = nil }
+        switch pendingDestructiveAction {
+        case .resetHistory:
+            viewModel.resetLocalSyncState()
+        case .forgetPhone:
+            viewModel.clearPairing()
+        case nil:
+            break
+        }
     }
 
     private var buttonTitle: String {
@@ -941,6 +1008,11 @@ private enum PhaseKind {
     case transferError
 }
 
+private enum DestructiveAction {
+    case forgetPhone
+    case resetHistory
+}
+
 private enum ShareSyncTone {
     case primary
     case success
@@ -967,19 +1039,75 @@ private enum ShareSyncTone {
     }
 
     var softBackground: Color {
-        color.opacity(0.10)
+        color.opacity(0.12)
+    }
+
+    var iconName: String {
+        switch self {
+        case .success:
+            return "checkmark.circle.fill"
+        case .warning:
+            return "exclamationmark.triangle.fill"
+        case .error:
+            return "xmark.octagon.fill"
+        case .info, .primary, .neutral:
+            return "info.circle.fill"
+        }
     }
 }
 
 private enum ShareSyncTheme {
-    static let primary = Color(red: 37 / 255, green: 99 / 255, blue: 235 / 255)
-    static let success = Color(red: 22 / 255, green: 163 / 255, blue: 74 / 255)
-    static let warning = Color(red: 217 / 255, green: 119 / 255, blue: 6 / 255)
-    static let error = Color(red: 220 / 255, green: 38 / 255, blue: 38 / 255)
-    static let info = Color(red: 8 / 255, green: 145 / 255, blue: 178 / 255)
+    static let primary = adaptive(light: 0x2563EB, dark: 0x60A5FA)
+    static let success = adaptive(light: 0x16803A, dark: 0x4ADE80)
+    static let warning = adaptive(light: 0xB45309, dark: 0xFBBF24)
+    static let error = adaptive(light: 0xB91C1C, dark: 0xF87171)
+    static let info = adaptive(light: 0x0E7490, dark: 0x22D3EE)
     static let background = Color(.systemGroupedBackground)
     static let surface = Color(.secondarySystemGroupedBackground)
     static let divider = Color.secondary.opacity(0.18)
+
+    private static func adaptive(light: Int, dark: Int) -> Color {
+        Color(
+            UIColor { traits in
+                UIColor(hex: traits.userInterfaceStyle == .dark ? dark : light)
+            }
+        )
+    }
+}
+
+private extension UIColor {
+    convenience init(hex: Int) {
+        self.init(
+            red: CGFloat((hex >> 16) & 0xFF) / 255,
+            green: CGFloat((hex >> 8) & 0xFF) / 255,
+            blue: CGFloat(hex & 0xFF) / 255,
+            alpha: 1
+        )
+    }
+}
+
+private struct FeedbackMessage: View {
+    let message: String
+    let tone: ShareSyncTone
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: tone.iconName)
+                .foregroundStyle(tone.color)
+            Text(message)
+                .font(.footnote)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(tone.softBackground)
+        .overlay {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(tone.color.opacity(0.24), lineWidth: 1)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .accessibilityElement(children: .combine)
+    }
 }
 
 private struct StatusRow: View {

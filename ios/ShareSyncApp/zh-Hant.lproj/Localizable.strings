@@ -17,9 +17,17 @@
 "ios.action.five_photos" = "同步 5 張照片";
 "ios.action.reset_local_sync_state" = "重設照片紀錄";
 "ios.action.use_pairing_payload" = "套用配對碼";
+"ios.confirm.cancel" = "取消";
+"ios.confirm.reset_history.title" = "要重設照片紀錄嗎？";
+"ios.confirm.reset_history.message" = "重設本機紀錄後，已完成的照片可能再次顯示為可同步。兩支手機上已儲存的照片都不會被刪除。";
+"ios.confirm.reset_history.confirm" = "重設紀錄";
+"ios.confirm.forget_phone.title" = "要忘記這支 Android 手機嗎？";
+"ios.confirm.forget_phone.message" = "下次同步前需要重新掃描 Android QR Code。已匯入的照片不會被刪除。";
+"ios.confirm.forget_phone.confirm" = "忘記手機";
 "ios.connection.android_ip" = "Android IP";
 "ios.connection.port" = "連接埠";
 "ios.footer.foreground" = "同步照片時請保持 ShareSync 開啟。如果 iOS 暫停 App，已完成項目會保留紀錄，剩餘照片可繼續同步。";
+"ios.feedback.transfer_active" = "目前照片傳輸完成前，請保持 ShareSync 開啟。";
 "ios.header.subtitle" = "透過這支 iPhone 將 Android 照片備份到 iCloud。";
 "ios.metric.done" = "完成";
 "ios.metric.left" = "剩餘";

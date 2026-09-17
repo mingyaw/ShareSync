@@ -13,6 +13,7 @@ python3 scripts/compare-sync-results.py \
   shared/fixtures/sample-sync-result.json
 python3 scripts/validate-m0-results.py
 bash scripts/test-support-snapshot-inspector.sh
+bash scripts/check-ui-quality.sh
 
 echo
 echo "== Swift package tests =="

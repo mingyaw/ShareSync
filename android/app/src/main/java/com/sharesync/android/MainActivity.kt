@@ -2,11 +2,11 @@ package com.sharesync.android
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
@@ -41,17 +41,34 @@ import org.json.JSONObject
 import java.time.Instant
 
 class MainActivity : Activity() {
-    private object ShareSyncTheme {
-        val primary = Color.rgb(37, 99, 235)
-        val success = Color.rgb(22, 163, 74)
-        val warning = Color.rgb(217, 119, 6)
-        val info = Color.rgb(8, 145, 178)
-        val textPrimary = Color.rgb(17, 24, 39)
-        val textSecondary = Color.rgb(107, 114, 128)
-        val background = Color.rgb(248, 250, 252)
-        val surface = Color.WHITE
-        val surfaceAlt = Color.rgb(239, 246, 255)
-        val divider = Color.rgb(229, 231, 235)
+    private data class ShareSyncTheme(
+        val primary: Int,
+        val success: Int,
+        val warning: Int,
+        val info: Int,
+        val textPrimary: Int,
+        val textSecondary: Int,
+        val background: Int,
+        val surface: Int,
+        val surfaceAlt: Int,
+        val divider: Int,
+        val qrSurface: Int,
+    )
+
+    private val shareSyncTheme: ShareSyncTheme by lazy {
+        ShareSyncTheme(
+            primary = getColor(R.color.sharesync_primary),
+            success = getColor(R.color.sharesync_success),
+            warning = getColor(R.color.sharesync_warning),
+            info = getColor(R.color.sharesync_info),
+            textPrimary = getColor(R.color.sharesync_text_primary),
+            textSecondary = getColor(R.color.sharesync_text_secondary),
+            background = getColor(R.color.sharesync_background),
+            surface = getColor(R.color.sharesync_surface),
+            surfaceAlt = getColor(R.color.sharesync_surface_alt),
+            divider = getColor(R.color.sharesync_divider),
+            qrSurface = getColor(R.color.sharesync_qr_surface),
+        )
     }
 
     private lateinit var statusText: TextView
@@ -143,7 +160,7 @@ class MainActivity : Activity() {
 
         val scrollView = ScrollView(this).apply {
             isFillViewport = true
-            setBackgroundColor(ShareSyncTheme.background)
+            setBackgroundColor(shareSyncTheme.background)
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -163,14 +180,14 @@ class MainActivity : Activity() {
         val title = TextView(this).apply {
             text = getString(R.string.app_name)
             textSize = 28f
-            setTextColor(ShareSyncTheme.textPrimary)
+            setTextColor(shareSyncTheme.textPrimary)
             typeface = Typeface.DEFAULT_BOLD
             isAccessibilityHeading = true
         }
         val subtitle = TextView(this).apply {
             text = getString(R.string.m0_android_subtitle)
             textSize = 15f
-            setTextColor(ShareSyncTheme.textSecondary)
+            setTextColor(shareSyncTheme.textSecondary)
             setPadding(0, (4 * density).toInt(), 0, (18 * density).toInt())
         }
 
@@ -180,7 +197,7 @@ class MainActivity : Activity() {
         nextStepText = bodyText().apply {
             textSize = 17f
             typeface = Typeface.DEFAULT_BOLD
-            setTextColor(ShareSyncTheme.textPrimary)
+            setTextColor(shareSyncTheme.textPrimary)
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
         endpointText = bodyText()
@@ -199,7 +216,7 @@ class MainActivity : Activity() {
         pairingQrImage = ImageView(this).apply {
             adjustViewBounds = true
             contentDescription = getString(R.string.m26_pairing_qr_accessibility)
-            background = panelBackground(accentColor = ShareSyncTheme.primary, filled = false)
+            background = panelBackground(accentColor = shareSyncTheme.primary, filled = false)
             setPadding(8, 8, 8, 8)
             visibility = ImageView.GONE
             layoutParams = LinearLayout.LayoutParams(
@@ -254,7 +271,7 @@ class MainActivity : Activity() {
 
         clearSyncStateButton = Button(this).apply {
             text = getString(R.string.m0_clear_sync_state)
-            setOnClickListener { clearSyncState() }
+            setOnClickListener { showClearSyncStateConfirmation() }
             fullWidthButtonLayout()
         }
 
@@ -263,7 +280,7 @@ class MainActivity : Activity() {
         root.addView(
             productPanel(
                 title = getString(R.string.m0_panel_summary),
-                accentColor = ShareSyncTheme.primary,
+                accentColor = shareSyncTheme.primary,
                 children = listOf(
                     statusText,
                     phaseText,
@@ -277,14 +294,14 @@ class MainActivity : Activity() {
         root.addView(
             productPanel(
                 title = getString(R.string.m0_panel_actions),
-                accentColor = ShareSyncTheme.success,
+                accentColor = shareSyncTheme.success,
                 children = listOf(grantButton, startButton, stopButton),
             ),
         )
         root.addView(
             productPanel(
                 title = getString(R.string.m0_panel_pairing),
-                accentColor = ShareSyncTheme.info,
+                accentColor = shareSyncTheme.info,
                 children = listOf(
                     pairingInstructionText,
                     pairingQrImage,
@@ -294,7 +311,7 @@ class MainActivity : Activity() {
         root.addView(
             productPanel(
                 title = getString(R.string.m0_panel_settings),
-                accentColor = ShareSyncTheme.warning,
+                accentColor = shareSyncTheme.warning,
                 children = listOf(
                     localNetworkText,
                     endpointText,
@@ -310,7 +327,7 @@ class MainActivity : Activity() {
         root.addView(
             productPanel(
                 title = getString(R.string.m0_panel_diagnostics),
-                accentColor = ShareSyncTheme.textSecondary,
+                accentColor = shareSyncTheme.textSecondary,
                 children = listOf(
                     requestActivityText,
                     syncResultText,
@@ -328,7 +345,7 @@ class MainActivity : Activity() {
     private fun bodyText(): TextView {
         return TextView(this).apply {
             textSize = 16f
-            setTextColor(ShareSyncTheme.textSecondary)
+            setTextColor(shareSyncTheme.textSecondary)
             setLineSpacing(0f, 1.12f)
             setPadding(0, (8 * resources.displayMetrics.density).toInt(), 0, 0)
         }
@@ -336,7 +353,7 @@ class MainActivity : Activity() {
 
     private fun productPanel(
         title: String,
-        accentColor: Int = ShareSyncTheme.primary,
+        accentColor: Int = shareSyncTheme.primary,
         children: List<android.view.View>,
     ): LinearLayout {
         val density = resources.displayMetrics.density
@@ -360,7 +377,7 @@ class MainActivity : Activity() {
                 text = title
                 textSize = 18f
                 typeface = Typeface.DEFAULT_BOLD
-                setTextColor(ShareSyncTheme.textPrimary)
+                setTextColor(shareSyncTheme.textPrimary)
                 isAccessibilityHeading = true
                 setPadding(0, 0, 0, (4 * density).toInt())
             })
@@ -380,14 +397,15 @@ class MainActivity : Activity() {
     private fun panelBackground(accentColor: Int, filled: Boolean = true): GradientDrawable {
         val density = resources.displayMetrics.density
         return GradientDrawable().apply {
-            setColor(if (filled) ShareSyncTheme.surface else ShareSyncTheme.surfaceAlt)
+            setColor(if (filled) shareSyncTheme.surface else shareSyncTheme.qrSurface)
             cornerRadius = 8 * density
-            setStroke(1, if (filled) ShareSyncTheme.divider else accentColor)
+            setStroke(1, if (filled) shareSyncTheme.divider else accentColor)
         }
     }
 
     private fun Button.fullWidthButtonLayout() {
         val density = resources.displayMetrics.density
+        isAllCaps = false
         minHeight = (48 * density).toInt()
         layoutParams = LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -409,7 +427,15 @@ class MainActivity : Activity() {
         }
 
         statusText.text = status
+        statusText.setTextColor(
+            when {
+                isServerRunning -> shareSyncTheme.success
+                message != null -> shareSyncTheme.info
+                else -> shareSyncTheme.textSecondary
+            },
+        )
         phaseText.text = getString(R.string.m0_phase, phaseStatus())
+        phaseText.setTextColor(if (isServerRunning) shareSyncTheme.primary else shareSyncTheme.textSecondary)
         nextStepText.text = getString(R.string.m11_next_step, nextStepInstruction())
         endpointText.text = endpoint
         permissionText.text = if (hasMediaPermission()) {
@@ -714,6 +740,17 @@ class MainActivity : Activity() {
             }
             runOnUiThread { refreshUi(getString(R.string.m0_sync_state_cleared)) }
         }.start()
+    }
+
+    private fun showClearSyncStateConfirmation() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.m28_clear_history_title)
+            .setMessage(R.string.m28_clear_history_message)
+            .setNegativeButton(R.string.m28_cancel, null)
+            .setPositiveButton(R.string.m28_clear_history_confirm) { _, _ ->
+                clearSyncState()
+            }
+            .show()
     }
 
     private fun restorePersistedSyncResult() {

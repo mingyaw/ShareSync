@@ -78,4 +78,8 @@
     <string name="m5_copy_diagnostics">Copy support snapshot</string>
     <string name="m5_diagnostics_copied">Diagnostics copied without pairing secrets.</string>
     <string name="m26_pairing_qr_accessibility">Pairing QR code. Scan with ShareSync on iPhone.</string>
+    <string name="m28_clear_history_title">Clear photo history?</string>
+    <string name="m28_clear_history_message">Previously completed photos can appear available again after this history is cleared. Photos already stored on either phone are not deleted.</string>
+    <string name="m28_clear_history_confirm">Clear History</string>
+    <string name="m28_cancel">Cancel</string>
 </resources>
