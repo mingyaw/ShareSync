@@ -77,4 +77,5 @@
     <string name="m0_clear_sync_state">Clear photo history</string>
     <string name="m5_copy_diagnostics">Copy support snapshot</string>
     <string name="m5_diagnostics_copied">Diagnostics copied without pairing secrets.</string>
+    <string name="m26_pairing_qr_accessibility">Pairing QR code. Scan with ShareSync on iPhone.</string>
 </resources>

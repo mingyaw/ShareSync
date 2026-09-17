@@ -77,4 +77,5 @@
     <string name="m0_clear_sync_state">清除照片紀錄</string>
     <string name="m5_copy_diagnostics">複製支援快照</string>
     <string name="m5_diagnostics_copied">已複製診斷資訊，未包含配對密鑰。</string>
+    <string name="m26_pairing_qr_accessibility">配對 QR Code，請使用 iPhone 上的 ShareSync 掃描。</string>
 </resources>

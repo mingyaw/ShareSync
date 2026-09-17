@@ -57,6 +57,7 @@ struct ContentView: View {
             Text("ShareSync")
                 .font(.largeTitle)
                 .fontWeight(.semibold)
+                .accessibilityAddTraits(.isHeader)
 
             Text("ios.header.subtitle")
                 .font(.subheadline)
@@ -92,10 +93,13 @@ struct ContentView: View {
                 }
 
                 if let summary = viewModel.summary {
-                    HStack(spacing: 10) {
-                        MetricView(title: "ios.metric.photos", value: "\(summary.photoCount)", tone: .info)
-                        MetricView(title: "ios.metric.done", value: "\(summary.importedCount + summary.downloadedCount)", tone: .success)
-                        MetricView(title: "ios.metric.left", value: "\(summary.remainingCount)", tone: .primary)
+                    ViewThatFits(in: .horizontal) {
+                        HStack(spacing: 10) {
+                            summaryMetrics(summary)
+                        }
+                        VStack(spacing: 10) {
+                            summaryMetrics(summary)
+                        }
                     }
                 }
 
@@ -270,26 +274,15 @@ struct ContentView: View {
                 .buttonStyle(.bordered)
                 .disabled(!viewModel.canFetch)
 
-                HStack(spacing: 12) {
-                    Button {
-                        viewModel.downloadFirstMedia()
-                    } label: {
-                        Label("ios.action.next", systemImage: "arrow.down.to.line")
-                            .frame(maxWidth: .infinity)
-                            .frame(minHeight: 42)
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 12) {
+                        downloadNextButton
+                        downloadFiveButton
                     }
-                    .buttonStyle(.bordered)
-                    .disabled(!viewModel.canDownload)
-
-                    Button {
-                        viewModel.downloadSmallMediaBatch()
-                    } label: {
-                        Label("ios.action.five_photos", systemImage: "square.stack.3d.down.right")
-                            .frame(maxWidth: .infinity)
-                            .frame(minHeight: 42)
+                    VStack(spacing: 12) {
+                        downloadNextButton
+                        downloadFiveButton
                     }
-                    .buttonStyle(.bordered)
-                    .disabled(!viewModel.canDownload)
                 }
 
                 Button {
@@ -331,6 +324,37 @@ struct ContentView: View {
                 .buttonStyle(.bordered)
                 .disabled(viewModel.isTransferActive || !viewModel.canClearPairing)
             }
+    }
+
+    private var downloadNextButton: some View {
+        Button {
+            viewModel.downloadFirstMedia()
+        } label: {
+            Label("ios.action.next", systemImage: "arrow.down.to.line")
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 44)
+        }
+        .buttonStyle(.bordered)
+        .disabled(!viewModel.canDownload)
+    }
+
+    private var downloadFiveButton: some View {
+        Button {
+            viewModel.downloadSmallMediaBatch()
+        } label: {
+            Label("ios.action.five_photos", systemImage: "square.stack.3d.down.right")
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 44)
+        }
+        .buttonStyle(.bordered)
+        .disabled(!viewModel.canDownload)
+    }
+
+    @ViewBuilder
+    private func summaryMetrics(_ summary: ManifestFetchViewModel.ManifestSummary) -> some View {
+        MetricView(title: "ios.metric.photos", value: "\(summary.photoCount)", tone: .info)
+        MetricView(title: "ios.metric.done", value: "\(summary.importedCount + summary.downloadedCount)", tone: .success)
+        MetricView(title: "ios.metric.left", value: "\(summary.remainingCount)", tone: .primary)
     }
 
     private var statusSection: some View {
@@ -963,18 +987,26 @@ private struct StatusRow: View {
     let value: String
 
     var body: some View {
-        HStack {
-            Text(title)
-                .fontWeight(.medium)
-                .lineLimit(1)
-            Spacer()
-            Text(value)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.trailing)
-                .lineLimit(2)
-                .minimumScaleFactor(0.75)
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text(title)
+                    .fontWeight(.medium)
+                Spacer(minLength: 8)
+                Text(value)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.trailing)
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .fontWeight(.medium)
+                Text(value)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
         .padding(.vertical, 12)
+        .accessibilityElement(children: .combine)
         .overlay(alignment: .bottom) {
             Rectangle()
                 .fill(ShareSyncTheme.divider)
@@ -998,6 +1030,7 @@ private struct ProductPanel<Content: View>: View {
                 Text(title)
                     .font(.headline)
                     .foregroundStyle(.primary)
+                    .accessibilityAddTraits(.isHeader)
             }
             content
         }
@@ -1023,12 +1056,9 @@ private struct MetricView: View {
                 .font(.headline)
                 .fontWeight(.semibold)
                 .foregroundStyle(tone.color)
-                .lineLimit(1)
-                .minimumScaleFactor(0.75)
             Text(title)
                 .font(.caption)
                 .foregroundStyle(.secondary)
-                .lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 10)
@@ -1039,6 +1069,7 @@ private struct MetricView: View {
                 .stroke(tone.color.opacity(0.18), lineWidth: 1)
         }
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .accessibilityElement(children: .combine)
     }
 }
 

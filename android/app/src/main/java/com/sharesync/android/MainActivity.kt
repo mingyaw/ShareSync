@@ -12,6 +12,7 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Button
@@ -164,6 +165,7 @@ class MainActivity : Activity() {
             textSize = 28f
             setTextColor(ShareSyncTheme.textPrimary)
             typeface = Typeface.DEFAULT_BOLD
+            isAccessibilityHeading = true
         }
         val subtitle = TextView(this).apply {
             text = getString(R.string.m0_android_subtitle)
@@ -173,11 +175,13 @@ class MainActivity : Activity() {
         }
 
         statusText = bodyText()
+        statusText.accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         phaseText = bodyText()
         nextStepText = bodyText().apply {
             textSize = 17f
             typeface = Typeface.DEFAULT_BOLD
             setTextColor(ShareSyncTheme.textPrimary)
+            accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
         endpointText = bodyText()
         permissionText = bodyText()
@@ -194,6 +198,7 @@ class MainActivity : Activity() {
         pairingPayloadText = bodyText()
         pairingQrImage = ImageView(this).apply {
             adjustViewBounds = true
+            contentDescription = getString(R.string.m26_pairing_qr_accessibility)
             background = panelBackground(accentColor = ShareSyncTheme.primary, filled = false)
             setPadding(8, 8, 8, 8)
             visibility = ImageView.GONE
@@ -324,6 +329,7 @@ class MainActivity : Activity() {
         return TextView(this).apply {
             textSize = 16f
             setTextColor(ShareSyncTheme.textSecondary)
+            setLineSpacing(0f, 1.12f)
             setPadding(0, (8 * resources.displayMetrics.density).toInt(), 0, 0)
         }
     }
@@ -355,6 +361,7 @@ class MainActivity : Activity() {
                 textSize = 18f
                 typeface = Typeface.DEFAULT_BOLD
                 setTextColor(ShareSyncTheme.textPrimary)
+                isAccessibilityHeading = true
                 setPadding(0, 0, 0, (4 * density).toInt())
             })
             addView(android.view.View(context).apply {
