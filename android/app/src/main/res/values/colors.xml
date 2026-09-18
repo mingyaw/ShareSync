@@ -2,6 +2,7 @@
 <resources>
     <color name="ic_launcher_background">#2563EB</color>
     <color name="sharesync_primary">#2563EB</color>
+    <color name="sharesync_on_primary">#FFFFFF</color>
     <color name="sharesync_success">#16803A</color>
     <color name="sharesync_warning">#B45309</color>
     <color name="sharesync_info">#0E7490</color>

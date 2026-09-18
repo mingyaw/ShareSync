@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">ShareSync</string>
-    <string name="sync_android_subtitle">透過本機網路，將 Android 照片分享給已配對的 iPhone。</string>
     <string name="sync_panel_summary">照片狀態</string>
-    <string name="sync_panel_actions">分享照片</string>
     <string name="sync_panel_pairing">配對 iPhone</string>
-    <string name="sync_panel_settings">連線設定</string>
     <string name="sync_panel_diagnostics">進階支援</string>
     <string name="sync_status_ready">照片分享尚未開啟。準備傳送照片到 iPhone 時再開啟即可。</string>
     <string name="sync_status_starting">正在啟動照片同步...</string>
@@ -15,7 +12,6 @@
     <string name="sync_foreground_channel_description">ShareSync 開啟或在背景時，維持本機 Android 到 iOS 照片傳輸可用。</string>
     <string name="sync_foreground_notification_title">ShareSync 照片傳輸</string>
     <string name="sync_foreground_notification_text">Android 照片可在本機網路提供給已配對的 iPhone。</string>
-    <string name="sync_phase">目前狀態：%1$s。</string>
     <string name="sync_phase_permission_required">需要照片權限</string>
     <string name="sync_phase_ready_to_start">可分享照片</string>
     <string name="sync_phase_server_starting">啟動照片同步中</string>
@@ -43,15 +39,14 @@
     <string name="sync_request_activity_unavailable">最後請求：等待 iPhone。</string>
     <string name="sync_request_activity_summary">最後請求：%1$s #%2$d，HTTP %3$d，總計 #%4$d，%5$s。</string>
     <string name="sync_result_unavailable">同步結果：等待 iPhone 回報。</string>
-    <string name="sync_result_summary">同步結果：%1$s，已同步 %2$d，略過 %3$d，失敗 %4$d，最後失敗 %5$s。</string>
+    <string name="sync_result_summary">已同步 %1$d 張，已有 %2$d 張，%3$d 張需要處理。</string>
     <string name="activity_event_unavailable">最近同步：等待 iPhone。</string>
     <string name="activity_event_summary">最近同步：%1$s，已同步 %2$d，略過 %3$d，需重試 %4$d。</string>
     <string name="history_unavailable">尚無照片同步紀錄。</string>
-    <string name="history_item">%1$s：完成 %2$d，需要處理 %3$d</string>
+    <string name="history_item">%1$s  |  完成 %2$d 張  |  需處理 %3$d 張</string>
     <string name="time_seconds_ago">%1$d 秒前</string>
     <string name="time_minutes_ago">%1$d 分鐘前</string>
     <string name="time_hours_ago">%1$d 小時前</string>
-    <string name="sync_result_no_failure">無</string>
     <string name="sync_result_copied">已複製同步結果 JSON。</string>
     <string name="sync_state_cleared">照片同步紀錄已清除。請從 iPhone 重新取得清單以重建狀態。</string>
     <string name="sync_pairing_payload_unavailable">照片同步啟動後會顯示配對碼。</string>
@@ -101,7 +96,6 @@
     <string name="ui_settings_title">設定</string>
     <string name="ui_settings_subtitle">管理本機連線、隱私與支援工具。</string>
     <string name="ui_recent_activity">最近照片同步</string>
-    <string name="ui_transfer_details">最近傳輸詳情</string>
     <string name="ui_privacy_connection">隱私與連線</string>
     <string name="ui_connection_tools">配對</string>
 </resources>

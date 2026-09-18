@@ -6,6 +6,7 @@ import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.res.ColorStateList
 import android.content.pm.PackageManager
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -37,65 +38,13 @@ import com.sharesync.android.sync.recentHistorySummaries
 import com.sharesync.android.transfer.server.LocalRequestActivity
 import com.sharesync.android.transfer.server.LocalRequestActivityTracker
 import com.sharesync.android.transfer.server.LocalSyncServer
+import com.sharesync.android.ui.MainDestination
+import com.sharesync.android.ui.ShareSyncTheme
 import org.json.JSONObject
 import java.time.Instant
 
 class MainActivity : Activity() {
-    private enum class MainSection(
-        val titleRes: Int,
-        val subtitleRes: Int,
-        val navigationRes: Int,
-        val iconRes: Int,
-    ) {
-        SYNC(
-            R.string.ui_sync_title,
-            R.string.ui_sync_subtitle,
-            R.string.ui_nav_sync,
-            android.R.drawable.ic_menu_share,
-        ),
-        ACTIVITY(
-            R.string.ui_activity_title,
-            R.string.ui_activity_subtitle,
-            R.string.ui_nav_activity,
-            android.R.drawable.ic_menu_recent_history,
-        ),
-        SETTINGS(
-            R.string.ui_settings_title,
-            R.string.ui_settings_subtitle,
-            R.string.ui_nav_settings,
-            android.R.drawable.ic_menu_preferences,
-        ),
-    }
-
-    private data class ShareSyncTheme(
-        val primary: Int,
-        val success: Int,
-        val warning: Int,
-        val info: Int,
-        val textPrimary: Int,
-        val textSecondary: Int,
-        val background: Int,
-        val surface: Int,
-        val surfaceAlt: Int,
-        val divider: Int,
-        val qrSurface: Int,
-    )
-
-    private val shareSyncTheme: ShareSyncTheme by lazy {
-        ShareSyncTheme(
-            primary = getColor(R.color.sharesync_primary),
-            success = getColor(R.color.sharesync_success),
-            warning = getColor(R.color.sharesync_warning),
-            info = getColor(R.color.sharesync_info),
-            textPrimary = getColor(R.color.sharesync_text_primary),
-            textSecondary = getColor(R.color.sharesync_text_secondary),
-            background = getColor(R.color.sharesync_background),
-            surface = getColor(R.color.sharesync_surface),
-            surfaceAlt = getColor(R.color.sharesync_surface_alt),
-            divider = getColor(R.color.sharesync_divider),
-            qrSurface = getColor(R.color.sharesync_qr_surface),
-        )
-    }
+    private val shareSyncTheme: ShareSyncTheme by lazy { ShareSyncTheme.from(this) }
 
     private lateinit var statusText: TextView
     private lateinit var phaseText: TextView
@@ -142,14 +91,14 @@ class MainActivity : Activity() {
     private var manifestBuilder: ManifestBuilder? = null
     private var requestActivityTracker: LocalRequestActivityTracker? = null
     private lateinit var deviceIdentityStore: DeviceIdentityStore
-    private var currentSection = MainSection.SYNC
+    private var currentSection = MainDestination.SYNC
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         currentSection = savedInstanceState
             ?.getString(STATE_MAIN_SECTION)
-            ?.let { stored -> MainSection.entries.firstOrNull { it.name == stored } }
-            ?: MainSection.SYNC
+            ?.let { stored -> MainDestination.entries.firstOrNull { it.name == stored } }
+            ?: MainDestination.SYNC
         deviceIdentityStore = SharedPreferencesDeviceIdentityStore(this)
         restorePersistedSyncResult()
         restoreRunningServerSession()
@@ -294,42 +243,42 @@ class MainActivity : Activity() {
         stopButton = Button(this).apply {
             text = getString(R.string.sync_stop_server)
             setOnClickListener { stopServer() }
-            fullWidthButtonLayout()
+            fullWidthButtonLayout(emphasized = false)
         }
 
         copyEndpointButton = Button(this).apply {
             text = getString(R.string.sync_copy_endpoint)
             setOnClickListener { copyEndpoint() }
-            fullWidthButtonLayout()
+            fullWidthButtonLayout(emphasized = false)
         }
 
         copyPairingButton = Button(this).apply {
             text = getString(R.string.sync_copy_pairing_payload)
             setOnClickListener { copyPairingPayload() }
-            fullWidthButtonLayout()
+            fullWidthButtonLayout(emphasized = false)
         }
 
         copySyncResultButton = Button(this).apply {
             text = getString(R.string.sync_copy_sync_result)
             setOnClickListener { copySyncResult() }
-            fullWidthButtonLayout()
+            fullWidthButtonLayout(emphasized = false)
         }
 
         copyDiagnosticsButton = Button(this).apply {
             text = getString(R.string.diagnostics_copy_diagnostics)
             setOnClickListener { copyDiagnosticsSummary() }
-            fullWidthButtonLayout()
+            fullWidthButtonLayout(emphasized = false)
         }
 
         clearSyncStateButton = Button(this).apply {
             text = getString(R.string.sync_clear_sync_state)
             setOnClickListener { showClearSyncStateConfirmation() }
-            fullWidthButtonLayout()
+            fullWidthButtonLayout(emphasized = false)
         }
 
         root.addView(title)
         root.addView(subtitle)
-        if (currentSection == MainSection.SYNC && !hasCompletedOnboarding()) {
+        if (currentSection == MainDestination.SYNC && !hasCompletedOnboarding()) {
             val onboardingText = bodyText().apply {
                 text = getString(R.string.onboarding_body)
             }
@@ -354,7 +303,7 @@ class MainActivity : Activity() {
             )
         }
         when (currentSection) {
-            MainSection.SYNC -> {
+            MainDestination.SYNC -> {
                 root.addView(
                     productPanel(
                         title = getString(R.string.sync_panel_summary),
@@ -378,7 +327,7 @@ class MainActivity : Activity() {
                 root.addView(pairingPanel)
             }
 
-            MainSection.ACTIVITY -> {
+            MainDestination.ACTIVITY -> {
                 root.addView(
                     productPanel(
                         title = getString(R.string.ui_recent_activity),
@@ -388,7 +337,7 @@ class MainActivity : Activity() {
                 )
             }
 
-            MainSection.SETTINGS -> {
+            MainDestination.SETTINGS -> {
                 root.addView(
                     productPanel(
                         title = getString(R.string.ui_privacy_connection),
@@ -450,7 +399,7 @@ class MainActivity : Activity() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
             )
-            MainSection.entries.forEach { section ->
+            MainDestination.entries.forEach { section ->
                 addView(Button(context).apply {
                     text = getString(section.navigationRes)
                     setCompoundDrawablesRelativeWithIntrinsicBounds(0, section.iconRes, 0, 0)
@@ -542,10 +491,26 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun Button.fullWidthButtonLayout() {
+    private fun Button.fullWidthButtonLayout(emphasized: Boolean = true) {
         val density = resources.displayMetrics.density
         isAllCaps = false
         minHeight = (48 * density).toInt()
+        val enabledBackground = if (emphasized) shareSyncTheme.primary else shareSyncTheme.surfaceAlt
+        val enabledText = if (emphasized) shareSyncTheme.onPrimary else shareSyncTheme.primary
+        val states = arrayOf(
+            intArrayOf(-android.R.attr.state_enabled),
+            intArrayOf(),
+        )
+        backgroundTintList = ColorStateList(
+            states,
+            intArrayOf(shareSyncTheme.divider, enabledBackground),
+        )
+        setTextColor(
+            ColorStateList(
+                states,
+                intArrayOf(shareSyncTheme.textSecondary, enabledText),
+            ),
+        )
         layoutParams = LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -610,7 +575,7 @@ class MainActivity : Activity() {
             ?: getString(R.string.activity_event_unavailable)
         syncHistoryText.text = formatSyncHistory()
         refreshPairingQr()
-        if (currentSection == MainSection.SYNC && ::pairingPanel.isInitialized) {
+        if (currentSection == MainDestination.SYNC && ::pairingPanel.isInitialized) {
             pairingPanel.visibility = if (currentPairingPayloadJson == null) View.GONE else View.VISIBLE
         }
 
@@ -995,17 +960,11 @@ class MainActivity : Activity() {
         val syncedCount = result.results.count { it.status == SyncItemStatus.synced }
         val skippedCount = result.results.count { it.status == SyncItemStatus.skipped }
         val failedCount = result.results.count { it.status.isRetryableFailure }
-        val latestFailureCode = result.results
-            .lastOrNull { it.status.isRetryableFailure }
-            ?.errorCode
-            ?: getString(R.string.sync_result_no_failure)
         return getString(
             R.string.sync_result_summary,
-            result.syncBatchId,
             syncedCount,
             skippedCount,
             failedCount,
-            latestFailureCode,
         )
     }
 
@@ -1027,7 +986,7 @@ class MainActivity : Activity() {
         return currentSyncHistory.joinToString(separator = "\n") { summary ->
             getString(
                 R.string.history_item,
-                summary.syncBatchId,
+                ageLabel((System.currentTimeMillis() - summary.recordedAtEpochMillis).coerceAtLeast(0)),
                 summary.successfulCount,
                 summary.failedCount,
             )

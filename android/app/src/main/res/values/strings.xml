@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">ShareSync</string>
-    <string name="sync_android_subtitle">Share Android photos to your paired iPhone over the local network.</string>
     <string name="sync_panel_summary">Photo Status</string>
-    <string name="sync_panel_actions">Share Photos</string>
     <string name="sync_panel_pairing">Pair iPhone</string>
-    <string name="sync_panel_settings">Connection Settings</string>
     <string name="sync_panel_diagnostics">Advanced support</string>
     <string name="sync_status_ready">Photo sharing is off. Turn it on when you are ready to send photos to your iPhone.</string>
     <string name="sync_status_starting">Starting photo sync...</string>
@@ -15,7 +12,6 @@
     <string name="sync_foreground_channel_description">Keeps local Android-to-iOS photo transfer available while ShareSync is open or backgrounded.</string>
     <string name="sync_foreground_notification_title">ShareSync photo transfer</string>
     <string name="sync_foreground_notification_text">Android photos are available to the paired iPhone on this local network.</string>
-    <string name="sync_phase">Current state: %1$s.</string>
     <string name="sync_phase_permission_required">Photo Access Needed</string>
     <string name="sync_phase_ready_to_start">Ready To Share Photos</string>
     <string name="sync_phase_server_starting">Starting Photo Sync</string>
@@ -43,15 +39,14 @@
     <string name="sync_request_activity_unavailable">Last request: waiting for iPhone.</string>
     <string name="sync_request_activity_summary">Last request: %1$s #%2$d, HTTP %3$d, total #%4$d, %5$s.</string>
     <string name="sync_result_unavailable">Sync result: waiting for iPhone report.</string>
-    <string name="sync_result_summary">Sync result: %1$s, synced %2$d, skipped %3$d, failed %4$d, last failure %5$s.</string>
+    <string name="sync_result_summary">%1$d photos synced, %2$d already complete, %3$d need attention.</string>
     <string name="activity_event_unavailable">Last sync: waiting for iPhone.</string>
     <string name="activity_event_summary">Last sync: %1$s, synced %2$d, skipped %3$d, needs retry %4$d.</string>
     <string name="history_unavailable">No photo syncs yet.</string>
-    <string name="history_item">%1$s: %2$d complete, %3$d need attention</string>
+    <string name="history_item">%1$s  |  %2$d complete  |  %3$d need attention</string>
     <string name="time_seconds_ago">%1$d seconds ago</string>
     <string name="time_minutes_ago">%1$d minutes ago</string>
     <string name="time_hours_ago">%1$d hours ago</string>
-    <string name="sync_result_no_failure">none</string>
     <string name="sync_result_copied">Sync result JSON copied.</string>
     <string name="sync_state_cleared">Photo sync history cleared. Fetch from iPhone again to rebuild state.</string>
     <string name="sync_pairing_payload_unavailable">Pairing code appears after photo sync starts.</string>
@@ -101,7 +96,6 @@
     <string name="ui_settings_title">Settings</string>
     <string name="ui_settings_subtitle">Manage local connection, privacy, and support tools.</string>
     <string name="ui_recent_activity">Recent photo syncs</string>
-    <string name="ui_transfer_details">Latest transfer details</string>
     <string name="ui_privacy_connection">Privacy &amp; connection</string>
     <string name="ui_connection_tools">Pairing</string>
 </resources>
