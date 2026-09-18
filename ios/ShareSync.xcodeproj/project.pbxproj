@@ -32,6 +32,7 @@
 		1000000000000000000000B0 /* ShareSync/Security/CertificateFingerprintValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B1 /* ShareSync/Security/CertificateFingerprintValidator.swift */; };
 		1000000000000000000000B2 /* ShareSync/Transfer/LocalTransportURLBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B3 /* ShareSync/Transfer/LocalTransportURLBuilder.swift */; };
 		1000000000000000000000B4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B5 /* Assets.xcassets */; };
+		1000000000000000000000C0 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000C1 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -64,6 +65,7 @@
 		1000000000000000000000B1 /* ShareSync/Security/CertificateFingerprintValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Security/CertificateFingerprintValidator.swift; sourceTree = "<group>"; };
 		1000000000000000000000B3 /* ShareSync/Transfer/LocalTransportURLBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Transfer/LocalTransportURLBuilder.swift; sourceTree = "<group>"; };
 		1000000000000000000000B5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		1000000000000000000000C1 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,6 +99,7 @@
 				1000000000000000000000A0 /* Localizable.strings */,
 				1000000000000000000000A5 /* InfoPlist.strings */,
 				1000000000000000000000B5 /* Assets.xcassets */,
+				1000000000000000000000C1 /* PrivacyInfo.xcprivacy */,
 			);
 			path = ShareSyncApp;
 			sourceTree = "<group>";
@@ -196,6 +199,7 @@
 				1000000000000000000000A1 /* Localizable.strings in Resources */,
 				1000000000000000000000A6 /* InfoPlist.strings in Resources */,
 				1000000000000000000000B4 /* Assets.xcassets in Resources */,
+				1000000000000000000000C0 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

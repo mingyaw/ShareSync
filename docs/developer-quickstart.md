@@ -1,8 +1,8 @@
 # Developer Quickstart
 
-Status: M42 developer handoff guide.
+Status: M50 Source RC developer handoff guide.
 
-This guide is for local development only. ShareSync M42 remains a photo-only Android-to-iPhone local sync MVP source-code checkpoint and should not be treated as an App Store or Google Play release candidate until deferred physical-device, signing, packaging, privacy declaration, and store review work is completed.
+This guide is for local development and Source RC handoff. ShareSync M50 remains a photo-only Android-to-iPhone local sync source candidate and should not be treated as an App Store or Google Play release until deferred physical-device, signing, beta, store metadata, and review work is completed.
 
 ## Prerequisites
 
@@ -200,4 +200,12 @@ Use these documents when real-device testing resumes:
 - [M40 Paged Photo Manifest](m40-paged-photo-manifest.md)
 - [M41 Versioned Sync Ledger](m41-versioned-sync-ledger.md)
 - [M42 Incremental Photo Indexing](m42-incremental-photo-indexing.md)
+- [M43 Foreground Sync Orchestration](m43-source-rc.md)
+- [M44 Durable Device Binding](m44-source-rc.md)
+- [M45 Photo Deletion And Reset Policy](m45-source-rc.md)
+- [M46 Bounded Large-Library Reliability](m46-source-rc.md)
+- [M47 Local Transport Security Closure](m47-source-rc.md)
+- [M48 Product UX And Accessibility Closure](m48-source-rc.md)
+- [M49 Platform Compliance Package](m49-source-rc.md)
+- [M50 Photo MVP Source Release Candidate](m50-source-rc.md)
 - [Privacy Data Summary](privacy-data-summary.md)

@@ -47,18 +47,38 @@ case "$transport" in
 esac
 
 ios_info_plist="ios/ShareSyncApp/Info.plist"
+ios_privacy_manifest="ios/ShareSyncApp/PrivacyInfo.xcprivacy"
 if [[ ! -f "$ios_info_plist" ]]; then
   echo "Missing iOS Info.plist: $ios_info_plist" >&2
   exit 1
 fi
 
+if [[ ! -f "$ios_privacy_manifest" ]]; then
+  echo "Missing iOS privacy manifest: $ios_privacy_manifest" >&2
+  exit 1
+fi
+
+plutil -lint "$ios_privacy_manifest" >/dev/null
+rg -q 'NSPrivacyTracking' "$ios_privacy_manifest"
+rg -q 'NSPrivacyAccessedAPICategoryUserDefaults' "$ios_privacy_manifest"
+rg -q 'NSPrivacyAccessedAPICategoryDiskSpace' "$ios_privacy_manifest"
+rg -q 'PrivacyInfo.xcprivacy in Resources' ios/ShareSync.xcodeproj/project.pbxproj
+
 android_build_file="android/app/build.gradle.kts"
+android_manifest_file="android/app/src/main/AndroidManifest.xml"
 ios_project_file="ios/ShareSync.xcodeproj/project.pbxproj"
 
 if [[ ! -f "$android_build_file" ]]; then
   echo "Missing Android build file: $android_build_file" >&2
   exit 1
 fi
+
+for permission in READ_MEDIA_IMAGES POST_NOTIFICATIONS FOREGROUND_SERVICE_DATA_SYNC; do
+  if ! rg -q "android.permission.${permission}" "$android_manifest_file"; then
+    echo "Missing Android release permission declaration: ${permission}" >&2
+    exit 1
+  fi
+done
 
 if [[ ! -f "$ios_project_file" ]]; then
   echo "Missing iOS project file: $ios_project_file" >&2

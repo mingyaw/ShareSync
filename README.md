@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 photo PoC through M42 incremental photo indexing are complete for the photo-only MVP source-code track.
+Status: M0 photo PoC through M50 photo MVP Source RC are complete for the photo-only source-code track.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -16,7 +16,7 @@ The project intentionally uses native implementation:
 
 ## Current Stage
 
-The completed baseline is `M0 - Android to iOS Photo PoC` through `M42 - Incremental Photo Indexing`. The photo-only MVP now includes task-focused navigation, visible batch progress, release transport boundaries, snapshot-stable incremental photo manifests, resumable streamed media, storage checks, and versioned completion records with legacy migration.
+The completed baseline is `M0 - Android to iOS Photo PoC` through `M50 - Photo MVP Source Release Candidate`. The photo-only MVP now includes task-focused navigation, foreground session orchestration, durable device binding, snapshot-stable incremental manifests, resumable streamed media, storage checks, versioned completion records, privacy packaging, and a consolidated Source RC gate.
 
 The current codebase contains:
 
@@ -86,6 +86,7 @@ The current codebase contains:
 - Android serves cursor-based photo manifest pages and iOS merges them without duplicate asset IDs.
 - Android and iOS persist sync completion state in versioned envelopes while reading legacy files.
 - Android filters MediaStore with a timestamp-and-ID high-water cursor, while iOS advances the paired-device checkpoint only after a fully acknowledged batch.
+- The M50 source gate freezes foreground orchestration, endpoint recovery, deletion semantics, bounded large-library behavior, transport security, product UX, and platform compliance evidence.
 - Support snapshots can be validated and summarized locally for internal beta triage.
 
 M0 validates the riskiest path:
@@ -173,6 +174,14 @@ tasks/
 - [M40 Paged Photo Manifest](docs/m40-paged-photo-manifest.md)
 - [M41 Versioned Sync Ledger](docs/m41-versioned-sync-ledger.md)
 - [M42 Incremental Photo Indexing](docs/m42-incremental-photo-indexing.md)
+- [M43 Foreground Sync Orchestration](docs/m43-source-rc.md)
+- [M44 Durable Device Binding](docs/m44-source-rc.md)
+- [M45 Photo Deletion And Reset Policy](docs/m45-source-rc.md)
+- [M46 Bounded Large-Library Reliability](docs/m46-source-rc.md)
+- [M47 Local Transport Security Closure](docs/m47-source-rc.md)
+- [M48 Product UX And Accessibility Closure](docs/m48-source-rc.md)
+- [M49 Platform Compliance Package](docs/m49-source-rc.md)
+- [M50 Photo MVP Source Release Candidate](docs/m50-source-rc.md)
 - [Privacy Data Summary](docs/privacy-data-summary.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Error Recovery Matrix](docs/error-recovery-matrix.md)
@@ -228,6 +237,14 @@ tasks/
 - [M40 Paged Photo Manifest](tasks/m40-paged-photo-manifest.md)
 - [M41 Versioned Sync Ledger](tasks/m41-versioned-sync-ledger.md)
 - [M42 Incremental Photo Indexing](tasks/m42-incremental-photo-indexing.md)
+- [M43 Foreground Sync Orchestration](tasks/m43-source-rc.md)
+- [M44 Durable Device Binding](tasks/m44-source-rc.md)
+- [M45 Photo Deletion And Reset Policy](tasks/m45-source-rc.md)
+- [M46 Bounded Large-Library Reliability](tasks/m46-source-rc.md)
+- [M47 Local Transport Security Closure](tasks/m47-source-rc.md)
+- [M48 Product UX And Accessibility Closure](tasks/m48-source-rc.md)
+- [M49 Platform Compliance Package](tasks/m49-source-rc.md)
+- [M50 Photo MVP Source Release Candidate](tasks/m50-source-rc.md)
 
 ## M0 Rules
 

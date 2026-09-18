@@ -9,6 +9,7 @@ android_manifest="android/app/src/main/AndroidManifest.xml"
 ios_project="ios/ShareSync.xcodeproj/project.pbxproj"
 ios_plist="ios/ShareSyncApp/Info.plist"
 ios_icon="ios/ShareSyncApp/Assets.xcassets/AppIcon.appiconset/ShareSyncIcon-1024.png"
+ios_privacy_manifest="ios/ShareSyncApp/PrivacyInfo.xcprivacy"
 
 echo "== Product identity =="
 test -s "$ios_icon"
@@ -21,9 +22,11 @@ fi
 
 jq empty ios/ShareSyncApp/Assets.xcassets/Contents.json
 jq empty ios/ShareSyncApp/Assets.xcassets/AppIcon.appiconset/Contents.json
+plutil -lint "$ios_privacy_manifest"
 plutil -lint "$ios_plist"
 xmllint --noout android/app/src/main/res/drawable/ic_launcher_foreground.xml "$android_manifest"
 rg -q 'Assets.xcassets in Resources' "$ios_project"
+rg -q 'PrivacyInfo.xcprivacy in Resources' "$ios_project"
 rg -q 'android:icon="@mipmap/ic_launcher"' "$android_manifest"
 echo "ok app identity assets"
 
@@ -89,7 +92,9 @@ rg -q 'currentSchemaVersion = 2' ios/ShareSync/Transfer/MediaDownloadState.swift
 rg -q 'pageCursor' ios/ShareSync/Transfer/ManifestClient.swift
 rg -q 'INCREMENTAL_CURSOR_PREFIX = "media-v1:"' android/app/src/main/java/com/sharesync/android/sync/ManifestBuilder.kt
 rg -q 'manifestCursor' ios/ShareSync/Security/TrustedDevice.swift
-echo "ok release HTTPS, incremental paged manifests, and versioned ledgers"
+rg -q 'NSPrivacyAccessedAPICategoryUserDefaults' "$ios_privacy_manifest"
+rg -q 'NSPrivacyAccessedAPICategoryDiskSpace' "$ios_privacy_manifest"
+echo "ok release HTTPS, incremental manifests, versioned ledgers, and privacy packaging"
 
 echo
 echo "Product readiness checks passed."
