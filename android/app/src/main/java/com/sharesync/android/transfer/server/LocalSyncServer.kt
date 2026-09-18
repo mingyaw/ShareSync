@@ -62,10 +62,10 @@ class LocalSyncServerStub(
     override val port: Int,
 ) : LocalSyncServer {
     override suspend fun start() {
-        // M0 implementation will bind an embedded HTTP server here.
+        // Concrete implementations bind the local transfer server here.
     }
 
     override suspend fun stop() {
-        // M0 implementation will stop the embedded HTTP server here.
+        // Concrete implementations release the local transfer server here.
     }
 }

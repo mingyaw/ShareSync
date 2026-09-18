@@ -16,6 +16,7 @@
     <string name="sync_phase_ready_to_start">可分享照片</string>
     <string name="sync_phase_server_starting">啟動照片同步中</string>
     <string name="sync_phase_ready_to_pair">等待 iPhone 連線</string>
+    <string name="sync_phase_iphone_connected">iPhone 已連線</string>
     <string name="sync_phase_retry_required">需要重試</string>
     <string name="sync_phase_transfer_complete">傳輸完成</string>
     <string name="sync_endpoint">連線位址：%1$s</string>
@@ -43,7 +44,7 @@
     <string name="activity_event_unavailable">最近同步：等待 iPhone。</string>
     <string name="activity_event_summary">最近同步：%1$s，已同步 %2$d，略過 %3$d，需重試 %4$d。</string>
     <string name="history_unavailable">尚無照片同步紀錄。</string>
-    <string name="history_item">%1$s  |  完成 %2$d 張  |  需處理 %3$d 張</string>
+    <string name="history_item_summary">完成 %1$d 張  |  需處理 %2$d 張</string>
     <string name="time_seconds_ago">%1$d 秒前</string>
     <string name="time_minutes_ago">%1$d 分鐘前</string>
     <string name="time_hours_ago">%1$d 小時前</string>
@@ -58,12 +59,14 @@
     <string name="next_step_start_sharing">點選提供照片，畫面會顯示配對 QR Code。</string>
     <string name="next_step_wait_for_server">請保持 ShareSync 開啟，等待照片清單與本機服務準備完成。</string>
     <string name="next_step_scan_from_iphone">請在 iPhone 開啟 ShareSync 並掃描此 QR Code。</string>
+    <string name="next_step_keep_open_for_transfer">iPhone 已連線，照片傳輸期間請保持 ShareSync 開啟。</string>
     <string name="next_step_keep_open_for_retry">請保持此畫面開啟，讓 iPhone 可以接續失敗或剩餘照片。</string>
     <string name="next_step_wait_for_new_photos">已回報的照片都完成了；只有預期新增照片時才需要繼續提供。</string>
     <string name="readiness_allow_photos">分享照片給 iPhone 前，請先允許 Android 照片權限。</string>
     <string name="readiness_start_sharing">開始提供照片後，畫面會顯示配對碼與本機 endpoint。</string>
     <string name="readiness_wait_for_server">正在準備照片分享，請保持 ShareSync 開啟。</string>
     <string name="readiness_show_pairing_code">請用 iPhone 掃描此配對碼，並讓兩支手機位於同一 Wi-Fi 或 Android 熱點。</string>
+    <string name="readiness_keep_available_for_transfer">iPhone 已連線，照片傳輸期間請讓兩支手機保持在附近。</string>
     <string name="readiness_keep_available_for_retry">請保持 ShareSync 開啟，讓 iPhone 不需重新配對即可接續剩餘照片。</string>
     <string name="readiness_wait_for_new_photos">已回報的照片都完成了。可保持 ShareSync 開啟等待新照片。</string>
     <string name="sync_grant_permissions">允許照片權限</string>

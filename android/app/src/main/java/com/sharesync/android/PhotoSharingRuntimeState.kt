@@ -9,6 +9,7 @@ data class PhotoSharingRuntimeState(
     val isServerRunning: Boolean,
     val pendingPhotoCount: Int?,
     val latestSyncResult: SyncResult?,
+    val hasConnectedPeer: Boolean = false,
 ) {
     val hasFailedResult: Boolean
         get() = latestSyncResult?.results?.any { it.status.isRetryableFailure } == true
@@ -29,6 +30,7 @@ data class PhotoSharingRuntimeState(
         return when {
             pendingPhotoCount == 0 -> PhotoSharingPhase.TRANSFER_COMPLETE
             hasFailedResult -> PhotoSharingPhase.RETRY_REQUIRED
+            hasConnectedPeer -> PhotoSharingPhase.IPHONE_CONNECTED
             else -> PhotoSharingPhase.READY_TO_PAIR
         }
     }
@@ -74,7 +76,11 @@ data class PhotoSharingRuntimeState(
                 PhotoManifestStatus.NEEDS_RETRY -> AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_RETRY
                 PhotoManifestStatus.READY,
                 null,
-                -> AndroidPhotoSyncPrimaryAction.SHOW_PAIRING_CODE
+                -> if (hasConnectedPeer) {
+                    AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_TRANSFER
+                } else {
+                    AndroidPhotoSyncPrimaryAction.SHOW_PAIRING_CODE
+                }
             },
             blockingReason = null,
             canSharePhotos = true,
@@ -87,6 +93,7 @@ enum class PhotoSharingPhase {
     READY_TO_START,
     SERVER_STARTING,
     READY_TO_PAIR,
+    IPHONE_CONNECTED,
     RETRY_REQUIRED,
     TRANSFER_COMPLETE,
 }
@@ -108,6 +115,7 @@ data class AndroidPhotoSyncReadiness(
             AndroidPhotoSyncPrimaryAction.START_SHARING -> AndroidPhotoSyncRecoveryGuidance.START_ANDROID_SHARING
             AndroidPhotoSyncPrimaryAction.WAIT_FOR_SERVER -> AndroidPhotoSyncRecoveryGuidance.WAIT_FOR_ANDROID_SERVER
             AndroidPhotoSyncPrimaryAction.SHOW_PAIRING_CODE -> AndroidPhotoSyncRecoveryGuidance.SCAN_PAIRING_CODE
+            AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_TRANSFER -> AndroidPhotoSyncRecoveryGuidance.KEEP_ANDROID_OPEN_FOR_TRANSFER
             AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_RETRY -> AndroidPhotoSyncRecoveryGuidance.KEEP_ANDROID_OPEN_FOR_RETRY
             AndroidPhotoSyncPrimaryAction.WAIT_FOR_NEW_PHOTOS -> AndroidPhotoSyncRecoveryGuidance.WAIT_FOR_NEW_ANDROID_PHOTOS
         }
@@ -118,6 +126,7 @@ data class AndroidPhotoSyncReadiness(
             AndroidPhotoSyncPrimaryAction.START_SHARING -> AndroidPhotoSyncNextStep.START_ANDROID_SHARING
             AndroidPhotoSyncPrimaryAction.WAIT_FOR_SERVER -> AndroidPhotoSyncNextStep.WAIT_FOR_ANDROID_SERVER
             AndroidPhotoSyncPrimaryAction.SHOW_PAIRING_CODE -> AndroidPhotoSyncNextStep.SCAN_FROM_IPHONE
+            AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_TRANSFER -> AndroidPhotoSyncNextStep.KEEP_ANDROID_OPEN_FOR_TRANSFER
             AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_RETRY -> AndroidPhotoSyncNextStep.KEEP_ANDROID_OPEN_FOR_RETRY
             AndroidPhotoSyncPrimaryAction.WAIT_FOR_NEW_PHOTOS -> AndroidPhotoSyncNextStep.WAIT_FOR_NEW_ANDROID_PHOTOS
         }
@@ -128,6 +137,7 @@ enum class AndroidPhotoSyncPrimaryAction {
     START_SHARING,
     WAIT_FOR_SERVER,
     SHOW_PAIRING_CODE,
+    KEEP_AVAILABLE_FOR_TRANSFER,
     KEEP_AVAILABLE_FOR_RETRY,
     WAIT_FOR_NEW_PHOTOS,
 }
@@ -143,6 +153,7 @@ enum class AndroidPhotoSyncRecoveryGuidance {
     START_ANDROID_SHARING,
     WAIT_FOR_ANDROID_SERVER,
     SCAN_PAIRING_CODE,
+    KEEP_ANDROID_OPEN_FOR_TRANSFER,
     KEEP_ANDROID_OPEN_FOR_RETRY,
     WAIT_FOR_NEW_ANDROID_PHOTOS,
 }
@@ -152,6 +163,7 @@ enum class AndroidPhotoSyncNextStep {
     START_ANDROID_SHARING,
     WAIT_FOR_ANDROID_SERVER,
     SCAN_FROM_IPHONE,
+    KEEP_ANDROID_OPEN_FOR_TRANSFER,
     KEEP_ANDROID_OPEN_FOR_RETRY,
     WAIT_FOR_NEW_ANDROID_PHOTOS,
 }

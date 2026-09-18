@@ -16,6 +16,7 @@
     <string name="sync_phase_ready_to_start">Ready To Share Photos</string>
     <string name="sync_phase_server_starting">Starting Photo Sync</string>
     <string name="sync_phase_ready_to_pair">Ready For iPhone</string>
+    <string name="sync_phase_iphone_connected">iPhone Connected</string>
     <string name="sync_phase_retry_required">Retry Required</string>
     <string name="sync_phase_transfer_complete">Transfer Complete</string>
     <string name="sync_endpoint">Connection address: %1$s</string>
@@ -43,7 +44,7 @@
     <string name="activity_event_unavailable">Last sync: waiting for iPhone.</string>
     <string name="activity_event_summary">Last sync: %1$s, synced %2$d, skipped %3$d, needs retry %4$d.</string>
     <string name="history_unavailable">No photo syncs yet.</string>
-    <string name="history_item">%1$s  |  %2$d complete  |  %3$d need attention</string>
+    <string name="history_item_summary">%1$d complete  |  %2$d need attention</string>
     <string name="time_seconds_ago">%1$d seconds ago</string>
     <string name="time_minutes_ago">%1$d minutes ago</string>
     <string name="time_hours_ago">%1$d hours ago</string>
@@ -58,12 +59,14 @@
     <string name="next_step_start_sharing">Tap Make Photos Available to show the pairing QR code.</string>
     <string name="next_step_wait_for_server">Keep ShareSync open while the photo list and local server are prepared.</string>
     <string name="next_step_scan_from_iphone">Open ShareSync on iPhone and scan this QR code.</string>
+    <string name="next_step_keep_open_for_transfer">Your iPhone is connected. Keep ShareSync open while photos transfer.</string>
     <string name="next_step_keep_open_for_retry">Keep this screen open so iPhone can resume failed or remaining photos.</string>
     <string name="next_step_wait_for_new_photos">All reported photos are complete; keep sharing only if you expect new photos.</string>
     <string name="readiness_allow_photos">Allow photo access on Android before sharing photos with iPhone.</string>
     <string name="readiness_start_sharing">Start photo sharing to show the pairing code and local endpoint.</string>
     <string name="readiness_wait_for_server">Preparing photo sharing. Keep ShareSync open.</string>
     <string name="readiness_show_pairing_code">Scan this pairing code from your iPhone. Keep both phones on the same Wi-Fi or Android hotspot.</string>
+    <string name="readiness_keep_available_for_transfer">Your iPhone is connected. Keep both phones nearby while photos transfer.</string>
     <string name="readiness_keep_available_for_retry">Keep ShareSync open so iPhone can resume remaining photos without pairing again.</string>
     <string name="readiness_wait_for_new_photos">All reported photos are complete. Keep ShareSync open for new Android photos.</string>
     <string name="sync_grant_permissions">Allow Photo Access</string>

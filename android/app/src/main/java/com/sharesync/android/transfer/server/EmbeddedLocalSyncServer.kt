@@ -49,7 +49,7 @@ class EmbeddedLocalSyncServer(
                     }
                 } catch (_: Exception) {
                     if (running) {
-                        // M0 server intentionally keeps failures local; diagnostics will be added later.
+                        // Request failures stay local; the activity tracker exposes support diagnostics.
                     }
                 }
             }

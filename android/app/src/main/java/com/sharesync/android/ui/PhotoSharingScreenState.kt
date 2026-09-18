@@ -31,7 +31,7 @@ data class PhotoSharingScreenState(
                     !runtime.isServerRunning &&
                     !runtime.isServerStarting,
                 stopActionEnabled = runtime.isServerRunning,
-                showPairingPanel = runtime.isServerRunning && hasPairingPayload,
+                showPairingPanel = runtime.isServerRunning && hasPairingPayload && !runtime.hasConnectedPeer,
                 copyEndpointEnabled = hasEndpoint,
                 copyPairingEnabled = hasPairingPayload,
                 copySyncResultEnabled = hasSyncResult,

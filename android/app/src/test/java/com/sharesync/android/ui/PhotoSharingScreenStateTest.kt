@@ -46,10 +46,23 @@ class PhotoSharingScreenStateTest {
         assertTrue(state.copySyncResultEnabled)
     }
 
+    @Test
+    fun connectedStateHidesPairingPanel() {
+        val state = screenState(
+            runtime(hasPermission = true, isRunning = true, hasConnectedPeer = true),
+            hasPairingPayload = true,
+        )
+
+        assertEquals(PhotoSharingPhase.IPHONE_CONNECTED, state.phase)
+        assertFalse(state.showPairingPanel)
+        assertTrue(state.copyPairingEnabled)
+    }
+
     private fun runtime(
         hasPermission: Boolean,
         isStarting: Boolean = false,
         isRunning: Boolean = false,
+        hasConnectedPeer: Boolean = false,
     ): PhotoSharingRuntimeState {
         return PhotoSharingRuntimeState(
             hasMediaPermission = hasPermission,
@@ -57,6 +70,7 @@ class PhotoSharingScreenStateTest {
             isServerRunning = isRunning,
             pendingPhotoCount = null,
             latestSyncResult = null,
+            hasConnectedPeer = hasConnectedPeer,
         )
     }
 

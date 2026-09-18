@@ -47,6 +47,19 @@ class PhotoSharingRuntimeStateTest {
     }
 
     @Test
+    fun phaseShowsConnectedAfterIphoneReachesServer() {
+        val state = runtimeState(
+            isServerRunning = true,
+            pendingPhotoCount = 12,
+            hasConnectedPeer = true,
+        )
+
+        assertEquals(PhotoSharingPhase.IPHONE_CONNECTED, state.phase())
+        assertEquals(AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_TRANSFER, state.readiness().primaryAction)
+        assertEquals(AndroidPhotoSyncNextStep.KEEP_ANDROID_OPEN_FOR_TRANSFER, state.readiness().nextStep)
+    }
+
+    @Test
     fun phaseShowsRetryRequiredWhenLatestResultHasFailure() {
         val state = runtimeState(
             isServerRunning = true,
@@ -193,6 +206,7 @@ class PhotoSharingRuntimeStateTest {
         isServerRunning: Boolean = false,
         pendingPhotoCount: Int? = null,
         latestSyncResult: SyncResult? = null,
+        hasConnectedPeer: Boolean = false,
     ): PhotoSharingRuntimeState {
         return PhotoSharingRuntimeState(
             hasMediaPermission = hasMediaPermission,
@@ -200,6 +214,7 @@ class PhotoSharingRuntimeStateTest {
             isServerRunning = isServerRunning,
             pendingPhotoCount = pendingPhotoCount,
             latestSyncResult = latestSyncResult,
+            hasConnectedPeer = hasConnectedPeer,
         )
     }
 

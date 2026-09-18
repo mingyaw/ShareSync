@@ -14,7 +14,7 @@ interface SyncResultStore {
             .orEmpty()
             .filter { item ->
                 item.itemType == SyncItemType.media &&
-                    item.status.isCompletedForM0Manifest
+                    item.status.isCompletedForPhotoManifest
             }
             .map { item -> item.sourceItemId }
             .toSet()
@@ -117,5 +117,5 @@ private fun SyncItemResult.key(): SyncResultItemKey {
     )
 }
 
-private val SyncItemStatus.isCompletedForM0Manifest: Boolean
+private val SyncItemStatus.isCompletedForPhotoManifest: Boolean
     get() = this == SyncItemStatus.synced || this == SyncItemStatus.skipped
