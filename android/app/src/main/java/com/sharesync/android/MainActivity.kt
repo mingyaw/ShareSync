@@ -64,6 +64,8 @@ class MainActivity : Activity() {
     private lateinit var syncResultText: TextView
     private lateinit var pairingQrImage: ImageView
     private lateinit var pairingPanel: LinearLayout
+    private lateinit var advancedSupportPanel: LinearLayout
+    private lateinit var toggleAdvancedSupportButton: Button
     private lateinit var grantButton: Button
     private lateinit var startButton: Button
     private lateinit var stopButton: Button
@@ -93,6 +95,7 @@ class MainActivity : Activity() {
     private var requestActivityTracker: LocalRequestActivityTracker? = null
     private lateinit var deviceIdentityStore: DeviceIdentityStore
     private var currentSection = MainDestination.SYNC
+    private var isAdvancedSupportExpanded = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -100,6 +103,9 @@ class MainActivity : Activity() {
             ?.getString(STATE_MAIN_SECTION)
             ?.let { stored -> MainDestination.entries.firstOrNull { it.name == stored } }
             ?: MainDestination.SYNC
+        isAdvancedSupportExpanded = savedInstanceState
+            ?.getBoolean(STATE_ADVANCED_SUPPORT_EXPANDED)
+            ?: false
         deviceIdentityStore = SharedPreferencesDeviceIdentityStore(this)
         restorePersistedSyncResult()
         restoreRunningServerSession()
@@ -112,6 +118,7 @@ class MainActivity : Activity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString(STATE_MAIN_SECTION, currentSection.name)
+        outState.putBoolean(STATE_ADVANCED_SUPPORT_EXPANDED, isAdvancedSupportExpanded)
         super.onSaveInstanceState(outState)
     }
 
@@ -276,6 +283,13 @@ class MainActivity : Activity() {
             setOnClickListener { showClearSyncStateConfirmation() }
             fullWidthButtonLayout(emphasized = false)
         }
+        toggleAdvancedSupportButton = Button(this).apply {
+            setOnClickListener {
+                isAdvancedSupportExpanded = !isAdvancedSupportExpanded
+                updateAdvancedSupportVisibility()
+            }
+            fullWidthButtonLayout(emphasized = false)
+        }
 
         root.addView(title)
         root.addView(subtitle)
@@ -361,20 +375,20 @@ class MainActivity : Activity() {
                         children = listOf(copyPairingButton),
                     ),
                 )
-                root.addView(
-                    productPanel(
-                        title = getString(R.string.sync_panel_diagnostics),
-                        accentColor = shareSyncTheme.textSecondary,
-                        children = listOf(
-                            endpointText,
-                            requestActivityText,
-                            copyEndpointButton,
-                            copySyncResultButton,
-                            copyDiagnosticsButton,
-                            clearSyncStateButton,
-                        ),
+                root.addView(toggleAdvancedSupportButton)
+                advancedSupportPanel = productPanel(
+                    title = getString(R.string.sync_panel_diagnostics),
+                    accentColor = shareSyncTheme.textSecondary,
+                    children = listOf(
+                        endpointText,
+                        requestActivityText,
+                        copyEndpointButton,
+                        copySyncResultButton,
+                        copyDiagnosticsButton,
+                        clearSyncStateButton,
                     ),
                 )
+                root.addView(advancedSupportPanel)
             }
         }
         scrollView.addView(root)
@@ -596,7 +610,22 @@ class MainActivity : Activity() {
         copySyncResultButton.isEnabled = screenState.copySyncResultEnabled
         copyDiagnosticsButton.isEnabled = true
         clearSyncStateButton.isEnabled = currentSyncResult != null
+        updateAdvancedSupportVisibility()
         updateKeepScreenAwake()
+    }
+
+    private fun updateAdvancedSupportVisibility() {
+        if (currentSection != MainDestination.SETTINGS || !::advancedSupportPanel.isInitialized) {
+            return
+        }
+        advancedSupportPanel.visibility = if (isAdvancedSupportExpanded) View.VISIBLE else View.GONE
+        toggleAdvancedSupportButton.text = getString(
+            if (isAdvancedSupportExpanded) {
+                R.string.settings_hide_advanced_support
+            } else {
+                R.string.settings_show_advanced_support
+            },
+        )
     }
 
     private fun requestPhotoPermissions() {
@@ -1107,6 +1136,7 @@ class MainActivity : Activity() {
 
     private companion object {
         const val STATE_MAIN_SECTION = "sharesync.mainSection"
+        const val STATE_ADVANCED_SUPPORT_EXPANDED = "sharesync.advancedSupportExpanded"
         const val ONBOARDING_PREFERENCES = "sharesync_onboarding"
         const val ONBOARDING_COMPLETE_KEY = "completed"
         const val REQUEST_MEDIA_PERMISSION = 1001

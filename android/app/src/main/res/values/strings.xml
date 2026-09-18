@@ -98,4 +98,6 @@
     <string name="ui_recent_activity">Recent photo syncs</string>
     <string name="ui_privacy_connection">Privacy &amp; connection</string>
     <string name="ui_connection_tools">Pairing</string>
+    <string name="settings_show_advanced_support">Show advanced support</string>
+    <string name="settings_hide_advanced_support">Hide advanced support</string>
 </resources>
