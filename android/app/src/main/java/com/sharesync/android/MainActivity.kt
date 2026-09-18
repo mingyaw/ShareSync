@@ -240,56 +240,56 @@ class MainActivity : Activity() {
         grantButton = Button(this).apply {
             text = getString(R.string.sync_grant_permissions)
             setOnClickListener { requestPhotoPermissions() }
-            fullWidthButtonLayout()
+            fullWidthButtonLayout(iconRes = R.drawable.ic_action_photo)
         }
 
         startButton = Button(this).apply {
             text = getString(R.string.sync_start_server)
             setOnClickListener { startServer() }
-            fullWidthButtonLayout()
+            fullWidthButtonLayout(iconRes = R.drawable.ic_action_play)
         }
 
         stopButton = Button(this).apply {
             text = getString(R.string.sync_stop_server)
             setOnClickListener { stopServer() }
-            fullWidthButtonLayout(emphasized = false)
+            fullWidthButtonLayout(emphasized = false, iconRes = R.drawable.ic_action_stop)
         }
 
         copyEndpointButton = Button(this).apply {
             text = getString(R.string.sync_copy_endpoint)
             setOnClickListener { copyEndpoint() }
-            fullWidthButtonLayout(emphasized = false)
+            fullWidthButtonLayout(emphasized = false, iconRes = R.drawable.ic_action_copy)
         }
 
         copyPairingButton = Button(this).apply {
             text = getString(R.string.sync_copy_pairing_payload)
             setOnClickListener { copyPairingPayload() }
-            fullWidthButtonLayout(emphasized = false)
+            fullWidthButtonLayout(emphasized = false, iconRes = R.drawable.ic_action_copy)
         }
 
         copySyncResultButton = Button(this).apply {
             text = getString(R.string.sync_copy_sync_result)
             setOnClickListener { copySyncResult() }
-            fullWidthButtonLayout(emphasized = false)
+            fullWidthButtonLayout(emphasized = false, iconRes = R.drawable.ic_action_copy)
         }
 
         copyDiagnosticsButton = Button(this).apply {
             text = getString(R.string.diagnostics_copy_diagnostics)
             setOnClickListener { copyDiagnosticsSummary() }
-            fullWidthButtonLayout(emphasized = false)
+            fullWidthButtonLayout(emphasized = false, iconRes = R.drawable.ic_action_copy)
         }
 
         clearSyncStateButton = Button(this).apply {
             text = getString(R.string.sync_clear_sync_state)
             setOnClickListener { showClearSyncStateConfirmation() }
-            fullWidthButtonLayout(emphasized = false)
+            fullWidthButtonLayout(emphasized = false, iconRes = R.drawable.ic_action_delete)
         }
         toggleAdvancedSupportButton = Button(this).apply {
             setOnClickListener {
                 isAdvancedSupportExpanded = !isAdvancedSupportExpanded
                 updateAdvancedSupportVisibility()
             }
-            fullWidthButtonLayout(emphasized = false)
+            fullWidthButtonLayout(emphasized = false, iconRes = R.drawable.ic_action_expand)
         }
 
         root.addView(brand)
@@ -502,7 +502,10 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun Button.fullWidthButtonLayout(emphasized: Boolean = true) {
+    private fun Button.fullWidthButtonLayout(
+        emphasized: Boolean = true,
+        iconRes: Int? = null,
+    ) {
         val density = resources.displayMetrics.density
         isAllCaps = false
         minHeight = (48 * density).toInt()
@@ -522,6 +525,14 @@ class MainActivity : Activity() {
                 intArrayOf(shareSyncTheme.textSecondary, enabledText),
             ),
         )
+        if (iconRes != null) {
+            setCompoundDrawablesRelativeWithIntrinsicBounds(iconRes, 0, 0, 0)
+            compoundDrawablePadding = (8 * density).toInt()
+            compoundDrawableTintList = ColorStateList(
+                states,
+                intArrayOf(shareSyncTheme.textSecondary, enabledText),
+            )
+        }
         layoutParams = LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -621,6 +632,16 @@ class MainActivity : Activity() {
             } else {
                 R.string.settings_show_advanced_support
             },
+        )
+        toggleAdvancedSupportButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
+            if (isAdvancedSupportExpanded) {
+                R.drawable.ic_action_collapse
+            } else {
+                R.drawable.ic_action_expand
+            },
+            0,
+            0,
+            0,
         )
     }
 
