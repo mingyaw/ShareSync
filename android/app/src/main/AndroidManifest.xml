@@ -19,7 +19,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <service
-            android:name=".AndroidM0ForegroundService"
+            android:name=".PhotoSharingService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
 

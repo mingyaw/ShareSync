@@ -7,7 +7,7 @@ import com.sharesync.android.sync.SyncResult
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class AndroidM0RuntimeStateTest {
+class PhotoSharingRuntimeStateTest {
     @Test
     fun phaseRequiresPermissionBeforeServerWork() {
         val state = runtimeState(
@@ -16,7 +16,7 @@ class AndroidM0RuntimeStateTest {
             isServerRunning = true,
         )
 
-        assertEquals(AndroidM0Phase.PERMISSION_REQUIRED, state.phase())
+        assertEquals(PhotoSharingPhase.PERMISSION_REQUIRED, state.phase())
     }
 
     @Test
@@ -26,14 +26,14 @@ class AndroidM0RuntimeStateTest {
             isServerRunning = false,
         )
 
-        assertEquals(AndroidM0Phase.SERVER_STARTING, state.phase())
+        assertEquals(PhotoSharingPhase.SERVER_STARTING, state.phase())
     }
 
     @Test
     fun phaseShowsReadyToStartWhenServerIsStopped() {
         val state = runtimeState(isServerRunning = false)
 
-        assertEquals(AndroidM0Phase.READY_TO_START, state.phase())
+        assertEquals(PhotoSharingPhase.READY_TO_START, state.phase())
     }
 
     @Test
@@ -43,7 +43,7 @@ class AndroidM0RuntimeStateTest {
             pendingPhotoCount = 12,
         )
 
-        assertEquals(AndroidM0Phase.READY_TO_PAIR, state.phase())
+        assertEquals(PhotoSharingPhase.READY_TO_PAIR, state.phase())
     }
 
     @Test
@@ -54,7 +54,7 @@ class AndroidM0RuntimeStateTest {
             latestSyncResult = syncResult(syncItem("photo-001", SyncItemStatus.failed)),
         )
 
-        assertEquals(AndroidM0Phase.RETRY_REQUIRED, state.phase())
+        assertEquals(PhotoSharingPhase.RETRY_REQUIRED, state.phase())
     }
 
     @Test
@@ -65,7 +65,7 @@ class AndroidM0RuntimeStateTest {
             latestSyncResult = syncResult(syncItem("photo-001", SyncItemStatus.conflicted)),
         )
 
-        assertEquals(AndroidM0Phase.RETRY_REQUIRED, state.phase())
+        assertEquals(PhotoSharingPhase.RETRY_REQUIRED, state.phase())
     }
 
     @Test
@@ -76,7 +76,7 @@ class AndroidM0RuntimeStateTest {
             latestSyncResult = syncResult(syncItem("photo-001", SyncItemStatus.synced)),
         )
 
-        assertEquals(AndroidM0Phase.TRANSFER_COMPLETE, state.phase())
+        assertEquals(PhotoSharingPhase.TRANSFER_COMPLETE, state.phase())
     }
 
     @Test
@@ -89,25 +89,25 @@ class AndroidM0RuntimeStateTest {
     @Test
     fun manifestStatusUsesPendingCountAndLatestFailure() {
         assertEquals(
-            AndroidM0ManifestStatus.READY,
+            PhotoManifestStatus.READY,
             runtimeState(pendingPhotoCount = 4).manifestStatus(),
         )
         assertEquals(
-            AndroidM0ManifestStatus.NEEDS_RETRY,
+            PhotoManifestStatus.NEEDS_RETRY,
             runtimeState(
                 pendingPhotoCount = 4,
                 latestSyncResult = syncResult(syncItem("photo-001", SyncItemStatus.failed)),
             ).manifestStatus(),
         )
         assertEquals(
-            AndroidM0ManifestStatus.NEEDS_RETRY,
+            PhotoManifestStatus.NEEDS_RETRY,
             runtimeState(
                 pendingPhotoCount = 4,
                 latestSyncResult = syncResult(syncItem("photo-001", SyncItemStatus.conflicted)),
             ).manifestStatus(),
         )
         assertEquals(
-            AndroidM0ManifestStatus.COMPLETE,
+            PhotoManifestStatus.COMPLETE,
             runtimeState(
                 pendingPhotoCount = 0,
                 latestSyncResult = syncResult(syncItem("photo-001", SyncItemStatus.failed)),
@@ -193,8 +193,8 @@ class AndroidM0RuntimeStateTest {
         isServerRunning: Boolean = false,
         pendingPhotoCount: Int? = null,
         latestSyncResult: SyncResult? = null,
-    ): AndroidM0RuntimeState {
-        return AndroidM0RuntimeState(
+    ): PhotoSharingRuntimeState {
+        return PhotoSharingRuntimeState(
             hasMediaPermission = hasMediaPermission,
             isServerStarting = isServerStarting,
             isServerRunning = isServerRunning,

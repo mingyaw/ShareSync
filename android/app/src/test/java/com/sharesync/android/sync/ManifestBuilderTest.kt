@@ -9,7 +9,7 @@ import java.io.File
 
 class ManifestBuilderTest {
     @Test
-    fun buildM0ManifestExcludesSyncedAndSkippedMediaResults() {
+    fun buildPhotoManifestExcludesSyncedAndSkippedMediaResults() {
         val scanner = FakeMediaScanner(
             assets = listOf(
                 mediaAsset("media-synced"),
@@ -38,14 +38,14 @@ class ManifestBuilderTest {
                 sourceDeviceId = "android-device-001",
                 mediaScanner = scanner,
                 syncResultStore = store,
-            ).buildM0Manifest(limit = 100)
+            ).buildPhotoManifest(limit = 100)
         }
 
         assertEquals(listOf("media-failed", "media-new"), manifest.media.map { it.assetId })
     }
 
     @Test
-    fun buildM0ManifestExcludesPhotoAfterFailedItemIsRetriedSuccessfully() {
+    fun buildPhotoManifestExcludesPhotoAfterFailedItemIsRetriedSuccessfully() {
         val scanner = FakeMediaScanner(
             assets = listOf(
                 mediaAsset("media-retried"),
@@ -75,14 +75,14 @@ class ManifestBuilderTest {
                 sourceDeviceId = "android-device-001",
                 mediaScanner = scanner,
                 syncResultStore = store,
-            ).buildM0Manifest(limit = 100)
+            ).buildPhotoManifest(limit = 100)
         }
 
         assertEquals(listOf("media-new"), manifest.media.map { it.assetId })
     }
 
     @Test
-    fun buildM0ManifestKeepsConflictedMediaForRetry() {
+    fun buildPhotoManifestKeepsConflictedMediaForRetry() {
         val scanner = FakeMediaScanner(
             assets = listOf(
                 mediaAsset("media-conflicted"),
@@ -105,14 +105,14 @@ class ManifestBuilderTest {
                 sourceDeviceId = "android-device-001",
                 mediaScanner = scanner,
                 syncResultStore = store,
-            ).buildM0Manifest(limit = 100)
+            ).buildPhotoManifest(limit = 100)
         }
 
         assertEquals(listOf("media-conflicted", "media-new"), manifest.media.map { it.assetId })
     }
 
     @Test
-    fun buildM0ManifestScansBeyondLimitBeforeFilteringCompletedMedia() {
+    fun buildPhotoManifestScansBeyondLimitBeforeFilteringCompletedMedia() {
         val scanner = FakeMediaScanner(
             assets = listOf(
                 mediaAsset("media-synced"),
@@ -136,7 +136,7 @@ class ManifestBuilderTest {
                 sourceDeviceId = "android-device-001",
                 mediaScanner = scanner,
                 syncResultStore = store,
-            ).buildM0Manifest(limit = 2)
+            ).buildPhotoManifest(limit = 2)
         }
 
         assertEquals(10, scanner.lastLimit)
@@ -144,7 +144,7 @@ class ManifestBuilderTest {
     }
 
     @Test
-    fun buildM0ManifestIncludesPhotosOnly() {
+    fun buildPhotoManifestIncludesPhotosOnly() {
         val scanner = FakeMediaScanner(
             assets = listOf(
                 mediaAsset("photo-001", mediaType = MediaType.photo),
@@ -159,7 +159,7 @@ class ManifestBuilderTest {
                 sourceDeviceId = "android-device-001",
                 mediaScanner = scanner,
                 syncResultStore = store,
-            ).buildM0Manifest(limit = 100)
+            ).buildPhotoManifest(limit = 100)
         }
 
         assertEquals(listOf("photo-001", "photo-002"), manifest.media.map { it.assetId })
@@ -167,7 +167,7 @@ class ManifestBuilderTest {
     }
 
     @Test
-    fun buildM0ManifestReturnsStablePagesWithoutOverlap() {
+    fun buildPhotoManifestReturnsStablePagesWithoutOverlap() {
         val scanner = FakeMediaScanner(
             assets = (1..5).map { index -> mediaAsset("media-$index") },
         )
@@ -177,9 +177,9 @@ class ManifestBuilderTest {
             syncResultStore = InMemorySyncResultStore(),
         )
 
-        val firstPage = SuspendBridge.runBlocking { builder.buildM0Manifest(limit = 2) }
+        val firstPage = SuspendBridge.runBlocking { builder.buildPhotoManifest(limit = 2) }
         val secondPage = SuspendBridge.runBlocking {
-            builder.buildM0Manifest(limit = 2, pageCursor = firstPage.nextCursor)
+            builder.buildPhotoManifest(limit = 2, pageCursor = firstPage.nextCursor)
         }
 
         assertEquals(listOf("media-1", "media-2"), firstPage.media.map { it.assetId })
@@ -191,7 +191,7 @@ class ManifestBuilderTest {
     }
 
     @Test
-    fun buildM0ManifestPagesBeyondFirstFiveHundredPhotos() {
+    fun buildPhotoManifestPagesBeyondFirstFiveHundredPhotos() {
         val scanner = FakeMediaScanner(
             assets = (1..620).map { index -> mediaAsset("media-${index.toString().padStart(3, '0')}") },
         )
@@ -202,7 +202,7 @@ class ManifestBuilderTest {
         )
 
         val page = SuspendBridge.runBlocking {
-            builder.buildM0Manifest(limit = 100, pageCursor = "page-v2:0:0:0:0:500")
+            builder.buildPhotoManifest(limit = 100, pageCursor = "page-v2:0:0:0:0:500")
         }
 
         assertEquals(100, page.media.size)
@@ -214,7 +214,7 @@ class ManifestBuilderTest {
     }
 
     @Test
-    fun buildM0ManifestUsesIncrementalCursorAndStableSnapshotWindow() {
+    fun buildPhotoManifestUsesIncrementalCursorAndStableSnapshotWindow() {
         val assets = listOf(
             mediaStoreAsset(id = 14, modifiedAtSeconds = 1_004),
             mediaStoreAsset(id = 13, modifiedAtSeconds = 1_003),
@@ -229,10 +229,10 @@ class ManifestBuilderTest {
         )
 
         val firstPage = SuspendBridge.runBlocking {
-            builder.buildM0Manifest(limit = 2, sinceCursor = "media-v1:1000:10")
+            builder.buildPhotoManifest(limit = 2, sinceCursor = "media-v1:1000:10")
         }
         val secondPage = SuspendBridge.runBlocking {
-            builder.buildM0Manifest(
+            builder.buildPhotoManifest(
                 limit = 2,
                 sinceCursor = "media-v1:1000:10",
                 pageCursor = firstPage.nextCursor,
@@ -250,7 +250,7 @@ class ManifestBuilderTest {
     }
 
     @Test
-    fun buildM0ManifestUsesMediaStoreIdToBreakModificationTimeTies() {
+    fun buildPhotoManifestUsesMediaStoreIdToBreakModificationTimeTies() {
         val scanner = FakeMediaScanner(
             listOf(
                 mediaStoreAsset(id = 12, modifiedAtSeconds = 1_000),
@@ -265,7 +265,7 @@ class ManifestBuilderTest {
                 sourceDeviceId = "android-device-001",
                 mediaScanner = scanner,
                 syncResultStore = InMemorySyncResultStore(),
-            ).buildM0Manifest(limit = 100, sinceCursor = "media-v1:1000:10")
+            ).buildPhotoManifest(limit = 100, sinceCursor = "media-v1:1000:10")
         }
 
         assertEquals(listOf("mediastore-1-12", "mediastore-1-11"), manifest.media.map { it.assetId })
@@ -273,7 +273,7 @@ class ManifestBuilderTest {
     }
 
     @Test
-    fun buildM0ManifestFiltersCompletedMediaAfterFileStoreReloadWithMixedStates() {
+    fun buildPhotoManifestFiltersCompletedMediaAfterFileStoreReloadWithMixedStates() {
         val scanner = FakeMediaScanner(
             assets = listOf(
                 mediaAsset("media-synced"),
@@ -308,7 +308,7 @@ class ManifestBuilderTest {
                     sourceDeviceId = "android-device-001",
                     mediaScanner = scanner,
                     syncResultStore = FileSyncResultStore(file = file),
-                ).buildM0Manifest(limit = 100)
+                ).buildPhotoManifest(limit = 100)
             }
 
             assertEquals(listOf("media-failed", "media-conflicted", "media-new"), manifest.media.map { it.assetId })
@@ -319,7 +319,7 @@ class ManifestBuilderTest {
     }
 
     @Test
-    fun buildM0ManifestIncludesCompletedMediaAgainAfterFileStoreClear() {
+    fun buildPhotoManifestIncludesCompletedMediaAgainAfterFileStoreClear() {
         val scanner = FakeMediaScanner(
             assets = listOf(
                 mediaAsset("media-synced"),
@@ -347,7 +347,7 @@ class ManifestBuilderTest {
                     sourceDeviceId = "android-device-001",
                     mediaScanner = scanner,
                     syncResultStore = FileSyncResultStore(file = file),
-                ).buildM0Manifest(limit = 100)
+                ).buildPhotoManifest(limit = 100)
             }
 
             assertEquals(listOf("media-synced", "media-new"), manifest.media.map { it.assetId })

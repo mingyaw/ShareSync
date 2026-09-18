@@ -12,17 +12,17 @@ import org.junit.Assert.fail
 import org.junit.Test
 import javax.net.ssl.SSLContext
 
-class AndroidM0TransportConfigurationFactoryTest {
+class PhotoSharingTransportConfigurationFactoryTest {
     @Test
     fun qrPinnedHttpsBuildFlagDefaultsOff() {
-        assertEquals(false, AndroidM0TransportFlags.enableQrPinnedHttps)
+        assertEquals(false, PhotoSharingTransportFlags.enableQrPinnedHttps)
     }
 
     @Test
     fun signedHttpConfigurationUsesHttpBinderWithoutTransportSecurityMetadata() {
-        val configuration = AndroidM0TransportConfigurationFactory.signedHttp()
+        val configuration = PhotoSharingTransportConfigurationFactory.signedHttp()
 
-        assertEquals(AndroidM0TransportSecurityMode.SIGNED_HTTP, configuration.mode)
+        assertEquals(PhotoSharingTransportSecurityMode.SIGNED_HTTP, configuration.mode)
         assertTrue(configuration.serverBinder is EmbeddedLocalServerBinder)
         assertNull(configuration.transportSecurityFactory)
     }
@@ -30,9 +30,9 @@ class AndroidM0TransportConfigurationFactoryTest {
     @Test
     fun qrPinnedHttpsConfigurationCouplesHttpsBinderWithPairingMetadata() {
         val certificateProvider = FixedLocalCertificateProvider()
-        val configuration = AndroidM0TransportConfigurationFactory.qrPinnedHttps(certificateProvider)
+        val configuration = PhotoSharingTransportConfigurationFactory.qrPinnedHttps(certificateProvider)
 
-        assertEquals(AndroidM0TransportSecurityMode.QR_PINNED_HTTPS, configuration.mode)
+        assertEquals(PhotoSharingTransportSecurityMode.QR_PINNED_HTTPS, configuration.mode)
         assertTrue(configuration.serverBinder is EmbeddedLocalHttpsServerBinder)
         assertEquals(
             "55c53f5d490297900cefa825d0c8e8e9532ee8a118abe7d8570762cd38be9818",
@@ -43,7 +43,7 @@ class AndroidM0TransportConfigurationFactoryTest {
     @Test
     fun qrPinnedHttpsConfigurationRequiresTlsContextSupport() {
         try {
-            AndroidM0TransportConfigurationFactory.qrPinnedHttps(
+            PhotoSharingTransportConfigurationFactory.qrPinnedHttps(
                 object : LocalCertificateProvider {
                     override fun currentCertificate() = descriptor()
                     override fun rotateCertificate() = descriptor()

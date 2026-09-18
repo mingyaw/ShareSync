@@ -9,7 +9,7 @@ class ManifestBuilder(
     private val mediaScanner: MediaScanner,
     private val syncResultStore: SyncResultStore,
 ) {
-    suspend fun buildM0Manifest(
+    suspend fun buildPhotoManifest(
         limit: Int = 100,
         sinceCursor: String? = null,
         pageCursor: String? = null,

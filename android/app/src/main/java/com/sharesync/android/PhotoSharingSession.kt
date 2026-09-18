@@ -22,7 +22,7 @@ import com.sharesync.android.transfer.server.LocalSyncServer
 import java.net.BindException
 import java.util.UUID
 
-data class AndroidM0ServerSession(
+data class PhotoSharingSession(
     val server: LocalSyncServer,
     val syncResultStore: SyncResultStore,
     val syncEventStore: SyncEventStore,
@@ -30,44 +30,44 @@ data class AndroidM0ServerSession(
     val requestActivityTracker: LocalRequestActivityTracker,
     val discoveryAdvertiser: LocalPeerDiscoveryAdvertiser,
     val pairingPayloadJson: String?,
-    val transportSecurityMode: AndroidM0TransportSecurityMode,
+    val transportSecurityMode: PhotoSharingTransportSecurityMode,
 )
 
-enum class AndroidM0TransportSecurityMode {
+enum class PhotoSharingTransportSecurityMode {
     SIGNED_HTTP,
     QR_PINNED_HTTPS,
 }
 
-object AndroidM0ServerSessionRegistry {
+object PhotoSharingSessionRegistry {
     @Volatile
-    var current: AndroidM0ServerSession? = null
+    var current: PhotoSharingSession? = null
         private set
 
-    fun set(session: AndroidM0ServerSession) {
+    fun set(session: PhotoSharingSession) {
         current = session
     }
 
-    fun clear(session: AndroidM0ServerSession? = null) {
+    fun clear(session: PhotoSharingSession? = null) {
         if (session == null || current === session) {
             current = null
         }
     }
 }
 
-object AndroidM0ServerSessionController {
+object PhotoSharingSessionController {
     fun start(
         context: Context,
         deviceIdentityStore: DeviceIdentityStore,
         appVersion: String,
-    ): AndroidM0ServerSession {
+    ): PhotoSharingSession {
         val identity = SuspendBridge.runBlocking {
             deviceIdentityStore.getOrCreate()
         }
         val pairingToken = UUID.randomUUID().toString().replace("-", "")
-        val transportConfiguration = AndroidM0TransportConfigurationFactory.create(
-            enableQrPinnedHttps = AndroidM0TransportFlags.enableQrPinnedHttps,
+        val transportConfiguration = PhotoSharingTransportConfigurationFactory.create(
+            enableQrPinnedHttps = PhotoSharingTransportFlags.enableQrPinnedHttps,
         )
-        val components = M0SyncComponents.create(
+        val components = PhotoSyncComponents.create(
             context = context.applicationContext,
             deviceId = identity.deviceId,
             appVersion = appVersion,
@@ -80,7 +80,7 @@ object AndroidM0ServerSessionController {
         )
         val discoveryAdvertiser = LocalPeerDiscoveryAdvertiser(context.applicationContext)
         discoveryAdvertiser.start(identity = identity, port = server.port)
-        val session = AndroidM0ServerSession(
+        val session = PhotoSharingSession(
             server = server,
             syncResultStore = components.syncResultStore,
             syncEventStore = components.syncEventStore,
@@ -95,13 +95,13 @@ object AndroidM0ServerSessionController {
             ),
             transportSecurityMode = transportConfiguration.mode,
         )
-        AndroidM0ServerSessionRegistry.set(session)
+        PhotoSharingSessionRegistry.set(session)
         return session
     }
 
-    fun stop(session: AndroidM0ServerSession?) {
-        val activeSession = session ?: AndroidM0ServerSessionRegistry.current ?: return
-        AndroidM0ServerSessionRegistry.clear(activeSession)
+    fun stop(session: PhotoSharingSession?) {
+        val activeSession = session ?: PhotoSharingSessionRegistry.current ?: return
+        PhotoSharingSessionRegistry.clear(activeSession)
         activeSession.discoveryAdvertiser.stop()
         SuspendBridge.runBlocking { activeSession.server.stop() }
     }
@@ -116,7 +116,7 @@ object AndroidM0ServerSessionController {
                 serverBinder = serverBinder,
                 router = router,
                 mediaStreamProvider = mediaStreamProvider,
-                port = M0SyncComponents.defaultPort(),
+                port = PhotoSyncComponents.defaultPort(),
             )
         } catch (error: BindException) {
             bindAndStartServer(
@@ -167,19 +167,19 @@ object AndroidM0ServerSessionController {
     private const val AVAILABLE_PORT = 0
 }
 
-object AndroidM0TransportFlags {
+object PhotoSharingTransportFlags {
     val enableQrPinnedHttps: Boolean
         get() = BuildConfig.SHARESYNC_QR_PINNED_HTTPS
 }
 
-data class AndroidM0TransportConfiguration(
-    val mode: AndroidM0TransportSecurityMode,
+data class PhotoSharingTransportConfiguration(
+    val mode: PhotoSharingTransportSecurityMode,
     val serverBinder: LocalServerBinder,
     val transportSecurityFactory: PairingTransportSecurityFactory?,
 )
 
-object AndroidM0TransportConfigurationFactory {
-    fun create(enableQrPinnedHttps: Boolean): AndroidM0TransportConfiguration {
+object PhotoSharingTransportConfigurationFactory {
+    fun create(enableQrPinnedHttps: Boolean): PhotoSharingTransportConfiguration {
         if (!enableQrPinnedHttps) {
             return signedHttp()
         }
@@ -188,9 +188,9 @@ object AndroidM0TransportConfigurationFactory {
         return qrPinnedHttps(certificateProvider)
     }
 
-    fun signedHttp(): AndroidM0TransportConfiguration {
-        return AndroidM0TransportConfiguration(
-            mode = AndroidM0TransportSecurityMode.SIGNED_HTTP,
+    fun signedHttp(): PhotoSharingTransportConfiguration {
+        return PhotoSharingTransportConfiguration(
+            mode = PhotoSharingTransportSecurityMode.SIGNED_HTTP,
             serverBinder = EmbeddedLocalServerBinder(),
             transportSecurityFactory = null,
         )
@@ -198,12 +198,12 @@ object AndroidM0TransportConfigurationFactory {
 
     fun qrPinnedHttps(
         certificateProvider: LocalCertificateProvider,
-    ): AndroidM0TransportConfiguration {
+    ): PhotoSharingTransportConfiguration {
         require(certificateProvider is LocalServerTlsContextProvider) {
             "QR-pinned HTTPS transport requires local TLS server context support."
         }
-        return AndroidM0TransportConfiguration(
-            mode = AndroidM0TransportSecurityMode.QR_PINNED_HTTPS,
+        return PhotoSharingTransportConfiguration(
+            mode = PhotoSharingTransportSecurityMode.QR_PINNED_HTTPS,
             serverBinder = EmbeddedLocalHttpsServerBinder(certificateProvider),
             transportSecurityFactory = PairingTransportSecurityFactory(certificateProvider),
         )

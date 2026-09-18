@@ -10,7 +10,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 
-class AndroidM0ForegroundService : Service() {
+class PhotoSharingService : Service() {
     override fun onCreate() {
         super.onCreate()
         ensureNotificationChannel()
@@ -24,10 +24,10 @@ class AndroidM0ForegroundService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
-        val activeSession = AndroidM0ServerSessionRegistry.current
+        val activeSession = PhotoSharingSessionRegistry.current
         if (activeSession != null) {
             Thread {
-                AndroidM0ServerSessionController.stop(activeSession)
+                PhotoSharingSessionController.stop(activeSession)
             }.start()
         }
         stopForeground(STOP_FOREGROUND_REMOVE)
@@ -42,10 +42,10 @@ class AndroidM0ForegroundService : Service() {
         val notificationManager = getSystemService(NotificationManager::class.java)
         val channel = NotificationChannel(
             CHANNEL_ID,
-            getString(R.string.m0_foreground_channel_name),
+            getString(R.string.sync_foreground_channel_name),
             NotificationManager.IMPORTANCE_LOW,
         ).apply {
-            description = getString(R.string.m0_foreground_channel_description)
+            description = getString(R.string.sync_foreground_channel_description)
         }
         notificationManager.createNotificationChannel(channel)
     }
@@ -60,8 +60,8 @@ class AndroidM0ForegroundService : Service() {
 
         return builder
             .setSmallIcon(android.R.drawable.stat_sys_upload)
-            .setContentTitle(getString(R.string.m0_foreground_notification_title))
-            .setContentText(getString(R.string.m0_foreground_notification_text))
+            .setContentTitle(getString(R.string.sync_foreground_notification_title))
+            .setContentText(getString(R.string.sync_foreground_notification_text))
             .setContentIntent(openMainActivityIntent())
             .setCategory(Notification.CATEGORY_PROGRESS)
             .setOngoing(true)
@@ -81,10 +81,10 @@ class AndroidM0ForegroundService : Service() {
     }
 
     companion object {
-        private const val CHANNEL_ID = "sharesync_m0_transfer"
+        private const val CHANNEL_ID = "sharesync_photo_transfer"
         private const val NOTIFICATION_ID = 48291
         private const val OPEN_MAIN_ACTIVITY_REQUEST_CODE = 48292
-        private const val ACTION_START = "com.sharesync.android.action.START_M0_FOREGROUND"
+        private const val ACTION_START = "com.sharesync.android.action.START_PHOTO_SHARING"
 
         private fun pendingIntentImmutableFlag(): Int {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -95,7 +95,7 @@ class AndroidM0ForegroundService : Service() {
         }
 
         fun start(context: Context) {
-            val intent = Intent(context, AndroidM0ForegroundService::class.java)
+            val intent = Intent(context, PhotoSharingService::class.java)
                 .setAction(ACTION_START)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(intent)
@@ -105,7 +105,7 @@ class AndroidM0ForegroundService : Service() {
         }
 
         fun stop(context: Context) {
-            context.stopService(Intent(context, AndroidM0ForegroundService::class.java))
+            context.stopService(Intent(context, PhotoSharingService::class.java))
         }
     }
 }

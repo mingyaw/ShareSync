@@ -3,7 +3,7 @@ package com.sharesync.android
 import com.sharesync.android.sync.SyncItemStatus
 import com.sharesync.android.sync.SyncResult
 
-data class AndroidM0RuntimeState(
+data class PhotoSharingRuntimeState(
     val hasMediaPermission: Boolean,
     val isServerStarting: Boolean,
     val isServerRunning: Boolean,
@@ -13,32 +13,32 @@ data class AndroidM0RuntimeState(
     val hasFailedResult: Boolean
         get() = latestSyncResult?.results?.any { it.status.isRetryableFailure } == true
 
-    fun phase(): AndroidM0Phase {
+    fun phase(): PhotoSharingPhase {
         if (!hasMediaPermission) {
-            return AndroidM0Phase.PERMISSION_REQUIRED
+            return PhotoSharingPhase.PERMISSION_REQUIRED
         }
 
         if (isServerStarting) {
-            return AndroidM0Phase.SERVER_STARTING
+            return PhotoSharingPhase.SERVER_STARTING
         }
 
         if (!isServerRunning) {
-            return AndroidM0Phase.READY_TO_START
+            return PhotoSharingPhase.READY_TO_START
         }
 
         return when {
-            pendingPhotoCount == 0 -> AndroidM0Phase.TRANSFER_COMPLETE
-            hasFailedResult -> AndroidM0Phase.RETRY_REQUIRED
-            else -> AndroidM0Phase.READY_TO_PAIR
+            pendingPhotoCount == 0 -> PhotoSharingPhase.TRANSFER_COMPLETE
+            hasFailedResult -> PhotoSharingPhase.RETRY_REQUIRED
+            else -> PhotoSharingPhase.READY_TO_PAIR
         }
     }
 
-    fun manifestStatus(): AndroidM0ManifestStatus? {
+    fun manifestStatus(): PhotoManifestStatus? {
         val count = pendingPhotoCount ?: return null
         return when {
-            count == 0 -> AndroidM0ManifestStatus.COMPLETE
-            hasFailedResult -> AndroidM0ManifestStatus.NEEDS_RETRY
-            else -> AndroidM0ManifestStatus.READY
+            count == 0 -> PhotoManifestStatus.COMPLETE
+            hasFailedResult -> PhotoManifestStatus.NEEDS_RETRY
+            else -> PhotoManifestStatus.READY
         }
     }
 
@@ -70,9 +70,9 @@ data class AndroidM0RuntimeState(
         val manifestStatus = manifestStatus()
         return AndroidPhotoSyncReadiness(
             primaryAction = when (manifestStatus) {
-                AndroidM0ManifestStatus.COMPLETE -> AndroidPhotoSyncPrimaryAction.WAIT_FOR_NEW_PHOTOS
-                AndroidM0ManifestStatus.NEEDS_RETRY -> AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_RETRY
-                AndroidM0ManifestStatus.READY,
+                PhotoManifestStatus.COMPLETE -> AndroidPhotoSyncPrimaryAction.WAIT_FOR_NEW_PHOTOS
+                PhotoManifestStatus.NEEDS_RETRY -> AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_RETRY
+                PhotoManifestStatus.READY,
                 null,
                 -> AndroidPhotoSyncPrimaryAction.SHOW_PAIRING_CODE
             },
@@ -82,7 +82,7 @@ data class AndroidM0RuntimeState(
     }
 }
 
-enum class AndroidM0Phase {
+enum class PhotoSharingPhase {
     PERMISSION_REQUIRED,
     READY_TO_START,
     SERVER_STARTING,
@@ -91,7 +91,7 @@ enum class AndroidM0Phase {
     TRANSFER_COMPLETE,
 }
 
-enum class AndroidM0ManifestStatus {
+enum class PhotoManifestStatus {
     READY,
     COMPLETE,
     NEEDS_RETRY,

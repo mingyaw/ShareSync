@@ -45,10 +45,26 @@ class MainActivity : Activity() {
         val titleRes: Int,
         val subtitleRes: Int,
         val navigationRes: Int,
+        val iconRes: Int,
     ) {
-        SYNC(R.string.m36_sync_title, R.string.m36_sync_subtitle, R.string.m36_nav_sync),
-        ACTIVITY(R.string.m36_activity_title, R.string.m36_activity_subtitle, R.string.m36_nav_activity),
-        SETTINGS(R.string.m36_settings_title, R.string.m36_settings_subtitle, R.string.m36_nav_settings),
+        SYNC(
+            R.string.ui_sync_title,
+            R.string.ui_sync_subtitle,
+            R.string.ui_nav_sync,
+            android.R.drawable.ic_menu_share,
+        ),
+        ACTIVITY(
+            R.string.ui_activity_title,
+            R.string.ui_activity_subtitle,
+            R.string.ui_nav_activity,
+            android.R.drawable.ic_menu_recent_history,
+        ),
+        SETTINGS(
+            R.string.ui_settings_title,
+            R.string.ui_settings_subtitle,
+            R.string.ui_nav_settings,
+            android.R.drawable.ic_menu_preferences,
+        ),
     }
 
     private data class ShareSyncTheme(
@@ -96,8 +112,8 @@ class MainActivity : Activity() {
     private lateinit var pairingInstructionText: TextView
     private lateinit var requestActivityText: TextView
     private lateinit var syncResultText: TextView
-    private lateinit var pairingPayloadText: TextView
     private lateinit var pairingQrImage: ImageView
+    private lateinit var pairingPanel: LinearLayout
     private lateinit var grantButton: Button
     private lateinit var startButton: Button
     private lateinit var stopButton: Button
@@ -115,7 +131,7 @@ class MainActivity : Activity() {
     @Volatile
     private var syncResultPollThread: Thread? = null
     private var currentPairingPayloadJson: String? = null
-    private var currentTransportSecurityMode: AndroidM0TransportSecurityMode = AndroidM0TransportSecurityMode.SIGNED_HTTP
+    private var currentTransportSecurityMode: PhotoSharingTransportSecurityMode = PhotoSharingTransportSecurityMode.SIGNED_HTTP
     private var currentManifestPhotoCount: Int? = null
     private var currentSyncResult: SyncResult? = null
     private var currentSyncEvent: SyncEvent? = null
@@ -249,10 +265,9 @@ class MainActivity : Activity() {
         pairingInstructionText = bodyText()
         requestActivityText = bodyText()
         syncResultText = bodyText()
-        pairingPayloadText = bodyText()
         pairingQrImage = ImageView(this).apply {
             adjustViewBounds = true
-            contentDescription = getString(R.string.m26_pairing_qr_accessibility)
+            contentDescription = getString(R.string.pairing_qr_accessibility)
             background = panelBackground(accentColor = shareSyncTheme.primary, filled = false)
             setPadding(8, 8, 8, 8)
             visibility = ImageView.GONE
@@ -265,49 +280,49 @@ class MainActivity : Activity() {
         }
 
         grantButton = Button(this).apply {
-            text = getString(R.string.m0_grant_permissions)
-            setOnClickListener { requestM0Permissions() }
+            text = getString(R.string.sync_grant_permissions)
+            setOnClickListener { requestPhotoPermissions() }
             fullWidthButtonLayout()
         }
 
         startButton = Button(this).apply {
-            text = getString(R.string.m0_start_server)
+            text = getString(R.string.sync_start_server)
             setOnClickListener { startServer() }
             fullWidthButtonLayout()
         }
 
         stopButton = Button(this).apply {
-            text = getString(R.string.m0_stop_server)
+            text = getString(R.string.sync_stop_server)
             setOnClickListener { stopServer() }
             fullWidthButtonLayout()
         }
 
         copyEndpointButton = Button(this).apply {
-            text = getString(R.string.m0_copy_endpoint)
+            text = getString(R.string.sync_copy_endpoint)
             setOnClickListener { copyEndpoint() }
             fullWidthButtonLayout()
         }
 
         copyPairingButton = Button(this).apply {
-            text = getString(R.string.m0_copy_pairing_payload)
+            text = getString(R.string.sync_copy_pairing_payload)
             setOnClickListener { copyPairingPayload() }
             fullWidthButtonLayout()
         }
 
         copySyncResultButton = Button(this).apply {
-            text = getString(R.string.m0_copy_sync_result)
+            text = getString(R.string.sync_copy_sync_result)
             setOnClickListener { copySyncResult() }
             fullWidthButtonLayout()
         }
 
         copyDiagnosticsButton = Button(this).apply {
-            text = getString(R.string.m5_copy_diagnostics)
+            text = getString(R.string.diagnostics_copy_diagnostics)
             setOnClickListener { copyDiagnosticsSummary() }
             fullWidthButtonLayout()
         }
 
         clearSyncStateButton = Button(this).apply {
-            text = getString(R.string.m0_clear_sync_state)
+            text = getString(R.string.sync_clear_sync_state)
             setOnClickListener { showClearSyncStateConfirmation() }
             fullWidthButtonLayout()
         }
@@ -316,13 +331,13 @@ class MainActivity : Activity() {
         root.addView(subtitle)
         if (currentSection == MainSection.SYNC && !hasCompletedOnboarding()) {
             val onboardingText = bodyText().apply {
-                text = getString(R.string.m32_onboarding_body)
+                text = getString(R.string.onboarding_body)
             }
             val onboardingPrivacyText = bodyText().apply {
-                text = getString(R.string.m32_onboarding_privacy)
+                text = getString(R.string.onboarding_privacy)
             }
             val onboardingButton = Button(this).apply {
-                text = getString(R.string.m32_onboarding_continue)
+                text = getString(R.string.onboarding_continue)
                 setOnClickListener {
                     completeOnboarding()
                     renderContent()
@@ -332,7 +347,7 @@ class MainActivity : Activity() {
             }
             root.addView(
                 productPanel(
-                    title = getString(R.string.m32_onboarding_title),
+                    title = getString(R.string.onboarding_title),
                     accentColor = shareSyncTheme.info,
                     children = listOf(onboardingText, onboardingPrivacyText, onboardingButton),
                 ),
@@ -342,40 +357,33 @@ class MainActivity : Activity() {
             MainSection.SYNC -> {
                 root.addView(
                     productPanel(
-                        title = getString(R.string.m0_panel_summary),
+                        title = getString(R.string.sync_panel_summary),
                         accentColor = shareSyncTheme.primary,
-                        children = listOf(phaseText, statusText, nextStepText, manifestSummaryText),
+                        children = listOf(
+                            phaseText,
+                            statusText,
+                            manifestSummaryText,
+                            grantButton,
+                            startButton,
+                            stopButton,
+                            nextStepText,
+                        ),
                     ),
                 )
-                root.addView(
-                    productPanel(
-                        title = getString(R.string.m0_panel_actions),
-                        accentColor = shareSyncTheme.success,
-                        children = listOf(grantButton, startButton, stopButton),
-                    ),
+                pairingPanel = productPanel(
+                    title = getString(R.string.sync_panel_pairing),
+                    accentColor = shareSyncTheme.info,
+                    children = listOf(pairingInstructionText, pairingQrImage),
                 )
-                root.addView(
-                    productPanel(
-                        title = getString(R.string.m0_panel_pairing),
-                        accentColor = shareSyncTheme.info,
-                        children = listOf(pairingInstructionText, pairingQrImage),
-                    ),
-                )
+                root.addView(pairingPanel)
             }
 
             MainSection.ACTIVITY -> {
                 root.addView(
                     productPanel(
-                        title = getString(R.string.m36_recent_activity),
+                        title = getString(R.string.ui_recent_activity),
                         accentColor = shareSyncTheme.primary,
-                        children = listOf(syncEventText, syncHistoryText, manifestSummaryText),
-                    ),
-                )
-                root.addView(
-                    productPanel(
-                        title = getString(R.string.m36_transfer_details),
-                        accentColor = shareSyncTheme.info,
-                        children = listOf(requestActivityText, syncResultText),
+                        children = listOf(syncEventText, syncHistoryText, syncResultText),
                     ),
                 )
             }
@@ -383,11 +391,11 @@ class MainActivity : Activity() {
             MainSection.SETTINGS -> {
                 root.addView(
                     productPanel(
-                        title = getString(R.string.m36_privacy_connection),
+                        title = getString(R.string.ui_privacy_connection),
                         accentColor = shareSyncTheme.info,
                         children = listOf(
-                            bodyText().apply { text = getString(R.string.m33_privacy_summary) },
-                            bodyText().apply { text = getString(R.string.m33_privacy_storage) },
+                            bodyText().apply { text = getString(R.string.privacy_summary) },
+                            bodyText().apply { text = getString(R.string.privacy_storage) },
                             localNetworkText,
                             permissionText,
                             notificationPermissionText,
@@ -398,16 +406,19 @@ class MainActivity : Activity() {
                 )
                 root.addView(
                     productPanel(
-                        title = getString(R.string.m36_connection_tools),
+                        title = getString(R.string.ui_connection_tools),
                         accentColor = shareSyncTheme.warning,
-                        children = listOf(endpointText, copyEndpointButton, copyPairingButton),
+                        children = listOf(copyPairingButton),
                     ),
                 )
                 root.addView(
                     productPanel(
-                        title = getString(R.string.m0_panel_diagnostics),
+                        title = getString(R.string.sync_panel_diagnostics),
                         accentColor = shareSyncTheme.textSecondary,
                         children = listOf(
+                            endpointText,
+                            requestActivityText,
+                            copyEndpointButton,
                             copySyncResultButton,
                             copyDiagnosticsButton,
                             clearSyncStateButton,
@@ -442,11 +453,13 @@ class MainActivity : Activity() {
             MainSection.entries.forEach { section ->
                 addView(Button(context).apply {
                     text = getString(section.navigationRes)
+                    setCompoundDrawablesRelativeWithIntrinsicBounds(0, section.iconRes, 0, 0)
+                    compoundDrawablePadding = (3 * density).toInt()
                     isAllCaps = false
                     textSize = 13f
                     setTextColor(if (section == currentSection) shareSyncTheme.primary else shareSyncTheme.textSecondary)
                     typeface = if (section == currentSection) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
-                    minHeight = (48 * density).toInt()
+                    minHeight = (56 * density).toInt()
                     background = if (section == currentSection) {
                         panelBackground(accentColor = shareSyncTheme.primary)
                     } else {
@@ -543,13 +556,13 @@ class MainActivity : Activity() {
 
     private fun refreshUi(message: String? = null) {
         val endpointUrl = currentEndpointUrl()
-        val endpoint = endpointUrl?.let { getString(R.string.m0_endpoint, it) }
-            ?: getString(R.string.m0_endpoint_unavailable)
+        val endpoint = endpointUrl?.let { getString(R.string.sync_endpoint, it) }
+            ?: getString(R.string.sync_endpoint_unavailable)
 
         val status = when {
             message != null -> message
-            isServerRunning -> getString(R.string.m0_status_running)
-            else -> getString(R.string.m0_status_ready, M0SyncComponents.defaultPort())
+            isServerRunning -> getString(R.string.sync_status_running)
+            else -> getString(R.string.sync_status_ready)
         }
 
         statusText.text = status
@@ -562,47 +575,44 @@ class MainActivity : Activity() {
         )
         phaseText.text = phaseStatus()
         phaseText.setTextColor(if (isServerRunning) shareSyncTheme.primary else shareSyncTheme.textSecondary)
-        nextStepText.text = getString(R.string.m11_next_step, nextStepInstruction())
+        nextStepText.text = getString(R.string.next_step, nextStepInstruction())
         endpointText.text = endpoint
         permissionText.text = if (hasMediaPermission()) {
-            getString(R.string.m0_permission_granted)
+            getString(R.string.sync_permission_granted)
         } else {
-            getString(R.string.m0_permission_missing)
+            getString(R.string.sync_permission_missing)
         }
         notificationPermissionText.text = if (hasNotificationPermission()) {
-            getString(R.string.m0_notification_permission_granted)
+            getString(R.string.sync_notification_permission_granted)
         } else {
-            getString(R.string.m0_notification_permission_missing)
+            getString(R.string.sync_notification_permission_missing)
         }
         screenLockText.text = if (isServerRunning) {
-            getString(R.string.m0_screen_lock_paused)
+            getString(R.string.sync_screen_lock_paused)
         } else {
-            getString(R.string.m0_screen_lock_normal)
+            getString(R.string.sync_screen_lock_normal)
         }
         localNetworkText.text = if (endpointUrl == null) {
-            getString(R.string.m2_local_network_unavailable)
+            getString(R.string.readiness_local_network_unavailable)
         } else {
-            getString(R.string.m2_local_network_ready)
+            getString(R.string.readiness_local_network_ready)
         }
         transportSecurityText.text = transportSecurityStatusText()
-        pairingPayloadText.text = currentPairingPayloadJson
-            ?: getString(R.string.m0_pairing_payload_unavailable)
-        pairingInstructionText.text = if (currentPairingPayloadJson != null) {
-            readinessInstruction()
-        } else {
-            readinessInstruction()
-        }
+        pairingInstructionText.text = readinessInstruction()
         manifestSummaryText.text = currentManifestPhotoCount?.let { count ->
-            getString(R.string.m0_manifest_summary, count, manifestTransferStatus(count))
-        } ?: getString(R.string.m0_manifest_unavailable)
+            getString(R.string.sync_manifest_summary, count, manifestTransferStatus(count))
+        } ?: getString(R.string.sync_manifest_unavailable)
         requestActivityText.text = currentRequestActivity?.let(::formatRequestActivity)
-            ?: getString(R.string.m0_request_activity_unavailable)
+            ?: getString(R.string.sync_request_activity_unavailable)
         syncResultText.text = currentSyncResult?.let(::formatSyncResult)
-            ?: getString(R.string.m0_sync_result_unavailable)
+            ?: getString(R.string.sync_result_unavailable)
         syncEventText.text = currentSyncEvent?.let(::formatSyncEvent)
-            ?: getString(R.string.m1_sync_event_unavailable)
+            ?: getString(R.string.activity_event_unavailable)
         syncHistoryText.text = formatSyncHistory()
         refreshPairingQr()
+        if (currentSection == MainSection.SYNC && ::pairingPanel.isInitialized) {
+            pairingPanel.visibility = if (currentPairingPayloadJson == null) View.GONE else View.VISIBLE
+        }
 
         startButton.isEnabled = !isServerRunning && !isServerStarting && hasMediaPermission()
         stopButton.isEnabled = isServerRunning
@@ -617,8 +627,8 @@ class MainActivity : Activity() {
         updateKeepScreenAwake()
     }
 
-    private fun requestM0Permissions() {
-        val missing = requiredM0Permissions()
+    private fun requestPhotoPermissions() {
+        val missing = requiredPhotoPermissions()
             .filter { permission -> checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED }
             .toTypedArray()
 
@@ -670,7 +680,7 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun requiredM0Permissions(): List<String> {
+    private fun requiredPhotoPermissions(): List<String> {
         return requiredMediaPermissions() + requiredNotificationPermissions()
     }
 
@@ -680,17 +690,17 @@ class MainActivity : Activity() {
         }
 
         if (!hasMediaPermission()) {
-            requestM0Permissions()
+            requestPhotoPermissions()
             return
         }
 
         startButton.isEnabled = false
         isServerStarting = true
-        refreshUi(getString(R.string.m0_status_starting))
+        refreshUi(getString(R.string.sync_status_starting))
 
         Thread {
             try {
-                val session = AndroidM0ServerSessionController.start(
+                val session = PhotoSharingSessionController.start(
                     context = applicationContext,
                     deviceIdentityStore = deviceIdentityStore,
                     appVersion = BuildConfig.VERSION_NAME,
@@ -704,19 +714,19 @@ class MainActivity : Activity() {
                 currentSyncEvent = SuspendBridge.runBlocking { session.syncEventStore.latest() }
                 currentRequestActivity = session.requestActivityTracker.latest()
                 currentManifestPhotoCount = SuspendBridge.runBlocking {
-                    session.manifestBuilder.buildM0Manifest().media.size
+                    session.manifestBuilder.buildPhotoManifest().media.size
                 }
                 isServerStarting = false
                 isServerRunning = true
                 currentPairingPayloadJson = session.pairingPayloadJson
                 currentTransportSecurityMode = session.transportSecurityMode
-                AndroidM0ForegroundService.start(applicationContext)
+                PhotoSharingService.start(applicationContext)
                 runOnUiThread { refreshUi() }
                 pollSyncResultUpdates(session.syncResultStore)
             } catch (error: Throwable) {
                 server = null
-                AndroidM0ServerSessionRegistry.clear()
-                AndroidM0ForegroundService.stop(applicationContext)
+                PhotoSharingSessionRegistry.clear()
+                PhotoSharingService.stop(applicationContext)
                 restorePersistedSyncResult()
                 manifestBuilder = null
                 syncEventStore = null
@@ -726,19 +736,19 @@ class MainActivity : Activity() {
                 isServerStarting = false
                 isServerRunning = false
                 currentPairingPayloadJson = null
-                currentTransportSecurityMode = AndroidM0TransportSecurityMode.SIGNED_HTTP
+                currentTransportSecurityMode = PhotoSharingTransportSecurityMode.SIGNED_HTTP
                 runOnUiThread {
-                    refreshUi(getString(R.string.m0_status_failed, error.message ?: "unknown error"))
+                    refreshUi(getString(R.string.sync_status_failed, error.message ?: "unknown error"))
                 }
             }
         }.start()
     }
 
     private fun stopServer() {
-        val currentSession = AndroidM0ServerSessionRegistry.current
+        val currentSession = PhotoSharingSessionRegistry.current
         val currentServer = server ?: currentSession?.server ?: return
         server = null
-        AndroidM0ServerSessionRegistry.clear(currentSession)
+        PhotoSharingSessionRegistry.clear(currentSession)
         manifestBuilder = null
         syncEventStore = null
         requestActivityTracker = null
@@ -747,17 +757,17 @@ class MainActivity : Activity() {
         isServerStarting = false
         isServerRunning = false
         currentPairingPayloadJson = null
-        currentTransportSecurityMode = AndroidM0TransportSecurityMode.SIGNED_HTTP
+        currentTransportSecurityMode = PhotoSharingTransportSecurityMode.SIGNED_HTTP
         restorePersistedSyncResult()
         syncResultPollThread?.interrupt()
         syncResultPollThread = null
         updateKeepScreenAwake()
-        AndroidM0ForegroundService.stop(applicationContext)
+        PhotoSharingService.stop(applicationContext)
 
         Thread {
             try {
                 if (currentSession != null) {
-                    AndroidM0ServerSessionController.stop(currentSession)
+                    PhotoSharingSessionController.stop(currentSession)
                 } else {
                     SuspendBridge.runBlocking { currentServer.stop() }
                 }
@@ -784,25 +794,25 @@ class MainActivity : Activity() {
     private fun copyPairingPayload() {
         val payload = currentPairingPayloadJson ?: return
         copyText(label = "ShareSync pairing payload", text = payload)
-        refreshUi(getString(R.string.m0_pairing_payload_copied))
+        refreshUi(getString(R.string.sync_pairing_payload_copied))
     }
 
     private fun copyEndpoint() {
         val endpointUrl = currentEndpointUrl() ?: return
         copyText(label = "ShareSync health endpoint", text = endpointUrl)
-        refreshUi(getString(R.string.m0_endpoint_copied))
+        refreshUi(getString(R.string.sync_endpoint_copied))
     }
 
     private fun copySyncResult() {
         val result = currentSyncResult ?: return
         val json = SyncResultJsonCodec().encode(result)
         copyText(label = "ShareSync sync result", text = json)
-        refreshUi(getString(R.string.m0_sync_result_copied))
+        refreshUi(getString(R.string.sync_result_copied))
     }
 
     private fun copyDiagnosticsSummary() {
         copyText(label = "ShareSync diagnostics", text = diagnosticsSummary())
-        refreshUi(getString(R.string.m5_diagnostics_copied))
+        refreshUi(getString(R.string.diagnostics_copied))
     }
 
     private fun diagnosticsSummary(): String {
@@ -877,18 +887,18 @@ class MainActivity : Activity() {
             currentSyncEvent = null
             currentSyncHistory = emptyList()
             currentManifestPhotoCount = manifestBuilder?.let { builder ->
-                SuspendBridge.runBlocking { builder.buildM0Manifest().media.size }
+                SuspendBridge.runBlocking { builder.buildPhotoManifest().media.size }
             }
-            runOnUiThread { refreshUi(getString(R.string.m0_sync_state_cleared)) }
+            runOnUiThread { refreshUi(getString(R.string.sync_state_cleared)) }
         }.start()
     }
 
     private fun showClearSyncStateConfirmation() {
         AlertDialog.Builder(this)
-            .setTitle(R.string.m28_clear_history_title)
-            .setMessage(R.string.m28_clear_history_message)
-            .setNegativeButton(R.string.m28_cancel, null)
-            .setPositiveButton(R.string.m28_clear_history_confirm) { _, _ ->
+            .setTitle(R.string.clear_history_title)
+            .setMessage(R.string.clear_history_message)
+            .setNegativeButton(R.string.clear_history_cancel, null)
+            .setPositiveButton(R.string.clear_history_confirm) { _, _ ->
                 clearSyncState()
             }
             .show()
@@ -909,7 +919,7 @@ class MainActivity : Activity() {
     }
 
     private fun restoreRunningServerSession() {
-        val session = AndroidM0ServerSessionRegistry.current ?: return
+        val session = PhotoSharingSessionRegistry.current ?: return
         server = session.server
         syncResultStore = session.syncResultStore
         syncEventStore = session.syncEventStore
@@ -924,17 +934,17 @@ class MainActivity : Activity() {
         currentSyncHistory = SuspendBridge.runBlocking { session.syncEventStore.recentHistorySummaries(limit = 3) }
         currentRequestActivity = session.requestActivityTracker.latest()
         currentManifestPhotoCount = SuspendBridge.runBlocking {
-            session.manifestBuilder.buildM0Manifest().media.size
+            session.manifestBuilder.buildPhotoManifest().media.size
         }
         pollSyncResultUpdates(session.syncResultStore)
     }
 
     private fun currentEndpointUrl(): String? {
         val ip = LocalNetworkAddresses.firstIpv4Address() ?: return null
-        val displayPort = server?.port ?: M0SyncComponents.defaultPort()
+        val displayPort = server?.port ?: PhotoSyncComponents.defaultPort()
         val scheme = when (currentTransportSecurityMode) {
-            AndroidM0TransportSecurityMode.SIGNED_HTTP -> "http"
-            AndroidM0TransportSecurityMode.QR_PINNED_HTTPS -> "https"
+            PhotoSharingTransportSecurityMode.SIGNED_HTTP -> "http"
+            PhotoSharingTransportSecurityMode.QR_PINNED_HTTPS -> "https"
         }
         return "$scheme://$ip:$displayPort/v1/health"
     }
@@ -972,7 +982,7 @@ class MainActivity : Activity() {
                 } ?: emptyList()
                 currentRequestActivity = requestActivityTracker?.latest()
                 currentManifestPhotoCount = manifestBuilder?.let { builder ->
-                    SuspendBridge.runBlocking { builder.buildM0Manifest().media.size }
+                    SuspendBridge.runBlocking { builder.buildPhotoManifest().media.size }
                 }
                 runOnUiThread { refreshUi() }
             }
@@ -988,9 +998,9 @@ class MainActivity : Activity() {
         val latestFailureCode = result.results
             .lastOrNull { it.status.isRetryableFailure }
             ?.errorCode
-            ?: getString(R.string.m0_sync_result_no_failure)
+            ?: getString(R.string.sync_result_no_failure)
         return getString(
-            R.string.m0_sync_result_summary,
+            R.string.sync_result_summary,
             result.syncBatchId,
             syncedCount,
             skippedCount,
@@ -1001,7 +1011,7 @@ class MainActivity : Activity() {
 
     private fun formatSyncEvent(event: SyncEvent): String {
         return getString(
-            R.string.m1_sync_event_summary,
+            R.string.activity_event_summary,
             syncEventAgeLabel(event),
             event.syncedCount,
             event.skippedCount,
@@ -1011,12 +1021,12 @@ class MainActivity : Activity() {
 
     private fun formatSyncHistory(): String {
         if (currentSyncHistory.isEmpty()) {
-            return getString(R.string.m3_sync_history_unavailable)
+            return getString(R.string.history_unavailable)
         }
 
         return currentSyncHistory.joinToString(separator = "\n") { summary ->
             getString(
-                R.string.m3_sync_history_item,
+                R.string.history_item,
                 summary.syncBatchId,
                 summary.successfulCount,
                 summary.failedCount,
@@ -1026,7 +1036,7 @@ class MainActivity : Activity() {
 
     private fun formatRequestActivity(activity: LocalRequestActivity): String {
         return getString(
-            R.string.m0_request_activity_summary,
+            R.string.sync_request_activity_summary,
             activity.endpoint,
             activity.endpointRequestCount,
             activity.statusCode,
@@ -1037,8 +1047,8 @@ class MainActivity : Activity() {
 
     private fun transportSecurityStatusText(): String {
         return when (currentTransportSecurityMode) {
-            AndroidM0TransportSecurityMode.SIGNED_HTTP -> getString(R.string.m4_transport_signed_http)
-            AndroidM0TransportSecurityMode.QR_PINNED_HTTPS -> getString(R.string.m4_transport_qr_pinned_https)
+            PhotoSharingTransportSecurityMode.SIGNED_HTTP -> getString(R.string.transport_signed_http)
+            PhotoSharingTransportSecurityMode.QR_PINNED_HTTPS -> getString(R.string.transport_qr_pinned_https)
         }
     }
 
@@ -1058,14 +1068,14 @@ class MainActivity : Activity() {
     private fun ageLabel(ageMillis: Long): String {
         val ageSeconds = ageMillis / 1_000
         return when {
-            ageSeconds < 60 -> "${ageSeconds}s ago"
-            ageSeconds < 3_600 -> "${ageSeconds / 60}m ago"
-            else -> "${ageSeconds / 3_600}h ago"
+            ageSeconds < 60 -> getString(R.string.time_seconds_ago, ageSeconds)
+            ageSeconds < 3_600 -> getString(R.string.time_minutes_ago, ageSeconds / 60)
+            else -> getString(R.string.time_hours_ago, ageSeconds / 3_600)
         }
     }
 
-    private fun runtimeState(): AndroidM0RuntimeState {
-        return AndroidM0RuntimeState(
+    private fun runtimeState(): PhotoSharingRuntimeState {
+        return PhotoSharingRuntimeState(
             hasMediaPermission = hasMediaPermission(),
             isServerStarting = isServerStarting,
             isServerRunning = isServerRunning,
@@ -1076,34 +1086,34 @@ class MainActivity : Activity() {
 
     private fun phaseStatus(): String {
         return when (runtimeState().phase()) {
-            AndroidM0Phase.PERMISSION_REQUIRED -> getString(R.string.m0_phase_permission_required)
-            AndroidM0Phase.READY_TO_START -> getString(R.string.m0_phase_ready_to_start)
-            AndroidM0Phase.SERVER_STARTING -> getString(R.string.m0_phase_server_starting)
-            AndroidM0Phase.READY_TO_PAIR -> getString(R.string.m0_phase_ready_to_pair)
-            AndroidM0Phase.RETRY_REQUIRED -> getString(R.string.m0_phase_retry_required)
-            AndroidM0Phase.TRANSFER_COMPLETE -> getString(R.string.m0_phase_transfer_complete)
+            PhotoSharingPhase.PERMISSION_REQUIRED -> getString(R.string.sync_phase_permission_required)
+            PhotoSharingPhase.READY_TO_START -> getString(R.string.sync_phase_ready_to_start)
+            PhotoSharingPhase.SERVER_STARTING -> getString(R.string.sync_phase_server_starting)
+            PhotoSharingPhase.READY_TO_PAIR -> getString(R.string.sync_phase_ready_to_pair)
+            PhotoSharingPhase.RETRY_REQUIRED -> getString(R.string.sync_phase_retry_required)
+            PhotoSharingPhase.TRANSFER_COMPLETE -> getString(R.string.sync_phase_transfer_complete)
         }
     }
 
     private fun readinessInstruction(): String {
         return when (runtimeState().readiness().primaryAction) {
-            AndroidPhotoSyncPrimaryAction.ALLOW_PHOTOS -> getString(R.string.m2_readiness_allow_photos)
-            AndroidPhotoSyncPrimaryAction.START_SHARING -> getString(R.string.m2_readiness_start_sharing)
-            AndroidPhotoSyncPrimaryAction.WAIT_FOR_SERVER -> getString(R.string.m2_readiness_wait_for_server)
-            AndroidPhotoSyncPrimaryAction.SHOW_PAIRING_CODE -> getString(R.string.m2_readiness_show_pairing_code)
-            AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_RETRY -> getString(R.string.m2_readiness_keep_available_for_retry)
-            AndroidPhotoSyncPrimaryAction.WAIT_FOR_NEW_PHOTOS -> getString(R.string.m2_readiness_wait_for_new_photos)
+            AndroidPhotoSyncPrimaryAction.ALLOW_PHOTOS -> getString(R.string.readiness_allow_photos)
+            AndroidPhotoSyncPrimaryAction.START_SHARING -> getString(R.string.readiness_start_sharing)
+            AndroidPhotoSyncPrimaryAction.WAIT_FOR_SERVER -> getString(R.string.readiness_wait_for_server)
+            AndroidPhotoSyncPrimaryAction.SHOW_PAIRING_CODE -> getString(R.string.readiness_show_pairing_code)
+            AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_RETRY -> getString(R.string.readiness_keep_available_for_retry)
+            AndroidPhotoSyncPrimaryAction.WAIT_FOR_NEW_PHOTOS -> getString(R.string.readiness_wait_for_new_photos)
         }
     }
 
     private fun nextStepInstruction(): String {
         return when (runtimeState().readiness().nextStep) {
-            AndroidPhotoSyncNextStep.ALLOW_ANDROID_PHOTOS -> getString(R.string.m11_next_step_allow_photos)
-            AndroidPhotoSyncNextStep.START_ANDROID_SHARING -> getString(R.string.m11_next_step_start_sharing)
-            AndroidPhotoSyncNextStep.WAIT_FOR_ANDROID_SERVER -> getString(R.string.m11_next_step_wait_for_server)
-            AndroidPhotoSyncNextStep.SCAN_FROM_IPHONE -> getString(R.string.m11_next_step_scan_from_iphone)
-            AndroidPhotoSyncNextStep.KEEP_ANDROID_OPEN_FOR_RETRY -> getString(R.string.m11_next_step_keep_open_for_retry)
-            AndroidPhotoSyncNextStep.WAIT_FOR_NEW_ANDROID_PHOTOS -> getString(R.string.m11_next_step_wait_for_new_photos)
+            AndroidPhotoSyncNextStep.ALLOW_ANDROID_PHOTOS -> getString(R.string.next_step_allow_photos)
+            AndroidPhotoSyncNextStep.START_ANDROID_SHARING -> getString(R.string.next_step_start_sharing)
+            AndroidPhotoSyncNextStep.WAIT_FOR_ANDROID_SERVER -> getString(R.string.next_step_wait_for_server)
+            AndroidPhotoSyncNextStep.SCAN_FROM_IPHONE -> getString(R.string.next_step_scan_from_iphone)
+            AndroidPhotoSyncNextStep.KEEP_ANDROID_OPEN_FOR_RETRY -> getString(R.string.next_step_keep_open_for_retry)
+            AndroidPhotoSyncNextStep.WAIT_FOR_NEW_ANDROID_PHOTOS -> getString(R.string.next_step_wait_for_new_photos)
         }
     }
 
@@ -1121,11 +1131,11 @@ class MainActivity : Activity() {
     private fun manifestTransferStatus(pendingPhotoCount: Int): String {
         val state = runtimeState().copy(pendingPhotoCount = pendingPhotoCount)
         return when (state.manifestStatus()) {
-            AndroidM0ManifestStatus.COMPLETE -> getString(R.string.m0_manifest_status_complete)
-            AndroidM0ManifestStatus.NEEDS_RETRY -> getString(R.string.m0_manifest_status_needs_retry)
-            AndroidM0ManifestStatus.READY,
+            PhotoManifestStatus.COMPLETE -> getString(R.string.sync_manifest_status_complete)
+            PhotoManifestStatus.NEEDS_RETRY -> getString(R.string.sync_manifest_status_needs_retry)
+            PhotoManifestStatus.READY,
             null,
-            -> getString(R.string.m0_manifest_status_ready)
+            -> getString(R.string.sync_manifest_status_ready)
         }
     }
 
