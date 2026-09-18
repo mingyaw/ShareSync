@@ -3,6 +3,7 @@ package com.sharesync.android.scanner.media
 import android.content.ContentResolver
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.provider.MediaStore
 import com.sharesync.android.sync.MediaAsset
 import com.sharesync.android.sync.MediaType
@@ -13,11 +14,12 @@ class MediaStoreMediaScanner(
     private val contentResolver: ContentResolver,
     private val sourceDeviceId: String,
 ) : MediaScanner, MediaProvider {
-    override suspend fun scanRecent(limit: Int): List<MediaAsset> {
+    override suspend fun scanRecent(limit: Int, offset: Int): List<MediaAsset> {
         val safeLimit = limit.coerceIn(1, 500)
         return queryRecent(
             collection = MediaStore.Files.getContentUri("external"),
             limit = safeLimit,
+            offset = offset.coerceAtLeast(0),
         )
     }
 
@@ -30,19 +32,24 @@ class MediaStoreMediaScanner(
         return asset.contentUri?.let(Uri::parse)
     }
 
-    private fun queryRecent(collection: Uri, limit: Int): List<MediaAsset> {
+    private fun queryRecent(collection: Uri, limit: Int, offset: Int): List<MediaAsset> {
         val selection = "${MediaStore.Files.FileColumns.MEDIA_TYPE} = ?"
         val selectionArgs = arrayOf(
             MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE.toString(),
         )
 
-        val cursor = contentResolver.query(
-            collection,
-            projection,
-            selection,
-            selectionArgs,
-            "${MediaStore.Files.FileColumns.DATE_MODIFIED} DESC",
-        ) ?: return emptyList()
+        val queryArgs = Bundle().apply {
+            putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
+            putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs)
+            putStringArray(
+                ContentResolver.QUERY_ARG_SORT_COLUMNS,
+                arrayOf(MediaStore.Files.FileColumns.DATE_MODIFIED),
+            )
+            putInt(ContentResolver.QUERY_ARG_SORT_DIRECTION, ContentResolver.QUERY_SORT_DIRECTION_DESCENDING)
+            putInt(ContentResolver.QUERY_ARG_LIMIT, limit)
+            putInt(ContentResolver.QUERY_ARG_OFFSET, offset)
+        }
+        val cursor = contentResolver.query(collection, projection, queryArgs, null) ?: return emptyList()
 
         return cursor.use {
             buildList {

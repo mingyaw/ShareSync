@@ -272,12 +272,37 @@ struct ContentView: View {
                 }
 
                 if viewModel.isTransferActive {
-                    HStack(spacing: 10) {
-                        ProgressView()
+                    VStack(alignment: .leading, spacing: 8) {
+                        if let progress = viewModel.downloadProgressSummary, progress.totalCount > 0 {
+                            ProgressView(
+                                value: Double(progress.processedCount),
+                                total: Double(progress.totalCount)
+                            )
                             .tint(ShareSyncTheme.primary)
-                        Text("ios.feedback.transfer_active")
+                            Text(
+                                String(
+                                    format: localized("ios.progress.photos_format"),
+                                    String(progress.processedCount),
+                                    String(progress.totalCount)
+                                )
+                            )
                             .font(.footnote)
                             .foregroundStyle(.secondary)
+                            if let currentFileName = progress.currentFileName {
+                                Text(currentFileName)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                        } else {
+                            HStack(spacing: 10) {
+                                ProgressView()
+                                    .tint(ShareSyncTheme.primary)
+                                Text("ios.feedback.transfer_active")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
                     .accessibilityElement(children: .combine)
                 }

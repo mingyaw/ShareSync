@@ -16,6 +16,11 @@ struct MediaDownloadRecord: Codable, Equatable, Identifiable {
     var updatedAt: Date
 }
 
+private struct MediaDownloadStateEnvelope: Codable {
+    let schemaVersion: Int
+    let records: [MediaDownloadRecord]
+}
+
 enum MediaDownloadStatus: String, Codable {
     case queued
     case downloading
@@ -355,7 +360,11 @@ final class FileMediaDownloadStateStore: MediaDownloadStateStore {
                 at: fileURL.deletingLastPathComponent(),
                 withIntermediateDirectories: true
             )
-            let data = try JSONEncoder.mediaDownloadStateEncoder.encode(Array(records.values))
+            let envelope = MediaDownloadStateEnvelope(
+                schemaVersion: Self.currentSchemaVersion,
+                records: Array(records.values)
+            )
+            let data = try JSONEncoder.mediaDownloadStateEncoder.encode(envelope)
             try data.write(to: fileURL, options: [.atomic])
         } catch {
             assertionFailure("Failed to persist media download state: \(error)")
@@ -364,8 +373,18 @@ final class FileMediaDownloadStateStore: MediaDownloadStateStore {
 
     private static func loadRecords(fileManager: FileManager, fileURL: URL) -> [String: MediaDownloadRecord] {
         guard fileManager.fileExists(atPath: fileURL.path),
-              let data = try? Data(contentsOf: fileURL),
-              let records = try? JSONDecoder.mediaDownloadStateDecoder.decode([MediaDownloadRecord].self, from: data) else {
+              let data = try? Data(contentsOf: fileURL) else {
+            return [:]
+        }
+
+        let decoder = JSONDecoder.mediaDownloadStateDecoder
+        let records: [MediaDownloadRecord]
+        if let envelope = try? decoder.decode(MediaDownloadStateEnvelope.self, from: data),
+           envelope.schemaVersion <= currentSchemaVersion {
+            records = envelope.records
+        } else if let legacyRecords = try? decoder.decode([MediaDownloadRecord].self, from: data) {
+            records = legacyRecords
+        } else {
             return [:]
         }
 
@@ -388,6 +407,8 @@ final class FileMediaDownloadStateStore: MediaDownloadStateStore {
             .appendingPathComponent("ShareSync", isDirectory: true)
             .appendingPathComponent("media-download-state.json", isDirectory: false)
     }
+
+    private static let currentSchemaVersion = 2
 }
 
 private extension JSONEncoder {

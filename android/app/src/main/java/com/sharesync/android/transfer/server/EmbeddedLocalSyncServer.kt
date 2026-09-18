@@ -76,7 +76,13 @@ class EmbeddedLocalSyncServer(
             request.method == "GET" && request.path == "/v1/manifest" -> {
                 writeApiResponse(
                     socket.getOutputStream(),
-                    runBlocking { router.manifest(headers = request.headers, path = request.path) },
+                    runBlocking {
+                        router.manifest(
+                            headers = request.headers,
+                            path = request.path,
+                            cursor = request.queryParameters["sinceCursor"],
+                        )
+                    },
                 )
             }
             request.method == "GET" && request.path.startsWith("/v1/media/") -> {
@@ -243,6 +249,7 @@ class EmbeddedLocalSyncServer(
     private data class HttpRequest(
         val method: String,
         val path: String,
+        val queryParameters: Map<String, String>,
         val headers: Map<String, String>,
         val body: String,
     ) {
@@ -262,7 +269,20 @@ class EmbeddedLocalSyncServer(
                     }
                 }
 
-                val rawPath = parts[1].substringBefore("?")
+                val target = parts[1]
+                val rawPath = target.substringBefore("?")
+                val queryParameters = target.substringAfter("?", missingDelimiterValue = "")
+                    .split("&")
+                    .mapNotNull { pair ->
+                        if (pair.isBlank()) return@mapNotNull null
+                        val name = URLDecoder.decode(pair.substringBefore("="), StandardCharsets.UTF_8.name())
+                        val value = URLDecoder.decode(
+                            pair.substringAfter("=", missingDelimiterValue = ""),
+                            StandardCharsets.UTF_8.name(),
+                        )
+                        name to value
+                    }
+                    .toMap()
                 val contentLength = headers["content-length"]?.toIntOrNull()?.coerceAtLeast(0) ?: 0
                 val body = if (contentLength > 0) {
                     val chars = CharArray(contentLength)
@@ -280,6 +300,7 @@ class EmbeddedLocalSyncServer(
                 return HttpRequest(
                     method = parts[0].uppercase(Locale.US),
                     path = rawPath,
+                    queryParameters = queryParameters,
                     headers = headers,
                     body = body,
                 )

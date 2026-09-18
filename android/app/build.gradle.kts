@@ -7,18 +7,13 @@ android {
     namespace = "com.sharesync.android"
     compileSdk = 35
 
-    val enableQrPinnedHttps = providers
-        .gradleProperty("sharesync.qrPinnedHttps")
-        .map { it.equals("true", ignoreCase = true) }
-        .orElse(false)
-
     defaultConfig {
         applicationId = "com.sharesync.android"
         minSdk = 29
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
-        buildConfigField("boolean", "SHARESYNC_QR_PINNED_HTTPS", enableQrPinnedHttps.get().toString())
+        buildConfigField("boolean", "SHARESYNC_QR_PINNED_HTTPS", "false")
         buildConfigField("String", "SHARESYNC_CHANNEL", "\"release\"")
     }
 
@@ -27,6 +22,7 @@ android {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
             buildConfigField("String", "SHARESYNC_CHANNEL", "\"debug\"")
+            buildConfigField("boolean", "SHARESYNC_QR_PINNED_HTTPS", "false")
         }
         create("beta") {
             initWith(getByName("debug"))
@@ -34,11 +30,13 @@ android {
             versionNameSuffix = "-beta"
             matchingFallbacks += listOf("debug")
             buildConfigField("String", "SHARESYNC_CHANNEL", "\"beta\"")
+            buildConfigField("boolean", "SHARESYNC_QR_PINNED_HTTPS", "true")
         }
         getByName("release") {
             isDebuggable = false
             isMinifyEnabled = false
             buildConfigField("String", "SHARESYNC_CHANNEL", "\"release\"")
+            buildConfigField("boolean", "SHARESYNC_QR_PINNED_HTTPS", "true")
         }
     }
 

@@ -51,6 +51,35 @@ final class ManifestClientTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-Signature"), "V+Zfc9LZCzOl+H/8ZpZGbCjZ2WiZxwo2mgc17pPqPhY=")
     }
 
+    func testFetchAllManifestPagesMergesAssetsAndAdvancesCursor() async throws {
+        let firstPage = manifestPageJSON(
+            cursor: "page:0",
+            assetId: "media-001",
+            hasMore: true,
+            nextCursor: "page:1"
+        )
+        let secondPage = manifestPageJSON(
+            cursor: "page:1",
+            assetId: "media-002",
+            hasMore: false,
+            nextCursor: nil
+        )
+        let session = StubManifestFetchingSession(dataSequence: [firstPage, secondPage])
+        let client = ManifestClient(session: session)
+
+        let manifest = try await client.fetchAllManifestPages(
+            from: "192.168.1.10",
+            port: 48291
+        )
+
+        XCTAssertEqual(manifest.media.map(\.assetId), ["media-001", "media-002"])
+        XCTAssertEqual(session.requests.count, 2)
+        XCTAssertEqual(
+            session.requests[1].url?.absoluteString,
+            "http://192.168.1.10:48291/v1/manifest?sinceCursor=page:1"
+        )
+    }
+
     func testFetchManifestRejectsNonSuccessfulStatusCode() async {
         let session = StubManifestFetchingSession(data: Data(), statusCode: 401)
         let client = ManifestClient(session: session)
@@ -125,22 +154,60 @@ final class ManifestClientTests: XCTestCase {
             XCTAssertEqual(error as? HealthClientError, .peerNotReady("starting"))
         }
     }
+
+    private func manifestPageJSON(
+        cursor: String,
+        assetId: String,
+        hasMore: Bool,
+        nextCursor: String?
+    ) -> Data {
+        let nextCursorJSON = nextCursor.map { "\"\($0)\"" } ?? "null"
+        return Data(
+            """
+            {
+              "version": 1,
+              "sourceDeviceId": "android-demo-device",
+              "generatedAt": "2026-09-18T00:00:00Z",
+              "cursor": "\(cursor)",
+              "pageSize": 1,
+              "hasMore": \(hasMore),
+              "nextCursor": \(nextCursorJSON),
+              "media": [{
+                "assetId": "\(assetId)",
+                "sourceDeviceId": "android-demo-device",
+                "mediaType": "photo",
+                "fileName": "\(assetId).jpg",
+                "mimeType": "image/jpeg",
+                "size": 1024
+              }],
+              "contacts": [],
+              "files": []
+            }
+            """.utf8
+        )
+    }
 }
 
 private final class StubManifestFetchingSession: ManifestFetchingSession {
-    private let data: Data
+    private let dataSequence: [Data]
     private let statusCode: Int
     private(set) var requests: [URLRequest] = []
 
     init(data: Data, statusCode: Int = 200) {
-        self.data = data
+        self.dataSequence = [data]
+        self.statusCode = statusCode
+    }
+
+    init(dataSequence: [Data], statusCode: Int = 200) {
+        self.dataSequence = dataSequence
         self.statusCode = statusCode
     }
 
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        let responseIndex = min(requests.count, dataSequence.count - 1)
         requests.append(request)
         return (
-            data,
+            dataSequence[responseIndex],
             HTTPURLResponse(
                 url: request.url!,
                 statusCode: statusCode,

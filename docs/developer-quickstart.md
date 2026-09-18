@@ -1,8 +1,8 @@
 # Developer Quickstart
 
-Status: M36 developer handoff guide.
+Status: M41 developer handoff guide.
 
-This guide is for local development only. ShareSync M36 remains a photo-only Android-to-iPhone local sync MVP source-code checkpoint and should not be treated as an App Store or Google Play release candidate until deferred physical-device, signing, packaging, privacy declaration, and store review work is completed.
+This guide is for local development only. ShareSync M41 remains a photo-only Android-to-iPhone local sync MVP source-code checkpoint and should not be treated as an App Store or Google Play release candidate until deferred physical-device, signing, packaging, privacy declaration, and store review work is completed.
 
 ## Prerequisites
 
@@ -194,4 +194,9 @@ Use these documents when real-device testing resumes:
 - [M34 Release Configuration](m34-release-configuration.md)
 - [M35 Pre-release Product Freeze](m35-pre-release-product-freeze.md)
 - [M36 Product Navigation Redesign](m36-product-navigation-redesign.md)
+- [M37 Sync Interaction Polish](m37-sync-interaction-polish.md)
+- [M38 UI Acceptance Freeze](m38-ui-acceptance-freeze.md)
+- [M39 Release Transport Default](m39-release-transport-default.md)
+- [M40 Paged Photo Manifest](m40-paged-photo-manifest.md)
+- [M41 Versioned Sync Ledger](m41-versioned-sync-ledger.md)
 - [Privacy Data Summary](privacy-data-summary.md)

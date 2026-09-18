@@ -2,6 +2,7 @@ package com.sharesync.android.sync
 
 import com.sharesync.android.SuspendBridge
 import org.junit.Assert.assertEquals
+import org.json.JSONObject
 import org.junit.Test
 import java.io.File
 
@@ -100,11 +101,31 @@ class SyncResultStoreTest {
             val reloaded = FileSyncResultStore(file = file)
             val latest = SuspendBridge.runBlocking { reloaded.latest() }
 
+            assertEquals(2, JSONObject(file.readText()).getInt("schemaVersion"))
             assertEquals("batch-002", latest?.syncBatchId)
             assertEquals(
                 listOf("media-001" to SyncItemStatus.synced, "media-002" to SyncItemStatus.failed),
                 latest?.results?.map { it.sourceItemId to it.status },
             )
+        } finally {
+            file.delete()
+            directory.delete()
+        }
+    }
+
+    @Test
+    fun fileStoreMigratesLegacyUnversionedResult() {
+        val directory = File(System.getProperty("java.io.tmpdir"), "ShareSyncStoreTest-${System.nanoTime()}")
+        val file = File(directory, "latest-sync-result.json")
+        val legacyResult = syncResult("batch-legacy", syncItem("media-001", SyncItemStatus.synced))
+
+        try {
+            directory.mkdirs()
+            file.writeText(SyncResultJsonCodec().encode(legacyResult))
+
+            val loaded = SuspendBridge.runBlocking { FileSyncResultStore(file = file).latest() }
+
+            assertEquals(legacyResult, loaded)
         } finally {
             file.delete()
             directory.delete()

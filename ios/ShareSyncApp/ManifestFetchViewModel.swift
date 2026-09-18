@@ -191,7 +191,7 @@ final class ManifestFetchViewModel: ObservableObject {
                 try validatePairedPeer(health)
                 persistLastKnownEndpoint(endpoint, health: health)
                 localPeerHealth = health
-                let manifest = try await client.fetchManifest(
+                let manifest = try await client.fetchAllManifestPages(
                     from: endpoint.host,
                     port: endpoint.port,
                     pairingToken: pairingToken,
@@ -247,7 +247,7 @@ final class ManifestFetchViewModel: ObservableObject {
                 try validatePairedPeer(health)
                 persistLastKnownEndpoint(endpoint, health: health)
                 localPeerHealth = health
-                let manifest = try await client.fetchManifest(
+                let manifest = try await client.fetchAllManifestPages(
                     from: endpoint.host,
                     port: endpoint.port,
                     pairingToken: pairingToken,
@@ -747,6 +747,8 @@ final class ManifestFetchViewModel: ObservableObject {
                 return localized("ios.vm.pairing_rejected")
             case .unacceptableStatusCode:
                 return localized("ios.vm.manifest_rejected")
+            case .paginationLimitExceeded, .invalidPaginationCursor:
+                return localized("ios.vm.manifest_pagination_invalid")
             }
         }
 
@@ -927,6 +929,17 @@ final class ManifestFetchViewModel: ObservableObject {
         if let manifestClientError = error as? ManifestClientError,
            case .unacceptableStatusCode(let statusCode) = manifestClientError {
             return "HTTP-\(statusCode)"
+        }
+
+        if let manifestClientError = error as? ManifestClientError {
+            switch manifestClientError {
+            case .paginationLimitExceeded:
+                return "SS-MANIFEST-PAGE-LIMIT"
+            case .invalidPaginationCursor:
+                return "SS-MANIFEST-CURSOR"
+            default:
+                break
+            }
         }
 
         if let healthClientError = error as? HealthClientError,

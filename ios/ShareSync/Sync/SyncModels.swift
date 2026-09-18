@@ -32,9 +32,36 @@ struct SyncManifest: Codable, Equatable {
     let sourceDeviceId: String
     let generatedAt: Date
     let cursor: String
+    let pageSize: Int?
+    let hasMore: Bool?
+    let nextCursor: String?
     let media: [MediaAsset]
     let contacts: [ContactItem]
     let files: [FileItem]
+
+    init(
+        version: Int,
+        sourceDeviceId: String,
+        generatedAt: Date,
+        cursor: String,
+        media: [MediaAsset],
+        contacts: [ContactItem],
+        files: [FileItem],
+        pageSize: Int? = nil,
+        hasMore: Bool? = nil,
+        nextCursor: String? = nil
+    ) {
+        self.version = version
+        self.sourceDeviceId = sourceDeviceId
+        self.generatedAt = generatedAt
+        self.cursor = cursor
+        self.pageSize = pageSize
+        self.hasMore = hasMore
+        self.nextCursor = nextCursor
+        self.media = media
+        self.contacts = contacts
+        self.files = files
+    }
 }
 
 struct MediaAsset: Codable, Equatable, Identifiable {

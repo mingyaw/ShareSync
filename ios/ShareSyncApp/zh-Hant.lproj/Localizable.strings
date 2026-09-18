@@ -143,6 +143,7 @@
 "ios.vm.local_network_unavailable" = "本機網路不可用。請讓兩支手機連上同一 Wi-Fi 或 Android 熱點。";
 "ios.vm.local_http_blocked" = "iOS 設定封鎖本機 HTTP。";
 "ios.vm.manifest_unsupported" = "不支援 Android 照片清單格式。";
+"ios.vm.manifest_pagination_invalid" = "無法安全完成 Android 照片清單。請重新啟動 Android 上的 ShareSync 後再試一次。";
 "ios.vm.endpoint_invalid" = "Android 連線無效。";
 "ios.vm.invalid_local_response" = "Android 未回傳有效的本機回應。";
 "ios.vm.pairing_rejected" = "配對無法驗證。請清除配對並重新掃描 Android QR Code。";
@@ -172,3 +173,4 @@
 "ios.settings.support" = "連線與支援";
 "ios.pairing.title" = "配對 Android 手機";
 "ios.pairing.same_network" = "請讓兩支手機連上同一 Wi-Fi 或 Android 熱點。";
+"ios.progress.photos_format" = "已處理 %@／%@ 張照片";

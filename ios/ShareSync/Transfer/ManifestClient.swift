@@ -4,6 +4,8 @@ enum ManifestClientError: Error, Equatable {
     case invalidBaseURL
     case nonHTTPResponse
     case unacceptableStatusCode(Int)
+    case paginationLimitExceeded
+    case invalidPaginationCursor
 }
 
 enum HealthClientError: Error, Equatable {
@@ -84,6 +86,69 @@ final class ManifestClient {
         }
 
         return try decoder.decode(SyncManifest.self, from: data)
+    }
+
+    func fetchAllManifestPages(
+        from host: String,
+        port: Int,
+        pairingToken: String? = nil,
+        signingContext: RequestSigningContext? = nil,
+        transportSecurity: PairingTransportSecurity? = nil,
+        maximumPages: Int = 50
+    ) async throws -> SyncManifest {
+        var cursor: String?
+        var firstPage: SyncManifest?
+        var media: [MediaAsset] = []
+        var seenAssetIds: Set<String> = []
+
+        let pageLimit = max(1, maximumPages)
+        for pageIndex in 0..<pageLimit {
+            let page = try await fetchManifest(
+                from: host,
+                port: port,
+                cursor: cursor,
+                pairingToken: pairingToken,
+                signingContext: signingContext,
+                transportSecurity: transportSecurity
+            )
+            if firstPage == nil {
+                firstPage = page
+            }
+            page.media.forEach { asset in
+                if seenAssetIds.insert(asset.assetId).inserted {
+                    media.append(asset)
+                }
+            }
+
+            guard page.hasMore == true else {
+                break
+            }
+            guard pageIndex + 1 < pageLimit else {
+                throw ManifestClientError.paginationLimitExceeded
+            }
+            guard let nextCursor = page.nextCursor,
+                  !nextCursor.isEmpty,
+                  nextCursor != cursor else {
+                throw ManifestClientError.invalidPaginationCursor
+            }
+            cursor = nextCursor
+        }
+
+        guard let firstPage else {
+            throw ManifestClientError.nonHTTPResponse
+        }
+        return SyncManifest(
+            version: firstPage.version,
+            sourceDeviceId: firstPage.sourceDeviceId,
+            generatedAt: firstPage.generatedAt,
+            cursor: firstPage.cursor,
+            media: media,
+            contacts: firstPage.contacts,
+            files: firstPage.files,
+            pageSize: media.count,
+            hasMore: false,
+            nextCursor: nil
+        )
     }
 }
 

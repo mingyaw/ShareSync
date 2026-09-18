@@ -79,4 +79,14 @@ rg -q 'android:allowBackup="false"' "$android_manifest"
 echo "ok Debug, Beta, and Release boundaries"
 
 echo
+echo "== Main-axis hardening =="
+rg -q 'getByName\("debug"\)' "$android_build"
+test "$(rg -c 'SHARESYNC_QR_PINNED_HTTPS.*true' "$android_build")" -ge 2
+rg -q 'fetchAllManifestPages' ios/ShareSync/Transfer/ManifestClient.swift
+rg -q 'nextCursor' android/app/src/main/java/com/sharesync/android/sync/SyncModels.kt
+rg -q 'schemaVersion.*CURRENT_SCHEMA_VERSION' android/app/src/main/java/com/sharesync/android/sync/SyncResultStore.kt
+rg -q 'currentSchemaVersion = 2' ios/ShareSync/Transfer/MediaDownloadState.swift
+echo "ok release HTTPS, paged manifests, and versioned ledgers"
+
+echo
 echo "Product readiness checks passed."

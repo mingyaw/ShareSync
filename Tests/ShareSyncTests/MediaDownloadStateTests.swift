@@ -236,6 +236,11 @@ final class MediaDownloadStateTests: XCTestCase {
             now: Date(timeIntervalSince1970: 2)
         )
 
+        let persistedRoot = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: Data(contentsOf: fileURL)) as? [String: Any]
+        )
+        XCTAssertEqual(persistedRoot["schemaVersion"] as? Int, 2)
+
         let reloadedStore = FileMediaDownloadStateStore(fileURL: fileURL)
         XCTAssertEqual(
             reloadedStore.importedMappings(),

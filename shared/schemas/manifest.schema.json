@@ -9,6 +9,9 @@
     "sourceDeviceId": { "type": "string" },
     "generatedAt": { "type": "string", "format": "date-time" },
     "cursor": { "type": "string" },
+    "pageSize": { "type": "integer", "minimum": 1, "maximum": 100 },
+    "hasMore": { "type": "boolean" },
+    "nextCursor": { "type": ["string", "null"] },
     "media": {
       "type": "array",
       "items": { "$ref": "#/$defs/mediaAsset" }
@@ -80,4 +83,3 @@
     }
   }
 }
-

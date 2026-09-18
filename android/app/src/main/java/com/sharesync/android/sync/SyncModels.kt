@@ -33,6 +33,9 @@ data class SyncManifest(
     val generatedAt: String,
     val cursor: String,
     val media: List<MediaAsset>,
+    val pageSize: Int? = null,
+    val hasMore: Boolean = false,
+    val nextCursor: String? = null,
     val contacts: List<ContactItem> = emptyList(),
     val files: List<FileItem> = emptyList(),
 )

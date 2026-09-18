@@ -143,6 +143,7 @@
 "ios.vm.local_network_unavailable" = "Local network is unavailable. Connect both phones to the same Wi-Fi or Android hotspot.";
 "ios.vm.local_http_blocked" = "Local HTTP is blocked by iOS settings.";
 "ios.vm.manifest_unsupported" = "Android manifest format is not supported.";
+"ios.vm.manifest_pagination_invalid" = "The Android photo list could not be completed safely. Restart ShareSync on Android and try again.";
 "ios.vm.endpoint_invalid" = "Android connection is not valid.";
 "ios.vm.invalid_local_response" = "Android did not return a valid local response.";
 "ios.vm.pairing_rejected" = "Pairing could not be verified. Clear pairing and scan a fresh Android QR code.";
@@ -172,3 +173,4 @@
 "ios.settings.support" = "Connection & support";
 "ios.pairing.title" = "Pair your Android phone";
 "ios.pairing.same_network" = "Keep both phones on the same Wi-Fi or Android hotspot.";
+"ios.progress.photos_format" = "%@ of %@ photos processed";

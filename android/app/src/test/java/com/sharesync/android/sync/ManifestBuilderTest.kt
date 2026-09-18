@@ -166,6 +166,53 @@ class ManifestBuilderTest {
     }
 
     @Test
+    fun buildM0ManifestReturnsStablePagesWithoutOverlap() {
+        val scanner = FakeMediaScanner(
+            assets = (1..5).map { index -> mediaAsset("media-$index") },
+        )
+        val builder = ManifestBuilder(
+            sourceDeviceId = "android-device-001",
+            mediaScanner = scanner,
+            syncResultStore = InMemorySyncResultStore(),
+        )
+
+        val firstPage = SuspendBridge.runBlocking { builder.buildM0Manifest(limit = 2) }
+        val secondPage = SuspendBridge.runBlocking {
+            builder.buildM0Manifest(limit = 2, cursor = firstPage.nextCursor)
+        }
+
+        assertEquals(listOf("media-1", "media-2"), firstPage.media.map { it.assetId })
+        assertEquals(true, firstPage.hasMore)
+        assertEquals("page:2", firstPage.nextCursor)
+        assertEquals(listOf("media-3", "media-4"), secondPage.media.map { it.assetId })
+        assertEquals(true, secondPage.hasMore)
+        assertEquals("page:4", secondPage.nextCursor)
+    }
+
+    @Test
+    fun buildM0ManifestPagesBeyondFirstFiveHundredPhotos() {
+        val scanner = FakeMediaScanner(
+            assets = (1..620).map { index -> mediaAsset("media-${index.toString().padStart(3, '0')}") },
+        )
+        val builder = ManifestBuilder(
+            sourceDeviceId = "android-device-001",
+            mediaScanner = scanner,
+            syncResultStore = InMemorySyncResultStore(),
+        )
+
+        val page = SuspendBridge.runBlocking {
+            builder.buildM0Manifest(limit = 100, cursor = "page:500")
+        }
+
+        assertEquals(100, page.media.size)
+        assertEquals("media-501", page.media.first().assetId)
+        assertEquals("media-600", page.media.last().assetId)
+        assertEquals(true, page.hasMore)
+        assertEquals("page:600", page.nextCursor)
+        assertEquals(2, scanner.requestCount)
+    }
+
+    @Test
     fun buildM0ManifestFiltersCompletedMediaAfterFileStoreReloadWithMixedStates() {
         val scanner = FakeMediaScanner(
             assets = listOf(
@@ -279,9 +326,12 @@ private class FakeMediaScanner(
 ) : MediaScanner {
     var lastLimit: Int = 0
         private set
+    var requestCount: Int = 0
+        private set
 
-    override suspend fun scanRecent(limit: Int): List<MediaAsset> {
+    override suspend fun scanRecent(limit: Int, offset: Int): List<MediaAsset> {
         lastLimit = limit
-        return assets.take(limit)
+        requestCount += 1
+        return assets.drop(offset).take(limit)
     }
 }

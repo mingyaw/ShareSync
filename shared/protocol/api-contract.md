@@ -1,8 +1,8 @@
 # ShareSync Local API Contract
 
 Version: 1
-M2 transport: signed local HTTP over same Wi-Fi or Android hotspot
-Pre-release transport target: local HTTPS plus signed requests
+Debug transport: signed local HTTP over same Wi-Fi or Android hotspot
+Beta and Release transport: QR-pinned local HTTPS plus signed requests
 
 ## Common Headers
 
@@ -80,6 +80,11 @@ GET /v1/manifest?sinceCursor=<cursor>
 
 Returns metadata available for sync. M0 currently returns photo media only.
 
+Photo manifests are paged. A response may include `pageSize`, `hasMore`, and
+`nextCursor`. When `hasMore` is true, the receiver requests the next page with
+`sinceCursor=<nextCursor>`. Receivers must de-duplicate by `assetId` and stop on
+a missing, empty, or repeated cursor.
+
 ### Media Download
 
 ```http
@@ -131,7 +136,7 @@ M0 implements only:
 - `GET /v1/manifest`
 - `GET /v1/media/{assetId}`
 - `POST /v1/sync/result`
-- local HTTP allowed only for first-device PoC
+- signed local HTTP retained for Debug builds
 - signed request enforcement on protected endpoints
 - photo media only
-- full HTTPS remains tracked for the M3/pre-release security milestone
+- Beta and Release builds select QR-pinned HTTPS; physical-device signoff remains required

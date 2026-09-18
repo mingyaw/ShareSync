@@ -1,5 +1,6 @@
 package com.sharesync.android.sync
 
+import org.json.JSONObject
 import java.io.File
 
 interface SyncResultStore {
@@ -43,7 +44,12 @@ class FileSyncResultStore(
     override suspend fun save(result: SyncResult) {
         val mergedResult = latest().mergeWith(result)
         file.parentFile?.mkdirs()
-        file.writeText(codec.encode(mergedResult))
+        file.writeText(
+            JSONObject()
+                .put("schemaVersion", CURRENT_SCHEMA_VERSION)
+                .put("result", JSONObject(codec.encode(mergedResult)))
+                .toString(2),
+        )
     }
 
     override suspend fun latest(): SyncResult? {
@@ -51,7 +57,17 @@ class FileSyncResultStore(
             return null
         }
 
-        return runCatching { codec.decode(file.readText()) }.getOrNull()
+        return runCatching {
+            val json = file.readText()
+            val root = JSONObject(json)
+            if (root.has("schemaVersion") && root.has("result")) {
+                val schemaVersion = root.getInt("schemaVersion")
+                require(schemaVersion in 1..CURRENT_SCHEMA_VERSION)
+                codec.decode(root.getJSONObject("result").toString())
+            } else {
+                codec.decode(json)
+            }
+        }.getOrNull()
     }
 
     override suspend fun clear() {
@@ -61,6 +77,8 @@ class FileSyncResultStore(
     }
 
     companion object {
+        const val CURRENT_SCHEMA_VERSION = 2
+
         fun defaultFile(filesDir: File): File {
             return File(File(filesDir, "ShareSync"), "latest-sync-result.json")
         }

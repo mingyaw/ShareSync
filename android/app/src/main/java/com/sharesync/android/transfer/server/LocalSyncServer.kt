@@ -12,7 +12,7 @@ interface LocalSyncServer {
 }
 
 interface ManifestProvider {
-    suspend fun currentManifest(): SyncManifest
+    suspend fun currentManifest(cursor: String? = null): SyncManifest
 }
 
 interface LocalServerBinder {

@@ -41,6 +41,16 @@ class ManifestJsonEncoder {
             appendJsonField("generatedAt", manifest.generatedAt)
             append(",")
             appendJsonField("cursor", manifest.cursor)
+            manifest.pageSize?.let {
+                append(",")
+                appendJsonField("pageSize", it)
+            }
+            append(",")
+            appendJsonField("hasMore", manifest.hasMore)
+            manifest.nextCursor?.let {
+                append(",")
+                appendJsonField("nextCursor", it)
+            }
             append(",\"media\":")
             appendMediaArray(manifest.media)
             append(",\"contacts\":[]")
@@ -120,6 +130,13 @@ class ManifestJsonEncoder {
     }
 
     private fun StringBuilder.appendJsonField(name: String, value: Long) {
+        append("\"")
+        append(escape(name))
+        append("\":")
+        append(value)
+    }
+
+    private fun StringBuilder.appendJsonField(name: String, value: Boolean) {
         append("\"")
         append(escape(name))
         append("\":")

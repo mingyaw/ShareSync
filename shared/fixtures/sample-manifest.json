@@ -3,6 +3,9 @@
   "sourceDeviceId": "android-demo-device",
   "generatedAt": "2026-08-19T06:00:00Z",
   "cursor": "m0-demo-cursor",
+  "pageSize": 2,
+  "hasMore": false,
+  "nextCursor": null,
   "media": [
     {
       "assetId": "media-001",
@@ -40,4 +43,3 @@
   "contacts": [],
   "files": []
 }
-

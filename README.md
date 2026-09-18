@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 photo PoC through M36 product navigation redesign are complete for the photo-only MVP source-code track.
+Status: M0 photo PoC through M41 versioned sync ledger are complete for the photo-only MVP source-code track.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -16,7 +16,7 @@ The project intentionally uses native implementation:
 
 ## Current Stage
 
-The completed baseline is `M0 - Android to iOS Photo PoC` through `M36 - Product Navigation Redesign`. The photo-only MVP now has repeatable validation, package readiness, handoff notes, beta preflight automation, redacted JSON diagnostics, local support snapshot triage, product-focused next-step guidance, tested readiness presenter state, strictly validated support evidence, error recovery alignment, adaptive native UI, branded app identity, first-run setup guidance, bilingual privacy explanations, guarded destructive actions, Debug/Beta/Release boundaries, repeatable UI and product readiness gates, and task-focused three-section navigation on both platforms.
+The completed baseline is `M0 - Android to iOS Photo PoC` through `M41 - Versioned Sync Ledger`. The photo-only MVP now includes task-focused navigation, visible batch progress, release transport boundaries, paged photo manifests, resumable streamed media, storage checks, and versioned completion records with legacy migration.
 
 The current codebase contains:
 
@@ -81,6 +81,10 @@ The current codebase contains:
 - Product readiness automation validates icon assets, bilingual setup/privacy copy, build channels, and release safety settings.
 - Android separates photo sync, recent activity, and settings while showing only the action relevant to the current state.
 - iOS separates receiving, activity, and settings; pairing and photo sync remain the only primary home actions.
+- iOS shows determinate batch progress and the current file during foreground transfer.
+- Android Beta and Release builds select QR-pinned HTTPS while Debug remains on signed HTTP.
+- Android serves cursor-based photo manifest pages and iOS merges them without duplicate asset IDs.
+- Android and iOS persist sync completion state in versioned envelopes while reading legacy files.
 - Support snapshots can be validated and summarized locally for internal beta triage.
 
 M0 validates the riskiest path:
@@ -162,6 +166,11 @@ tasks/
 - [M34 Release Configuration](docs/m34-release-configuration.md)
 - [M35 Pre-release Product Freeze](docs/m35-pre-release-product-freeze.md)
 - [M36 Product Navigation Redesign](docs/m36-product-navigation-redesign.md)
+- [M37 Sync Interaction Polish](docs/m37-sync-interaction-polish.md)
+- [M38 UI Acceptance Freeze](docs/m38-ui-acceptance-freeze.md)
+- [M39 Release Transport Default](docs/m39-release-transport-default.md)
+- [M40 Paged Photo Manifest](docs/m40-paged-photo-manifest.md)
+- [M41 Versioned Sync Ledger](docs/m41-versioned-sync-ledger.md)
 - [Privacy Data Summary](docs/privacy-data-summary.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Error Recovery Matrix](docs/error-recovery-matrix.md)
@@ -211,6 +220,11 @@ tasks/
 - [M34 Release Configuration](tasks/m34-release-configuration.md)
 - [M35 Pre-release Product Freeze](tasks/m35-pre-release-product-freeze.md)
 - [M36 Product Navigation Redesign](tasks/m36-product-navigation-redesign.md)
+- [M37 Sync Interaction Polish](tasks/m37-sync-interaction-polish.md)
+- [M38 UI Acceptance Freeze](tasks/m38-ui-acceptance-freeze.md)
+- [M39 Release Transport Default](tasks/m39-release-transport-default.md)
+- [M40 Paged Photo Manifest](tasks/m40-paged-photo-manifest.md)
+- [M41 Versioned Sync Ledger](tasks/m41-versioned-sync-ledger.md)
 
 ## M0 Rules
 

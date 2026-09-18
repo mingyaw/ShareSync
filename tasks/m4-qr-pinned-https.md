@@ -1,6 +1,6 @@
 # M4 - QR-Pinned HTTPS
 
-Status: Active after M3 pre-release hardening completion on 2026-09-08.
+Status: Source implementation complete; physical-device signoff deferred. Superseded by the M39 Beta/Release default on 2026-09-18.
 
 Goal: implement the M3 local security direction by moving the photo-only main axis from signed local HTTP toward QR-pinned HTTPS, while keeping request signing and preserving compatibility until real-device validation is ready.
 
