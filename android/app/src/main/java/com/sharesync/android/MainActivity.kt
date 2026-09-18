@@ -39,6 +39,7 @@ import com.sharesync.android.transfer.server.LocalRequestActivity
 import com.sharesync.android.transfer.server.LocalRequestActivityTracker
 import com.sharesync.android.transfer.server.LocalSyncServer
 import com.sharesync.android.ui.MainDestination
+import com.sharesync.android.ui.PhotoSharingScreenState
 import com.sharesync.android.ui.ShareSyncTheme
 import org.json.JSONObject
 import java.time.Instant
@@ -521,6 +522,12 @@ class MainActivity : Activity() {
 
     private fun refreshUi(message: String? = null) {
         val endpointUrl = currentEndpointUrl()
+        val screenState = PhotoSharingScreenState.from(
+            runtime = runtimeState(),
+            hasEndpoint = endpointUrl != null,
+            hasPairingPayload = currentPairingPayloadJson != null,
+            hasSyncResult = currentSyncResult != null,
+        )
         val endpoint = endpointUrl?.let { getString(R.string.sync_endpoint, it) }
             ?: getString(R.string.sync_endpoint_unavailable)
 
@@ -538,7 +545,7 @@ class MainActivity : Activity() {
                 else -> shareSyncTheme.textSecondary
             },
         )
-        phaseText.text = phaseStatus()
+        phaseText.text = phaseStatus(screenState.phase)
         phaseText.setTextColor(if (isServerRunning) shareSyncTheme.primary else shareSyncTheme.textSecondary)
         nextStepText.text = getString(R.string.next_step, nextStepInstruction())
         endpointText.text = endpoint
@@ -576,17 +583,17 @@ class MainActivity : Activity() {
         syncHistoryText.text = formatSyncHistory()
         refreshPairingQr()
         if (currentSection == MainDestination.SYNC && ::pairingPanel.isInitialized) {
-            pairingPanel.visibility = if (currentPairingPayloadJson == null) View.GONE else View.VISIBLE
+            pairingPanel.visibility = if (screenState.showPairingPanel) View.VISIBLE else View.GONE
         }
 
-        startButton.isEnabled = !isServerRunning && !isServerStarting && hasMediaPermission()
-        stopButton.isEnabled = isServerRunning
-        grantButton.visibility = if (hasMediaPermission()) View.GONE else View.VISIBLE
-        startButton.visibility = if (hasMediaPermission() && !isServerRunning) View.VISIBLE else View.GONE
-        stopButton.visibility = if (isServerRunning) View.VISIBLE else View.GONE
-        copyEndpointButton.isEnabled = endpointUrl != null
-        copyPairingButton.isEnabled = currentPairingPayloadJson != null
-        copySyncResultButton.isEnabled = currentSyncResult != null
+        startButton.isEnabled = screenState.startActionEnabled
+        stopButton.isEnabled = screenState.stopActionEnabled
+        grantButton.visibility = if (screenState.showPhotoAccessAction) View.VISIBLE else View.GONE
+        startButton.visibility = if (screenState.showStartAction) View.VISIBLE else View.GONE
+        stopButton.visibility = if (screenState.showStopAction) View.VISIBLE else View.GONE
+        copyEndpointButton.isEnabled = screenState.copyEndpointEnabled
+        copyPairingButton.isEnabled = screenState.copyPairingEnabled
+        copySyncResultButton.isEnabled = screenState.copySyncResultEnabled
         copyDiagnosticsButton.isEnabled = true
         clearSyncStateButton.isEnabled = currentSyncResult != null
         updateKeepScreenAwake()
@@ -796,7 +803,7 @@ class MainActivity : Activity() {
             .put("generatedAt", Instant.now().toString())
             .put("appVersion", BuildConfig.VERSION_NAME)
             .put("buildNumber", BuildConfig.VERSION_CODE)
-            .put("phase", phaseStatus())
+            .put("phase", phaseStatus(runtimeState().phase()))
             .put("nextStep", supportSnapshotNextStep())
             .put("transport", currentTransportSecurityMode.name)
             .put("endpoint", currentEndpointUrl() ?: JSONObject.NULL)
@@ -1043,8 +1050,8 @@ class MainActivity : Activity() {
         )
     }
 
-    private fun phaseStatus(): String {
-        return when (runtimeState().phase()) {
+    private fun phaseStatus(phase: PhotoSharingPhase): String {
+        return when (phase) {
             PhotoSharingPhase.PERMISSION_REQUIRED -> getString(R.string.sync_phase_permission_required)
             PhotoSharingPhase.READY_TO_START -> getString(R.string.sync_phase_ready_to_start)
             PhotoSharingPhase.SERVER_STARTING -> getString(R.string.sync_phase_server_starting)
