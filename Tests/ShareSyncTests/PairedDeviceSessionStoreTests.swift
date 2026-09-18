@@ -56,6 +56,23 @@ final class PairedDeviceSessionStoreTests: XCTestCase {
         XCTAssertEqual(loaded.device.transportSecurity, transportSecurity)
     }
 
+    func testFileStorePersistsIncrementalManifestCursor() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncPairedDeviceSessionTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = FilePairedDeviceSessionStore(fileURL: directory.appendingPathComponent("paired-device-session.json"))
+        let base = makeSession()
+        let session = PairedDeviceSession(
+            lastKnownEndpoint: base.lastKnownEndpoint,
+            device: base.device,
+            manifestCursor: "media-v1:1004:14"
+        )
+
+        try store.save(session)
+
+        XCTAssertEqual(try store.load()?.manifestCursor, "media-v1:1004:14")
+    }
+
     private func makeSession(transportSecurity: PairingTransportSecurity? = nil) -> PairedDeviceSession {
         PairedDeviceSession(
             host: "192.168.1.20",
@@ -156,6 +173,7 @@ extension PairedDeviceSessionStoreTests {
         XCTAssertEqual(session.lastKnownEndpoint.updatedAt, Date(timeIntervalSince1970: 1))
         XCTAssertEqual(session.device.deviceId, "android-demo-device")
         XCTAssertNil(session.device.transportSecurity)
+        XCTAssertNil(session.manifestCursor)
     }
 
     private func mediaAsset() -> MediaAsset {

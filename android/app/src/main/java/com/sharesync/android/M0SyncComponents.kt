@@ -48,7 +48,8 @@ class M0SyncComponents private constructor(
             )
 
             val manifestProvider = object : ManifestProvider {
-                override suspend fun currentManifest(cursor: String?) = manifestBuilder.buildM0Manifest(cursor = cursor)
+                override suspend fun currentManifest(sinceCursor: String?, pageCursor: String?) =
+                    manifestBuilder.buildM0Manifest(sinceCursor = sinceCursor, pageCursor = pageCursor)
             }
             val requestActivityTracker = LocalRequestActivityTracker()
 

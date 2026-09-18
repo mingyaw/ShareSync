@@ -547,7 +547,7 @@ class LocalSyncRouterTest {
             appVersion = "0.1.0",
             pairingToken = PAIRING_TOKEN,
             manifestProvider = object : ManifestProvider {
-                override suspend fun currentManifest(cursor: String?): SyncManifest {
+                override suspend fun currentManifest(sinceCursor: String?, pageCursor: String?): SyncManifest {
                     return SyncManifest(
                         version = 1,
                         sourceDeviceId = "android-device-001",

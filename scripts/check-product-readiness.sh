@@ -86,7 +86,10 @@ rg -q 'fetchAllManifestPages' ios/ShareSync/Transfer/ManifestClient.swift
 rg -q 'nextCursor' android/app/src/main/java/com/sharesync/android/sync/SyncModels.kt
 rg -q 'schemaVersion.*CURRENT_SCHEMA_VERSION' android/app/src/main/java/com/sharesync/android/sync/SyncResultStore.kt
 rg -q 'currentSchemaVersion = 2' ios/ShareSync/Transfer/MediaDownloadState.swift
-echo "ok release HTTPS, paged manifests, and versioned ledgers"
+rg -q 'pageCursor' ios/ShareSync/Transfer/ManifestClient.swift
+rg -q 'INCREMENTAL_CURSOR_PREFIX = "media-v1:"' android/app/src/main/java/com/sharesync/android/sync/ManifestBuilder.kt
+rg -q 'manifestCursor' ios/ShareSync/Security/TrustedDevice.swift
+echo "ok release HTTPS, incremental paged manifests, and versioned ledgers"
 
 echo
 echo "Product readiness checks passed."

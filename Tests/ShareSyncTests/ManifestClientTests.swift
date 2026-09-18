@@ -53,13 +53,13 @@ final class ManifestClientTests: XCTestCase {
 
     func testFetchAllManifestPagesMergesAssetsAndAdvancesCursor() async throws {
         let firstPage = manifestPageJSON(
-            cursor: "page:0",
+            cursor: "media-v1:1002:2",
             assetId: "media-001",
             hasMore: true,
-            nextCursor: "page:1"
+            nextCursor: "page-v2:0:0:1002:2:1"
         )
         let secondPage = manifestPageJSON(
-            cursor: "page:1",
+            cursor: "media-v1:1002:2",
             assetId: "media-002",
             hasMore: false,
             nextCursor: nil
@@ -69,15 +69,17 @@ final class ManifestClientTests: XCTestCase {
 
         let manifest = try await client.fetchAllManifestPages(
             from: "192.168.1.10",
-            port: 48291
+            port: 48291,
+            sinceCursor: "media-v1:1000:0"
         )
 
         XCTAssertEqual(manifest.media.map(\.assetId), ["media-001", "media-002"])
         XCTAssertEqual(session.requests.count, 2)
         XCTAssertEqual(
             session.requests[1].url?.absoluteString,
-            "http://192.168.1.10:48291/v1/manifest?sinceCursor=page:1"
+            "http://192.168.1.10:48291/v1/manifest?sinceCursor=media-v1:1000:0&pageCursor=page-v2:0:0:1002:2:1"
         )
+        XCTAssertEqual(manifest.cursor, "media-v1:1002:2")
     }
 
     func testFetchManifestRejectsNonSuccessfulStatusCode() async {

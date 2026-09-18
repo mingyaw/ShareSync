@@ -94,6 +94,7 @@ final class ManifestFetchViewModel: ObservableObject {
     private let endpointResolver: PairedEndpointResolver
     private let photoTransferPlanner = M0PhotoTransferPlanner()
     private var latestManifest: SyncManifest?
+    private var manifestCursor: String?
     private var activeDownloadTask: Task<Void, Never>?
 
     init(
@@ -194,6 +195,7 @@ final class ManifestFetchViewModel: ObservableObject {
                 let manifest = try await client.fetchAllManifestPages(
                     from: endpoint.host,
                     port: endpoint.port,
+                    sinceCursor: manifestCursor,
                     pairingToken: pairingToken,
                     signingContext: requestSigningContext(),
                     transportSecurity: pairedDevice?.transportSecurity
@@ -213,6 +215,7 @@ final class ManifestFetchViewModel: ObservableObject {
                 )
                 syncResultSummary = publishSummary.resultSummary
                 syncResultReturnSummary = publishSummary.returnSummary
+                persistManifestCursorIfComplete(manifest, returnSummary: publishSummary.returnSummary)
                 downloadProgressSummary = nil
                 downloadState = .idle
                 state = .loaded
@@ -250,6 +253,7 @@ final class ManifestFetchViewModel: ObservableObject {
                 let manifest = try await client.fetchAllManifestPages(
                     from: endpoint.host,
                     port: endpoint.port,
+                    sinceCursor: manifestCursor,
                     pairingToken: pairingToken,
                     signingContext: requestSigningContext(),
                     transportSecurity: pairedDevice?.transportSecurity
@@ -273,6 +277,7 @@ final class ManifestFetchViewModel: ObservableObject {
                 downloadState = .idle
                 state = .loaded
                 guard nextTransferCandidate(in: manifest) != nil else {
+                    persistManifestCursorIfComplete(manifest, returnSummary: publishSummary.returnSummary)
                     return
                 }
                 downloadNextMediaBatch(limit: manifest.media.count)
@@ -317,6 +322,7 @@ final class ManifestFetchViewModel: ObservableObject {
             )
             pairedDevice = trustedDevice
             pairingToken = payload.pairingToken
+            manifestCursor = nil
             try? pairedDeviceSessionStore.save(
                 PairedDeviceSession(
                     host: payload.ip,
@@ -367,6 +373,8 @@ final class ManifestFetchViewModel: ObservableObject {
         downloadStateStore.clear()
         try? syncResultStore.clear()
         try? syncEventStore.clear()
+        manifestCursor = nil
+        persistManifestCursor(nil)
         latestManifest = nil
         summary = nil
         syncResultSummary = nil
@@ -391,6 +399,7 @@ final class ManifestFetchViewModel: ObservableObject {
         pairingPayloadText = ""
         pairedDevice = nil
         pairingToken = nil
+        manifestCursor = nil
         localPeerHealth = nil
         latestManifest = nil
         summary = nil
@@ -413,6 +422,7 @@ final class ManifestFetchViewModel: ObservableObject {
         port = "\(session.port)"
         pairedDevice = session.device
         pairingToken = session.device.pairingToken
+        manifestCursor = session.manifestCursor
     }
 
     private func restoreLatestSyncResult() {
@@ -469,7 +479,8 @@ final class ManifestFetchViewModel: ObservableObject {
         )
         let session = PairedDeviceSession(
             lastKnownEndpoint: endpoint,
-            device: updatedDevice
+            device: updatedDevice,
+            manifestCursor: manifestCursor
         )
         try? pairedDeviceSessionStore.save(session)
         self.pairedDevice = updatedDevice
@@ -663,6 +674,7 @@ final class ManifestFetchViewModel: ObservableObject {
             )
             syncResultSummary = completedPublishSummary.resultSummary
             syncResultReturnSummary = completedPublishSummary.returnSummary
+            persistManifestCursorIfComplete(manifest, returnSummary: completedPublishSummary.returnSummary)
             downloadProgressSummary = nil
             downloadState = importResults.contains { $0.status == .synced }
                 ? .completed
@@ -677,6 +689,35 @@ final class ManifestFetchViewModel: ObservableObject {
         }
 
         try? FileManager.default.removeItem(at: localFileURL)
+    }
+
+    private func persistManifestCursorIfComplete(
+        _ manifest: SyncManifest,
+        returnSummary: SyncResultReturnSummary
+    ) {
+        guard nextTransferCandidate(in: manifest) == nil,
+              let statusCode = returnSummary.httpStatusCode,
+              (200...299).contains(statusCode),
+              manifest.cursor.hasPrefix("media-v1:") else {
+            return
+        }
+
+        manifestCursor = manifest.cursor
+        persistManifestCursor(manifest.cursor)
+    }
+
+    private func persistManifestCursor(_ cursor: String?) {
+        guard let session = try? pairedDeviceSessionStore.load() else {
+            return
+        }
+
+        try? pairedDeviceSessionStore.save(
+            PairedDeviceSession(
+                lastKnownEndpoint: session.lastKnownEndpoint,
+                device: session.device,
+                manifestCursor: cursor
+            )
+        )
     }
 
     private func recordSyncEvent(

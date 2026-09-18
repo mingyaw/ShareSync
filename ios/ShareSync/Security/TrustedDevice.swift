@@ -28,22 +28,31 @@ enum TrustStatus: String, Codable {
 struct PairedDeviceSession: Codable, Equatable {
     let lastKnownEndpoint: PairedDeviceEndpoint
     let device: TrustedDevice
+    let manifestCursor: String?
 
     var host: String { lastKnownEndpoint.host }
     var port: Int { lastKnownEndpoint.port }
 
-    init(host: String, port: Int, device: TrustedDevice, endpointUpdatedAt: Date = Date()) {
+    init(
+        host: String,
+        port: Int,
+        device: TrustedDevice,
+        endpointUpdatedAt: Date = Date(),
+        manifestCursor: String? = nil
+    ) {
         self.lastKnownEndpoint = PairedDeviceEndpoint(
             host: host,
             port: port,
             updatedAt: endpointUpdatedAt
         )
         self.device = device
+        self.manifestCursor = manifestCursor
     }
 
-    init(lastKnownEndpoint: PairedDeviceEndpoint, device: TrustedDevice) {
+    init(lastKnownEndpoint: PairedDeviceEndpoint, device: TrustedDevice, manifestCursor: String? = nil) {
         self.lastKnownEndpoint = lastKnownEndpoint
         self.device = device
+        self.manifestCursor = manifestCursor
     }
 
     enum CodingKeys: String, CodingKey {
@@ -51,11 +60,13 @@ struct PairedDeviceSession: Codable, Equatable {
         case port
         case lastKnownEndpoint
         case device
+        case manifestCursor
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         device = try container.decode(TrustedDevice.self, forKey: .device)
+        manifestCursor = try container.decodeIfPresent(String.self, forKey: .manifestCursor)
         if let endpoint = try container.decodeIfPresent(PairedDeviceEndpoint.self, forKey: .lastKnownEndpoint) {
             lastKnownEndpoint = endpoint
             return
@@ -74,6 +85,7 @@ struct PairedDeviceSession: Codable, Equatable {
         try container.encode(lastKnownEndpoint.host, forKey: .host)
         try container.encode(lastKnownEndpoint.port, forKey: .port)
         try container.encode(device, forKey: .device)
+        try container.encodeIfPresent(manifestCursor, forKey: .manifestCursor)
     }
 }
 

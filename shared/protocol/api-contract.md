@@ -75,15 +75,28 @@ iOS calls this endpoint after scanning the Android QR payload.
 ### Manifest
 
 ```http
-GET /v1/manifest?sinceCursor=<cursor>
+GET /v1/manifest?sinceCursor=<incremental-cursor>&pageCursor=<page-cursor>
 ```
 
 Returns metadata available for sync. M0 currently returns photo media only.
 
-Photo manifests are paged. A response may include `pageSize`, `hasMore`, and
-`nextCursor`. When `hasMore` is true, the receiver requests the next page with
-`sinceCursor=<nextCursor>`. Receivers must de-duplicate by `assetId` and stop on
-a missing, empty, or repeated cursor.
+`sinceCursor` is an optional durable high-water mark for the last completely
+acknowledged photo batch. Android compares the cursor's MediaStore
+`DATE_MODIFIED` value and numeric media ID so photos sharing one timestamp are
+not skipped. The response `cursor` is the new high-water mark for the fixed
+manifest snapshot.
+
+Photo manifests are paged independently. A response may include `pageSize`,
+`hasMore`, and `nextCursor`. When `hasMore` is true, the receiver keeps the same
+`sinceCursor` and requests the next page with `pageCursor=<nextCursor>`.
+`pageCursor` includes the snapshot upper bound, so photos added during paging do
+not shift the active result set. Receivers must de-duplicate by `assetId` and
+stop on a missing, empty, or repeated page cursor.
+
+iOS persists the response `cursor` with the paired Android device only after all
+photos in the manifest are terminal and the sync result is accepted by Android.
+Resetting local sync history clears this checkpoint. Legacy `sinceCursor=page:`
+requests remain accepted during the M42 migration.
 
 ### Media Download
 

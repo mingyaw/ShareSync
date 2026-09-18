@@ -50,16 +50,21 @@ final class ManifestClient {
     func fetchManifest(
         from host: String,
         port: Int,
-        cursor: String? = nil,
+        sinceCursor: String? = nil,
+        pageCursor: String? = nil,
         pairingToken: String? = nil,
         signingContext: RequestSigningContext? = nil,
         transportSecurity: PairingTransportSecurity? = nil
     ) async throws -> SyncManifest {
+        let queryItems = [
+            sinceCursor.map { URLQueryItem(name: "sinceCursor", value: $0) },
+            pageCursor.map { URLQueryItem(name: "pageCursor", value: $0) },
+        ].compactMap { $0 }
         guard let url = LocalTransportURLBuilder.url(
             host: host,
             port: port,
             path: "/v1/manifest",
-            queryItems: cursor.map { [URLQueryItem(name: "sinceCursor", value: $0)] },
+            queryItems: queryItems.isEmpty ? nil : queryItems,
             transportSecurity: transportSecurity
         ) else {
             throw ManifestClientError.invalidBaseURL
@@ -91,12 +96,13 @@ final class ManifestClient {
     func fetchAllManifestPages(
         from host: String,
         port: Int,
+        sinceCursor: String? = nil,
         pairingToken: String? = nil,
         signingContext: RequestSigningContext? = nil,
         transportSecurity: PairingTransportSecurity? = nil,
         maximumPages: Int = 50
     ) async throws -> SyncManifest {
-        var cursor: String?
+        var pageCursor: String?
         var firstPage: SyncManifest?
         var media: [MediaAsset] = []
         var seenAssetIds: Set<String> = []
@@ -106,7 +112,8 @@ final class ManifestClient {
             let page = try await fetchManifest(
                 from: host,
                 port: port,
-                cursor: cursor,
+                sinceCursor: sinceCursor,
+                pageCursor: pageCursor,
                 pairingToken: pairingToken,
                 signingContext: signingContext,
                 transportSecurity: transportSecurity
@@ -128,10 +135,10 @@ final class ManifestClient {
             }
             guard let nextCursor = page.nextCursor,
                   !nextCursor.isEmpty,
-                  nextCursor != cursor else {
+                  nextCursor != pageCursor else {
                 throw ManifestClientError.invalidPaginationCursor
             }
-            cursor = nextCursor
+            pageCursor = nextCursor
         }
 
         guard let firstPage else {

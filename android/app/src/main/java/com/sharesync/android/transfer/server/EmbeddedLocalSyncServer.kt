@@ -80,7 +80,8 @@ class EmbeddedLocalSyncServer(
                         router.manifest(
                             headers = request.headers,
                             path = request.path,
-                            cursor = request.queryParameters["sinceCursor"],
+                            sinceCursor = request.queryParameters["sinceCursor"],
+                            pageCursor = request.queryParameters["pageCursor"],
                         )
                     },
                 )

@@ -45,7 +45,8 @@ class LocalSyncRouter(
     suspend fun manifest(
         headers: Map<String, String> = emptyMap(),
         path: String = "/v1/manifest",
-        cursor: String? = null,
+        sinceCursor: String? = null,
+        pageCursor: String? = null,
     ): LocalApiResponse {
         if (!isAuthorized(method = "GET", path = path, body = "", headers = headers)) {
             val response = LocalApiResponse.jsonError(statusCode = 401, errorCode = "SS-AUTH-001")
@@ -54,7 +55,7 @@ class LocalSyncRouter(
         }
 
         val response = LocalApiResponse.json(
-            body = manifestJsonEncoder.encode(manifestProvider.currentManifest(cursor))
+            body = manifestJsonEncoder.encode(manifestProvider.currentManifest(sinceCursor, pageCursor))
         )
         requestActivityTracker?.record("manifest", response.statusCode)
         return response

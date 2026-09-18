@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 photo PoC through M41 versioned sync ledger are complete for the photo-only MVP source-code track.
+Status: M0 photo PoC through M42 incremental photo indexing are complete for the photo-only MVP source-code track.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -16,7 +16,7 @@ The project intentionally uses native implementation:
 
 ## Current Stage
 
-The completed baseline is `M0 - Android to iOS Photo PoC` through `M41 - Versioned Sync Ledger`. The photo-only MVP now includes task-focused navigation, visible batch progress, release transport boundaries, paged photo manifests, resumable streamed media, storage checks, and versioned completion records with legacy migration.
+The completed baseline is `M0 - Android to iOS Photo PoC` through `M42 - Incremental Photo Indexing`. The photo-only MVP now includes task-focused navigation, visible batch progress, release transport boundaries, snapshot-stable incremental photo manifests, resumable streamed media, storage checks, and versioned completion records with legacy migration.
 
 The current codebase contains:
 
@@ -85,6 +85,7 @@ The current codebase contains:
 - Android Beta and Release builds select QR-pinned HTTPS while Debug remains on signed HTTP.
 - Android serves cursor-based photo manifest pages and iOS merges them without duplicate asset IDs.
 - Android and iOS persist sync completion state in versioned envelopes while reading legacy files.
+- Android filters MediaStore with a timestamp-and-ID high-water cursor, while iOS advances the paired-device checkpoint only after a fully acknowledged batch.
 - Support snapshots can be validated and summarized locally for internal beta triage.
 
 M0 validates the riskiest path:
@@ -171,6 +172,7 @@ tasks/
 - [M39 Release Transport Default](docs/m39-release-transport-default.md)
 - [M40 Paged Photo Manifest](docs/m40-paged-photo-manifest.md)
 - [M41 Versioned Sync Ledger](docs/m41-versioned-sync-ledger.md)
+- [M42 Incremental Photo Indexing](docs/m42-incremental-photo-indexing.md)
 - [Privacy Data Summary](docs/privacy-data-summary.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Error Recovery Matrix](docs/error-recovery-matrix.md)
@@ -225,6 +227,7 @@ tasks/
 - [M39 Release Transport Default](tasks/m39-release-transport-default.md)
 - [M40 Paged Photo Manifest](tasks/m40-paged-photo-manifest.md)
 - [M41 Versioned Sync Ledger](tasks/m41-versioned-sync-ledger.md)
+- [M42 Incremental Photo Indexing](tasks/m42-incremental-photo-indexing.md)
 
 ## M0 Rules
 

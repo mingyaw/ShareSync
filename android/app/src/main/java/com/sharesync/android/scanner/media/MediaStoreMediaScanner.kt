@@ -14,12 +14,19 @@ class MediaStoreMediaScanner(
     private val contentResolver: ContentResolver,
     private val sourceDeviceId: String,
 ) : MediaScanner, MediaProvider {
-    override suspend fun scanRecent(limit: Int, offset: Int): List<MediaAsset> {
+    override suspend fun scanRecent(
+        limit: Int,
+        offset: Int,
+        modifiedAfter: MediaScanCursor?,
+        modifiedAtOrBefore: MediaScanCursor?,
+    ): List<MediaAsset> {
         val safeLimit = limit.coerceIn(1, 500)
         return queryRecent(
             collection = MediaStore.Files.getContentUri("external"),
             limit = safeLimit,
             offset = offset.coerceAtLeast(0),
+            modifiedAfter = modifiedAfter,
+            modifiedAtOrBefore = modifiedAtOrBefore,
         )
     }
 
@@ -32,18 +39,34 @@ class MediaStoreMediaScanner(
         return asset.contentUri?.let(Uri::parse)
     }
 
-    private fun queryRecent(collection: Uri, limit: Int, offset: Int): List<MediaAsset> {
-        val selection = "${MediaStore.Files.FileColumns.MEDIA_TYPE} = ?"
-        val selectionArgs = arrayOf(
-            MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE.toString(),
-        )
+    private fun queryRecent(
+        collection: Uri,
+        limit: Int,
+        offset: Int,
+        modifiedAfter: MediaScanCursor?,
+        modifiedAtOrBefore: MediaScanCursor?,
+    ): List<MediaAsset> {
+        val selectionParts = mutableListOf("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ?")
+        val selectionArgs = mutableListOf(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE.toString())
+        modifiedAfter?.let { cursor ->
+            selectionParts += "(${MediaStore.Files.FileColumns.DATE_MODIFIED} > ? OR (${MediaStore.Files.FileColumns.DATE_MODIFIED} = ? AND ${MediaStore.Files.FileColumns._ID} > ?))"
+            selectionArgs += cursor.modifiedAtEpochSeconds.toString()
+            selectionArgs += cursor.modifiedAtEpochSeconds.toString()
+            selectionArgs += cursor.mediaStoreId.toString()
+        }
+        modifiedAtOrBefore?.let { cursor ->
+            selectionParts += "(${MediaStore.Files.FileColumns.DATE_MODIFIED} < ? OR (${MediaStore.Files.FileColumns.DATE_MODIFIED} = ? AND ${MediaStore.Files.FileColumns._ID} <= ?))"
+            selectionArgs += cursor.modifiedAtEpochSeconds.toString()
+            selectionArgs += cursor.modifiedAtEpochSeconds.toString()
+            selectionArgs += cursor.mediaStoreId.toString()
+        }
 
         val queryArgs = Bundle().apply {
-            putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
-            putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs)
+            putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selectionParts.joinToString(" AND "))
+            putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs.toTypedArray())
             putStringArray(
                 ContentResolver.QUERY_ARG_SORT_COLUMNS,
-                arrayOf(MediaStore.Files.FileColumns.DATE_MODIFIED),
+                arrayOf(MediaStore.Files.FileColumns.DATE_MODIFIED, MediaStore.Files.FileColumns._ID),
             )
             putInt(ContentResolver.QUERY_ARG_SORT_DIRECTION, ContentResolver.QUERY_SORT_DIRECTION_DESCENDING)
             putInt(ContentResolver.QUERY_ARG_LIMIT, limit)

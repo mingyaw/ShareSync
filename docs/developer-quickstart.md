@@ -1,8 +1,8 @@
 # Developer Quickstart
 
-Status: M41 developer handoff guide.
+Status: M42 developer handoff guide.
 
-This guide is for local development only. ShareSync M41 remains a photo-only Android-to-iPhone local sync MVP source-code checkpoint and should not be treated as an App Store or Google Play release candidate until deferred physical-device, signing, packaging, privacy declaration, and store review work is completed.
+This guide is for local development only. ShareSync M42 remains a photo-only Android-to-iPhone local sync MVP source-code checkpoint and should not be treated as an App Store or Google Play release candidate until deferred physical-device, signing, packaging, privacy declaration, and store review work is completed.
 
 ## Prerequisites
 
@@ -199,4 +199,5 @@ Use these documents when real-device testing resumes:
 - [M39 Release Transport Default](m39-release-transport-default.md)
 - [M40 Paged Photo Manifest](m40-paged-photo-manifest.md)
 - [M41 Versioned Sync Ledger](m41-versioned-sync-ledger.md)
+- [M42 Incremental Photo Indexing](m42-incremental-photo-indexing.md)
 - [Privacy Data Summary](privacy-data-summary.md)

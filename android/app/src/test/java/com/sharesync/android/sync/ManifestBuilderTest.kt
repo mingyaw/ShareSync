@@ -1,6 +1,7 @@
 package com.sharesync.android.sync
 
 import com.sharesync.android.SuspendBridge
+import com.sharesync.android.scanner.media.MediaScanCursor
 import com.sharesync.android.scanner.media.MediaScanner
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -178,15 +179,15 @@ class ManifestBuilderTest {
 
         val firstPage = SuspendBridge.runBlocking { builder.buildM0Manifest(limit = 2) }
         val secondPage = SuspendBridge.runBlocking {
-            builder.buildM0Manifest(limit = 2, cursor = firstPage.nextCursor)
+            builder.buildM0Manifest(limit = 2, pageCursor = firstPage.nextCursor)
         }
 
         assertEquals(listOf("media-1", "media-2"), firstPage.media.map { it.assetId })
         assertEquals(true, firstPage.hasMore)
-        assertEquals("page:2", firstPage.nextCursor)
+        assertEquals("page-v2:0:0:0:0:2", firstPage.nextCursor)
         assertEquals(listOf("media-3", "media-4"), secondPage.media.map { it.assetId })
         assertEquals(true, secondPage.hasMore)
-        assertEquals("page:4", secondPage.nextCursor)
+        assertEquals("page-v2:0:0:0:0:4", secondPage.nextCursor)
     }
 
     @Test
@@ -201,15 +202,74 @@ class ManifestBuilderTest {
         )
 
         val page = SuspendBridge.runBlocking {
-            builder.buildM0Manifest(limit = 100, cursor = "page:500")
+            builder.buildM0Manifest(limit = 100, pageCursor = "page-v2:0:0:0:0:500")
         }
 
         assertEquals(100, page.media.size)
         assertEquals("media-501", page.media.first().assetId)
         assertEquals("media-600", page.media.last().assetId)
         assertEquals(true, page.hasMore)
-        assertEquals("page:600", page.nextCursor)
+        assertEquals("page-v2:0:0:0:0:600", page.nextCursor)
         assertEquals(2, scanner.requestCount)
+    }
+
+    @Test
+    fun buildM0ManifestUsesIncrementalCursorAndStableSnapshotWindow() {
+        val assets = listOf(
+            mediaStoreAsset(id = 14, modifiedAtSeconds = 1_004),
+            mediaStoreAsset(id = 13, modifiedAtSeconds = 1_003),
+            mediaStoreAsset(id = 12, modifiedAtSeconds = 1_002),
+            mediaStoreAsset(id = 11, modifiedAtSeconds = 1_001),
+        )
+        val scanner = FakeMediaScanner(assets)
+        val builder = ManifestBuilder(
+            sourceDeviceId = "android-device-001",
+            mediaScanner = scanner,
+            syncResultStore = InMemorySyncResultStore(),
+        )
+
+        val firstPage = SuspendBridge.runBlocking {
+            builder.buildM0Manifest(limit = 2, sinceCursor = "media-v1:1000:10")
+        }
+        val secondPage = SuspendBridge.runBlocking {
+            builder.buildM0Manifest(
+                limit = 2,
+                sinceCursor = "media-v1:1000:10",
+                pageCursor = firstPage.nextCursor,
+            )
+        }
+
+        assertEquals("media-v1:1004:14", firstPage.cursor)
+        assertEquals(listOf("mediastore-1-14", "mediastore-1-13"), firstPage.media.map { it.assetId })
+        assertEquals("page-v2:1000:10:1004:14:2", firstPage.nextCursor)
+        assertEquals("media-v1:1004:14", secondPage.cursor)
+        assertEquals(listOf("mediastore-1-12", "mediastore-1-11"), secondPage.media.map { it.assetId })
+        assertEquals(false, secondPage.hasMore)
+        assertEquals(MediaScanCursor(1_000, 10), scanner.lastModifiedAfter)
+        assertEquals(MediaScanCursor(1_004, 14), scanner.lastModifiedAtOrBefore)
+    }
+
+    @Test
+    fun buildM0ManifestUsesMediaStoreIdToBreakModificationTimeTies() {
+        val scanner = FakeMediaScanner(
+            listOf(
+                mediaStoreAsset(id = 12, modifiedAtSeconds = 1_000),
+                mediaStoreAsset(id = 11, modifiedAtSeconds = 1_000),
+                mediaStoreAsset(id = 10, modifiedAtSeconds = 1_000),
+                mediaStoreAsset(id = 99, modifiedAtSeconds = 999),
+            )
+        )
+
+        val manifest = SuspendBridge.runBlocking {
+            ManifestBuilder(
+                sourceDeviceId = "android-device-001",
+                mediaScanner = scanner,
+                syncResultStore = InMemorySyncResultStore(),
+            ).buildM0Manifest(limit = 100, sinceCursor = "media-v1:1000:10")
+        }
+
+        assertEquals(listOf("mediastore-1-12", "mediastore-1-11"), manifest.media.map { it.assetId })
+        assertEquals("media-v1:1000:12", manifest.cursor)
     }
 
     @Test
@@ -319,6 +379,12 @@ class ManifestBuilderTest {
             size = 1024,
         )
     }
+
+    private fun mediaStoreAsset(id: Long, modifiedAtSeconds: Long): MediaAsset {
+        return mediaAsset("mediastore-1-$id").copy(
+            modifiedAt = java.time.Instant.ofEpochSecond(modifiedAtSeconds).toString(),
+        )
+    }
 }
 
 private class FakeMediaScanner(
@@ -328,10 +394,39 @@ private class FakeMediaScanner(
         private set
     var requestCount: Int = 0
         private set
+    var lastModifiedAfter: MediaScanCursor? = null
+        private set
+    var lastModifiedAtOrBefore: MediaScanCursor? = null
+        private set
 
-    override suspend fun scanRecent(limit: Int, offset: Int): List<MediaAsset> {
+    override suspend fun scanRecent(
+        limit: Int,
+        offset: Int,
+        modifiedAfter: MediaScanCursor?,
+        modifiedAtOrBefore: MediaScanCursor?,
+    ): List<MediaAsset> {
         lastLimit = limit
         requestCount += 1
-        return assets.drop(offset).take(limit)
+        lastModifiedAfter = modifiedAfter
+        lastModifiedAtOrBefore = modifiedAtOrBefore
+        return assets
+            .filter { asset ->
+                val cursor = asset.scanCursor() ?: return@filter modifiedAfter == null && modifiedAtOrBefore == null
+                (modifiedAfter == null || cursor > modifiedAfter) &&
+                    (modifiedAtOrBefore == null || cursor <= modifiedAtOrBefore)
+            }
+            .drop(offset)
+            .take(limit)
+    }
+
+    private fun MediaAsset.scanCursor(): MediaScanCursor? {
+        val seconds = modifiedAt?.let { runCatching { java.time.Instant.parse(it).epochSecond }.getOrNull() } ?: return null
+        val id = assetId.substringAfterLast("-").toLongOrNull() ?: return null
+        return MediaScanCursor(seconds, id)
+    }
+
+    private operator fun MediaScanCursor.compareTo(other: MediaScanCursor): Int {
+        val modifiedComparison = modifiedAtEpochSeconds.compareTo(other.modifiedAtEpochSeconds)
+        return if (modifiedComparison != 0) modifiedComparison else mediaStoreId.compareTo(other.mediaStoreId)
     }
 }
