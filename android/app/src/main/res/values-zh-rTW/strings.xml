@@ -115,7 +115,12 @@
     <string name="home_same_network">請讓兩支手機連上同一個 Wi-Fi 或 Android 熱點。</string>
     <string name="activity_empty_title">同步紀錄從這裡開始</string>
     <string name="activity_empty_body">iPhone 接收照片後，已完成與需要處理的紀錄會顯示在這裡。</string>
+    <string name="activity_photos_completed">已完成照片</string>
+    <string name="activity_photos_attention">需要處理</string>
     <string name="settings_connection">連線狀態</string>
+    <string name="settings_photo_sharing">照片分享</string>
+    <string name="settings_sharing_on">已在此網路提供給 iPhone</string>
+    <string name="settings_sharing_off">目前未提供給 iPhone</string>
     <string name="settings_local_network">本機網路</string>
     <string name="settings_photo_access">照片權限</string>
     <string name="settings_notifications">通知</string>

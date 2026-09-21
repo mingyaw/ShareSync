@@ -16,11 +16,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -133,6 +133,7 @@ fun ShareSyncApp(
                     MainDestination.ACTIVITY -> ActivityPage(activity)
                     MainDestination.SETTINGS -> SettingsPage(
                         state = settings,
+                        onStart = onStart,
                         onStop = onStop,
                         onGrantPhotos = onGrantPhotos,
                         onGrantNotifications = onGrantNotifications,
@@ -158,6 +159,27 @@ private fun ActivityPage(state: ActivityUiState) {
             SectionHeading(stringResource(R.string.activity_empty_title))
             Text(stringResource(R.string.activity_empty_body), color = MaterialTheme.colorScheme.onSurfaceVariant)
         } else {
+            val completed = state.history.sumOf { it.completed }
+            val failed = state.history.sumOf { it.failed }
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.secondaryContainer,
+            ) {
+                Row(modifier = Modifier.padding(20.dp), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                    HistoryMetric(
+                        value = completed,
+                        label = stringResource(R.string.activity_photos_completed),
+                        modifier = Modifier.weight(1f),
+                    )
+                    HistoryMetric(
+                        value = failed,
+                        label = stringResource(R.string.activity_photos_attention),
+                        modifier = Modifier.weight(1f),
+                        attention = failed > 0,
+                    )
+                }
+            }
             SectionHeading(stringResource(R.string.ui_recent_activity))
             state.history.forEach { item ->
                 HorizontalDivider()
@@ -181,6 +203,7 @@ private fun ActivityPage(state: ActivityUiState) {
 @Composable
 private fun SettingsPage(
     state: SettingsUiState,
+    onStart: () -> Unit,
     onStop: () -> Unit,
     onGrantPhotos: () -> Unit,
     onGrantNotifications: () -> Unit,
@@ -193,17 +216,13 @@ private fun SettingsPage(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(22.dp)) {
         SectionHeading(stringResource(R.string.settings_connection))
+        SharingRow(state.sharing) { enabled -> if (enabled) onStart() else onStop() }
         SettingsRow(stringResource(R.string.settings_local_network), state.networkReady)
         if (!state.networkReady) {
             Text(stringResource(R.string.home_same_network), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         SettingsRow(stringResource(R.string.settings_photo_access), state.photoAccess, onGrantPhotos)
         SettingsRow(stringResource(R.string.settings_notifications), state.notificationAccess, onGrantNotifications)
-        if (state.sharing) {
-            OutlinedButton(onClick = onStop, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.sync_stop_server))
-            }
-        }
         HorizontalDivider()
         SectionHeading(stringResource(R.string.ui_connection_tools))
         Text(stringResource(R.string.settings_pairing_description), color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -237,6 +256,46 @@ private fun SettingsPage(
             }
         }
         Spacer(modifier = Modifier.padding(4.dp))
+    }
+}
+
+@Composable
+private fun HistoryMetric(
+    value: Int,
+    label: String,
+    modifier: Modifier = Modifier,
+    attention: Boolean = false,
+) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            value.toString(),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = if (attention) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+        )
+        Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun SharingRow(enabled: Boolean, onChange: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Text(stringResource(R.string.settings_photo_sharing), fontWeight = FontWeight.SemiBold)
+            Text(
+                stringResource(if (enabled) R.string.settings_sharing_on else R.string.settings_sharing_off),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(
+            checked = enabled,
+            onCheckedChange = onChange,
+        )
     }
 }
 

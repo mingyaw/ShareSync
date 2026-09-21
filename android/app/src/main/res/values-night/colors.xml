@@ -6,6 +6,8 @@
     <color name="sharesync_success">#4ADE80</color>
     <color name="sharesync_warning">#E5A46D</color>
     <color name="sharesync_info">#8FC9EA</color>
+    <color name="sharesync_error">#FFB4AB</color>
+    <color name="sharesync_error_container">#5F1411</color>
     <color name="sharesync_text_primary">#F1F6F4</color>
     <color name="sharesync_text_secondary">#B4C4C1</color>
     <color name="sharesync_background">#101A1A</color>

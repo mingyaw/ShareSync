@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
     ) {
         val shouldStart = startSharingAfterPermission
         startSharingAfterPermission = false
-        if (shouldStart && hasMediaPermission()) startServer() else refreshUi()
+        if (shouldStart && hasMediaPermission()) enablePhotoSharing() else refreshUi()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,7 +88,7 @@ class MainActivity : ComponentActivity() {
         applySnapshot(sharingCoordinator.restore())
         renderProductContent()
         refreshUi()
-        if (hasMediaPermission() && !isServerRunning) {
+        if (hasMediaPermission() && isPhotoSharingEnabled() && !isServerRunning) {
             startServer()
         }
     }
@@ -129,8 +129,8 @@ class MainActivity : ComponentActivity() {
                         onGrant = ::requestPhotoPermissions,
                         onGrantPhotos = ::requestMediaPermission,
                         onGrantNotifications = ::requestNotificationPermission,
-                        onStart = ::startServer,
-                        onStop = ::stopServer,
+                        onStart = ::enablePhotoSharing,
+                        onStop = ::disablePhotoSharing,
                         onCopyPairing = ::copyPairingPayload,
                         onCopyEndpoint = ::copyEndpoint,
                         onCopyResult = ::copySyncResult,
@@ -205,7 +205,7 @@ class MainActivity : ComponentActivity() {
             networkReady = endpointUrl != null,
             photoAccess = hasMediaPermission(),
             notificationAccess = hasNotificationPermission(),
-            sharing = isServerRunning,
+            sharing = isPhotoSharingEnabled(),
             endpoint = endpoint,
             requestActivity = currentRequestActivity?.let(::formatRequestActivity)
                 ?: getString(R.string.sync_request_activity_unavailable),
@@ -237,7 +237,7 @@ class MainActivity : ComponentActivity() {
             .toTypedArray()
 
         if (missing.isEmpty()) {
-            if (startSharing && hasMediaPermission()) startServer()
+            if (startSharing && hasMediaPermission()) enablePhotoSharing()
             refreshUi()
             return
         }
@@ -304,6 +304,30 @@ class MainActivity : ComponentActivity() {
 
     private fun stopServer() {
         sharingCoordinator.stop()
+    }
+
+    private fun enablePhotoSharing() {
+        setPhotoSharingEnabled(true)
+        startServer()
+        refreshUi()
+    }
+
+    private fun disablePhotoSharing() {
+        setPhotoSharingEnabled(false)
+        stopServer()
+        refreshUi()
+    }
+
+    private fun isPhotoSharingEnabled(): Boolean {
+        return getSharedPreferences(SHARING_PREFERENCES, Context.MODE_PRIVATE)
+            .getBoolean(SHARING_ENABLED_KEY, true)
+    }
+
+    private fun setPhotoSharingEnabled(enabled: Boolean) {
+        getSharedPreferences(SHARING_PREFERENCES, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(SHARING_ENABLED_KEY, enabled)
+            .apply()
     }
 
     private fun copyPairingPayload() {
@@ -528,5 +552,7 @@ class MainActivity : ComponentActivity() {
         const val STATE_ADVANCED_SUPPORT_EXPANDED = "sharesync.advancedSupportExpanded"
         const val ONBOARDING_PREFERENCES = "sharesync_onboarding"
         const val ONBOARDING_COMPLETE_KEY = "completed"
+        const val SHARING_PREFERENCES = "sharesync_sharing"
+        const val SHARING_ENABLED_KEY = "enabled"
     }
 }

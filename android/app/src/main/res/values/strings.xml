@@ -115,7 +115,12 @@
     <string name="home_same_network">Keep both phones on the same Wi-Fi or Android hotspot.</string>
     <string name="activity_empty_title">Your sync history starts here</string>
     <string name="activity_empty_body">After iPhone receives photos, completed transfers and items needing attention will appear here.</string>
+    <string name="activity_photos_completed">Photos completed</string>
+    <string name="activity_photos_attention">Need attention</string>
     <string name="settings_connection">Connection</string>
+    <string name="settings_photo_sharing">Photo sharing</string>
+    <string name="settings_sharing_on">Available to iPhone on this network</string>
+    <string name="settings_sharing_off">Not available to iPhone</string>
     <string name="settings_local_network">Local network</string>
     <string name="settings_photo_access">Photo access</string>
     <string name="settings_notifications">Notifications</string>
