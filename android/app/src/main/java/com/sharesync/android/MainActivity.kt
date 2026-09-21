@@ -1,32 +1,25 @@
 package com.sharesync.android
 
 import android.Manifest
-import android.app.Activity
 import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.res.ColorStateList
 import android.content.pm.PackageManager
-import android.graphics.Typeface
-import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
-import android.view.Gravity
-import android.view.View
-import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.ScrollView
-import android.widget.TextView
-import com.sharesync.android.pairing.QrCodeBitmapFactory
+import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import com.sharesync.android.security.SharedPreferencesDeviceIdentityStore
 import com.sharesync.android.runtime.PhotoSharingCoordinator
 import com.sharesync.android.runtime.PhotoSharingCoordinatorEvent
 import com.sharesync.android.runtime.PhotoSharingSnapshot
-import com.sharesync.android.sync.SyncEvent
 import com.sharesync.android.sync.SyncHistorySummary
 import com.sharesync.android.sync.SyncItemStatus
 import com.sharesync.android.sync.SyncResult
@@ -36,40 +29,18 @@ import com.sharesync.android.support.AndroidSupportSnapshotInput
 import com.sharesync.android.transfer.server.LocalRequestActivity
 import com.sharesync.android.ui.MainDestination
 import com.sharesync.android.ui.PhotoSharingScreenState
-import com.sharesync.android.ui.ShareSyncTheme
+import com.sharesync.android.ui.PhotoSyncHomeUiState
+import com.sharesync.android.ui.ActivityUiState
+import com.sharesync.android.ui.HistoryUiItem
+import com.sharesync.android.ui.SettingsUiState
+import com.sharesync.android.ui.ShareSyncApp
+import com.sharesync.android.ui.ShareSyncComposeTheme
 import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
-class MainActivity : Activity() {
-    private val shareSyncTheme: ShareSyncTheme by lazy { ShareSyncTheme.from(this) }
-
-    private lateinit var statusText: TextView
-    private lateinit var phaseText: TextView
-    private lateinit var nextStepText: TextView
-    private lateinit var endpointText: TextView
-    private lateinit var permissionText: TextView
-    private lateinit var notificationPermissionText: TextView
-    private lateinit var screenLockText: TextView
-    private lateinit var localNetworkText: TextView
-    private lateinit var transportSecurityText: TextView
-    private lateinit var manifestSummaryText: TextView
-    private lateinit var syncEventText: TextView
-    private lateinit var syncHistoryContainer: LinearLayout
-    private lateinit var pairingInstructionText: TextView
-    private lateinit var requestActivityText: TextView
-    private lateinit var syncResultText: TextView
-    private lateinit var pairingQrImage: ImageView
-    private lateinit var pairingPanel: LinearLayout
-    private lateinit var advancedSupportPanel: LinearLayout
-    private lateinit var toggleAdvancedSupportButton: Button
-    private lateinit var grantButton: Button
-    private lateinit var startButton: Button
-    private lateinit var stopButton: Button
-    private lateinit var copyEndpointButton: Button
-    private lateinit var copyPairingButton: Button
-    private lateinit var copySyncResultButton: Button
-    private lateinit var copyDiagnosticsButton: Button
-    private lateinit var clearSyncStateButton: Button
-
+class MainActivity : ComponentActivity() {
     private lateinit var sharingCoordinator: PhotoSharingCoordinator
     private var isServerRunning = false
     private var isServerStarting = false
@@ -78,12 +49,23 @@ class MainActivity : Activity() {
     private var currentTransportSecurityMode: PhotoSharingTransportSecurityMode = PhotoSharingTransportSecurityMode.SIGNED_HTTP
     private var currentManifestPhotoCount: Int? = null
     private var currentSyncResult: SyncResult? = null
-    private var currentSyncEvent: SyncEvent? = null
     private var currentSyncHistory: List<SyncHistorySummary> = emptyList()
     private var currentRequestActivity: LocalRequestActivity? = null
     private var hasConnectedPeer = false
-    private var currentSection = MainDestination.SYNC
-    private var isAdvancedSupportExpanded = false
+    private var currentSection by mutableStateOf(MainDestination.SYNC)
+    private var isAdvancedSupportExpanded by mutableStateOf(false)
+    private var syncHomeState by mutableStateOf(PhotoSyncHomeUiState())
+    private var activityUiState by mutableStateOf(ActivityUiState())
+    private var settingsUiState by mutableStateOf(SettingsUiState())
+    private var feedbackMessage by mutableStateOf<String?>(null)
+    private var startSharingAfterPermission = false
+    private val photoPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions(),
+    ) {
+        val shouldStart = startSharingAfterPermission
+        startSharingAfterPermission = false
+        if (shouldStart && hasMediaPermission()) startServer() else refreshUi()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,6 +73,7 @@ class MainActivity : Activity() {
             ?.getString(STATE_MAIN_SECTION)
             ?.let { stored -> MainDestination.entries.firstOrNull { it.name == stored } }
             ?: MainDestination.SYNC
+        if (!hasCompletedOnboarding()) currentSection = MainDestination.SYNC
         isAdvancedSupportExpanded = savedInstanceState
             ?.getBoolean(STATE_ADVANCED_SUPPORT_EXPANDED)
             ?: false
@@ -103,7 +86,7 @@ class MainActivity : Activity() {
             },
         )
         applySnapshot(sharingCoordinator.restore())
-        renderContent()
+        renderProductContent()
         refreshUi()
         if (hasMediaPermission() && !isServerRunning) {
             startServer()
@@ -126,420 +109,41 @@ class MainActivity : Activity() {
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray,
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_MEDIA_PERMISSION) {
-            if (hasMediaPermission()) {
-                startServer()
-            } else {
-                refreshUi()
-            }
-        }
-    }
-
-    private fun renderContent() {
-        val density = resources.displayMetrics.density
-        val padding = (20 * density).toInt()
-
-        val screen = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setBackgroundColor(shareSyncTheme.background)
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
-            )
-        }
-
-        val scrollView = ScrollView(this).apply {
-            isFillViewport = true
-            setBackgroundColor(shareSyncTheme.background)
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                0,
-                1f,
-            ).apply { height = 0 }
-        }
-
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.TOP
-            setPadding(padding, padding, padding, padding)
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            )
-        }
-
-        val brand = TextView(this).apply {
-            text = getString(R.string.app_name)
-            textSize = 15f
-            setTextColor(shareSyncTheme.primary)
-            typeface = Typeface.DEFAULT_BOLD
-            setPadding(0, 0, 0, (8 * density).toInt())
-        }
-        val title = TextView(this).apply {
-            text = getString(currentSection.titleRes)
-            textSize = 26f
-            setTextColor(shareSyncTheme.textPrimary)
-            typeface = Typeface.DEFAULT_BOLD
-            isAccessibilityHeading = true
-        }
-        val subtitle = TextView(this).apply {
-            text = getString(currentSection.subtitleRes)
-            textSize = 15f
-            setTextColor(shareSyncTheme.textSecondary)
-            setPadding(0, (4 * density).toInt(), 0, (18 * density).toInt())
-        }
-
-        statusText = bodyText()
-        statusText.accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
-        phaseText = bodyText()
-        phaseText.apply {
-            textSize = 22f
-            typeface = Typeface.DEFAULT_BOLD
-            setTextColor(shareSyncTheme.textPrimary)
-            isAccessibilityHeading = true
-        }
-        nextStepText = bodyText().apply {
-            textSize = 17f
-            typeface = Typeface.DEFAULT_BOLD
-            setTextColor(shareSyncTheme.textPrimary)
-            accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
-        }
-        endpointText = bodyText()
-        permissionText = bodyText()
-        notificationPermissionText = bodyText()
-        screenLockText = bodyText()
-        localNetworkText = bodyText()
-        transportSecurityText = bodyText()
-        manifestSummaryText = bodyText()
-        syncEventText = bodyText()
-        syncHistoryContainer = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-        }
-        pairingInstructionText = bodyText()
-        requestActivityText = bodyText()
-        syncResultText = bodyText()
-        pairingQrImage = ImageView(this).apply {
-            adjustViewBounds = true
-            contentDescription = getString(R.string.pairing_qr_accessibility)
-            background = panelBackground(accentColor = shareSyncTheme.primary, filled = false)
-            setPadding(8, 8, 8, 8)
-            visibility = ImageView.GONE
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ).apply {
-                topMargin = (16 * density).toInt()
-            }
-        }
-
-        grantButton = Button(this).apply {
-            text = getString(R.string.sync_grant_permissions)
-            setOnClickListener { requestPhotoPermissions() }
-            fullWidthButtonLayout(iconRes = R.drawable.ic_action_photo)
-        }
-
-        startButton = Button(this).apply {
-            text = getString(R.string.sync_start_server)
-            setOnClickListener { startServer() }
-            fullWidthButtonLayout(iconRes = R.drawable.ic_action_play)
-        }
-
-        stopButton = Button(this).apply {
-            text = getString(R.string.sync_stop_server)
-            setOnClickListener { stopServer() }
-            fullWidthButtonLayout(emphasized = false, iconRes = R.drawable.ic_action_stop)
-        }
-
-        copyEndpointButton = Button(this).apply {
-            text = getString(R.string.sync_copy_endpoint)
-            setOnClickListener { copyEndpoint() }
-            fullWidthButtonLayout(emphasized = false, iconRes = R.drawable.ic_action_copy)
-        }
-
-        copyPairingButton = Button(this).apply {
-            text = getString(R.string.sync_copy_pairing_payload)
-            setOnClickListener { copyPairingPayload() }
-            fullWidthButtonLayout(emphasized = false, iconRes = R.drawable.ic_action_copy)
-        }
-
-        copySyncResultButton = Button(this).apply {
-            text = getString(R.string.sync_copy_sync_result)
-            setOnClickListener { copySyncResult() }
-            fullWidthButtonLayout(emphasized = false, iconRes = R.drawable.ic_action_copy)
-        }
-
-        copyDiagnosticsButton = Button(this).apply {
-            text = getString(R.string.diagnostics_copy_diagnostics)
-            setOnClickListener { copyDiagnosticsSummary() }
-            fullWidthButtonLayout(emphasized = false, iconRes = R.drawable.ic_action_copy)
-        }
-
-        clearSyncStateButton = Button(this).apply {
-            text = getString(R.string.sync_clear_sync_state)
-            setOnClickListener { showClearSyncStateConfirmation() }
-            fullWidthButtonLayout(emphasized = false, iconRes = R.drawable.ic_action_delete)
-        }
-        toggleAdvancedSupportButton = Button(this).apply {
-            setOnClickListener {
-                isAdvancedSupportExpanded = !isAdvancedSupportExpanded
-                updateAdvancedSupportVisibility()
-            }
-            fullWidthButtonLayout(emphasized = false, iconRes = R.drawable.ic_action_expand)
-        }
-
-        root.addView(brand)
-        root.addView(title)
-        root.addView(subtitle)
-        if (currentSection == MainDestination.SYNC && !hasCompletedOnboarding()) {
-            val onboardingText = bodyText().apply {
-                text = getString(R.string.onboarding_body)
-            }
-            val onboardingPrivacyText = bodyText().apply {
-                text = getString(R.string.onboarding_privacy)
-            }
-            val onboardingButton = Button(this).apply {
-                text = getString(R.string.onboarding_continue)
-                setOnClickListener {
-                    completeOnboarding()
-                    renderContent()
-                    refreshUi()
-                }
-                fullWidthButtonLayout()
-            }
-            root.addView(
-                productPanel(
-                    title = getString(R.string.onboarding_title),
-                    accentColor = shareSyncTheme.info,
-                    children = listOf(onboardingText, onboardingPrivacyText, onboardingButton),
-                ),
-            )
-        }
-        when (currentSection) {
-            MainDestination.SYNC -> {
-                root.addView(
-                    productPanel(
-                        title = getString(R.string.sync_panel_summary),
-                        accentColor = shareSyncTheme.primary,
-                        children = listOf(
-                            phaseText,
-                            statusText,
-                            manifestSummaryText,
-                            grantButton,
-                            startButton,
-                            stopButton,
-                            nextStepText,
-                        ),
-                    ),
-                )
-                pairingPanel = productPanel(
-                    title = getString(R.string.sync_panel_pairing),
-                    accentColor = shareSyncTheme.info,
-                    children = listOf(pairingInstructionText, pairingQrImage),
-                )
-                root.addView(pairingPanel)
-            }
-
-            MainDestination.ACTIVITY -> {
-                root.addView(
-                    productPanel(
-                        title = getString(R.string.ui_recent_activity),
-                        accentColor = shareSyncTheme.primary,
-                        children = listOf(syncEventText, syncHistoryContainer, syncResultText),
-                    ),
-                )
-            }
-
-            MainDestination.SETTINGS -> {
-                root.addView(
-                    productPanel(
-                        title = getString(R.string.ui_privacy_connection),
-                        accentColor = shareSyncTheme.info,
-                        children = listOf(
-                            bodyText().apply { text = getString(R.string.privacy_summary) },
-                            bodyText().apply { text = getString(R.string.privacy_storage) },
-                            localNetworkText,
-                            permissionText,
-                            notificationPermissionText,
-                            screenLockText,
-                            transportSecurityText,
-                        ),
-                    ),
-                )
-                root.addView(
-                    productPanel(
-                        title = getString(R.string.ui_connection_tools),
-                        accentColor = shareSyncTheme.warning,
-                        children = listOf(copyPairingButton),
-                    ),
-                )
-                root.addView(toggleAdvancedSupportButton)
-                advancedSupportPanel = productPanel(
-                    title = getString(R.string.sync_panel_diagnostics),
-                    accentColor = shareSyncTheme.textSecondary,
-                    children = listOf(
-                        endpointText,
-                        requestActivityText,
-                        copyEndpointButton,
-                        copySyncResultButton,
-                        copyDiagnosticsButton,
-                        clearSyncStateButton,
-                    ),
-                )
-                root.addView(advancedSupportPanel)
-            }
-        }
-        scrollView.addView(root)
-        screen.addView(scrollView)
-        screen.addView(bottomNavigation())
-        setContentView(screen)
-    }
-
-    private fun bottomNavigation(): LinearLayout {
-        val density = resources.displayMetrics.density
-        return LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER
-            setPadding(
-                (8 * density).toInt(),
-                (6 * density).toInt(),
-                (8 * density).toInt(),
-                (8 * density).toInt(),
-            )
-            setBackgroundColor(shareSyncTheme.surface)
-            elevation = 8 * density
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            )
-            MainDestination.entries.forEach { section ->
-                addView(Button(context).apply {
-                    text = getString(section.navigationRes)
-                    setCompoundDrawablesRelativeWithIntrinsicBounds(0, section.iconRes, 0, 0)
-                    compoundDrawableTintList = ColorStateList.valueOf(
-                        if (section == currentSection) shareSyncTheme.primary else shareSyncTheme.textSecondary,
-                    )
-                    compoundDrawablePadding = (3 * density).toInt()
-                    isAllCaps = false
-                    textSize = 13f
-                    setTextColor(if (section == currentSection) shareSyncTheme.primary else shareSyncTheme.textSecondary)
-                    typeface = if (section == currentSection) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
-                    minHeight = (56 * density).toInt()
-                    background = if (section == currentSection) {
-                        panelBackground(accentColor = shareSyncTheme.primary)
-                    } else {
-                        GradientDrawable().apply { setColor(shareSyncTheme.surface) }
-                    }
-                    layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
-                        marginStart = (3 * density).toInt()
-                        marginEnd = (3 * density).toInt()
-                    }
-                    setOnClickListener {
-                        if (currentSection != section) {
-                            currentSection = section
-                            renderContent()
+    private fun renderProductContent() {
+        setContentView(ComposeView(this).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+            setContent {
+                ShareSyncComposeTheme {
+                    ShareSyncApp(
+                        destination = currentSection,
+                        home = syncHomeState,
+                        activity = activityUiState,
+                        settings = settingsUiState,
+                        feedbackMessage = feedbackMessage,
+                        onFeedbackShown = { feedbackMessage = null },
+                        onDestinationChange = { currentSection = it },
+                        onContinue = {
+                            completeOnboarding()
+                            requestPhotoPermissions()
+                        },
+                        onGrant = ::requestPhotoPermissions,
+                        onGrantPhotos = ::requestMediaPermission,
+                        onGrantNotifications = ::requestNotificationPermission,
+                        onStart = ::startServer,
+                        onStop = ::stopServer,
+                        onCopyPairing = ::copyPairingPayload,
+                        onCopyEndpoint = ::copyEndpoint,
+                        onCopyResult = ::copySyncResult,
+                        onCopyDiagnostics = ::copyDiagnosticsSummary,
+                        onClearHistory = ::showClearSyncStateConfirmation,
+                        onToggleAdvanced = {
+                            isAdvancedSupportExpanded = !isAdvancedSupportExpanded
                             refreshUi()
-                        }
-                    }
-                })
+                        },
+                    )
+                }
             }
-        }
-    }
-
-    private fun bodyText(): TextView {
-        return TextView(this).apply {
-            textSize = 16f
-            setTextColor(shareSyncTheme.textSecondary)
-            setLineSpacing(0f, 1.12f)
-            setPadding(0, (8 * resources.displayMetrics.density).toInt(), 0, 0)
-        }
-    }
-
-    private fun productPanel(
-        title: String,
-        accentColor: Int = shareSyncTheme.primary,
-        children: List<android.view.View>,
-    ): LinearLayout {
-        val density = resources.displayMetrics.density
-        return LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(
-                (16 * density).toInt(),
-                (14 * density).toInt(),
-                (16 * density).toInt(),
-                (16 * density).toInt(),
-            )
-            background = panelBackground(accentColor = accentColor)
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ).apply {
-                bottomMargin = (14 * density).toInt()
-            }
-
-            addView(TextView(context).apply {
-                text = title
-                textSize = 16f
-                typeface = Typeface.DEFAULT_BOLD
-                setTextColor(accentColor)
-                isAccessibilityHeading = true
-                setPadding(0, 0, 0, (8 * density).toInt())
-            })
-            children.forEach(::addView)
-        }
-    }
-
-    private fun panelBackground(accentColor: Int, filled: Boolean = true): GradientDrawable {
-        val density = resources.displayMetrics.density
-        return GradientDrawable().apply {
-            setColor(if (filled) shareSyncTheme.surface else shareSyncTheme.qrSurface)
-            cornerRadius = 8 * density
-            setStroke(1, if (filled) shareSyncTheme.divider else accentColor)
-        }
-    }
-
-    private fun Button.fullWidthButtonLayout(
-        emphasized: Boolean = true,
-        iconRes: Int? = null,
-    ) {
-        val density = resources.displayMetrics.density
-        isAllCaps = false
-        minHeight = (48 * density).toInt()
-        val enabledBackground = if (emphasized) shareSyncTheme.primary else shareSyncTheme.surfaceAlt
-        val enabledText = if (emphasized) shareSyncTheme.onPrimary else shareSyncTheme.primary
-        val states = arrayOf(
-            intArrayOf(-android.R.attr.state_enabled),
-            intArrayOf(),
-        )
-        backgroundTintList = ColorStateList(
-            states,
-            intArrayOf(shareSyncTheme.divider, enabledBackground),
-        )
-        setTextColor(
-            ColorStateList(
-                states,
-                intArrayOf(shareSyncTheme.textSecondary, enabledText),
-            ),
-        )
-        if (iconRes != null) {
-            setCompoundDrawablesRelativeWithIntrinsicBounds(iconRes, 0, 0, 0)
-            compoundDrawablePadding = (8 * density).toInt()
-            compoundDrawableTintList = ColorStateList(
-                states,
-                intArrayOf(shareSyncTheme.textSecondary, enabledText),
-            )
-        }
-        layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-        ).apply {
-            topMargin = (10 * density).toInt()
-        }
+        })
     }
 
     private fun refreshUi(message: String? = null) {
@@ -553,110 +157,93 @@ class MainActivity : Activity() {
         val endpoint = endpointUrl?.let { getString(R.string.sync_endpoint, it) }
             ?: getString(R.string.sync_endpoint_unavailable)
 
+        if (message != null) feedbackMessage = message
         val status = when {
-            message != null -> message
+            isServerRunning && currentManifestPhotoCount == 0 && currentSyncResult == null ->
+                getString(R.string.home_sharing_empty)
             isServerRunning -> getString(R.string.sync_status_running)
             else -> getString(R.string.sync_status_ready)
         }
 
-        statusText.text = status
-        statusText.setTextColor(
-            when {
-                isServerRunning -> shareSyncTheme.success
-                message != null -> shareSyncTheme.info
-                else -> shareSyncTheme.textSecondary
+        syncHomeState = PhotoSyncHomeUiState(
+            phase = if (screenState.phase == PhotoSharingPhase.TRANSFER_COMPLETE && currentSyncResult == null) {
+                getString(R.string.sync_phase_ready_to_pair)
+            } else {
+                phaseStatus(screenState.phase)
+            },
+            status = status,
+            photoCount = currentManifestPhotoCount,
+            photoStatus = if (currentManifestPhotoCount == 0 && currentSyncResult == null) {
+                getString(R.string.home_no_photos)
+            } else {
+                currentManifestPhotoCount?.let(::manifestTransferStatus).orEmpty()
+            },
+            guidance = nextStepInstruction(),
+            pairingPayload = currentPairingPayloadJson,
+            showPairing = screenState.showPairingPanel,
+            showOnboarding = !hasCompletedOnboarding(),
+            showGrant = screenState.showPhotoAccessAction,
+            showStart = screenState.showStartAction,
+            startEnabled = screenState.startActionEnabled,
+            isRunning = isServerRunning,
+            needsAttention = screenState.phase == PhotoSharingPhase.RETRY_REQUIRED,
+        )
+        activityUiState = ActivityUiState(
+            latestResult = currentSyncResult?.let(::formatSyncResult)
+                ?: getString(R.string.sync_result_unavailable),
+            history = currentSyncHistory.map { summary ->
+                HistoryUiItem(
+                    date = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
+                        .withLocale(resources.configuration.locales[0])
+                        .format(Instant.ofEpochMilli(summary.recordedAtEpochMillis).atZone(ZoneId.systemDefault())),
+                    completed = summary.successfulCount,
+                    failed = summary.failedCount,
+                )
             },
         )
-        phaseText.text = phaseStatus(screenState.phase)
-        phaseText.setTextColor(if (isServerRunning) shareSyncTheme.primary else shareSyncTheme.textSecondary)
-        nextStepText.text = getString(R.string.next_step, nextStepInstruction())
-        endpointText.text = endpoint
-        permissionText.text = if (hasMediaPermission()) {
-            getString(R.string.sync_permission_granted)
-        } else {
-            getString(R.string.sync_permission_missing)
-        }
-        notificationPermissionText.text = if (hasNotificationPermission()) {
-            getString(R.string.sync_notification_permission_granted)
-        } else {
-            getString(R.string.sync_notification_permission_missing)
-        }
-        screenLockText.text = if (isServerRunning) {
-            getString(R.string.sync_screen_lock_paused)
-        } else {
-            getString(R.string.sync_screen_lock_normal)
-        }
-        localNetworkText.text = if (endpointUrl == null) {
-            getString(R.string.readiness_local_network_unavailable)
-        } else {
-            getString(R.string.readiness_local_network_ready)
-        }
-        transportSecurityText.text = transportSecurityStatusText()
-        pairingInstructionText.text = readinessInstruction()
-        manifestSummaryText.text = currentManifestPhotoCount?.let { count ->
-            getString(R.string.sync_manifest_summary, count, manifestTransferStatus(count))
-        } ?: getString(R.string.sync_manifest_unavailable)
-        requestActivityText.text = currentRequestActivity?.let(::formatRequestActivity)
-            ?: getString(R.string.sync_request_activity_unavailable)
-        syncResultText.text = currentSyncResult?.let(::formatSyncResult)
-            ?: getString(R.string.sync_result_unavailable)
-        syncEventText.text = currentSyncEvent?.let(::formatSyncEvent)
-            ?: getString(R.string.activity_event_unavailable)
-        renderSyncHistory()
-        refreshPairingQr()
-        if (currentSection == MainDestination.SYNC && ::pairingPanel.isInitialized) {
-            pairingPanel.visibility = if (screenState.showPairingPanel) View.VISIBLE else View.GONE
-        }
+        settingsUiState = SettingsUiState(
+            networkReady = endpointUrl != null,
+            photoAccess = hasMediaPermission(),
+            notificationAccess = hasNotificationPermission(),
+            sharing = isServerRunning,
+            endpoint = endpoint,
+            requestActivity = currentRequestActivity?.let(::formatRequestActivity)
+                ?: getString(R.string.sync_request_activity_unavailable),
+            transportSecurity = transportSecurityStatusText(),
+            pairingAvailable = screenState.copyPairingEnabled,
+            endpointAvailable = screenState.copyEndpointEnabled,
+            resultAvailable = screenState.copySyncResultEnabled,
+            advancedExpanded = isAdvancedSupportExpanded,
+        )
 
-        startButton.isEnabled = screenState.startActionEnabled
-        stopButton.isEnabled = screenState.stopActionEnabled
-        grantButton.visibility = if (screenState.showPhotoAccessAction) View.VISIBLE else View.GONE
-        startButton.visibility = if (screenState.showStartAction) View.VISIBLE else View.GONE
-        stopButton.visibility = if (screenState.showStopAction) View.VISIBLE else View.GONE
-        copyEndpointButton.isEnabled = screenState.copyEndpointEnabled
-        copyPairingButton.isEnabled = screenState.copyPairingEnabled
-        copySyncResultButton.isEnabled = screenState.copySyncResultEnabled
-        copyDiagnosticsButton.isEnabled = true
-        clearSyncStateButton.isEnabled = currentSyncResult != null
-        updateAdvancedSupportVisibility()
         updateKeepScreenAwake()
     }
 
-    private fun updateAdvancedSupportVisibility() {
-        if (currentSection != MainDestination.SETTINGS || !::advancedSupportPanel.isInitialized) {
-            return
-        }
-        advancedSupportPanel.visibility = if (isAdvancedSupportExpanded) View.VISIBLE else View.GONE
-        toggleAdvancedSupportButton.text = getString(
-            if (isAdvancedSupportExpanded) {
-                R.string.settings_hide_advanced_support
-            } else {
-                R.string.settings_show_advanced_support
-            },
-        )
-        toggleAdvancedSupportButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
-            if (isAdvancedSupportExpanded) {
-                R.drawable.ic_action_collapse
-            } else {
-                R.drawable.ic_action_expand
-            },
-            0,
-            0,
-            0,
-        )
+    private fun requestPhotoPermissions() {
+        requestMissingPermissions(requiredPhotoPermissions(), startSharing = true)
     }
 
-    private fun requestPhotoPermissions() {
-        val missing = requiredPhotoPermissions()
+    private fun requestMediaPermission() {
+        requestMissingPermissions(requiredMediaPermissions())
+    }
+
+    private fun requestNotificationPermission() {
+        requestMissingPermissions(requiredNotificationPermissions())
+    }
+
+    private fun requestMissingPermissions(permissions: List<String>, startSharing: Boolean = false) {
+        val missing = permissions
             .filter { permission -> checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED }
             .toTypedArray()
 
         if (missing.isEmpty()) {
+            if (startSharing && hasMediaPermission()) startServer()
             refreshUi()
             return
         }
 
-        requestPermissions(missing, REQUEST_MEDIA_PERMISSION)
+        startSharingAfterPermission = startSharing
+        photoPermissionLauncher.launch(missing)
     }
 
     private fun hasCompletedOnboarding(): Boolean {
@@ -717,20 +304,6 @@ class MainActivity : Activity() {
 
     private fun stopServer() {
         sharingCoordinator.stop()
-    }
-
-    private fun refreshPairingQr() {
-        val payload = currentPairingPayloadJson
-        if (payload == null) {
-            pairingQrImage.setImageDrawable(null)
-            pairingQrImage.visibility = ImageView.GONE
-            return
-        }
-
-        val size = (resources.displayMetrics.widthPixels - (64 * resources.displayMetrics.density)).toInt()
-            .coerceAtLeast((220 * resources.displayMetrics.density).toInt())
-        pairingQrImage.setImageBitmap(QrCodeBitmapFactory().create(payload, size))
-        pairingQrImage.visibility = ImageView.VISIBLE
     }
 
     private fun copyPairingPayload() {
@@ -822,7 +395,6 @@ class MainActivity : Activity() {
         currentTransportSecurityMode = snapshot.transportSecurityMode
         currentManifestPhotoCount = snapshot.pendingPhotoCount
         currentSyncResult = snapshot.syncResult
-        currentSyncEvent = snapshot.syncEvent
         currentSyncHistory = snapshot.syncHistory
         currentRequestActivity = snapshot.requestActivity
         hasConnectedPeer = snapshot.hasConnectedPeer
@@ -858,53 +430,6 @@ class MainActivity : Activity() {
         )
     }
 
-    private fun formatSyncEvent(event: SyncEvent): String {
-        return getString(
-            R.string.activity_event_summary,
-            syncEventAgeLabel(event),
-            event.syncedCount,
-            event.skippedCount,
-            event.failedCount + event.conflictedCount,
-        )
-    }
-
-    private fun renderSyncHistory() {
-        syncHistoryContainer.removeAllViews()
-        if (currentSyncHistory.isEmpty()) {
-            syncHistoryContainer.addView(bodyText().apply { text = getString(R.string.history_unavailable) })
-            return
-        }
-
-        currentSyncHistory.forEachIndexed { index, summary ->
-            if (index > 0) {
-                syncHistoryContainer.addView(android.view.View(this).apply {
-                    setBackgroundColor(shareSyncTheme.divider)
-                    layoutParams = LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        resources.displayMetrics.density.toInt().coerceAtLeast(1),
-                    ).apply {
-                        topMargin = (10 * resources.displayMetrics.density).toInt()
-                    }
-                })
-            }
-            syncHistoryContainer.addView(bodyText().apply {
-                text = ageLabel((System.currentTimeMillis() - summary.recordedAtEpochMillis).coerceAtLeast(0))
-                typeface = Typeface.DEFAULT_BOLD
-                setTextColor(shareSyncTheme.textPrimary)
-            })
-            syncHistoryContainer.addView(bodyText().apply {
-                text = getString(
-                    R.string.history_item_summary,
-                    summary.successfulCount,
-                    summary.failedCount,
-                )
-                if (summary.failedCount > 0) {
-                    setTextColor(shareSyncTheme.warning)
-                }
-            })
-        }
-    }
-
     private fun formatRequestActivity(activity: LocalRequestActivity): String {
         return getString(
             R.string.sync_request_activity_summary,
@@ -928,11 +453,6 @@ class MainActivity : Activity() {
 
     private fun requestActivityAgeLabel(activity: LocalRequestActivity): String {
         val ageMillis = (System.currentTimeMillis() - activity.recordedAtEpochMillis).coerceAtLeast(0)
-        return ageLabel(ageMillis)
-    }
-
-    private fun syncEventAgeLabel(event: SyncEvent): String {
-        val ageMillis = (System.currentTimeMillis() - event.recordedAtEpochMillis).coerceAtLeast(0)
         return ageLabel(ageMillis)
     }
 
@@ -965,18 +485,6 @@ class MainActivity : Activity() {
             PhotoSharingPhase.IPHONE_CONNECTED -> getString(R.string.sync_phase_iphone_connected)
             PhotoSharingPhase.RETRY_REQUIRED -> getString(R.string.sync_phase_retry_required)
             PhotoSharingPhase.TRANSFER_COMPLETE -> getString(R.string.sync_phase_transfer_complete)
-        }
-    }
-
-    private fun readinessInstruction(): String {
-        return when (runtimeState().readiness().primaryAction) {
-            AndroidPhotoSyncPrimaryAction.ALLOW_PHOTOS -> getString(R.string.readiness_allow_photos)
-            AndroidPhotoSyncPrimaryAction.START_SHARING -> getString(R.string.readiness_start_sharing)
-            AndroidPhotoSyncPrimaryAction.WAIT_FOR_SERVER -> getString(R.string.readiness_wait_for_server)
-            AndroidPhotoSyncPrimaryAction.SHOW_PAIRING_CODE -> getString(R.string.readiness_show_pairing_code)
-            AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_TRANSFER -> getString(R.string.readiness_keep_available_for_transfer)
-            AndroidPhotoSyncPrimaryAction.KEEP_AVAILABLE_FOR_RETRY -> getString(R.string.readiness_keep_available_for_retry)
-            AndroidPhotoSyncPrimaryAction.WAIT_FOR_NEW_PHOTOS -> getString(R.string.readiness_wait_for_new_photos)
         }
     }
 
@@ -1020,6 +528,5 @@ class MainActivity : Activity() {
         const val STATE_ADVANCED_SUPPORT_EXPANDED = "sharesync.advancedSupportExpanded"
         const val ONBOARDING_PREFERENCES = "sharesync_onboarding"
         const val ONBOARDING_COMPLETE_KEY = "completed"
-        const val REQUEST_MEDIA_PERMISSION = 1001
     }
 }

@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
@@ -42,6 +43,7 @@ android {
 
     buildFeatures {
         buildConfig = true
+        compose = true
     }
 
     kotlin {
@@ -51,6 +53,10 @@ android {
 
 dependencies {
     implementation("com.google.zxing:core:3.5.3")
+    implementation("androidx.activity:activity:1.10.1")
+    implementation(platform("androidx.compose:compose-bom:2025.04.01"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.material3:material3")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")
 }

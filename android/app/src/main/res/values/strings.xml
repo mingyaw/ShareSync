@@ -83,7 +83,10 @@
     <string name="clear_history_message">Previously completed photos can appear available again after this history is cleared. Photos already stored on either phone are not deleted.</string>
     <string name="clear_history_confirm">Clear History</string>
     <string name="clear_history_cancel">Cancel</string>
-    <string name="onboarding_title">Set up private photo sync</string>
+    <string name="onboarding_title">Send photos to your iPhone</string>
+    <string name="onboarding_step_photos">Allow access to photos on this phone.</string>
+    <string name="onboarding_step_network">Keep both phones on the same Wi-Fi or Android hotspot.</string>
+    <string name="onboarding_step_pair">Scan the pairing code once on iPhone.</string>
     <string name="onboarding_body">1. Allow Android photo access. 2. Keep both phones on the same Wi-Fi or Android hotspot. 3. Scan the QR code once from ShareSync on iPhone.</string>
     <string name="onboarding_privacy">Photos travel directly to your paired iPhone. ShareSync does not upload them through a cloud relay.</string>
     <string name="onboarding_continue">Continue to Photo Sharing</string>
@@ -103,4 +106,22 @@
     <string name="ui_connection_tools">Pairing</string>
     <string name="settings_show_advanced_support">Show advanced support</string>
     <string name="settings_hide_advanced_support">Hide advanced support</string>
+    <string name="home_this_phone">This Android phone</string>
+    <string name="home_photos_available">photos available to iPhone</string>
+    <string name="home_no_photos">No photos to send yet</string>
+    <string name="home_sharing_empty">Sharing is on. New photos will be available to iPhone.</string>
+    <string name="home_next_step">Next step</string>
+    <string name="home_scan_from_iphone">Open ShareSync on iPhone and scan this code.</string>
+    <string name="home_same_network">Keep both phones on the same Wi-Fi or Android hotspot.</string>
+    <string name="activity_empty_title">Your sync history starts here</string>
+    <string name="activity_empty_body">After iPhone receives photos, completed transfers and items needing attention will appear here.</string>
+    <string name="settings_connection">Connection</string>
+    <string name="settings_local_network">Local network</string>
+    <string name="settings_photo_access">Photo access</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_status_ready">Ready</string>
+    <string name="settings_status_needed">Needs attention</string>
+    <string name="settings_allow">Allow</string>
+    <string name="settings_pairing_description">Pairing stays on this device. Copy the code only if you need to enter it manually on iPhone.</string>
+    <string name="settings_privacy">Privacy &amp; data</string>
 </resources>

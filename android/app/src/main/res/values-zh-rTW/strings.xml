@@ -83,7 +83,10 @@
     <string name="clear_history_message">清除後，先前已完成的照片可能再次顯示為可同步。兩支手機上已儲存的照片都不會被刪除。</string>
     <string name="clear_history_confirm">清除紀錄</string>
     <string name="clear_history_cancel">取消</string>
-    <string name="onboarding_title">設定私密照片同步</string>
+    <string name="onboarding_title">把照片帶到 iPhone</string>
+    <string name="onboarding_step_photos">允許讀取這支手機的照片。</string>
+    <string name="onboarding_step_network">讓兩支手機連上同一個 Wi-Fi 或 Android 熱點。</string>
+    <string name="onboarding_step_pair">在 iPhone 掃描一次配對碼。</string>
     <string name="onboarding_body">1. 允許 Android 照片權限。2. 讓兩支手機連上同一 Wi-Fi 或 Android 熱點。3. 使用 iPhone 上的 ShareSync 掃描一次 QR Code。</string>
     <string name="onboarding_privacy">照片會直接傳送到已配對的 iPhone，ShareSync 不會透過雲端中繼上傳。</string>
     <string name="onboarding_continue">繼續設定照片分享</string>
@@ -103,4 +106,22 @@
     <string name="ui_connection_tools">配對</string>
     <string name="settings_show_advanced_support">顯示進階支援</string>
     <string name="settings_hide_advanced_support">隱藏進階支援</string>
+    <string name="home_this_phone">這支 Android 手機</string>
+    <string name="home_photos_available">張照片可供 iPhone 接收</string>
+    <string name="home_no_photos">目前沒有可傳送的照片</string>
+    <string name="home_sharing_empty">照片分享已開啟；新增照片後就能提供給 iPhone。</string>
+    <string name="home_next_step">接下來</string>
+    <string name="home_scan_from_iphone">在 iPhone 開啟 ShareSync 並掃描此配對碼。</string>
+    <string name="home_same_network">請讓兩支手機連上同一個 Wi-Fi 或 Android 熱點。</string>
+    <string name="activity_empty_title">同步紀錄從這裡開始</string>
+    <string name="activity_empty_body">iPhone 接收照片後，已完成與需要處理的紀錄會顯示在這裡。</string>
+    <string name="settings_connection">連線狀態</string>
+    <string name="settings_local_network">本機網路</string>
+    <string name="settings_photo_access">照片權限</string>
+    <string name="settings_notifications">通知</string>
+    <string name="settings_status_ready">就緒</string>
+    <string name="settings_status_needed">需要處理</string>
+    <string name="settings_allow">允許</string>
+    <string name="settings_pairing_description">配對資訊保留在本機。需要在 iPhone 手動輸入時，再複製配對碼。</string>
+    <string name="settings_privacy">隱私與資料</string>
 </resources>

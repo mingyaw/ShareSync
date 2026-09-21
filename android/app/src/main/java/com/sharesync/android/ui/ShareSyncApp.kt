@@ -1,0 +1,262 @@
+package com.sharesync.android.ui
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.sharesync.android.R
+
+data class HistoryUiItem(val date: String, val completed: Int, val failed: Int)
+
+data class ActivityUiState(
+    val latestResult: String = "",
+    val history: List<HistoryUiItem> = emptyList(),
+)
+
+data class SettingsUiState(
+    val networkReady: Boolean = false,
+    val photoAccess: Boolean = false,
+    val notificationAccess: Boolean = false,
+    val sharing: Boolean = false,
+    val endpoint: String = "",
+    val requestActivity: String = "",
+    val transportSecurity: String = "",
+    val pairingAvailable: Boolean = false,
+    val endpointAvailable: Boolean = false,
+    val resultAvailable: Boolean = false,
+    val advancedExpanded: Boolean = false,
+)
+
+@Composable
+fun ShareSyncApp(
+    destination: MainDestination,
+    home: PhotoSyncHomeUiState,
+    activity: ActivityUiState,
+    settings: SettingsUiState,
+    feedbackMessage: String?,
+    onFeedbackShown: () -> Unit,
+    onDestinationChange: (MainDestination) -> Unit,
+    onContinue: () -> Unit,
+    onGrant: () -> Unit,
+    onGrantPhotos: () -> Unit,
+    onGrantNotifications: () -> Unit,
+    onStart: () -> Unit,
+    onStop: () -> Unit,
+    onCopyPairing: () -> Unit,
+    onCopyEndpoint: () -> Unit,
+    onCopyResult: () -> Unit,
+    onCopyDiagnostics: () -> Unit,
+    onClearHistory: () -> Unit,
+    onToggleAdvanced: () -> Unit,
+) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(feedbackMessage) {
+        if (feedbackMessage != null) {
+            snackbarHostState.showSnackbar(feedbackMessage)
+            onFeedbackShown()
+        }
+    }
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            Surface(color = MaterialTheme.colorScheme.background) {
+                Column(modifier = Modifier.fillMaxWidth().statusBarsPadding().padding(start = 20.dp, end = 20.dp, top = 18.dp, bottom = 12.dp)) {
+                    Text(
+                        stringResource(R.string.app_name),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        stringResource(destination.titleRes),
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            }
+        },
+        bottomBar = {
+            if (!home.showOnboarding) {
+                NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+                    MainDestination.entries.forEach { section ->
+                        NavigationBarItem(
+                            selected = destination == section,
+                            onClick = { onDestinationChange(section) },
+                            icon = { Icon(painterResource(section.iconRes), contentDescription = null) },
+                            label = { Text(stringResource(section.navigationRes)) },
+                        )
+                    }
+                }
+            }
+        },
+    ) { insets ->
+        key(destination) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(insets)
+                    .verticalScroll(rememberScrollState())
+                    .padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 28.dp),
+            ) {
+                when (destination) {
+                    MainDestination.SYNC -> PhotoSyncHome(home, onContinue, onGrant, onStart)
+                    MainDestination.ACTIVITY -> ActivityPage(activity)
+                    MainDestination.SETTINGS -> SettingsPage(
+                        state = settings,
+                        onStop = onStop,
+                        onGrantPhotos = onGrantPhotos,
+                        onGrantNotifications = onGrantNotifications,
+                        onCopyPairing = onCopyPairing,
+                        onCopyEndpoint = onCopyEndpoint,
+                        onCopyResult = onCopyResult,
+                        onCopyDiagnostics = onCopyDiagnostics,
+                        onClearHistory = onClearHistory,
+                        onToggleAdvanced = onToggleAdvanced,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActivityPage(state: ActivityUiState) {
+    Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+        Text(stringResource(R.string.ui_activity_subtitle), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (state.history.isEmpty()) {
+            HorizontalDivider()
+            SectionHeading(stringResource(R.string.activity_empty_title))
+            Text(stringResource(R.string.activity_empty_body), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        } else {
+            SectionHeading(stringResource(R.string.ui_recent_activity))
+            state.history.forEach { item ->
+                HorizontalDivider()
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(item.date, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            stringResource(R.string.history_item_summary, item.completed, item.failed),
+                            color = if (item.failed > 0) MaterialTheme.colorScheme.error
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+            HorizontalDivider()
+            Text(state.latestResult, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun SettingsPage(
+    state: SettingsUiState,
+    onStop: () -> Unit,
+    onGrantPhotos: () -> Unit,
+    onGrantNotifications: () -> Unit,
+    onCopyPairing: () -> Unit,
+    onCopyEndpoint: () -> Unit,
+    onCopyResult: () -> Unit,
+    onCopyDiagnostics: () -> Unit,
+    onClearHistory: () -> Unit,
+    onToggleAdvanced: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(22.dp)) {
+        SectionHeading(stringResource(R.string.settings_connection))
+        SettingsRow(stringResource(R.string.settings_local_network), state.networkReady)
+        if (!state.networkReady) {
+            Text(stringResource(R.string.home_same_network), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        SettingsRow(stringResource(R.string.settings_photo_access), state.photoAccess, onGrantPhotos)
+        SettingsRow(stringResource(R.string.settings_notifications), state.notificationAccess, onGrantNotifications)
+        if (state.sharing) {
+            OutlinedButton(onClick = onStop, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.sync_stop_server))
+            }
+        }
+        HorizontalDivider()
+        SectionHeading(stringResource(R.string.ui_connection_tools))
+        Text(stringResource(R.string.settings_pairing_description), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        TextButton(onClick = onCopyPairing, enabled = state.pairingAvailable) {
+            Text(stringResource(R.string.sync_copy_pairing_payload))
+        }
+        HorizontalDivider()
+        SectionHeading(stringResource(R.string.settings_privacy))
+        Text(stringResource(R.string.privacy_summary), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(stringResource(R.string.privacy_storage), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        HorizontalDivider()
+        TextButton(onClick = onToggleAdvanced) {
+            Text(stringResource(if (state.advancedExpanded) R.string.settings_hide_advanced_support else R.string.settings_show_advanced_support))
+        }
+        if (state.advancedExpanded) {
+            SectionHeading(stringResource(R.string.sync_panel_diagnostics))
+            Text(state.endpoint, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(state.requestActivity, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(state.transportSecurity, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            TextButton(onClick = onCopyEndpoint, enabled = state.endpointAvailable) {
+                Text(stringResource(R.string.sync_copy_endpoint))
+            }
+            TextButton(onClick = onCopyResult, enabled = state.resultAvailable) {
+                Text(stringResource(R.string.sync_copy_sync_result))
+            }
+            TextButton(onClick = onCopyDiagnostics) {
+                Text(stringResource(R.string.diagnostics_copy_diagnostics))
+            }
+            TextButton(onClick = onClearHistory, enabled = state.resultAvailable) {
+                Text(stringResource(R.string.sync_clear_sync_state), color = MaterialTheme.colorScheme.error)
+            }
+        }
+        Spacer(modifier = Modifier.padding(4.dp))
+    }
+}
+
+@Composable
+private fun SettingsRow(label: String, ready: Boolean, onFix: (() -> Unit)? = null) {
+    Row(
+        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(label)
+            Text(
+                stringResource(if (ready) R.string.settings_status_ready else R.string.settings_status_needed),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (ready) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        if (!ready && onFix != null) {
+            TextButton(onClick = onFix) { Text(stringResource(R.string.settings_allow)) }
+        }
+    }
+}

@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#2563EB</color>
-    <color name="sharesync_primary">#2563EB</color>
+    <color name="ic_launcher_background">#087F70</color>
+    <color name="sharesync_primary">#087F70</color>
     <color name="sharesync_on_primary">#FFFFFF</color>
     <color name="sharesync_success">#16803A</color>
-    <color name="sharesync_warning">#B45309</color>
-    <color name="sharesync_info">#0E7490</color>
-    <color name="sharesync_text_primary">#111827</color>
-    <color name="sharesync_text_secondary">#596273</color>
-    <color name="sharesync_background">#F8FAFC</color>
+    <color name="sharesync_warning">#B65E34</color>
+    <color name="sharesync_info">#286E9B</color>
+    <color name="sharesync_text_primary">#19272B</color>
+    <color name="sharesync_text_secondary">#526268</color>
+    <color name="sharesync_background">#F5F7F6</color>
     <color name="sharesync_surface">#FFFFFF</color>
-    <color name="sharesync_surface_alt">#EFF6FF</color>
-    <color name="sharesync_divider">#D7DEE8</color>
+    <color name="sharesync_surface_alt">#E5F2EE</color>
+    <color name="sharesync_divider">#D1DDDA</color>
     <color name="sharesync_qr_surface">#FFFFFF</color>
 </resources>
