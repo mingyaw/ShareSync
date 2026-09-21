@@ -127,6 +127,7 @@ class PhotoSharingCoordinator(
                         PhotoSharingSessionRegistry.clear()
                         PhotoSharingService.stop(appContext)
                         restorePersistedHistory()
+                        refreshSnapshot()
                         publish(PhotoSharingCoordinatorEvent.Failed(error))
                         true
                     } else {
@@ -153,6 +154,7 @@ class PhotoSharingCoordinator(
             restorePersistedHistory()
             stopPolling()
             PhotoSharingService.stop(appContext)
+            refreshSnapshot()
             publish()
             session to activeServer
         }
@@ -271,7 +273,6 @@ class PhotoSharingCoordinator(
     }
 
     private fun publish(event: PhotoSharingCoordinatorEvent? = null) {
-        refreshSnapshot()
         onUpdate(snapshot, event)
     }
 
