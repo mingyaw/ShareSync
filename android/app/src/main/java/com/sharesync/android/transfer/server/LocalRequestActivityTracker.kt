@@ -16,6 +16,7 @@ class LocalRequestActivityTracker(
     @Volatile
     private var latestActivity: LocalRequestActivity? = null
     private var requestCount = 0
+    private var hasConnectedPeer = false
     private val endpointRequestCounts = mutableMapOf<String, Int>()
 
     fun record(endpoint: String, statusCode: Int) {
@@ -23,6 +24,8 @@ class LocalRequestActivityTracker(
             requestCount += 1
             val endpointCount = (endpointRequestCounts[endpoint] ?: 0) + 1
             endpointRequestCounts[endpoint] = endpointCount
+            hasConnectedPeer = hasConnectedPeer ||
+                (statusCode in 200..299 && endpoint in PHOTO_ENDPOINTS)
             latestActivity = LocalRequestActivity(
                 endpoint = endpoint,
                 statusCode = statusCode,
@@ -34,4 +37,10 @@ class LocalRequestActivityTracker(
     }
 
     fun latest(): LocalRequestActivity? = latestActivity
+
+    fun hasConnectedPeer(): Boolean = synchronized(lock) { hasConnectedPeer }
+
+    private companion object {
+        val PHOTO_ENDPOINTS = setOf("manifest", "media", "sync-result")
+    }
 }

@@ -33,6 +33,7 @@ data class PhotoSharingSnapshot(
     val syncEvent: SyncEvent? = null,
     val syncHistory: List<SyncHistorySummary> = emptyList(),
     val requestActivity: LocalRequestActivity? = null,
+    val hasConnectedPeer: Boolean = false,
 )
 
 sealed interface PhotoSharingCoordinatorEvent {
@@ -247,6 +248,7 @@ class PhotoSharingCoordinator(
 
     private fun refreshSnapshot() {
         val eventStore = syncEventStore
+        val requestActivity = requestActivityTracker?.latest()
         snapshot = PhotoSharingSnapshot(
             isStarting = isStarting,
             isRunning = isRunning,
@@ -259,7 +261,8 @@ class PhotoSharingCoordinator(
             syncHistory = eventStore?.let { store ->
                 SuspendBridge.runBlocking { store.recentHistorySummaries(HISTORY_LIMIT) }
             }.orEmpty(),
-            requestActivity = requestActivityTracker?.latest(),
+            requestActivity = requestActivity,
+            hasConnectedPeer = requestActivityTracker?.hasConnectedPeer() == true,
         )
     }
 

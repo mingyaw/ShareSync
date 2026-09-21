@@ -81,6 +81,7 @@ class MainActivity : Activity() {
     private var currentSyncEvent: SyncEvent? = null
     private var currentSyncHistory: List<SyncHistorySummary> = emptyList()
     private var currentRequestActivity: LocalRequestActivity? = null
+    private var hasConnectedPeer = false
     private var currentSection = MainDestination.SYNC
     private var isAdvancedSupportExpanded = false
 
@@ -824,6 +825,7 @@ class MainActivity : Activity() {
         currentSyncEvent = snapshot.syncEvent
         currentSyncHistory = snapshot.syncHistory
         currentRequestActivity = snapshot.requestActivity
+        hasConnectedPeer = snapshot.hasConnectedPeer
     }
 
     private fun currentEndpointUrl(): String? {
@@ -950,13 +952,8 @@ class MainActivity : Activity() {
             isServerRunning = isServerRunning,
             pendingPhotoCount = currentManifestPhotoCount,
             latestSyncResult = currentSyncResult,
-            hasConnectedPeer = hasConnectedIphone(),
+            hasConnectedPeer = hasConnectedPeer,
         )
-    }
-
-    private fun hasConnectedIphone(): Boolean {
-        val activity = currentRequestActivity ?: return false
-        return activity.statusCode in 200..299 && activity.endpoint in AUTHENTICATED_PHOTO_ENDPOINTS
     }
 
     private fun phaseStatus(phase: PhotoSharingPhase): String {
@@ -1024,6 +1021,5 @@ class MainActivity : Activity() {
         const val ONBOARDING_PREFERENCES = "sharesync_onboarding"
         const val ONBOARDING_COMPLETE_KEY = "completed"
         const val REQUEST_MEDIA_PERMISSION = 1001
-        val AUTHENTICATED_PHOTO_ENDPOINTS = setOf("manifest", "media", "sync-result")
     }
 }
