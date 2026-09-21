@@ -117,6 +117,11 @@
     <string name="activity_empty_body">iPhone 接收照片後，已完成與需要處理的紀錄會顯示在這裡。</string>
     <string name="activity_photos_completed">已完成照片</string>
     <string name="activity_photos_attention">需要處理</string>
+    <string name="activity_open_sync">前往照片同步</string>
+    <string name="activity_review_sync">查看照片同步</string>
+    <string name="activity_attention_body">有 %1$d 張照片需要處理。請保持照片分享開啟，讓 iPhone 可以再次嘗試。</string>
+    <string name="history_status_complete">已完成</string>
+    <string name="history_status_attention">需要處理</string>
     <string name="settings_connection">連線狀態</string>
     <string name="settings_photo_sharing">照片分享</string>
     <string name="settings_sharing_on">已在此網路提供給 iPhone</string>
@@ -128,5 +133,6 @@
     <string name="settings_status_needed">需要處理</string>
     <string name="settings_allow">允許</string>
     <string name="settings_pairing_description">配對資訊保留在本機。需要在 iPhone 手動輸入時，再複製配對碼。</string>
+    <string name="settings_pairing_unavailable">開啟照片分享後即可產生配對碼。</string>
     <string name="settings_privacy">隱私與資料</string>
 </resources>

@@ -11,11 +11,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -109,10 +114,25 @@ fun ShareSyncApp(
             if (!home.showOnboarding) {
                 NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
                     MainDestination.entries.forEach { section ->
+                        val attentionCount = activity.history.sumOf { it.failed }
                         NavigationBarItem(
                             selected = destination == section,
                             onClick = { onDestinationChange(section) },
-                            icon = { Icon(painterResource(section.iconRes), contentDescription = null) },
+                            icon = {
+                                if (section == MainDestination.ACTIVITY && attentionCount > 0) {
+                                    BadgedBox(
+                                        badge = {
+                                            Badge {
+                                                Text(if (attentionCount > 99) "99+" else attentionCount.toString())
+                                            }
+                                        },
+                                    ) {
+                                        Icon(painterResource(section.iconRes), contentDescription = null)
+                                    }
+                                } else {
+                                    Icon(painterResource(section.iconRes), contentDescription = null)
+                                }
+                            },
                             label = { Text(stringResource(section.navigationRes)) },
                         )
                     }
@@ -130,7 +150,10 @@ fun ShareSyncApp(
             ) {
                 when (destination) {
                     MainDestination.SYNC -> PhotoSyncHome(home, onContinue, onGrant, onStart)
-                    MainDestination.ACTIVITY -> ActivityPage(activity)
+                    MainDestination.ACTIVITY -> ActivityPage(
+                        state = activity,
+                        onOpenSync = { onDestinationChange(MainDestination.SYNC) },
+                    )
                     MainDestination.SETTINGS -> SettingsPage(
                         state = settings,
                         onStart = onStart,
@@ -151,19 +174,22 @@ fun ShareSyncApp(
 }
 
 @Composable
-private fun ActivityPage(state: ActivityUiState) {
+private fun ActivityPage(state: ActivityUiState, onOpenSync: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
         Text(stringResource(R.string.ui_activity_subtitle), color = MaterialTheme.colorScheme.onSurfaceVariant)
         if (state.history.isEmpty()) {
             HorizontalDivider()
             SectionHeading(stringResource(R.string.activity_empty_title))
             Text(stringResource(R.string.activity_empty_body), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Button(onClick = onOpenSync, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.activity_open_sync))
+            }
         } else {
             val completed = state.history.sumOf { it.completed }
             val failed = state.history.sumOf { it.failed }
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(8.dp),
                 color = MaterialTheme.colorScheme.secondaryContainer,
             ) {
                 Row(modifier = Modifier.padding(20.dp), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
@@ -180,19 +206,30 @@ private fun ActivityPage(state: ActivityUiState) {
                     )
                 }
             }
+            if (failed > 0) {
+                Text(
+                    stringResource(R.string.activity_attention_body, failed),
+                    color = MaterialTheme.colorScheme.error,
+                )
+                OutlinedButton(onClick = onOpenSync, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.activity_review_sync))
+                }
+            }
             SectionHeading(stringResource(R.string.ui_recent_activity))
             state.history.forEach { item ->
                 HorizontalDivider()
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(item.date, fontWeight = FontWeight.SemiBold)
-                        Text(
-                            stringResource(R.string.history_item_summary, item.completed, item.failed),
-                            color = if (item.failed > 0) MaterialTheme.colorScheme.error
-                            else MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(item.date, fontWeight = FontWeight.SemiBold)
+                    HistoryStatus(attention = item.failed > 0)
                 }
+                Text(
+                    stringResource(R.string.history_item_summary, item.completed, item.failed),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
             HorizontalDivider()
             Text(state.latestResult, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -226,6 +263,9 @@ private fun SettingsPage(
         HorizontalDivider()
         SectionHeading(stringResource(R.string.ui_connection_tools))
         Text(stringResource(R.string.settings_pairing_description), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (!state.pairingAvailable) {
+            Text(stringResource(R.string.settings_pairing_unavailable), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
         TextButton(onClick = onCopyPairing, enabled = state.pairingAvailable) {
             Text(stringResource(R.string.sync_copy_pairing_payload))
         }
@@ -256,6 +296,21 @@ private fun SettingsPage(
             }
         }
         Spacer(modifier = Modifier.padding(4.dp))
+    }
+}
+
+@Composable
+private fun HistoryStatus(attention: Boolean) {
+    Surface(
+        shape = RoundedCornerShape(4.dp),
+        color = if (attention) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.secondaryContainer,
+    ) {
+        Text(
+            stringResource(if (attention) R.string.history_status_attention else R.string.history_status_complete),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            style = MaterialTheme.typography.labelSmall,
+            color = if (attention) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+        )
     }
 }
 

@@ -117,6 +117,11 @@
     <string name="activity_empty_body">After iPhone receives photos, completed transfers and items needing attention will appear here.</string>
     <string name="activity_photos_completed">Photos completed</string>
     <string name="activity_photos_attention">Need attention</string>
+    <string name="activity_open_sync">Open photo sync</string>
+    <string name="activity_review_sync">Review photo sync</string>
+    <string name="activity_attention_body">%1$d photos need attention. Keep sharing available so iPhone can try again.</string>
+    <string name="history_status_complete">Complete</string>
+    <string name="history_status_attention">Needs attention</string>
     <string name="settings_connection">Connection</string>
     <string name="settings_photo_sharing">Photo sharing</string>
     <string name="settings_sharing_on">Available to iPhone on this network</string>
@@ -128,5 +133,6 @@
     <string name="settings_status_needed">Needs attention</string>
     <string name="settings_allow">Allow</string>
     <string name="settings_pairing_description">Pairing stays on this device. Copy the code only if you need to enter it manually on iPhone.</string>
+    <string name="settings_pairing_unavailable">Turn on photo sharing to create a pairing code.</string>
     <string name="settings_privacy">Privacy &amp; data</string>
 </resources>
