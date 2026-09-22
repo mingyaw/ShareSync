@@ -110,9 +110,59 @@ struct ContentView: View {
 
     private var activityScreen: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                ProductPanel(title: "ios.activity.summary") {
-                    statusSectionContent
+            VStack(alignment: .leading, spacing: 20) {
+                Text("ios.activity.subtitle")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if viewModel.recentSyncHistory.isEmpty {
+                    ContentUnavailableView {
+                        Label("ios.activity.empty_title", systemImage: "clock.arrow.circlepath")
+                    } description: {
+                        Text("ios.activity.empty_body")
+                    } actions: {
+                        Button("ios.activity.open_receive") {
+                            selectedTab = .receive
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 320)
+                } else {
+                    activityMetrics
+
+                    if activityFailedCount > 0 {
+                        FeedbackMessage(
+                            message: String(
+                                format: localized("ios.activity.attention_format"),
+                                "\(activityFailedCount)"
+                            ),
+                            tone: .warning
+                        )
+                        Button {
+                            selectedTab = .receive
+                        } label: {
+                            Label("ios.activity.review_sync", systemImage: "arrow.down.circle")
+                                .frame(maxWidth: .infinity)
+                                .frame(minHeight: 42)
+                        }
+                        .buttonStyle(.bordered)
+                    }
+
+                    Text("ios.activity.recent")
+                        .font(.headline)
+
+                    VStack(spacing: 0) {
+                        ForEach(viewModel.recentSyncHistory) { item in
+                            SyncHistoryRow(item: item)
+                            if item.id != viewModel.recentSyncHistory.last?.id {
+                                Divider()
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .background(ShareSyncTheme.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 }
             }
             .padding(.horizontal, 20)
@@ -124,27 +174,39 @@ struct ContentView: View {
     }
 
     private var settingsScreen: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                ProductPanel(title: "ios.settings.sync") {
-                    Toggle("ios.action.auto_sync_all", isOn: $autoSyncAllPhotos)
-                        .disabled(viewModel.isTransferActive)
-                    Text("ios.settings.auto_sync_note")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-
-                ProductPanel(title: "ios.privacy.title") {
-                    privacyPanelContent
-                }
-
-                settingsSection
+        Form {
+            Section {
+                Toggle("ios.action.auto_sync_all", isOn: $autoSyncAllPhotos)
+                    .disabled(viewModel.isTransferActive)
+                Text("ios.settings.auto_sync_note")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            } header: {
+                Text("ios.settings.sync")
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
-            .frame(maxWidth: 680, alignment: .topLeading)
-            .frame(maxWidth: .infinity)
+
+            Section {
+                privacyPanelContent
+            } header: {
+                Text("ios.privacy.title")
+            }
+
+            Section {
+                DisclosureGroup(isExpanded: $isSettingsExpanded) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        connectionPanelContent
+                        Divider()
+                        diagnosticsPanelContent
+                    }
+                    .padding(.vertical, 10)
+                } label: {
+                    Label("ios.settings.advanced", systemImage: "wrench.and.screwdriver")
+                }
+            } header: {
+                Text("ios.settings.support")
+            }
         }
+        .formStyle(.grouped)
         .background(ShareSyncTheme.background)
         .scrollDismissesKeyboard(.interactively)
     }
@@ -518,6 +580,35 @@ struct ContentView: View {
         MetricView(title: "ios.metric.photos", value: "\(summary.photoCount)", tone: .info)
         MetricView(title: "ios.metric.done", value: "\(summary.importedCount + summary.downloadedCount)", tone: .success)
         MetricView(title: "ios.metric.left", value: "\(summary.remainingCount)", tone: .primary)
+    }
+
+    private var activityMetrics: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 10) {
+                MetricView(title: "ios.activity.completed", value: "\(activityCompletedCount)", tone: .success)
+                MetricView(
+                    title: "ios.activity.attention",
+                    value: "\(activityFailedCount)",
+                    tone: activityFailedCount > 0 ? .warning : .neutral
+                )
+            }
+            VStack(spacing: 10) {
+                MetricView(title: "ios.activity.completed", value: "\(activityCompletedCount)", tone: .success)
+                MetricView(
+                    title: "ios.activity.attention",
+                    value: "\(activityFailedCount)",
+                    tone: activityFailedCount > 0 ? .warning : .neutral
+                )
+            }
+        }
+    }
+
+    private var activityCompletedCount: Int {
+        viewModel.recentSyncHistory.reduce(0) { $0 + $1.successfulCount }
+    }
+
+    private var activityFailedCount: Int {
+        viewModel.recentSyncHistory.reduce(0) { $0 + $1.failedCount }
     }
 
     private var statusSection: some View {
@@ -1202,11 +1293,11 @@ private enum ShareSyncTone {
 }
 
 private enum ShareSyncTheme {
-    static let primary = adaptive(light: 0x2563EB, dark: 0x60A5FA)
+    static let primary = adaptive(light: 0x087F70, dark: 0x69D4BC)
     static let success = adaptive(light: 0x16803A, dark: 0x4ADE80)
     static let warning = adaptive(light: 0xB45309, dark: 0xFBBF24)
-    static let error = adaptive(light: 0xB91C1C, dark: 0xF87171)
-    static let info = adaptive(light: 0x0E7490, dark: 0x22D3EE)
+    static let error = adaptive(light: 0xB42318, dark: 0xFFB4AB)
+    static let info = adaptive(light: 0x0E7490, dark: 0x67E8F9)
     static let background = Color(.systemGroupedBackground)
     static let surface = Color(.secondarySystemGroupedBackground)
     static let divider = Color.secondary.opacity(0.18)
@@ -1342,6 +1433,41 @@ private struct MetricView: View {
                 .stroke(tone.color.opacity(0.18), lineWidth: 1)
         }
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .accessibilityElement(children: .combine)
+    }
+}
+
+private struct SyncHistoryRow: View {
+    let item: SyncHistorySummary
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: item.needsRetry ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
+                .foregroundStyle(item.needsRetry ? ShareSyncTheme.warning : ShareSyncTheme.success)
+                .font(.title3)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(item.recordedAt, format: .dateTime.month().day().hour().minute())
+                    .fontWeight(.semibold)
+                Text(
+                    String(
+                        format: NSLocalizedString("ios.activity.history_format", comment: ""),
+                        "\(item.successfulCount)",
+                        "\(item.failedCount)"
+                    )
+                )
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 8)
+
+            Text(LocalizedStringKey(item.needsRetry ? "ios.activity.status_attention" : "ios.activity.status_complete"))
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(item.needsRetry ? ShareSyncTheme.warning : ShareSyncTheme.success)
+        }
+        .padding(.vertical, 14)
         .accessibilityElement(children: .combine)
     }
 }

@@ -5,6 +5,7 @@ struct QRCodeScannerView: View {
     let onCodeScanned: (String) -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     @State private var cameraAuthorizationStatus = AVCaptureDevice.authorizationStatus(for: .video)
 
     var body: some View {
@@ -12,11 +13,34 @@ struct QRCodeScannerView: View {
             Group {
                 switch cameraAuthorizationStatus {
                 case .authorized:
-                    QRCodeScannerRepresentable { code in
-                        onCodeScanned(code)
-                        dismiss()
+                    ZStack {
+                        QRCodeScannerRepresentable { code in
+                            UINotificationFeedbackGenerator().notificationOccurred(.success)
+                            onCodeScanned(code)
+                            dismiss()
+                        }
+                        .ignoresSafeArea()
+
+                        VStack(spacing: 20) {
+                            Spacer()
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .stroke(.white, lineWidth: 3)
+                                .frame(width: 250, height: 250)
+                                .shadow(color: .black.opacity(0.35), radius: 6)
+                                .accessibilityHidden(true)
+                            Text("ios.qr.align_code")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .multilineTextAlignment(.center)
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 18)
+                                .padding(.vertical, 12)
+                                .background(.black.opacity(0.72))
+                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                .padding(.horizontal, 24)
+                            Spacer()
+                        }
                     }
-                    .ignoresSafeArea()
                 case .notDetermined:
                     VStack(spacing: 16) {
                         ProgressView()
@@ -29,9 +53,17 @@ struct QRCodeScannerView: View {
                     }
                 default:
                     VStack(alignment: .center, spacing: 16) {
+                        Image(systemName: "camera.fill")
+                            .font(.largeTitle)
+                            .foregroundStyle(.secondary)
                         Text("ios.qr.camera_required")
                             .multilineTextAlignment(.center)
                             .foregroundStyle(.secondary)
+                        Button("ios.qr.open_settings") {
+                            guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+                            openURL(url)
+                        }
+                        .buttonStyle(.borderedProminent)
                     }
                     .padding(24)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -45,6 +77,9 @@ struct QRCodeScannerView: View {
                         dismiss()
                     }
                 }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+                cameraAuthorizationStatus = AVCaptureDevice.authorizationStatus(for: .video)
             }
         }
     }

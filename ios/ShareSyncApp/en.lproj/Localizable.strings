@@ -59,6 +59,8 @@
 "ios.qr.close" = "Close";
 "ios.qr.preparing_camera" = "Preparing camera";
 "ios.qr.scan_pairing_qr" = "Scan Pairing QR";
+"ios.qr.align_code" = "Place the Android ShareSync code inside the frame.";
+"ios.qr.open_settings" = "Open Settings";
 "ios.readiness.endpoint_missing" = "The paired Android phone was not found. Scan the latest Android QR code or review the saved connection.";
 "ios.readiness.invalid_port" = "The Android port looks invalid. Check the Android ShareSync screen, then retry.";
 "ios.readiness.pairing_required" = "Pair this iPhone with your Android phone by scanning the Android QR code.";
@@ -168,6 +170,18 @@
 "ios.home.connected" = "Android phone paired";
 "ios.home.not_connected" = "Connect your Android phone";
 "ios.activity.summary" = "Photo sync activity";
+"ios.activity.subtitle" = "Review recent photo transfers and anything that needs another try.";
+"ios.activity.empty_title" = "Your sync history starts here";
+"ios.activity.empty_body" = "Completed transfers and photos that need attention will appear after your first sync.";
+"ios.activity.open_receive" = "Open Receive";
+"ios.activity.completed" = "Photos completed";
+"ios.activity.attention" = "Need attention";
+"ios.activity.attention_format" = "%@ photos need attention. Keep Android photo sharing available, then try again.";
+"ios.activity.review_sync" = "Review photo sync";
+"ios.activity.recent" = "Recent photo syncs";
+"ios.activity.history_format" = "%@ completed · %@ need attention";
+"ios.activity.status_complete" = "Complete";
+"ios.activity.status_attention" = "Needs attention";
 "ios.settings.sync" = "Sync preferences";
 "ios.settings.auto_sync_note" = "When enabled, ShareSync starts receiving all available photos after a successful pairing.";
 "ios.settings.support" = "Connection & support";

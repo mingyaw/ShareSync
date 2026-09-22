@@ -59,6 +59,8 @@
 "ios.qr.close" = "關閉";
 "ios.qr.preparing_camera" = "準備相機中";
 "ios.qr.scan_pairing_qr" = "掃描配對 QR Code";
+"ios.qr.align_code" = "將 Android ShareSync 配對碼放入框內。";
+"ios.qr.open_settings" = "開啟設定";
 "ios.readiness.endpoint_missing" = "找不到已配對的 Android 手機。請掃描最新 Android QR Code，或檢查已儲存的連線。";
 "ios.readiness.invalid_port" = "Android 連接埠看起來無效。請確認 Android ShareSync 畫面後再重試。";
 "ios.readiness.pairing_required" = "請掃描 Android QR Code，將這支 iPhone 與 Android 手機配對。";
@@ -168,6 +170,18 @@
 "ios.home.connected" = "已配對 Android 手機";
 "ios.home.not_connected" = "連接 Android 手機";
 "ios.activity.summary" = "照片同步活動";
+"ios.activity.subtitle" = "查看最近照片傳輸，以及需要再次嘗試的項目。";
+"ios.activity.empty_title" = "同步紀錄從這裡開始";
+"ios.activity.empty_body" = "第一次同步後，已完成與需要處理的照片會顯示在這裡。";
+"ios.activity.open_receive" = "前往接收照片";
+"ios.activity.completed" = "已完成照片";
+"ios.activity.attention" = "需要處理";
+"ios.activity.attention_format" = "有 %@ 張照片需要處理。請保持 Android 照片分享開啟後再試一次。";
+"ios.activity.review_sync" = "查看照片同步";
+"ios.activity.recent" = "最近照片同步";
+"ios.activity.history_format" = "完成 %@ 張 · %@ 張需要處理";
+"ios.activity.status_complete" = "已完成";
+"ios.activity.status_attention" = "需要處理";
 "ios.settings.sync" = "同步偏好設定";
 "ios.settings.auto_sync_note" = "開啟後，配對成功時會自動開始接收所有可用照片。";
 "ios.settings.support" = "連線與支援";
