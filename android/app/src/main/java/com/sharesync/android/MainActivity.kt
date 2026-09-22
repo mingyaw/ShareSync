@@ -206,6 +206,7 @@ class MainActivity : ComponentActivity() {
             photoAccess = hasMediaPermission(),
             notificationAccess = hasNotificationPermission(),
             sharing = isPhotoSharingEnabled(),
+            peerConnected = hasConnectedPeer,
             endpoint = endpoint,
             requestActivity = currentRequestActivity?.let(::formatRequestActivity)
                 ?: getString(R.string.sync_request_activity_unavailable),

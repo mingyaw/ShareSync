@@ -134,5 +134,9 @@
     <string name="settings_allow">允許</string>
     <string name="settings_pairing_description">配對資訊保留在本機。需要在 iPhone 手動輸入時，再複製配對碼。</string>
     <string name="settings_pairing_unavailable">開啟照片分享後即可產生配對碼。</string>
+    <string name="settings_iphone_connected">iPhone 已連線</string>
+    <string name="settings_iphone_waiting">已配對的 iPhone</string>
     <string name="settings_privacy">隱私與資料</string>
+    <string name="settings_private_transfer">私密本機傳輸</string>
+    <string name="settings_local_data">儲存在這支手機的資料</string>
 </resources>

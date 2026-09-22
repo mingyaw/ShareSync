@@ -19,6 +19,7 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -54,6 +55,7 @@ data class SettingsUiState(
     val photoAccess: Boolean = false,
     val notificationAccess: Boolean = false,
     val sharing: Boolean = false,
+    val peerConnected: Boolean = false,
     val endpoint: String = "",
     val requestActivity: String = "",
     val transportSecurity: String = "",
@@ -297,21 +299,63 @@ private fun SettingsPage(
         }
         HorizontalDivider()
         SectionHeading(stringResource(R.string.ui_connection_tools))
-        Text(stringResource(R.string.settings_pairing_description), color = MaterialTheme.colorScheme.onSurfaceVariant)
-        if (!state.pairingAvailable) {
-            Text(stringResource(R.string.settings_pairing_unavailable), color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        TextButton(onClick = onCopyPairing, enabled = state.pairingAvailable) {
-            Icon(painterResource(R.drawable.ic_action_copy), contentDescription = null, modifier = Modifier.size(20.dp))
-            Spacer(modifier = Modifier.size(8.dp))
-            Text(stringResource(R.string.sync_copy_pairing_payload))
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 1.dp,
+        ) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    SettingIcon(R.drawable.ic_action_pairing, active = state.peerConnected)
+                    Spacer(modifier = Modifier.size(12.dp))
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(
+                            stringResource(
+                                if (state.peerConnected) R.string.settings_iphone_connected
+                                else R.string.settings_iphone_waiting,
+                            ),
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            stringResource(R.string.settings_pairing_description),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                if (!state.pairingAvailable) {
+                    Text(
+                        stringResource(R.string.settings_pairing_unavailable),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                OutlinedButton(
+                    onClick = onCopyPairing,
+                    enabled = state.pairingAvailable,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Icon(painterResource(R.drawable.ic_action_copy), contentDescription = null, modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.size(8.dp))
+                    Text(stringResource(R.string.sync_copy_pairing_payload))
+                }
+            }
         }
         HorizontalDivider()
         SectionHeading(stringResource(R.string.settings_privacy))
-        Text(stringResource(R.string.privacy_summary), color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(stringResource(R.string.privacy_storage), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        PrivacyRow(
+            iconRes = R.drawable.ic_action_privacy,
+            title = stringResource(R.string.settings_private_transfer),
+            body = stringResource(R.string.privacy_summary),
+        )
+        PrivacyRow(
+            iconRes = R.drawable.ic_action_storage,
+            title = stringResource(R.string.settings_local_data),
+            body = stringResource(R.string.privacy_storage),
+        )
         HorizontalDivider()
-        TextButton(onClick = onToggleAdvanced) {
+        OutlinedButton(onClick = onToggleAdvanced, modifier = Modifier.fillMaxWidth()) {
             Icon(
                 painterResource(if (state.advancedExpanded) R.drawable.ic_action_collapse else R.drawable.ic_action_expand),
                 contentDescription = null,
@@ -321,29 +365,27 @@ private fun SettingsPage(
             Text(stringResource(if (state.advancedExpanded) R.string.settings_hide_advanced_support else R.string.settings_show_advanced_support))
         }
         if (state.advancedExpanded) {
-            SectionHeading(stringResource(R.string.sync_panel_diagnostics))
-            Text(state.endpoint, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(state.requestActivity, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(state.transportSecurity, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            TextButton(onClick = onCopyEndpoint, enabled = state.endpointAvailable) {
-                Icon(painterResource(R.drawable.ic_action_copy), contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.size(8.dp))
-                Text(stringResource(R.string.sync_copy_endpoint))
-            }
-            TextButton(onClick = onCopyResult, enabled = state.resultAvailable) {
-                Icon(painterResource(R.drawable.ic_action_copy), contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.size(8.dp))
-                Text(stringResource(R.string.sync_copy_sync_result))
-            }
-            TextButton(onClick = onCopyDiagnostics) {
-                Icon(painterResource(R.drawable.ic_action_copy), contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.size(8.dp))
-                Text(stringResource(R.string.diagnostics_copy_diagnostics))
-            }
-            TextButton(onClick = onClearHistory, enabled = state.resultAvailable) {
-                Icon(painterResource(R.drawable.ic_action_delete), contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.size(8.dp))
-                Text(stringResource(R.string.sync_clear_sync_state), color = MaterialTheme.colorScheme.error)
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    SectionHeading(stringResource(R.string.sync_panel_diagnostics))
+                    Text(state.endpoint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(state.requestActivity, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(state.transportSecurity, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    SupportAction(R.string.sync_copy_endpoint, R.drawable.ic_action_copy, state.endpointAvailable, onCopyEndpoint)
+                    SupportAction(R.string.sync_copy_sync_result, R.drawable.ic_action_copy, state.resultAvailable, onCopyResult)
+                    SupportAction(R.string.diagnostics_copy_diagnostics, R.drawable.ic_action_copy, true, onCopyDiagnostics)
+                    SupportAction(
+                        R.string.sync_clear_sync_state,
+                        R.drawable.ic_action_delete,
+                        state.resultAvailable,
+                        onClearHistory,
+                        destructive = true,
+                    )
+                }
             }
         }
         Spacer(modifier = Modifier.padding(4.dp))
@@ -442,6 +484,42 @@ private fun SettingIcon(iconRes: Int, active: Boolean) {
             contentDescription = null,
             modifier = Modifier.padding(8.dp),
             tint = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun PrivacyRow(iconRes: Int, title: String, body: String) {
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+        SettingIcon(iconRes, active = true)
+        Spacer(modifier = Modifier.size(12.dp))
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Text(title, fontWeight = FontWeight.SemiBold)
+            Text(body, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun SupportAction(
+    labelRes: Int,
+    iconRes: Int,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    destructive: Boolean = false,
+) {
+    val actionColor = if (destructive && enabled) MaterialTheme.colorScheme.error else LocalContentColor.current
+    TextButton(onClick = onClick, enabled = enabled) {
+        Icon(
+            painterResource(iconRes),
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = actionColor,
+        )
+        Spacer(modifier = Modifier.size(8.dp))
+        Text(
+            stringResource(labelRes),
+            color = actionColor,
         )
     }
 }
