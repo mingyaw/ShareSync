@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -147,26 +149,29 @@ fun ShareSyncApp(
                     .padding(insets)
                     .verticalScroll(rememberScrollState())
                     .padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 28.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                when (destination) {
-                    MainDestination.SYNC -> PhotoSyncHome(home, onContinue, onGrant, onStart)
-                    MainDestination.ACTIVITY -> ActivityPage(
-                        state = activity,
-                        onOpenSync = { onDestinationChange(MainDestination.SYNC) },
-                    )
-                    MainDestination.SETTINGS -> SettingsPage(
-                        state = settings,
-                        onStart = onStart,
-                        onStop = onStop,
-                        onGrantPhotos = onGrantPhotos,
-                        onGrantNotifications = onGrantNotifications,
-                        onCopyPairing = onCopyPairing,
-                        onCopyEndpoint = onCopyEndpoint,
-                        onCopyResult = onCopyResult,
-                        onCopyDiagnostics = onCopyDiagnostics,
-                        onClearHistory = onClearHistory,
-                        onToggleAdvanced = onToggleAdvanced,
-                    )
+                Column(modifier = Modifier.fillMaxWidth().widthIn(max = 720.dp)) {
+                    when (destination) {
+                        MainDestination.SYNC -> PhotoSyncHome(home, onContinue, onGrant, onStart)
+                        MainDestination.ACTIVITY -> ActivityPage(
+                            state = activity,
+                            onOpenSync = { onDestinationChange(MainDestination.SYNC) },
+                        )
+                        MainDestination.SETTINGS -> SettingsPage(
+                            state = settings,
+                            onStart = onStart,
+                            onStop = onStop,
+                            onGrantPhotos = onGrantPhotos,
+                            onGrantNotifications = onGrantNotifications,
+                            onCopyPairing = onCopyPairing,
+                            onCopyEndpoint = onCopyEndpoint,
+                            onCopyResult = onCopyResult,
+                            onCopyDiagnostics = onCopyDiagnostics,
+                            onClearHistory = onClearHistory,
+                            onToggleAdvanced = onToggleAdvanced,
+                        )
+                    }
                 }
             }
         }
@@ -182,6 +187,8 @@ private fun ActivityPage(state: ActivityUiState, onOpenSync: () -> Unit) {
             SectionHeading(stringResource(R.string.activity_empty_title))
             Text(stringResource(R.string.activity_empty_body), color = MaterialTheme.colorScheme.onSurfaceVariant)
             Button(onClick = onOpenSync, modifier = Modifier.fillMaxWidth()) {
+                Icon(painterResource(R.drawable.ic_nav_sync), contentDescription = null, modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.size(8.dp))
                 Text(stringResource(R.string.activity_open_sync))
             }
         } else {
@@ -212,6 +219,8 @@ private fun ActivityPage(state: ActivityUiState, onOpenSync: () -> Unit) {
                     color = MaterialTheme.colorScheme.error,
                 )
                 OutlinedButton(onClick = onOpenSync, modifier = Modifier.fillMaxWidth()) {
+                    Icon(painterResource(R.drawable.ic_nav_sync), contentDescription = null, modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.size(8.dp))
                     Text(stringResource(R.string.activity_review_sync))
                 }
             }
@@ -253,13 +262,39 @@ private fun SettingsPage(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(22.dp)) {
         SectionHeading(stringResource(R.string.settings_connection))
-        SharingRow(state.sharing) { enabled -> if (enabled) onStart() else onStop() }
-        SettingsRow(stringResource(R.string.settings_local_network), state.networkReady)
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 1.dp,
+        ) {
+            Column {
+                SharingRow(state.sharing) { enabled -> if (enabled) onStart() else onStop() }
+                HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
+                SettingsRow(
+                    label = stringResource(R.string.settings_local_network),
+                    ready = state.networkReady,
+                    iconRes = R.drawable.ic_action_network,
+                )
+                HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
+                SettingsRow(
+                    label = stringResource(R.string.settings_photo_access),
+                    ready = state.photoAccess,
+                    iconRes = R.drawable.ic_action_photo,
+                    onFix = onGrantPhotos,
+                )
+                HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
+                SettingsRow(
+                    label = stringResource(R.string.settings_notifications),
+                    ready = state.notificationAccess,
+                    iconRes = R.drawable.ic_action_notifications,
+                    onFix = onGrantNotifications,
+                )
+            }
+        }
         if (!state.networkReady) {
             Text(stringResource(R.string.home_same_network), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        SettingsRow(stringResource(R.string.settings_photo_access), state.photoAccess, onGrantPhotos)
-        SettingsRow(stringResource(R.string.settings_notifications), state.notificationAccess, onGrantNotifications)
         HorizontalDivider()
         SectionHeading(stringResource(R.string.ui_connection_tools))
         Text(stringResource(R.string.settings_pairing_description), color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -267,6 +302,8 @@ private fun SettingsPage(
             Text(stringResource(R.string.settings_pairing_unavailable), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         TextButton(onClick = onCopyPairing, enabled = state.pairingAvailable) {
+            Icon(painterResource(R.drawable.ic_action_copy), contentDescription = null, modifier = Modifier.size(20.dp))
+            Spacer(modifier = Modifier.size(8.dp))
             Text(stringResource(R.string.sync_copy_pairing_payload))
         }
         HorizontalDivider()
@@ -275,6 +312,12 @@ private fun SettingsPage(
         Text(stringResource(R.string.privacy_storage), color = MaterialTheme.colorScheme.onSurfaceVariant)
         HorizontalDivider()
         TextButton(onClick = onToggleAdvanced) {
+            Icon(
+                painterResource(if (state.advancedExpanded) R.drawable.ic_action_collapse else R.drawable.ic_action_expand),
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+            )
+            Spacer(modifier = Modifier.size(8.dp))
             Text(stringResource(if (state.advancedExpanded) R.string.settings_hide_advanced_support else R.string.settings_show_advanced_support))
         }
         if (state.advancedExpanded) {
@@ -283,15 +326,23 @@ private fun SettingsPage(
             Text(state.requestActivity, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(state.transportSecurity, color = MaterialTheme.colorScheme.onSurfaceVariant)
             TextButton(onClick = onCopyEndpoint, enabled = state.endpointAvailable) {
+                Icon(painterResource(R.drawable.ic_action_copy), contentDescription = null, modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.size(8.dp))
                 Text(stringResource(R.string.sync_copy_endpoint))
             }
             TextButton(onClick = onCopyResult, enabled = state.resultAvailable) {
+                Icon(painterResource(R.drawable.ic_action_copy), contentDescription = null, modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.size(8.dp))
                 Text(stringResource(R.string.sync_copy_sync_result))
             }
             TextButton(onClick = onCopyDiagnostics) {
+                Icon(painterResource(R.drawable.ic_action_copy), contentDescription = null, modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.size(8.dp))
                 Text(stringResource(R.string.diagnostics_copy_diagnostics))
             }
             TextButton(onClick = onClearHistory, enabled = state.resultAvailable) {
+                Icon(painterResource(R.drawable.ic_action_delete), contentDescription = null, modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.size(8.dp))
                 Text(stringResource(R.string.sync_clear_sync_state), color = MaterialTheme.colorScheme.error)
             }
         }
@@ -335,10 +386,12 @@ private fun HistoryMetric(
 @Composable
 private fun SharingRow(enabled: Boolean, onChange: (Boolean) -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp),
+        modifier = Modifier.fillMaxWidth().heightIn(min = 72.dp).padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
+        SettingIcon(R.drawable.ic_nav_sync, active = enabled)
+        Spacer(modifier = Modifier.size(12.dp))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             Text(stringResource(R.string.settings_photo_sharing), fontWeight = FontWeight.SemiBold)
             Text(
@@ -355,12 +408,14 @@ private fun SharingRow(enabled: Boolean, onChange: (Boolean) -> Unit) {
 }
 
 @Composable
-private fun SettingsRow(label: String, ready: Boolean, onFix: (() -> Unit)? = null) {
+private fun SettingsRow(label: String, ready: Boolean, iconRes: Int, onFix: (() -> Unit)? = null) {
     Row(
-        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+        modifier = Modifier.fillMaxWidth().heightIn(min = 68.dp).padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
+        SettingIcon(iconRes, active = ready)
+        Spacer(modifier = Modifier.size(12.dp))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(label)
             Text(
@@ -372,5 +427,21 @@ private fun SettingsRow(label: String, ready: Boolean, onFix: (() -> Unit)? = nu
         if (!ready && onFix != null) {
             TextButton(onClick = onFix) { Text(stringResource(R.string.settings_allow)) }
         }
+    }
+}
+
+@Composable
+private fun SettingIcon(iconRes: Int, active: Boolean) {
+    Surface(
+        modifier = Modifier.size(36.dp),
+        shape = RoundedCornerShape(8.dp),
+        color = if (active) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+    ) {
+        Icon(
+            painter = painterResource(iconRes),
+            contentDescription = null,
+            modifier = Modifier.padding(8.dp),
+            tint = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
