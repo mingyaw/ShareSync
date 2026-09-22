@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#69D4BC</color>
+    <color name="ic_launcher_background">#087F70</color>
     <color name="sharesync_primary">#69D4BC</color>
     <color name="sharesync_on_primary">#10211E</color>
     <color name="sharesync_success">#4ADE80</color>

@@ -7,6 +7,9 @@
         <item name="android:statusBarColor">@color/sharesync_background</item>
         <item name="android:navigationBarColor">@color/sharesync_surface</item>
         <item name="android:windowBackground">@color/sharesync_background</item>
+        <item name="android:windowSplashScreenBackground">@color/ic_launcher_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="android:windowSplashScreenAnimationDuration">250</item>
         <item name="android:forceDarkAllowed">false</item>
     </style>
 </resources>
