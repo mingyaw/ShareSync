@@ -28,7 +28,7 @@
 "ios.connection.port" = "Port";
 "ios.footer.foreground" = "Keep ShareSync open while photos sync. If iOS pauses the app, completed items stay recorded and the remaining photos can resume.";
 "ios.feedback.transfer_active" = "Keep ShareSync open while the current photo transfer finishes.";
-"ios.header.subtitle" = "Back up Android photos to iCloud through this iPhone.";
+"ios.header.subtitle" = "Bring Android photos into this iPhone, then let iCloud Photos handle backup.";
 "ios.metric.done" = "Done";
 "ios.metric.left" = "Left";
 "ios.metric.photos" = "Photos";
@@ -114,7 +114,7 @@
 "ios.summary.pair_to_begin" = "Pair with your Android phone to begin.";
 "ios.summary.remaining_format" = "%@ photos ready to sync.";
 "ios.summary.retry_required" = "Some photos need attention before this sync is complete.";
-"ios.settings.advanced" = "Saved Android, status, and support";
+"ios.settings.advanced" = "Paired phone and support";
 "ios.toast.sync_result_copied" = "Support result copied.";
 "ios.toast.diagnostics_copied" = "Support snapshot copied without pairing secrets.";
 "ios.transfer.cancelled_default" = "Transfer paused. Completed photos are kept; tap Resume Photo Sync to continue remaining photos.";

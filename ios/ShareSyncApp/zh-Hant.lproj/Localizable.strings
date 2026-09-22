@@ -28,7 +28,7 @@
 "ios.connection.port" = "連接埠";
 "ios.footer.foreground" = "同步照片時請保持 ShareSync 開啟。如果 iOS 暫停 App，已完成項目會保留紀錄，剩餘照片可繼續同步。";
 "ios.feedback.transfer_active" = "目前照片傳輸完成前，請保持 ShareSync 開啟。";
-"ios.header.subtitle" = "透過這支 iPhone 將 Android 照片備份到 iCloud。";
+"ios.header.subtitle" = "將 Android 照片帶到這支 iPhone，再由 iCloud 照片接手備份。";
 "ios.metric.done" = "完成";
 "ios.metric.left" = "剩餘";
 "ios.metric.photos" = "照片";
@@ -114,7 +114,7 @@
 "ios.summary.pair_to_begin" = "與 Android 手機配對後開始。";
 "ios.summary.remaining_format" = "還有 %@ 張照片可同步。";
 "ios.summary.retry_required" = "部分照片需要處理後才能完成這次同步。";
-"ios.settings.advanced" = "已儲存 Android、狀態與支援";
+"ios.settings.advanced" = "已配對手機與支援";
 "ios.toast.sync_result_copied" = "已複製支援結果。";
 "ios.toast.diagnostics_copied" = "已複製支援快照，未包含配對密鑰。";
 "ios.transfer.cancelled_default" = "傳輸已暫停。已完成照片會保留紀錄，點選繼續同步照片即可接續剩餘照片。";
@@ -165,7 +165,7 @@
 "ios.privacy.local_history" = "配對與照片完成紀錄會保留在這支 iPhone。";
 "ios.privacy.icloud_note" = "照片匯入後，由照片 App 與你現有的 iCloud 照片設定決定是否備份到 iCloud。";
 "ios.tab.receive" = "接收";
-"ios.tab.activity" = "活動";
+"ios.tab.activity" = "紀錄";
 "ios.tab.settings" = "設定";
 "ios.home.connected" = "已配對 Android 手機";
 "ios.home.not_connected" = "連接 Android 手機";

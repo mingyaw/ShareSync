@@ -11,7 +11,6 @@
     <string name="sync_foreground_channel_name">照片同步</string>
     <string name="sync_foreground_channel_description">ShareSync 開啟或在背景時，維持本機 Android 到 iOS 照片傳輸可用。</string>
     <string name="sync_foreground_notification_title">ShareSync 照片傳輸</string>
-    <string name="sync_foreground_notification_text">Android 照片可在本機網路提供給已配對的 iPhone。</string>
     <string name="sync_foreground_notification_waiting">照片已準備好，請在 iPhone 開啟 ShareSync 接收。</string>
     <string name="sync_foreground_notification_connected">iPhone 已連線，請讓兩支手機保持在附近。</string>
     <string name="sync_foreground_notification_complete">照片同步完成，照片分享會繼續等待新照片。</string>
