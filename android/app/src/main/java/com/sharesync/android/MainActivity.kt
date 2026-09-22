@@ -423,6 +423,18 @@ class MainActivity : ComponentActivity() {
         currentSyncHistory = snapshot.syncHistory
         currentRequestActivity = snapshot.requestActivity
         hasConnectedPeer = snapshot.hasConnectedPeer
+        if (snapshot.isRunning) {
+            PhotoSharingService.update(this, notificationState(snapshot))
+        }
+    }
+
+    private fun notificationState(snapshot: PhotoSharingSnapshot): NotificationState {
+        val hasFailures = snapshot.syncResult?.results?.any { it.status.isRetryableFailure } == true
+        return NotificationState.from(
+            hasConnectedPeer = snapshot.hasConnectedPeer,
+            hasSyncResult = snapshot.syncResult != null,
+            hasFailures = hasFailures,
+        )
     }
 
     private fun currentEndpointUrl(): String? {

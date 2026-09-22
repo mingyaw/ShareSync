@@ -12,6 +12,10 @@
     <string name="sync_foreground_channel_description">Keeps local Android-to-iOS photo transfer available while ShareSync is open or backgrounded.</string>
     <string name="sync_foreground_notification_title">ShareSync photo transfer</string>
     <string name="sync_foreground_notification_text">Android photos are available to the paired iPhone on this local network.</string>
+    <string name="sync_foreground_notification_waiting">Photos are ready. Open ShareSync on iPhone to receive them.</string>
+    <string name="sync_foreground_notification_connected">iPhone connected. Keep both phones nearby.</string>
+    <string name="sync_foreground_notification_complete">Photo sync complete. Sharing remains available for new photos.</string>
+    <string name="sync_foreground_notification_attention">Some photos need another try. Open ShareSync to review.</string>
     <string name="sync_phase_permission_required">Photo Access Needed</string>
     <string name="sync_phase_ready_to_start">Ready To Share Photos</string>
     <string name="sync_phase_server_starting">Starting Photo Sync</string>
