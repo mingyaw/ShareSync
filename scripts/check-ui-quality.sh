@@ -20,6 +20,8 @@ xmllint --noout \
 
 for color_name in \
   sharesync_primary \
+  sharesync_accent \
+  sharesync_on_accent \
   sharesync_success \
   sharesync_warning \
   sharesync_info \
@@ -32,6 +34,13 @@ for color_name in \
   rg -q "<color name=\"${color_name}\">" "$android_light"
   rg -q "<color name=\"${color_name}\">" "$android_dark"
 done
+
+rg -q '<color name="sharesync_primary">#3159C6</color>' "$android_light"
+rg -q '<color name="sharesync_accent">#C84F37</color>' "$android_light"
+rg -q '<color name="sharesync_primary">#AFC2FF</color>' "$android_dark"
+rg -q '<color name="sharesync_accent">#FFAD99</color>' "$android_dark"
+rg -q 'primary = adaptive\(light: 0x3159C6, dark: 0xAFC2FF\)' ios/ShareSyncApp/ShareSyncDesignSystem.swift
+rg -q 'accent = adaptive\(light: 0xC84F37, dark: 0xFFAD99\)' ios/ShareSyncApp/ShareSyncDesignSystem.swift
 
 if rg -n 'Color\.(rgb|WHITE)' android/app/src/main/java/com/sharesync/android/ui; then
   echo "Android screen contains a hard-coded UI color." >&2

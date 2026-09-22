@@ -216,7 +216,7 @@ struct ContentView: View {
             Label(isPaired ? "ios.home.connected" : "ios.home.not_connected", systemImage: isPaired ? "checkmark.circle.fill" : "iphone.and.arrow.forward")
                 .font(.subheadline)
                 .fontWeight(.semibold)
-                .foregroundStyle(isPaired ? ShareSyncTheme.success : ShareSyncTheme.info)
+                .foregroundStyle(isPaired ? ShareSyncTheme.success : ShareSyncTheme.accent)
                 .accessibilityAddTraits(.isHeader)
 
             Text("ios.header.subtitle")

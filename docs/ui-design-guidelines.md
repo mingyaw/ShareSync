@@ -44,31 +44,44 @@ ShareSync 是一個私密、本地、跨裝置同步工具。UI 必須讓使用�
 
 ### 2.2 色彩方向
 
-建議主色：
+M51A 品牌主色「Bridge Blue」：
 
 ```text
-Primary: #087F70
+Primary: #3159C6
 ```
 
 用途：
 
 - 主要 CTA。
-- 連線成功。
+- 兩機連線與同步進度。
 - 同步中進度。
 - 可操作重點。
 
-輔助色：
+品牌輔色「Handoff Coral」：
 
 ```text
-Success: #16803A
-Warning: #B65E34
-Error: #B42318
-Info: #286E9B
-Neutral Text: #19272B
-Secondary Text: #526268
-Background: #F5F7F6
+Accent: #C84F37
+```
+
+用途：
+
+- 配對與跨裝置交接提示。
+- App icon 的同步符號。
+- 少量品牌識別；不可代替錯誤色。
+
+語意與中性色：
+
+```text
+Success: #197653
+Warning: #A65A16
+Error: #B3261E
+Info: #24708F
+Neutral Text: #1B1D24
+Secondary Text: #5C606D
+Background: #F7F8FC
 Surface: #FFFFFF
-Divider: #D1DDDA
+Surface Alt: #EEF1FA
+Divider: #DDE1EC
 ```
 
 避免：
@@ -85,12 +98,14 @@ Divider: #D1DDDA
 深色模式方向：
 
 ```text
-Background: #101A1A
-Surface: #182625
-Primary: #69D4BC
-Text Primary: #F1F6F4
-Text Secondary: #B4C4C1
-Divider: #3B5450
+Background: #111318
+Surface: #191B21
+Surface Alt: #242936
+Primary: #AFC2FF
+Accent: #FFAD99
+Text Primary: #F2F3FA
+Text Secondary: #C3C6D2
+Divider: #3A3F4C
 ```
 
 深色模式不可只反轉顏色，需確保：

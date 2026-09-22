@@ -6,7 +6,11 @@ M24 turns the existing UI guidelines into small native theme tokens for the phot
 
 ## Tokens
 
-The implemented tone set follows `docs/ui-design-guidelines.md`:
+M51A supersedes the original palette below with the Local Bridge palette documented
+in `docs/m51a-brand-color-system.md`. This file remains the record of the original
+M24 design-system pass.
+
+The original implemented tone set followed `docs/ui-design-guidelines.md`:
 
 - Primary: `#087F70` light / `#69D4BC` dark
 - Success: `#16803A`

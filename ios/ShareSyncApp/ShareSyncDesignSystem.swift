@@ -45,14 +45,16 @@ enum ShareSyncTone {
 }
 
 enum ShareSyncTheme {
-    static let primary = adaptive(light: 0x087F70, dark: 0x69D4BC)
-    static let success = adaptive(light: 0x16803A, dark: 0x4ADE80)
-    static let warning = adaptive(light: 0xB45309, dark: 0xFBBF24)
-    static let error = adaptive(light: 0xB42318, dark: 0xFFB4AB)
-    static let info = adaptive(light: 0x0E7490, dark: 0x67E8F9)
-    static let background = Color(.systemGroupedBackground)
-    static let surface = Color(.secondarySystemGroupedBackground)
-    static let divider = Color.secondary.opacity(0.18)
+    static let primary = adaptive(light: 0x3159C6, dark: 0xAFC2FF)
+    static let accent = adaptive(light: 0xC84F37, dark: 0xFFAD99)
+    static let success = adaptive(light: 0x197653, dark: 0x6FD6A8)
+    static let warning = adaptive(light: 0xA65A16, dark: 0xF3B66D)
+    static let error = adaptive(light: 0xB3261E, dark: 0xFFB4AB)
+    static let info = adaptive(light: 0x24708F, dark: 0x79C5E8)
+    static let background = adaptive(light: 0xF7F8FC, dark: 0x111318)
+    static let surface = adaptive(light: 0xFFFFFF, dark: 0x191B21)
+    static let surfaceAlt = adaptive(light: 0xEEF1FA, dark: 0x242936)
+    static let divider = adaptive(light: 0xDDE1EC, dark: 0x3A3F4C)
 
     private static func adaptive(light: Int, dark: Int) -> Color {
         Color(

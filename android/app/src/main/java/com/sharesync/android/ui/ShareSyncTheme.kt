@@ -6,6 +6,8 @@ import com.sharesync.android.R
 data class ShareSyncTheme(
     val primary: Int,
     val onPrimary: Int,
+    val accent: Int,
+    val onAccent: Int,
     val success: Int,
     val warning: Int,
     val info: Int,
@@ -22,6 +24,8 @@ data class ShareSyncTheme(
             return ShareSyncTheme(
                 primary = context.getColor(R.color.sharesync_primary),
                 onPrimary = context.getColor(R.color.sharesync_on_primary),
+                accent = context.getColor(R.color.sharesync_accent),
+                onAccent = context.getColor(R.color.sharesync_on_accent),
                 success = context.getColor(R.color.sharesync_success),
                 warning = context.getColor(R.color.sharesync_warning),
                 info = context.getColor(R.color.sharesync_info),

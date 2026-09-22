@@ -59,9 +59,9 @@ fun ShareSyncComposeTheme(content: @Composable () -> Unit) {
         colorScheme = scheme.copy(
             primary = colorResource(R.color.sharesync_primary),
             onPrimary = colorResource(R.color.sharesync_on_primary),
-            secondary = colorResource(R.color.sharesync_info),
-            onSecondary = colorResource(R.color.sharesync_on_primary),
-            tertiary = colorResource(R.color.sharesync_warning),
+            secondary = colorResource(R.color.sharesync_accent),
+            onSecondary = colorResource(R.color.sharesync_on_accent),
+            tertiary = colorResource(R.color.sharesync_info),
             onTertiary = colorResource(R.color.sharesync_on_primary),
             background = colorResource(R.color.sharesync_background),
             onBackground = colorResource(R.color.sharesync_text_primary),

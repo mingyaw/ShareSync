@@ -1,6 +1,6 @@
 # ShareSync
 
-Status: M0 photo PoC through M50 photo MVP Source RC are complete for the photo-only source-code track.
+Status: M0 photo PoC through M50 photo MVP Source RC are complete. M51A establishes the Local Bridge product color system for the photo-only release track.
 
 ShareSync is a native Android and iOS local sync app for a two-phone workflow:
 
@@ -67,6 +67,7 @@ The current codebase contains:
 - Beta handoff output includes support snapshot summaries and explicit deferred validation notes.
 - Error recovery documentation is aligned with support snapshot next-step evidence.
 - Android and iOS primary UI copy now emphasizes photo status, pairing, syncing, and support instead of protocol terminology.
+- Android and iOS share the M51A Local Bridge palette: Bridge Blue for trusted connection, Handoff Coral for pairing identity, and Vault Green for completed private transfer.
 - Android and iOS screens now use lightweight visual theme tokens for status colors, surfaces, dividers, and panel polish.
 - Android and iOS primary screens now expose section headings and status semantics to assistive technologies.
 - iOS summary metrics, status rows, and paired actions adapt from horizontal to vertical layouts when content or system text requires more room.
@@ -182,6 +183,7 @@ tasks/
 - [M48 Product UX And Accessibility Closure](docs/m48-source-rc.md)
 - [M49 Platform Compliance Package](docs/m49-source-rc.md)
 - [M50 Photo MVP Source Release Candidate](docs/m50-source-rc.md)
+- [M51A Brand Color System](docs/m51a-brand-color-system.md)
 - [Privacy Data Summary](docs/privacy-data-summary.md)
 - [UI/UX Design Guidelines](docs/ui-design-guidelines.md)
 - [Error Recovery Matrix](docs/error-recovery-matrix.md)

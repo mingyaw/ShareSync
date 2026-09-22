@@ -25,7 +25,8 @@ guard let bitmap = NSBitmapImageRep(
 NSGraphicsContext.saveGraphicsState()
 NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmap)
 
-NSColor(calibratedRed: 37 / 255, green: 99 / 255, blue: 235 / 255, alpha: 1).setFill()
+// Bridge Blue carries the trusted local connection; coral marks the handoff.
+NSColor(calibratedRed: 49 / 255, green: 89 / 255, blue: 198 / 255, alpha: 1).setFill()
 NSBezierPath(rect: NSRect(origin: .zero, size: size)).fill()
 
 func drawPhone(_ rect: NSRect) {
@@ -43,7 +44,7 @@ drawPhone(NSRect(x: 150, y: 170, width: 300, height: 650))
 drawPhone(NSRect(x: 574, y: 204, width: 300, height: 650))
 
 let syncDisc = NSBezierPath(ovalIn: NSRect(x: 336, y: 336, width: 352, height: 352))
-NSColor(calibratedRed: 14 / 255, green: 116 / 255, blue: 144 / 255, alpha: 1).setFill()
+NSColor(calibratedRed: 255 / 255, green: 226 / 255, blue: 216 / 255, alpha: 1).setFill()
 syncDisc.fill()
 
 let upperArrow = NSBezierPath()
@@ -66,7 +67,7 @@ lowerArrow.line(to: NSPoint(x: 440, y: 476))
 lowerArrow.curve(to: NSPoint(x: 578, y: 498), controlPoint1: NSPoint(x: 476, y: 440), controlPoint2: NSPoint(x: 548, y: 448))
 lowerArrow.close()
 
-NSColor.white.setFill()
+NSColor(calibratedRed: 200 / 255, green: 79 / 255, blue: 55 / 255, alpha: 1).setFill()
 upperArrow.fill()
 lowerArrow.fill()
 
