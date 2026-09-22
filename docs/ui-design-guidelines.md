@@ -47,7 +47,7 @@ ShareSync 是一個私密、本地、跨裝置同步工具。UI 必須讓使用�
 建議主色：
 
 ```text
-Primary: #2563EB
+Primary: #087F70
 ```
 
 用途：
@@ -60,15 +60,15 @@ Primary: #2563EB
 輔助色：
 
 ```text
-Success: #16A34A
-Warning: #D97706
-Error: #DC2626
-Info: #0891B2
-Neutral Text: #111827
-Secondary Text: #6B7280
-Background: #F8FAFC
+Success: #16803A
+Warning: #B65E34
+Error: #B42318
+Info: #286E9B
+Neutral Text: #19272B
+Secondary Text: #526268
+Background: #F5F7F6
 Surface: #FFFFFF
-Divider: #E5E7EB
+Divider: #D1DDDA
 ```
 
 避免：
@@ -85,12 +85,12 @@ Divider: #E5E7EB
 深色模式方向：
 
 ```text
-Background: #0B1220
-Surface: #111827
-Primary: #60A5FA
-Text Primary: #F9FAFB
-Text Secondary: #9CA3AF
-Divider: #243244
+Background: #101A1A
+Surface: #182625
+Primary: #69D4BC
+Text Primary: #F1F6F4
+Text Secondary: #B4C4C1
+Divider: #3B5450
 ```
 
 深色模式不可只反轉顏色，需確保：
@@ -581,4 +581,3 @@ ShareSync 第一版 UI 應該像一個可靠的系統備份工具：
 - 用進度與記錄建立信任。
 - 用清楚文案解釋 iOS 背景限制。
 - 用克制色彩與平台原生元件降低學習成本。
-

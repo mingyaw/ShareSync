@@ -33,7 +33,7 @@ for color_name in \
   rg -q "<color name=\"${color_name}\">" "$android_dark"
 done
 
-if rg -n 'Color\.(rgb|WHITE)' android/app/src/main/java/com/sharesync/android/MainActivity.kt; then
+if rg -n 'Color\.(rgb|WHITE)' android/app/src/main/java/com/sharesync/android/ui; then
   echo "Android screen contains a hard-coded UI color." >&2
   exit 1
 fi
@@ -56,7 +56,10 @@ for key in \
   ios.tab.receive \
   ios.tab.activity \
   ios.tab.settings \
-  ios.settings.support; do
+  ios.settings.support \
+  ios.activity.empty_title \
+  ios.activity.history_format \
+  ios.qr.open_settings; do
   rg -q "\"${key}\"[[:space:]]*=" "$ios_en"
   rg -q "\"${key}\"[[:space:]]*=" "$ios_zh"
 done
@@ -66,22 +69,29 @@ rg -q 'ViewThatFits\(in: \.horizontal\)' ios/ShareSyncApp/ContentView.swift
 rg -q 'FeedbackMessage' ios/ShareSyncApp/ContentView.swift
 rg -q 'confirmationDialog' ios/ShareSyncApp/ContentView.swift
 rg -Fq 'TabView(selection: $selectedTab)' ios/ShareSyncApp/ContentView.swift
+rg -q 'Form[[:space:]]*\{' ios/ShareSyncApp/ContentView.swift
+rg -q 'SyncHistoryRow' ios/ShareSyncApp/ContentView.swift
+rg -q 'UIApplication.openSettingsURLString' ios/ShareSyncApp/QRCodeScannerView.swift
 rg -q 'case receive' ios/ShareSyncApp/ContentView.swift
 rg -q 'case activity' ios/ShareSyncApp/ContentView.swift
 rg -q 'case settings' ios/ShareSyncApp/ContentView.swift
 
 for key in \
-  m36_nav_sync \
-  m36_nav_activity \
-  m36_nav_settings; do
+  ui_nav_sync \
+  ui_nav_activity \
+  ui_nav_settings \
+  settings_iphone_connected \
+  settings_private_transfer; do
   rg -q "name=\"${key}\"" android/app/src/main/res/values/strings.xml
   rg -q "name=\"${key}\"" android/app/src/main/res/values-zh-rTW/strings.xml
 done
 
-rg -q 'private fun bottomNavigation' android/app/src/main/java/com/sharesync/android/MainActivity.kt
-rg -q 'MainSection.SYNC' android/app/src/main/java/com/sharesync/android/MainActivity.kt
-rg -q 'MainSection.ACTIVITY' android/app/src/main/java/com/sharesync/android/MainActivity.kt
-rg -q 'MainSection.SETTINGS' android/app/src/main/java/com/sharesync/android/MainActivity.kt
+rg -q 'NavigationBar' android/app/src/main/java/com/sharesync/android/ui/ShareSyncApp.kt
+rg -q 'MainDestination.SYNC' android/app/src/main/java/com/sharesync/android/ui/ShareSyncApp.kt
+rg -q 'MainDestination.ACTIVITY' android/app/src/main/java/com/sharesync/android/ui/ShareSyncApp.kt
+rg -q 'MainDestination.SETTINGS' android/app/src/main/java/com/sharesync/android/ui/ShareSyncApp.kt
+rg -q 'ShareSyncComposeTheme' android/app/src/main/java/com/sharesync/android/ui/PhotoSyncHome.kt
+rg -q 'peerConnected' android/app/src/main/java/com/sharesync/android/ui/ShareSyncApp.kt
 
 echo "ok adaptive appearance, feedback states, and three-section navigation"
 echo

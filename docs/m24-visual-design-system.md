@@ -8,22 +8,23 @@ M24 turns the existing UI guidelines into small native theme tokens for the phot
 
 The implemented tone set follows `docs/ui-design-guidelines.md`:
 
-- Primary: `#2563EB`
-- Success: `#16A34A`
-- Warning: `#D97706`
-- Error: `#DC2626`
-- Info: `#0891B2`
+- Primary: `#087F70` light / `#69D4BC` dark
+- Success: `#16803A`
+- Warning: `#B65E34`
+- Error: `#B42318`
+- Info: `#286E9B`
 - Neutral text, grouped backgrounds, surfaces, and subtle dividers
 
 ## Android
 
-Android now uses a local `ShareSyncTheme` in `MainActivity` for:
+Android now uses Material 3 colors in `ShareSyncComposeTheme` for:
 
 - App background.
 - Panel surfaces.
 - Panel borders.
 - Section accent bars.
 - Primary and secondary text.
+- Grouped settings, action icons, and light/dark system surfaces.
 
 ## iOS
 
@@ -33,6 +34,7 @@ iOS now uses `ShareSyncTheme` and `ShareSyncTone` in `ContentView` for:
 - Summary status tones.
 - Metric backgrounds and borders.
 - Status row dividers.
+- The same teal ShareSync identity used by Android while retaining native SwiftUI controls.
 
 ## Scope
 

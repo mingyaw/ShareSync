@@ -33,12 +33,14 @@ echo "ok app identity assets"
 echo
 echo "== First-run and privacy copy =="
 for key in \
-  m32_onboarding_title \
-  m32_onboarding_body \
-  m32_onboarding_privacy \
-  m32_onboarding_continue \
-  m33_privacy_summary \
-  m33_privacy_storage; do
+  onboarding_title \
+  onboarding_step_photos \
+  onboarding_step_network \
+  onboarding_step_pair \
+  onboarding_privacy \
+  onboarding_continue \
+  privacy_summary \
+  privacy_storage; do
   rg -q "name=\"${key}\"" android/app/src/main/res/values/strings.xml
   rg -q "name=\"${key}\"" android/app/src/main/res/values-zh-rTW/strings.xml
 done
