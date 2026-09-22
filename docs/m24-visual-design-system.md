@@ -28,7 +28,7 @@ Android now uses Material 3 colors in `ShareSyncComposeTheme` for:
 
 ## iOS
 
-iOS now uses `ShareSyncTheme` and `ShareSyncTone` in `ContentView` for:
+iOS now uses `ShareSyncTheme` and `ShareSyncTone` in `ShareSyncDesignSystem.swift` for:
 
 - Background and surfaces.
 - Summary status tones.

@@ -64,9 +64,9 @@ for key in \
   rg -q "\"${key}\"[[:space:]]*=" "$ios_zh"
 done
 
-rg -q 'adaptive\(light:' ios/ShareSyncApp/ContentView.swift
-rg -q 'ViewThatFits\(in: \.horizontal\)' ios/ShareSyncApp/ContentView.swift
-rg -q 'FeedbackMessage' ios/ShareSyncApp/ContentView.swift
+rg -q 'adaptive\(light:' ios/ShareSyncApp/ShareSyncDesignSystem.swift
+rg -q 'ViewThatFits\(in: \.horizontal\)' ios/ShareSyncApp/ShareSyncDesignSystem.swift
+rg -q 'FeedbackMessage' ios/ShareSyncApp/ShareSyncDesignSystem.swift
 rg -q 'confirmationDialog' ios/ShareSyncApp/ContentView.swift
 rg -Fq 'TabView(selection: $selectedTab)' ios/ShareSyncApp/ContentView.swift
 rg -q 'Form[[:space:]]*\{' ios/ShareSyncApp/ContentView.swift

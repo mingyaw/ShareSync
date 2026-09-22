@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		100000000000000000000001 /* ShareSyncApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000011 /* ShareSyncApp.swift */; };
 		100000000000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000012 /* ContentView.swift */; };
+		1000000000000000000000C2 /* ShareSyncDesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000C3 /* ShareSyncDesignSystem.swift */; };
 		100000000000000000000003 /* ShareSync/Sync/SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000013 /* ShareSync/Sync/SyncModels.swift */; };
 		100000000000000000000004 /* ShareSync/Pairing/PairingPayloadParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000014 /* ShareSync/Pairing/PairingPayloadParser.swift */; };
 		100000000000000000000005 /* ShareSync/Transfer/ManifestClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000015 /* ShareSync/Transfer/ManifestClient.swift */; };
@@ -39,6 +40,7 @@
 		100000000000000000000010 /* ShareSync.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ShareSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		100000000000000000000011 /* ShareSyncApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSyncApp.swift; sourceTree = "<group>"; };
 		100000000000000000000012 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		1000000000000000000000C3 /* ShareSyncDesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSyncDesignSystem.swift; sourceTree = "<group>"; };
 		100000000000000000000013 /* ShareSync/Sync/SyncModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Sync/SyncModels.swift; sourceTree = "<group>"; };
 		100000000000000000000014 /* ShareSync/Pairing/PairingPayloadParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Pairing/PairingPayloadParser.swift; sourceTree = "<group>"; };
 		100000000000000000000015 /* ShareSync/Transfer/ManifestClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSync/Transfer/ManifestClient.swift; sourceTree = "<group>"; };
@@ -93,6 +95,7 @@
 			children = (
 				100000000000000000000011 /* ShareSyncApp.swift */,
 				100000000000000000000012 /* ContentView.swift */,
+				1000000000000000000000C3 /* ShareSyncDesignSystem.swift */,
 				100000000000000000000019 /* ManifestFetchViewModel.swift */,
 				10000000000000000000001C /* QRCodeScannerView.swift */,
 				1000000000000000000000AB /* Info.plist */,
@@ -233,6 +236,7 @@
 			files = (
 				100000000000000000000001 /* ShareSyncApp.swift in Sources */,
 				100000000000000000000002 /* ContentView.swift in Sources */,
+				1000000000000000000000C2 /* ShareSyncDesignSystem.swift in Sources */,
 				100000000000000000000009 /* ManifestFetchViewModel.swift in Sources */,
 				10000000000000000000000C /* QRCodeScannerView.swift in Sources */,
 				100000000000000000000003 /* ShareSync/Sync/SyncModels.swift in Sources */,
