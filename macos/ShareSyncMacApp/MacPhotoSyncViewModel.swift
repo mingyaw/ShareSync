@@ -262,6 +262,15 @@ final class MacPhotoSyncViewModel: ObservableObject {
         pairingPayload = ""
         pairingQRCodePayload = nil
         phase = .ready
+        refreshAfterPairing()
+    }
+
+    private func refreshAfterPairing() {
+        syncTask?.cancel()
+        syncTask = Task { [weak self] in
+            guard let self else { return }
+            _ = await self.loadManifest()
+        }
     }
 
     func resetLocalHistory() {

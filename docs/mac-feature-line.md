@@ -23,6 +23,7 @@ M0 includes:
 - Android pairing secret persistence across photo-service and app restarts.
 - Bonjour endpoint rediscovery, with the saved host and port as fallback.
 - Android health identity validation before protected requests.
+- Automatic Android health validation and photo-manifest refresh immediately after pairing.
 - Signed manifest, media, and sync-result requests.
 - Paged photo manifest loading.
 - One-photo transfer with size and optional SHA-256 validation.
