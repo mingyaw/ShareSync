@@ -9,6 +9,7 @@ import com.sharesync.android.security.DeviceIdentity
 import com.sharesync.android.security.DeviceIdentityStore
 import com.sharesync.android.security.LocalCertificateProvider
 import com.sharesync.android.security.LocalServerTlsContextProvider
+import com.sharesync.android.security.SharedPreferencesPairingSecretStore
 import com.sharesync.android.sync.ManifestBuilder
 import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.sync.SyncEventStore
@@ -20,7 +21,6 @@ import com.sharesync.android.transfer.server.LocalRequestActivityTracker
 import com.sharesync.android.transfer.server.LocalSyncRouter
 import com.sharesync.android.transfer.server.LocalSyncServer
 import java.net.BindException
-import java.util.UUID
 
 data class PhotoSharingSession(
     val server: LocalSyncServer,
@@ -63,7 +63,7 @@ object PhotoSharingSessionController {
         val identity = SuspendBridge.runBlocking {
             deviceIdentityStore.getOrCreate()
         }
-        val pairingToken = UUID.randomUUID().toString().replace("-", "")
+        val pairingToken = SharedPreferencesPairingSecretStore(context).getOrCreate()
         val transportConfiguration = PhotoSharingTransportConfigurationFactory.create(
             enableQrPinnedHttps = PhotoSharingTransportFlags.enableQrPinnedHttps,
         )

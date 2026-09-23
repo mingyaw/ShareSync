@@ -80,6 +80,7 @@ fun ShareSyncApp(
     onGrantNotifications: () -> Unit,
     onStart: () -> Unit,
     onStop: () -> Unit,
+    onScanMacPairing: () -> Unit,
     onCopyPairing: () -> Unit,
     onCopyEndpoint: () -> Unit,
     onCopyResult: () -> Unit,
@@ -155,7 +156,13 @@ fun ShareSyncApp(
             ) {
                 Column(modifier = Modifier.fillMaxWidth().widthIn(max = 720.dp)) {
                     when (destination) {
-                        MainDestination.SYNC -> PhotoSyncHome(home, onContinue, onGrant, onStart)
+                        MainDestination.SYNC -> PhotoSyncHome(
+                            home,
+                            onContinue,
+                            onGrant,
+                            onStart,
+                            onScanMacPairing,
+                        )
                         MainDestination.ACTIVITY -> ActivityPage(
                             state = activity,
                             onOpenSync = { onDestinationChange(MainDestination.SYNC) },

@@ -29,6 +29,7 @@ The current codebase contains:
 - A Swift Package core at the repository root for fast iOS core tests.
 - An embedded Android local HTTP server for M0 health, manifest, and media endpoints.
 - Android QR pairing payload UI with stable local device identity and actual bound port.
+- macOS displays a short-lived pairing QR; Android scans it and returns its trusted endpoint directly over the local network.
 - Android can copy the current health endpoint for same-network or hotspot validation.
 - iOS QR scanner and manual pairing fallback.
 - Protected photo endpoints require signed local requests after QR pairing.

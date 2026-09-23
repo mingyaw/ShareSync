@@ -15,6 +15,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
     @Published var pairingPayload = ""
     @Published var host = ""
     @Published var port = "48291"
+    @Published private(set) var pairingQRCodePayload: String?
     @Published private(set) var phase: Phase = .ready
     @Published private(set) var pairedDevice: TrustedDevice?
     @Published private(set) var manifest: SyncManifest?
@@ -32,6 +33,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
     private let discovery: LocalPeerDiscovery
     private let endpointResolver: PairedEndpointResolver
     private let targetDeviceId: String
+    private let pairingListener: MacPairingListener
     private let planner = M0PhotoTransferPlanner()
     private var pairingToken: String?
     private var syncTask: Task<Void, Never>?
@@ -47,7 +49,8 @@ final class MacPhotoSyncViewModel: ObservableObject {
         resultClient: SyncResultClient = SyncResultClient(),
         discovery: LocalPeerDiscovery? = nil,
         endpointResolver: PairedEndpointResolver = PairedEndpointResolver(),
-        targetDeviceId: String = MacDeviceIdentity.persistentID()
+        targetDeviceId: String = MacDeviceIdentity.persistentID(),
+        pairingListener: MacPairingListener = MacPairingListener()
     ) {
         self.manifestClient = manifestClient
         self.healthClient = healthClient
@@ -60,6 +63,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
         self.discovery = discovery ?? BonjourLocalPeerDiscovery()
         self.endpointResolver = endpointResolver
         self.targetDeviceId = targetDeviceId
+        self.pairingListener = pairingListener
         restorePairing()
     }
 
@@ -156,21 +160,40 @@ final class MacPhotoSyncViewModel: ObservableObject {
                 trustStatus: .trusted,
                 transportSecurity: payload.transportSecurity
             )
-            pairedDevice = device
-            pairingToken = payload.pairingToken
-            host = payload.ip
-            port = String(payload.port)
-            manifest = nil
-            try sessionStore.save(
-                PairedDeviceSession(host: payload.ip, port: payload.port, device: device)
-            )
-            pairingPayload = ""
-            phase = .ready
+            savePairing(payload: payload, device: device)
         } catch PairingPayloadParserError.expired {
             phase = .failed(text("mac.error.pairing_expired"))
         } catch {
             phase = .failed(text("mac.error.pairing_invalid"))
         }
+    }
+
+    func beginMacPairing() {
+        pairingQRCodePayload = nil
+        phase = .connecting
+        Task {
+            do {
+                let offer = try await pairingListener.start(targetDeviceId: targetDeviceId) { [weak self] data in
+                    Task { @MainActor in self?.acceptAndroidPairing(data) }
+                }
+                let encoder = JSONEncoder()
+                encoder.dateEncodingStrategy = .iso8601
+                encoder.outputFormatting = [.sortedKeys]
+                pairingQRCodePayload = String(data: try encoder.encode(offer), encoding: .utf8)
+                phase = .ready
+            } catch is CancellationError {
+                return
+            } catch {
+                pairingQRCodePayload = nil
+                phase = .failed(text("mac.error.pairing_listener"))
+            }
+        }
+    }
+
+    func stopMacPairing() {
+        pairingListener.stop()
+        pairingQRCodePayload = nil
+        if !isPaired { phase = .ready }
     }
 
     func refreshPhotos() {
@@ -204,6 +227,40 @@ final class MacPhotoSyncViewModel: ObservableObject {
         host = ""
         port = "48291"
         lastSyncedFileName = nil
+        phase = .ready
+    }
+
+    private func acceptAndroidPairing(_ data: Data) {
+        do {
+            let payload = try PairingPayloadParser().parse(data, now: .distantPast)
+            let device = TrustedDevice(
+                deviceId: payload.deviceId,
+                deviceName: payload.deviceName,
+                platform: payload.platform,
+                publicKey: payload.publicKey,
+                pairingToken: payload.pairingToken,
+                pairedAt: Date(),
+                lastSeenAt: nil,
+                trustStatus: .trusted,
+                transportSecurity: payload.transportSecurity
+            )
+            savePairing(payload: payload, device: device)
+        } catch {
+            phase = .failed(text("mac.error.pairing_invalid"))
+        }
+    }
+
+    private func savePairing(payload: PairingPayload, device: TrustedDevice) {
+        pairedDevice = device
+        pairingToken = payload.pairingToken
+        host = payload.ip
+        port = String(payload.port)
+        manifest = nil
+        try? sessionStore.save(
+            PairedDeviceSession(host: payload.ip, port: payload.port, device: device)
+        )
+        pairingPayload = ""
+        pairingQRCodePayload = nil
         phase = .ready
     }
 

@@ -11,6 +11,8 @@
 		A10000000000000000000002 /* MacContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* MacContentView.swift */; };
 		A10000000000000000000003 /* MacPhotoSyncViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* MacPhotoSyncViewModel.swift */; };
 		A10000000000000000000004 /* MacDeviceIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* MacDeviceIdentity.swift */; };
+		A10000000000000000000006 /* MacPairingListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000B /* MacPairingListener.swift */; };
+		A10000000000000000000007 /* MacQRCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000C /* MacQRCodeView.swift */; };
 		A10000000000000000000005 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000008 /* Localizable.strings */; };
 		A10000000000000000000010 /* LocalPeerDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* LocalPeerDiscovery.swift */; };
 		A10000000000000000000011 /* PhotoImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* PhotoImporter.swift */; };
@@ -40,6 +42,8 @@
 		A20000000000000000000004 /* MacDeviceIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacDeviceIdentity.swift; sourceTree = "<group>"; };
 		A20000000000000000000005 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A20000000000000000000006 /* ShareSyncMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ShareSyncMac.entitlements; sourceTree = "<group>"; };
+		A2000000000000000000000B /* MacPairingListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPairingListener.swift; sourceTree = "<group>"; };
+		A2000000000000000000000C /* MacQRCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacQRCodeView.swift; sourceTree = "<group>"; };
 		A20000000000000000000009 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		A2000000000000000000000A /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		A20000000000000000000010 /* LocalPeerDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LocalPeerDiscovery.swift; path = ../ios/ShareSync/Discovery/LocalPeerDiscovery.swift; sourceTree = SOURCE_ROOT; };
@@ -89,6 +93,8 @@
 				A20000000000000000000002 /* MacContentView.swift */,
 				A20000000000000000000003 /* MacPhotoSyncViewModel.swift */,
 				A20000000000000000000004 /* MacDeviceIdentity.swift */,
+				A2000000000000000000000B /* MacPairingListener.swift */,
+				A2000000000000000000000C /* MacQRCodeView.swift */,
 				A20000000000000000000005 /* Info.plist */,
 				A20000000000000000000006 /* ShareSyncMac.entitlements */,
 				A20000000000000000000008 /* Localizable.strings */,
@@ -203,6 +209,8 @@
 				A10000000000000000000002 /* MacContentView.swift in Sources */,
 				A10000000000000000000003 /* MacPhotoSyncViewModel.swift in Sources */,
 				A10000000000000000000004 /* MacDeviceIdentity.swift in Sources */,
+				A10000000000000000000006 /* MacPairingListener.swift in Sources */,
+				A10000000000000000000007 /* MacQRCodeView.swift in Sources */,
 				A10000000000000000000010 /* LocalPeerDiscovery.swift in Sources */,
 				A10000000000000000000011 /* PhotoImporter.swift in Sources */,
 				A10000000000000000000012 /* PhotoKitPhotoImporter.swift in Sources */,

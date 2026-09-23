@@ -261,25 +261,45 @@ private struct PairingSheet: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("mac.pair.title")
                         .font(.title2.weight(.semibold))
-                    Text("mac.pair.subtitle")
+                    Text("mac.pair.scan_subtitle")
                         .foregroundStyle(.secondary)
                 }
             }
 
-            TextEditor(text: $model.pairingPayload)
-                .font(.body.monospaced())
-                .scrollContentBackground(.hidden)
-                .padding(10)
-                .frame(minHeight: 150)
-                .background(.background, in: RoundedRectangle(cornerRadius: 7))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 7)
-                        .stroke(.separator, lineWidth: 1)
+            Group {
+                if let payload = model.pairingQRCodePayload {
+                    MacQRCodeView(payload: payload)
+                        .padding(14)
+                        .background(.white, in: RoundedRectangle(cornerRadius: 8))
+                } else {
+                    ProgressView("mac.pair.preparing")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
+            }
+            .frame(width: 250, height: 250)
+            .frame(maxWidth: .infinity)
 
-            Text("mac.pair.hint")
+            Text("mac.pair.scan_hint")
                 .font(.callout)
                 .foregroundStyle(.secondary)
+
+            DisclosureGroup("mac.pair.manual") {
+                TextEditor(text: $model.pairingPayload)
+                    .font(.body.monospaced())
+                    .scrollContentBackground(.hidden)
+                    .padding(8)
+                    .frame(minHeight: 90)
+                    .background(.background, in: RoundedRectangle(cornerRadius: 7))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 7).stroke(.separator, lineWidth: 1)
+                    }
+
+                Button("mac.pair.apply_manual") {
+                    model.pair()
+                    if model.isPaired { isPresented = false }
+                }
+                .disabled(model.pairingPayload.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
 
             if let message = model.failureMessage {
                 Label(message, systemImage: "exclamationmark.triangle.fill")
@@ -292,19 +312,15 @@ private struct PairingSheet: View {
                 Button("mac.action.cancel") {
                     isPresented = false
                 }
-                Button("mac.action.pair") {
-                    model.pair()
-                    if model.isPaired {
-                        isPresented = false
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(MacBrand.handoff)
-                .disabled(model.pairingPayload.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
         }
         .padding(28)
         .frame(width: 570)
+        .task { model.beginMacPairing() }
+        .onDisappear { model.stopMacPairing() }
+        .onChange(of: model.isPaired) { paired in
+            if paired { isPresented = false }
+        }
     }
 }
 

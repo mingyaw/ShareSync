@@ -16,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
@@ -95,6 +96,7 @@ fun PhotoSyncHome(
     onContinue: () -> Unit,
     onGrant: () -> Unit,
     onStart: () -> Unit,
+    onScanMacPairing: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
         if (state.showOnboarding) {
@@ -156,6 +158,20 @@ fun PhotoSyncHome(
                 }
             }
         }
+
+        OutlinedButton(onClick = onScanMacPairing, modifier = Modifier.fillMaxWidth()) {
+            Icon(
+                painter = painterResource(R.drawable.ic_action_pairing),
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            Text(stringResource(R.string.mac_pairing_scan_action))
+        }
+        Text(
+            stringResource(R.string.mac_pairing_scan_detail),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
 
         if (state.showPairing && state.pairingPayload != null) {
             HorizontalDivider()

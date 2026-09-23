@@ -35,6 +35,12 @@
 "mac.recent.photos" = "Photos · ShareSync Backup";
 "mac.pair.title" = "Pair Android phone";
 "mac.pair.subtitle" = "Paste the pairing payload from ShareSync on Android";
+"mac.pair.scan_subtitle" = "Scan this code with ShareSync on Android";
+"mac.pair.preparing" = "Preparing pairing code...";
+"mac.pair.scan_hint" = "Keep both devices on the same Wi-Fi. Android will send its trusted connection details directly to this Mac.";
+"mac.pair.manual" = "Manual fallback";
+"mac.pair.apply_manual" = "Apply Android pairing data";
+"mac.pair.qr_accessibility" = "Mac pairing QR code for Android";
 "mac.pair.hint" = "Both devices must be on the same Wi-Fi or personal hotspot. The pairing expires for new devices, but a completed pairing stays on this Mac.";
 "mac.settings.connection" = "Connection fallback";
 "mac.settings.host" = "Android host";
@@ -49,6 +55,7 @@
 "mac.error.paste_pairing" = "Paste the Android pairing payload first.";
 "mac.error.pairing_expired" = "This pairing has expired. Generate a new one on Android.";
 "mac.error.pairing_invalid" = "The pairing data is not recognized.";
+"mac.error.pairing_listener" = "This Mac could not create a local pairing code. Check the network connection.";
 "mac.error.pair_first" = "Pair an Android phone before checking photos.";
 "mac.error.photos_permission" = "Allow ShareSync to access Photos in System Settings.";
 "mac.error.missing_host" = "The Android address is missing. Check Connection in Settings.";

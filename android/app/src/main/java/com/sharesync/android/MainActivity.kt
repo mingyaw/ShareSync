@@ -6,17 +6,24 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.FileProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import com.sharesync.android.security.SharedPreferencesDeviceIdentityStore
+import com.sharesync.android.pairing.MacPairingCallbackClient
+import com.sharesync.android.pairing.MacPairingOffer
+import com.sharesync.android.pairing.MacPairingOfferParser
+import com.sharesync.android.pairing.QrCodeBitmapDecoder
 import com.sharesync.android.runtime.PhotoSharingCoordinator
 import com.sharesync.android.runtime.PhotoSharingCoordinatorEvent
 import com.sharesync.android.runtime.PhotoSharingSnapshot
@@ -39,6 +46,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.io.File
 
 class MainActivity : ComponentActivity() {
     private lateinit var sharingCoordinator: PhotoSharingCoordinator
@@ -59,6 +67,27 @@ class MainActivity : ComponentActivity() {
     private var settingsUiState by mutableStateOf(SettingsUiState())
     private var feedbackMessage by mutableStateOf<String?>(null)
     private var startSharingAfterPermission = false
+    private var pendingMacPairingOffer: MacPairingOffer? = null
+    private var pendingMacPairingImageUri: Uri? = null
+    private var macPairingCallbackInFlight = false
+    private val scanMacPairingLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture(),
+    ) { captured ->
+        val uri = pendingMacPairingImageUri
+        pendingMacPairingImageUri = null
+        if (!captured || uri == null) return@registerForActivityResult
+        runCatching {
+            val bitmap = decodePairingBitmap(uri)
+            MacPairingOfferParser().parse(QrCodeBitmapDecoder().decode(bitmap))
+        }.onSuccess { offer ->
+            pendingMacPairingOffer = offer
+            setPhotoSharingEnabled(true)
+            if (isServerRunning) completePendingMacPairing() else startServer()
+            refreshUi(getString(R.string.mac_pairing_scanned))
+        }.onFailure {
+            refreshUi(getString(R.string.mac_pairing_scan_failed))
+        }
+    }
     private val photoPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) {
@@ -131,6 +160,7 @@ class MainActivity : ComponentActivity() {
                         onGrantNotifications = ::requestNotificationPermission,
                         onStart = ::enablePhotoSharing,
                         onStop = ::disablePhotoSharing,
+                        onScanMacPairing = ::scanMacPairing,
                         onCopyPairing = ::copyPairingPayload,
                         onCopyEndpoint = ::copyEndpoint,
                         onCopyResult = ::copySyncResult,
@@ -337,6 +367,58 @@ class MainActivity : ComponentActivity() {
         refreshUi(getString(R.string.sync_pairing_payload_copied))
     }
 
+    private fun scanMacPairing() {
+        val image = File(cacheDir, "sharesync-mac-pairing.jpg")
+        val imageUri = FileProvider.getUriForFile(
+            this,
+            "$packageName.fileprovider",
+            image,
+        )
+        pendingMacPairingImageUri = imageUri
+        scanMacPairingLauncher.launch(imageUri)
+    }
+
+    private fun decodePairingBitmap(uri: Uri): android.graphics.Bitmap {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        contentResolver.openInputStream(uri).use { input ->
+            requireNotNull(input)
+            BitmapFactory.decodeStream(input, null, bounds)
+        }
+        var sampleSize = 1
+        while (bounds.outWidth / sampleSize > 2_048 || bounds.outHeight / sampleSize > 2_048) {
+            sampleSize *= 2
+        }
+        val options = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+        return contentResolver.openInputStream(uri).use { input ->
+            requireNotNull(input)
+            requireNotNull(BitmapFactory.decodeStream(input, null, options))
+        }
+    }
+
+    private fun completePendingMacPairing() {
+        val offer = pendingMacPairingOffer ?: return
+        val payload = currentPairingPayloadJson ?: return
+        if (macPairingCallbackInFlight) return
+        macPairingCallbackInFlight = true
+        Thread {
+            runCatching { MacPairingCallbackClient().complete(offer, payload) }
+                .onSuccess {
+                    runOnUiThread {
+                        pendingMacPairingOffer = null
+                        macPairingCallbackInFlight = false
+                        refreshUi(getString(R.string.mac_pairing_complete, offer.deviceName))
+                    }
+                }
+                .onFailure {
+                    runOnUiThread {
+                        pendingMacPairingOffer = null
+                        macPairingCallbackInFlight = false
+                        refreshUi(getString(R.string.mac_pairing_callback_failed))
+                    }
+                }
+        }.start()
+    }
+
     private fun copyEndpoint() {
         val endpointUrl = currentEndpointUrl() ?: return
         copyText(label = "ShareSync health endpoint", text = endpointUrl)
@@ -400,6 +482,7 @@ class MainActivity : ComponentActivity() {
         event: PhotoSharingCoordinatorEvent?,
     ) {
         applySnapshot(snapshot)
+        completePendingMacPairing()
         val message = when (event) {
             PhotoSharingCoordinatorEvent.Starting -> getString(R.string.sync_status_starting)
             PhotoSharingCoordinatorEvent.HistoryCleared -> getString(R.string.sync_state_cleared)

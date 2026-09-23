@@ -14,8 +14,11 @@ M0 includes:
 
 - Native SwiftUI window designed for desktop use.
 - Traditional Chinese and English UI.
-- Pairing payload import from Android.
+- Mac-generated, three-minute pairing QR scanned by Android.
+- One-time, challenge-protected Android pairing callback accepted only while the Mac pairing sheet is open.
+- Manual Android payload import retained only as a development fallback.
 - Durable trusted-device binding in Application Support.
+- Android pairing secret persistence across photo-service and app restarts.
 - Bonjour endpoint rediscovery, with the saved host and port as fallback.
 - Android health identity validation before protected requests.
 - Signed manifest, media, and sync-result requests.
@@ -96,9 +99,10 @@ Physical validation is intentionally deferred. The first device pass should veri
 - Define handoff between iPhone and Mac without duplicate imports.
 - Add conflict and reset semantics to the shared protocol.
 
-### Mac M3: product pairing
+### Mac M3: pairing hardening
 
-- Replace pasted payload as the primary flow with camera or short-code pairing.
+- Replace the Android camera snapshot scanner with an in-app live camera scanner.
+- Encrypt the one-time callback payload or move the bootstrap callback to pinned TLS.
 - Add nearby-device discovery before pairing without treating discovery as trust.
 - Add device management and revoked-key handling.
 

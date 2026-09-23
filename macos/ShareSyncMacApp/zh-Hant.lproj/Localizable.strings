@@ -35,6 +35,12 @@
 "mac.recent.photos" = "照片 · ShareSync Backup";
 "mac.pair.title" = "配對 Android 手機";
 "mac.pair.subtitle" = "貼上 Android ShareSync 提供的配對資料";
+"mac.pair.scan_subtitle" = "使用 Android ShareSync 掃描此 QR Code";
+"mac.pair.preparing" = "正在準備配對碼...";
+"mac.pair.scan_hint" = "請讓兩部裝置位於同一個 Wi-Fi。Android 會將可信任連線資料直接回傳此 Mac。";
+"mac.pair.manual" = "手動配對備援";
+"mac.pair.apply_manual" = "套用 Android 配對資料";
+"mac.pair.qr_accessibility" = "供 Android 掃描的 Mac 配對 QR Code";
 "mac.pair.hint" = "兩部裝置需在同一個 Wi-Fi 或個人熱點。新配對資料會過期，但完成綁定後會保留在此 Mac。";
 "mac.settings.connection" = "連線備援";
 "mac.settings.host" = "Android 位址";
@@ -49,6 +55,7 @@
 "mac.error.paste_pairing" = "請先貼上 Android 配對資料。";
 "mac.error.pairing_expired" = "這份配對資料已過期，請在 Android 重新產生。";
 "mac.error.pairing_invalid" = "無法辨識這份配對資料。";
+"mac.error.pairing_listener" = "此 Mac 無法建立本機配對碼，請檢查網路連線。";
 "mac.error.pair_first" = "請先配對 Android 手機再檢查照片。";
 "mac.error.photos_permission" = "請在系統設定允許 ShareSync 存取「照片」。";
 "mac.error.missing_host" = "缺少 Android 位址，請在設定的連線區檢查。";
