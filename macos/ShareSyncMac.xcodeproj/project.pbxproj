@@ -1,0 +1,345 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000000000000000000001 /* ShareSyncMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* ShareSyncMacApp.swift */; };
+		A10000000000000000000002 /* MacContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* MacContentView.swift */; };
+		A10000000000000000000003 /* MacPhotoSyncViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* MacPhotoSyncViewModel.swift */; };
+		A10000000000000000000004 /* MacDeviceIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* MacDeviceIdentity.swift */; };
+		A10000000000000000000005 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000008 /* Localizable.strings */; };
+		A10000000000000000000010 /* LocalPeerDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* LocalPeerDiscovery.swift */; };
+		A10000000000000000000011 /* PhotoImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* PhotoImporter.swift */; };
+		A10000000000000000000012 /* PhotoKitPhotoImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000012 /* PhotoKitPhotoImporter.swift */; };
+		A10000000000000000000013 /* PairingPayloadParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000013 /* PairingPayloadParser.swift */; };
+		A10000000000000000000014 /* CertificateFingerprintValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000014 /* CertificateFingerprintValidator.swift */; };
+		A10000000000000000000015 /* RequestSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000015 /* RequestSigner.swift */; };
+		A10000000000000000000016 /* TrustedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000016 /* TrustedDevice.swift */; };
+		A10000000000000000000017 /* SyncEventStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000017 /* SyncEventStore.swift */; };
+		A10000000000000000000018 /* SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000018 /* SyncModels.swift */; };
+		A10000000000000000000019 /* SyncResultBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000019 /* SyncResultBuilder.swift */; };
+		A1000000000000000000001A /* SyncResultClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001A /* SyncResultClient.swift */; };
+		A1000000000000000000001B /* SyncResultStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001B /* SyncResultStore.swift */; };
+		A1000000000000000000001C /* LocalNetworkURLSessionFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001C /* LocalNetworkURLSessionFactory.swift */; };
+		A1000000000000000000001D /* LocalTransportURLBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001D /* LocalTransportURLBuilder.swift */; };
+		A1000000000000000000001E /* M0PhotoTransferPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001E /* M0PhotoTransferPlanner.swift */; };
+		A1000000000000000000001F /* ManifestClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001F /* ManifestClient.swift */; };
+		A10000000000000000000020 /* MediaDownloadState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000020 /* MediaDownloadState.swift */; };
+		A10000000000000000000021 /* MediaDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000021 /* MediaDownloader.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A20000000000000000000000 /* ShareSync Mac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ShareSync Mac.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000001 /* ShareSyncMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSyncMacApp.swift; sourceTree = "<group>"; };
+		A20000000000000000000002 /* MacContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacContentView.swift; sourceTree = "<group>"; };
+		A20000000000000000000003 /* MacPhotoSyncViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPhotoSyncViewModel.swift; sourceTree = "<group>"; };
+		A20000000000000000000004 /* MacDeviceIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacDeviceIdentity.swift; sourceTree = "<group>"; };
+		A20000000000000000000005 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A20000000000000000000006 /* ShareSyncMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ShareSyncMac.entitlements; sourceTree = "<group>"; };
+		A20000000000000000000009 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A2000000000000000000000A /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		A20000000000000000000010 /* LocalPeerDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LocalPeerDiscovery.swift; path = ../ios/ShareSync/Discovery/LocalPeerDiscovery.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000011 /* PhotoImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PhotoImporter.swift; path = ../ios/ShareSync/ImporterPhotos/PhotoImporter.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000012 /* PhotoKitPhotoImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PhotoKitPhotoImporter.swift; path = ../ios/ShareSync/ImporterPhotos/PhotoKitPhotoImporter.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000013 /* PairingPayloadParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PairingPayloadParser.swift; path = ../ios/ShareSync/Pairing/PairingPayloadParser.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000014 /* CertificateFingerprintValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CertificateFingerprintValidator.swift; path = ../ios/ShareSync/Security/CertificateFingerprintValidator.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000015 /* RequestSigner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RequestSigner.swift; path = ../ios/ShareSync/Security/RequestSigner.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000016 /* TrustedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrustedDevice.swift; path = ../ios/ShareSync/Security/TrustedDevice.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000017 /* SyncEventStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SyncEventStore.swift; path = ../ios/ShareSync/Sync/SyncEventStore.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000018 /* SyncModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SyncModels.swift; path = ../ios/ShareSync/Sync/SyncModels.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000019 /* SyncResultBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SyncResultBuilder.swift; path = ../ios/ShareSync/Sync/SyncResultBuilder.swift; sourceTree = SOURCE_ROOT; };
+		A2000000000000000000001A /* SyncResultClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SyncResultClient.swift; path = ../ios/ShareSync/Sync/SyncResultClient.swift; sourceTree = SOURCE_ROOT; };
+		A2000000000000000000001B /* SyncResultStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SyncResultStore.swift; path = ../ios/ShareSync/Sync/SyncResultStore.swift; sourceTree = SOURCE_ROOT; };
+		A2000000000000000000001C /* LocalNetworkURLSessionFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LocalNetworkURLSessionFactory.swift; path = ../ios/ShareSync/Transfer/LocalNetworkURLSessionFactory.swift; sourceTree = SOURCE_ROOT; };
+		A2000000000000000000001D /* LocalTransportURLBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LocalTransportURLBuilder.swift; path = ../ios/ShareSync/Transfer/LocalTransportURLBuilder.swift; sourceTree = SOURCE_ROOT; };
+		A2000000000000000000001E /* M0PhotoTransferPlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = M0PhotoTransferPlanner.swift; path = ../ios/ShareSync/Transfer/M0PhotoTransferPlanner.swift; sourceTree = SOURCE_ROOT; };
+		A2000000000000000000001F /* ManifestClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ManifestClient.swift; path = ../ios/ShareSync/Transfer/ManifestClient.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000020 /* MediaDownloadState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MediaDownloadState.swift; path = ../ios/ShareSync/Transfer/MediaDownloadState.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000021 /* MediaDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MediaDownloader.swift; path = ../ios/ShareSync/Transfer/MediaDownloader.swift; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A30000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A40000000000000000000000 = {
+			isa = PBXGroup;
+			children = (
+				A40000000000000000000001 /* ShareSyncMacApp */,
+				A40000000000000000000002 /* SharedCore */,
+				A40000000000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A40000000000000000000001 /* ShareSyncMacApp */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000001 /* ShareSyncMacApp.swift */,
+				A20000000000000000000002 /* MacContentView.swift */,
+				A20000000000000000000003 /* MacPhotoSyncViewModel.swift */,
+				A20000000000000000000004 /* MacDeviceIdentity.swift */,
+				A20000000000000000000005 /* Info.plist */,
+				A20000000000000000000006 /* ShareSyncMac.entitlements */,
+				A20000000000000000000008 /* Localizable.strings */,
+			);
+			path = ShareSyncMacApp;
+			sourceTree = "<group>";
+		};
+		A40000000000000000000002 /* SharedCore */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000010 /* LocalPeerDiscovery.swift */,
+				A20000000000000000000011 /* PhotoImporter.swift */,
+				A20000000000000000000012 /* PhotoKitPhotoImporter.swift */,
+				A20000000000000000000013 /* PairingPayloadParser.swift */,
+				A20000000000000000000014 /* CertificateFingerprintValidator.swift */,
+				A20000000000000000000015 /* RequestSigner.swift */,
+				A20000000000000000000016 /* TrustedDevice.swift */,
+				A20000000000000000000017 /* SyncEventStore.swift */,
+				A20000000000000000000018 /* SyncModels.swift */,
+				A20000000000000000000019 /* SyncResultBuilder.swift */,
+				A2000000000000000000001A /* SyncResultClient.swift */,
+				A2000000000000000000001B /* SyncResultStore.swift */,
+				A2000000000000000000001C /* LocalNetworkURLSessionFactory.swift */,
+				A2000000000000000000001D /* LocalTransportURLBuilder.swift */,
+				A2000000000000000000001E /* M0PhotoTransferPlanner.swift */,
+				A2000000000000000000001F /* ManifestClient.swift */,
+				A20000000000000000000020 /* MediaDownloadState.swift */,
+				A20000000000000000000021 /* MediaDownloader.swift */,
+			);
+			name = SharedCore;
+			sourceTree = "<group>";
+		};
+		A40000000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000000 /* ShareSync Mac.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A50000000000000000000001 /* ShareSyncMac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A90000000000000000000002 /* Build configuration list for PBXNativeTarget "ShareSyncMac" */;
+			buildPhases = (
+				A30000000000000000000003 /* Sources */,
+				A30000000000000000000001 /* Frameworks */,
+				A30000000000000000000002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ShareSyncMac;
+			productName = "ShareSync Mac";
+			productReference = A20000000000000000000000 /* ShareSync Mac.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A60000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2660;
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					A50000000000000000000001 = {
+						CreatedOnToolsVersion = 26.6;
+					};
+				};
+			};
+			buildConfigurationList = A90000000000000000000001 /* Build configuration list for PBXProject "ShareSyncMac" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				"zh-Hant",
+			);
+			mainGroup = A40000000000000000000000;
+			productRefGroup = A40000000000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A50000000000000000000001 /* ShareSyncMac */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A30000000000000000000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000005 /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A30000000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000001 /* ShareSyncMacApp.swift in Sources */,
+				A10000000000000000000002 /* MacContentView.swift in Sources */,
+				A10000000000000000000003 /* MacPhotoSyncViewModel.swift in Sources */,
+				A10000000000000000000004 /* MacDeviceIdentity.swift in Sources */,
+				A10000000000000000000010 /* LocalPeerDiscovery.swift in Sources */,
+				A10000000000000000000011 /* PhotoImporter.swift in Sources */,
+				A10000000000000000000012 /* PhotoKitPhotoImporter.swift in Sources */,
+				A10000000000000000000013 /* PairingPayloadParser.swift in Sources */,
+				A10000000000000000000014 /* CertificateFingerprintValidator.swift in Sources */,
+				A10000000000000000000015 /* RequestSigner.swift in Sources */,
+				A10000000000000000000016 /* TrustedDevice.swift in Sources */,
+				A10000000000000000000017 /* SyncEventStore.swift in Sources */,
+				A10000000000000000000018 /* SyncModels.swift in Sources */,
+				A10000000000000000000019 /* SyncResultBuilder.swift in Sources */,
+				A1000000000000000000001A /* SyncResultClient.swift in Sources */,
+				A1000000000000000000001B /* SyncResultStore.swift in Sources */,
+				A1000000000000000000001C /* LocalNetworkURLSessionFactory.swift in Sources */,
+				A1000000000000000000001D /* LocalTransportURLBuilder.swift in Sources */,
+				A1000000000000000000001E /* M0PhotoTransferPlanner.swift in Sources */,
+				A1000000000000000000001F /* ManifestClient.swift in Sources */,
+				A10000000000000000000020 /* MediaDownloadState.swift in Sources */,
+				A10000000000000000000021 /* MediaDownloader.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		A20000000000000000000008 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A20000000000000000000009 /* en */,
+				A2000000000000000000000A /* zh-Hant */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		A80000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+		};
+			name = Debug;
+		};
+		A80000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+		};
+			name = Release;
+		};
+		A80000000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShareSyncMacApp/ShareSyncMac.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 72HVCU235Z;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ShareSyncMacApp/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sharesync.mac.debug;
+				PRODUCT_NAME = "ShareSync Mac";
+				SHARESYNC_DISPLAY_NAME = "ShareSync Mac Dev";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A80000000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShareSyncMacApp/ShareSyncMac.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 72HVCU235Z;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ShareSyncMacApp/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sharesync.mac;
+				PRODUCT_NAME = "ShareSync Mac";
+				SHARESYNC_DISPLAY_NAME = "ShareSync Mac";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A90000000000000000000001 /* Build configuration list for PBXProject "ShareSyncMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000000000000000000001 /* Debug */,
+				A80000000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A90000000000000000000002 /* Build configuration list for PBXNativeTarget "ShareSyncMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000000000000000000003 /* Debug */,
+				A80000000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A60000000000000000000001 /* Project object */;
+}
