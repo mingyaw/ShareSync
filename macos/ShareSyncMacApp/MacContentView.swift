@@ -3,6 +3,7 @@ import SwiftUI
 struct MacContentView: View {
     @EnvironmentObject private var model: MacPhotoSyncViewModel
     @State private var showingPairing = false
+    @State private var confirmUnpair = false
 
     var body: some View {
         NavigationSplitView {
@@ -38,6 +39,14 @@ struct MacContentView: View {
         }
         .onAppear {
             if !model.isPaired {
+                showingPairing = true
+            } else {
+                model.refreshPhotos()
+            }
+        }
+        .confirmationDialog("mac.unpair.confirm", isPresented: $confirmUnpair) {
+            Button("mac.action.unpair", role: .destructive) {
+                model.forgetDevice()
                 showingPairing = true
             }
         }
@@ -89,6 +98,16 @@ struct MacContentView: View {
                     Label(model.isPaired ? "mac.action.replace_device" : "mac.action.pair", systemImage: "qrcode")
                 }
                 .buttonStyle(.link)
+
+                if model.isPaired {
+                    Button(role: .destructive) {
+                        confirmUnpair = true
+                    } label: {
+                        Label("mac.action.unpair", systemImage: "trash")
+                    }
+                    .buttonStyle(.link)
+                    .disabled(model.isBusy)
+                }
             }
             .padding(20)
 

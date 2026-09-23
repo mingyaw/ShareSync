@@ -22,6 +22,8 @@ M0 includes:
 - Durable trusted-device binding in Application Support.
 - Android pairing secret persistence across photo-service and app restarts.
 - Bonjour endpoint rediscovery, with the saved host and port as fallback.
+- Automatic endpoint rediscovery on Mac launch, refresh, and transfer so Android IP changes do not require re-pairing.
+- Visible Mac-side unpair action that removes connection credentials while retaining imported-photo history.
 - Android health identity validation before protected requests.
 - Automatic Android health validation and photo-manifest refresh immediately after pairing.
 - Signed manifest, media, and sync-result requests.

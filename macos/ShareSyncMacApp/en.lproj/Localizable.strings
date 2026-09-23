@@ -26,6 +26,8 @@
 "mac.action.stop" = "Stop transfer";
 "mac.action.pair" = "Pair";
 "mac.action.replace_device" = "Replace paired phone";
+"mac.action.unpair" = "Unpair phone";
+"mac.unpair.confirm" = "This removes the Android connection from this Mac. Previously imported photo history is kept.";
 "mac.action.sync_next" = "Sync next photo";
 "mac.action.sync_next_detail" = "The first Mac milestone transfers one photo at a time for low-risk validation.";
 "mac.action.pair_android" = "Pair Android phone";
