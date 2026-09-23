@@ -5,15 +5,13 @@ import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.FileProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -23,7 +21,6 @@ import com.sharesync.android.security.SharedPreferencesDeviceIdentityStore
 import com.sharesync.android.pairing.MacPairingCallbackClient
 import com.sharesync.android.pairing.MacPairingOffer
 import com.sharesync.android.pairing.MacPairingOfferParser
-import com.sharesync.android.pairing.QrCodeBitmapDecoder
 import com.sharesync.android.runtime.PhotoSharingCoordinator
 import com.sharesync.android.runtime.PhotoSharingCoordinatorEvent
 import com.sharesync.android.runtime.PhotoSharingSnapshot
@@ -46,7 +43,6 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import java.io.File
 
 class MainActivity : ComponentActivity() {
     private lateinit var sharingCoordinator: PhotoSharingCoordinator
@@ -68,18 +64,13 @@ class MainActivity : ComponentActivity() {
     private var feedbackMessage by mutableStateOf<String?>(null)
     private var startSharingAfterPermission = false
     private var pendingMacPairingOffer: MacPairingOffer? = null
-    private var pendingMacPairingImageUri: Uri? = null
     private var macPairingCallbackInFlight = false
     private val scanMacPairingLauncher = registerForActivityResult(
-        ActivityResultContracts.TakePicture(),
-    ) { captured ->
-        val uri = pendingMacPairingImageUri
-        pendingMacPairingImageUri = null
-        if (!captured || uri == null) return@registerForActivityResult
-        runCatching {
-            val bitmap = decodePairingBitmap(uri)
-            MacPairingOfferParser().parse(QrCodeBitmapDecoder().decode(bitmap))
-        }.onSuccess { offer ->
+        ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+        if (result.resultCode != RESULT_OK) return@registerForActivityResult
+        val payload = result.data?.getStringExtra(MacQrScannerActivity.EXTRA_QR_PAYLOAD)
+        runCatching { MacPairingOfferParser().parse(requireNotNull(payload)) }.onSuccess { offer ->
             pendingMacPairingOffer = offer
             setPhotoSharingEnabled(true)
             if (isServerRunning) completePendingMacPairing() else startServer()
@@ -87,6 +78,12 @@ class MainActivity : ComponentActivity() {
         }.onFailure {
             refreshUi(getString(R.string.mac_pairing_scan_failed))
         }
+    }
+    private val cameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) launchMacPairingScanner()
+        else refreshUi(getString(R.string.mac_pairing_camera_permission_denied))
     }
     private val photoPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
@@ -368,31 +365,15 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun scanMacPairing() {
-        val image = File(cacheDir, "sharesync-mac-pairing.jpg")
-        val imageUri = FileProvider.getUriForFile(
-            this,
-            "$packageName.fileprovider",
-            image,
-        )
-        pendingMacPairingImageUri = imageUri
-        scanMacPairingLauncher.launch(imageUri)
+        if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            launchMacPairingScanner()
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
     }
 
-    private fun decodePairingBitmap(uri: Uri): android.graphics.Bitmap {
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        contentResolver.openInputStream(uri).use { input ->
-            requireNotNull(input)
-            BitmapFactory.decodeStream(input, null, bounds)
-        }
-        var sampleSize = 1
-        while (bounds.outWidth / sampleSize > 2_048 || bounds.outHeight / sampleSize > 2_048) {
-            sampleSize *= 2
-        }
-        val options = BitmapFactory.Options().apply { inSampleSize = sampleSize }
-        return contentResolver.openInputStream(uri).use { input ->
-            requireNotNull(input)
-            requireNotNull(BitmapFactory.decodeStream(input, null, options))
-        }
+    private fun launchMacPairingScanner() {
+        scanMacPairingLauncher.launch(Intent(this, MacQrScannerActivity::class.java))
     }
 
     private fun completePendingMacPairing() {

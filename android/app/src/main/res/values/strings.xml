@@ -117,9 +117,13 @@
     <string name="home_scan_from_iphone">Open ShareSync on iPhone and scan this code.</string>
     <string name="home_same_network">Keep both phones on the same Wi-Fi or Android hotspot.</string>
     <string name="mac_pairing_scan_action">Scan Mac pairing code</string>
-    <string name="mac_pairing_scan_detail">On your Mac, open ShareSync and choose Pair Android phone. Then photograph the QR code here.</string>
+    <string name="mac_pairing_scan_detail">Open ShareSync on your Mac, choose Pair Android phone, then scan its QR code here.</string>
     <string name="mac_pairing_scanned">Mac pairing code scanned. Preparing the secure local connection.</string>
-    <string name="mac_pairing_scan_failed">That image does not contain a valid ShareSync Mac pairing code.</string>
+    <string name="mac_pairing_scan_failed">That is not a valid ShareSync Mac pairing code.</string>
+    <string name="mac_pairing_camera_permission_denied">Camera access is needed to scan the Mac pairing code.</string>
+    <string name="mac_scanner_title">Scan Mac pairing code</string>
+    <string name="mac_scanner_instruction">Point your camera at the QR code shown in ShareSync on your Mac.</string>
+    <string name="mac_scanner_close">Close scanner</string>
     <string name="mac_pairing_complete">Paired with %1$s.</string>
     <string name="mac_pairing_callback_failed">The Mac could not be reached. Keep its pairing code open and try scanning again.</string>
     <string name="activity_empty_title">Your sync history starts here</string>

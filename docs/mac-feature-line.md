@@ -15,6 +15,7 @@ M0 includes:
 - Native SwiftUI window designed for desktop use.
 - Traditional Chinese and English UI.
 - Mac-generated, three-minute pairing QR scanned by Android.
+- Android in-app live camera scanner that completes pairing without taking a photo.
 - One-time, challenge-protected Android pairing callback accepted only while the Mac pairing sheet is open.
 - Manual Android payload import retained only as a development fallback.
 - Durable trusted-device binding in Application Support.
@@ -101,7 +102,6 @@ Physical validation is intentionally deferred. The first device pass should veri
 
 ### Mac M3: pairing hardening
 
-- Replace the Android camera snapshot scanner with an in-app live camera scanner.
 - Encrypt the one-time callback payload or move the bootstrap callback to pinned TLS.
 - Add nearby-device discovery before pairing without treating discovery as trust.
 - Add device management and revoked-key handling.

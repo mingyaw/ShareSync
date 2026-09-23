@@ -117,9 +117,13 @@
     <string name="home_scan_from_iphone">在 iPhone 開啟 ShareSync 並掃描此配對碼。</string>
     <string name="home_same_network">請讓兩支手機連上同一個 Wi-Fi 或 Android 熱點。</string>
     <string name="mac_pairing_scan_action">掃描 Mac 配對碼</string>
-    <string name="mac_pairing_scan_detail">在 Mac 開啟 ShareSync 並選擇「配對 Android 手機」，再從這裡拍攝 QR Code。</string>
+    <string name="mac_pairing_scan_detail">在 Mac 開啟 ShareSync 並選擇「配對 Android 手機」，再從這裡掃描 QR Code。</string>
     <string name="mac_pairing_scanned">已掃描 Mac 配對碼，正在準備安全的本機連線。</string>
-    <string name="mac_pairing_scan_failed">影像中沒有有效的 ShareSync Mac 配對碼。</string>
+    <string name="mac_pairing_scan_failed">這不是有效的 ShareSync Mac 配對碼。</string>
+    <string name="mac_pairing_camera_permission_denied">需要相機權限才能掃描 Mac 配對碼。</string>
+    <string name="mac_scanner_title">掃描 Mac 配對碼</string>
+    <string name="mac_scanner_instruction">將鏡頭對準 Mac 上 ShareSync 顯示的 QR Code。</string>
+    <string name="mac_scanner_close">關閉掃描器</string>
     <string name="mac_pairing_complete">已與 %1$s 完成配對。</string>
     <string name="mac_pairing_callback_failed">無法連到 Mac，請保持配對碼開啟並重新掃描。</string>
     <string name="activity_empty_title">同步紀錄從這裡開始</string>
