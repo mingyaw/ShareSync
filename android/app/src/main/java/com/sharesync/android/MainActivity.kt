@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
@@ -390,7 +391,8 @@ class MainActivity : ComponentActivity() {
                         refreshUi(getString(R.string.mac_pairing_complete, offer.deviceName))
                     }
                 }
-                .onFailure {
+                .onFailure { error ->
+                    Log.e(PAIRING_LOG_TAG, "Mac pairing callback failed", error)
                     runOnUiThread {
                         pendingMacPairingOffer = null
                         macPairingCallbackInFlight = false
@@ -625,6 +627,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private companion object {
+        const val PAIRING_LOG_TAG = "ShareSyncPairing"
         const val STATE_MAIN_SECTION = "sharesync.mainSection"
         const val STATE_ADVANCED_SUPPORT_EXPANDED = "sharesync.advancedSupportExpanded"
         const val ONBOARDING_PREFERENCES = "sharesync_onboarding"

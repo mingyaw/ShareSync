@@ -17,6 +17,7 @@ M0 includes:
 - Mac-generated, three-minute pairing QR scanned by Android.
 - Android in-app live camera scanner that completes pairing without taking a photo.
 - One-time, challenge-protected Android pairing callback accepted only while the Mac pairing sheet is open.
+- Private-LAN socket callback avoids enabling unrestricted Android cleartext HTTP traffic.
 - Manual Android payload import retained only as a development fallback.
 - Durable trusted-device binding in Application Support.
 - Android pairing secret persistence across photo-service and app restarts.
