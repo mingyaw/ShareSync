@@ -74,6 +74,26 @@ class SyncResultStoreTest {
     }
 
     @Test
+    fun inMemoryStoreKeepsCompletionStateSeparateForEachTargetDevice() {
+        val store = InMemorySyncResultStore()
+
+        SuspendBridge.runBlocking {
+            store.save(syncResult("batch-ios", syncItem("media-001", SyncItemStatus.synced)))
+            store.save(syncResult("batch-mac", syncItem("media-002", SyncItemStatus.synced), targetDeviceId = "mac-device-001"))
+        }
+
+        assertEquals(
+            setOf("media-001"),
+            SuspendBridge.runBlocking { store.completedMediaAssetIds("ios-device-001") },
+        )
+        assertEquals(
+            setOf("media-002"),
+            SuspendBridge.runBlocking { store.completedMediaAssetIds("mac-device-001") },
+        )
+        assertEquals("batch-mac", SuspendBridge.runBlocking { store.latest() }?.syncBatchId)
+    }
+
+    @Test
     fun inMemoryStoreClearRemovesResults() {
         val store = InMemorySyncResultStore()
 
@@ -101,7 +121,7 @@ class SyncResultStoreTest {
             val reloaded = FileSyncResultStore(file = file)
             val latest = SuspendBridge.runBlocking { reloaded.latest() }
 
-            assertEquals(2, JSONObject(file.readText()).getInt("schemaVersion"))
+            assertEquals(3, JSONObject(file.readText()).getInt("schemaVersion"))
             assertEquals("batch-002", latest?.syncBatchId)
             assertEquals(
                 listOf("media-001" to SyncItemStatus.synced, "media-002" to SyncItemStatus.failed),
@@ -126,6 +146,48 @@ class SyncResultStoreTest {
             val loaded = SuspendBridge.runBlocking { FileSyncResultStore(file = file).latest() }
 
             assertEquals(legacyResult, loaded)
+        } finally {
+            file.delete()
+            directory.delete()
+        }
+    }
+
+    @Test
+    fun fileStoreMigratesVersionedSingleResultAndPreservesItWhenAnotherTargetSaves() {
+        val directory = File(System.getProperty("java.io.tmpdir"), "ShareSyncStoreTest-${System.nanoTime()}")
+        val file = File(directory, "latest-sync-result.json")
+        val legacyResult = syncResult("batch-ios", syncItem("media-001", SyncItemStatus.synced))
+
+        try {
+            directory.mkdirs()
+            file.writeText(
+                JSONObject()
+                    .put("schemaVersion", 2)
+                    .put("result", JSONObject(SyncResultJsonCodec().encode(legacyResult)))
+                    .toString(),
+            )
+            val store = FileSyncResultStore(file = file)
+
+            SuspendBridge.runBlocking {
+                store.save(
+                    syncResult(
+                        "batch-mac",
+                        syncItem("media-002", SyncItemStatus.synced),
+                        targetDeviceId = "mac-device-001",
+                    )
+                )
+            }
+
+            val reloaded = FileSyncResultStore(file = file)
+            assertEquals(
+                setOf("media-001"),
+                SuspendBridge.runBlocking { reloaded.completedMediaAssetIds("ios-device-001") },
+            )
+            assertEquals(
+                setOf("media-002"),
+                SuspendBridge.runBlocking { reloaded.completedMediaAssetIds("mac-device-001") },
+            )
+            assertEquals(3, JSONObject(file.readText()).getInt("schemaVersion"))
         } finally {
             file.delete()
             directory.delete()
@@ -202,10 +264,14 @@ class SyncResultStoreTest {
         }
     }
 
-    private fun syncResult(batchId: String, vararg items: SyncItemResult): SyncResult {
+    private fun syncResult(
+        batchId: String,
+        vararg items: SyncItemResult,
+        targetDeviceId: String = "ios-device-001",
+    ): SyncResult {
         return SyncResult(
             syncBatchId = batchId,
-            targetDeviceId = "ios-device-001",
+            targetDeviceId = targetDeviceId,
             results = items.toList(),
         )
     }

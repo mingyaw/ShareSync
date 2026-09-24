@@ -1,11 +1,13 @@
 package com.sharesync.android.sync
 
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 
 interface SyncResultStore {
     suspend fun save(result: SyncResult)
     suspend fun latest(): SyncResult?
+    suspend fun latest(targetDeviceId: String): SyncResult?
     suspend fun clear()
 
     suspend fun completedMediaAssetIds(): Set<String> {
@@ -19,21 +21,40 @@ interface SyncResultStore {
             .map { item -> item.sourceItemId }
             .toSet()
     }
+
+    suspend fun completedMediaAssetIds(targetDeviceId: String): Set<String> {
+        return latest(targetDeviceId)
+            ?.results
+            .orEmpty()
+            .filter { item ->
+                item.itemType == SyncItemType.media &&
+                    item.status.isCompletedForPhotoManifest
+            }
+            .map { item -> item.sourceItemId }
+            .toSet()
+    }
 }
 
 class InMemorySyncResultStore : SyncResultStore {
-    private var latestResult: SyncResult? = null
+    private val resultsByTarget = LinkedHashMap<String, SyncResult>()
+    private var latestTargetDeviceId: String? = null
 
     override suspend fun save(result: SyncResult) {
-        latestResult = latestResult.mergeWith(result)
+        resultsByTarget[result.targetDeviceId] = resultsByTarget[result.targetDeviceId].mergeWith(result)
+        latestTargetDeviceId = result.targetDeviceId
     }
 
     override suspend fun latest(): SyncResult? {
-        return latestResult
+        return latestTargetDeviceId?.let(resultsByTarget::get)
+    }
+
+    override suspend fun latest(targetDeviceId: String): SyncResult? {
+        return resultsByTarget[targetDeviceId]
     }
 
     override suspend fun clear() {
-        latestResult = null
+        resultsByTarget.clear()
+        latestTargetDeviceId = null
     }
 }
 
@@ -42,32 +63,65 @@ class FileSyncResultStore(
     private val codec: SyncResultJsonCodec = SyncResultJsonCodec(),
 ) : SyncResultStore {
     override suspend fun save(result: SyncResult) {
-        val mergedResult = latest().mergeWith(result)
+        val snapshot = readSnapshot()
+        snapshot.resultsByTarget[result.targetDeviceId] =
+            snapshot.resultsByTarget[result.targetDeviceId].mergeWith(result)
+        snapshot.latestTargetDeviceId = result.targetDeviceId
         file.parentFile?.mkdirs()
-        file.writeText(
-            JSONObject()
-                .put("schemaVersion", CURRENT_SCHEMA_VERSION)
-                .put("result", JSONObject(codec.encode(mergedResult)))
-                .toString(2),
-        )
+        val results = JSONArray()
+        snapshot.resultsByTarget.values.forEach { storedResult ->
+            results.put(JSONObject(codec.encode(storedResult)))
+        }
+        file.writeText(JSONObject()
+            .put("schemaVersion", CURRENT_SCHEMA_VERSION)
+            .put("latestTargetDeviceId", snapshot.latestTargetDeviceId)
+            .put("results", results)
+            .toString(2))
     }
 
     override suspend fun latest(): SyncResult? {
+        val snapshot = readSnapshot()
+        return snapshot.latestTargetDeviceId?.let(snapshot.resultsByTarget::get)
+    }
+
+    override suspend fun latest(targetDeviceId: String): SyncResult? {
+        return readSnapshot().resultsByTarget[targetDeviceId]
+    }
+
+    private fun readSnapshot(): StoreSnapshot {
         if (!file.exists()) {
-            return null
+            return StoreSnapshot()
         }
 
         return runCatching {
             val json = file.readText()
             val root = JSONObject(json)
-            if (root.has("schemaVersion") && root.has("result")) {
-                val schemaVersion = root.getInt("schemaVersion")
-                require(schemaVersion in 1..CURRENT_SCHEMA_VERSION)
-                codec.decode(root.getJSONObject("result").toString())
+            if (root.optInt("schemaVersion") == CURRENT_SCHEMA_VERSION && root.has("results")) {
+                val resultsByTarget = LinkedHashMap<String, SyncResult>()
+                val results = root.getJSONArray("results")
+                for (index in 0 until results.length()) {
+                    val result = codec.decode(results.getJSONObject(index).toString())
+                    resultsByTarget[result.targetDeviceId] = result
+                }
+                StoreSnapshot(
+                    resultsByTarget = resultsByTarget,
+                    latestTargetDeviceId = root.optString("latestTargetDeviceId")
+                        .takeIf(resultsByTarget::containsKey),
+                )
             } else {
-                codec.decode(json)
+                val legacyResult = if (root.has("schemaVersion") && root.has("result")) {
+                    val schemaVersion = root.getInt("schemaVersion")
+                    require(schemaVersion in 1 until CURRENT_SCHEMA_VERSION)
+                    codec.decode(root.getJSONObject("result").toString())
+                } else {
+                    codec.decode(json)
+                }
+                StoreSnapshot(
+                    resultsByTarget = linkedMapOf(legacyResult.targetDeviceId to legacyResult),
+                    latestTargetDeviceId = legacyResult.targetDeviceId,
+                )
             }
-        }.getOrNull()
+        }.getOrElse { StoreSnapshot() }
     }
 
     override suspend fun clear() {
@@ -77,12 +131,17 @@ class FileSyncResultStore(
     }
 
     companion object {
-        const val CURRENT_SCHEMA_VERSION = 2
+        const val CURRENT_SCHEMA_VERSION = 3
 
         fun defaultFile(filesDir: File): File {
             return File(File(filesDir, "ShareSync"), "latest-sync-result.json")
         }
     }
+
+    private data class StoreSnapshot(
+        val resultsByTarget: LinkedHashMap<String, SyncResult> = LinkedHashMap(),
+        var latestTargetDeviceId: String? = null,
+    )
 }
 
 private fun SyncResult?.mergeWith(incoming: SyncResult): SyncResult {

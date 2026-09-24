@@ -64,6 +64,44 @@ class LocalSyncRouterTest {
     }
 
     @Test
+    fun manifestForwardsRequestingDeviceIdToProvider() {
+        var requestedTargetDeviceId: String? = null
+        val response = SuspendBridge.runBlocking {
+            router(
+                manifestProvider = object : ManifestProvider {
+                    override suspend fun currentManifest(
+                        sinceCursor: String?,
+                        pageCursor: String?,
+                        targetDeviceId: String?,
+                    ): SyncManifest {
+                        requestedTargetDeviceId = targetDeviceId
+                        return emptyManifest()
+                    }
+                },
+                signatureValidator = RequestSignatureValidator(
+                    secretProvider = { PAIRING_TOKEN },
+                    clock = { 1_800_000_000_000L },
+                ),
+            ).manifest(
+                headers = signedHeaders(
+                    deviceId = "mac-device-001",
+                    signature = RequestSignatureValidator.sign(
+                        secret = PAIRING_TOKEN,
+                        method = "GET",
+                        path = "/v1/manifest",
+                        timestamp = "1800000000000",
+                        nonce = "nonce-001",
+                        body = "",
+                    ),
+                )
+            )
+        }
+
+        assertEquals(200, response.statusCode)
+        assertEquals("mac-device-001", requestedTargetDeviceId)
+    }
+
+    @Test
     fun manifestRejectsReplayedSignedRequest() {
         val signatureValidator = RequestSignatureValidator(
             secretProvider = { "pairing-token-001" },
@@ -375,6 +413,38 @@ class LocalSyncRouterTest {
     }
 
     @Test
+    fun syncResultRejectsTargetDeviceThatDoesNotMatchSignedRequester() {
+        val store = InMemorySyncResultStore()
+        val body = syncResultBody(status = "synced", errorCode = "null")
+        val response = SuspendBridge.runBlocking {
+            router(
+                syncResultStore = store,
+                signatureValidator = RequestSignatureValidator(
+                    secretProvider = { PAIRING_TOKEN },
+                    clock = { 1_800_000_000_000L },
+                ),
+            ).syncResult(
+                body = body,
+                headers = signedHeaders(
+                    deviceId = "mac-device-001",
+                    nonce = "wrong-target-device",
+                    signature = RequestSignatureValidator.sign(
+                        secret = PAIRING_TOKEN,
+                        method = "POST",
+                        path = "/v1/sync/result",
+                        timestamp = "1800000000000",
+                        nonce = "wrong-target-device",
+                        body = body,
+                    ),
+                ),
+            )
+        }
+
+        assertEquals(400, response.statusCode)
+        assertEquals(null, SuspendBridge.runBlocking { store.latest() })
+    }
+
+    @Test
     fun syncResultRejectsInvalidSignatureWithoutPersisting() {
         val store = InMemorySyncResultStore()
         val response = SuspendBridge.runBlocking {
@@ -539,6 +609,13 @@ class LocalSyncRouterTest {
         requestActivityTracker: LocalRequestActivityTracker? = null,
         syncResultStore: InMemorySyncResultStore = InMemorySyncResultStore(),
         syncEventStore: InMemorySyncEventStore? = null,
+        manifestProvider: ManifestProvider = object : ManifestProvider {
+            override suspend fun currentManifest(
+                sinceCursor: String?,
+                pageCursor: String?,
+                targetDeviceId: String?,
+            ): SyncManifest = emptyManifest()
+        },
         signatureValidator: RequestSignatureValidator = RequestSignatureValidator(secretProvider = { PAIRING_TOKEN }),
         authorizationPolicy: AuthorizationPolicy = AuthorizationPolicy.SignedRequestsOnly,
     ): LocalSyncRouter {
@@ -546,19 +623,7 @@ class LocalSyncRouterTest {
             deviceId = "android-device-001",
             appVersion = "0.1.0",
             pairingToken = PAIRING_TOKEN,
-            manifestProvider = object : ManifestProvider {
-                override suspend fun currentManifest(sinceCursor: String?, pageCursor: String?): SyncManifest {
-                    return SyncManifest(
-                        version = 1,
-                        sourceDeviceId = "android-device-001",
-                        generatedAt = "2026-08-25T00:00:00Z",
-                        cursor = "cursor-001",
-                        media = listOf(mediaAsset("media-001")),
-                        contacts = emptyList(),
-                        files = emptyList(),
-                    )
-                }
-            },
+            manifestProvider = manifestProvider,
             mediaProvider = object : MediaProvider {
                 override suspend fun findMedia(assetId: String): MediaAsset? {
                     return mediaAsset(assetId)
@@ -582,15 +647,29 @@ class LocalSyncRouterTest {
 
     private fun signedHeaders(
         nonce: String = "nonce-001",
+        deviceId: String = "ios-device-001",
         signature: String,
     ): Map<String, String> {
         return mapOf(
             RequestSignatureValidator.VERSION_HEADER to "1",
-            RequestSignatureValidator.DEVICE_ID_HEADER to "ios-local",
+            RequestSignatureValidator.DEVICE_ID_HEADER to deviceId,
             RequestSignatureValidator.SESSION_ID_HEADER to "ios-photo-mvp",
             RequestSignatureValidator.TIMESTAMP_HEADER to "1800000000000",
             RequestSignatureValidator.NONCE_HEADER to nonce,
             RequestSignatureValidator.SIGNATURE_HEADER to signature,
+        )
+    }
+
+
+    private fun emptyManifest(): SyncManifest {
+        return SyncManifest(
+            version = 1,
+            sourceDeviceId = "android-device-001",
+            generatedAt = "2026-08-25T00:00:00Z",
+            cursor = "cursor-001",
+            media = listOf(mediaAsset("media-001")),
+            contacts = emptyList(),
+            files = emptyList(),
         )
     }
 

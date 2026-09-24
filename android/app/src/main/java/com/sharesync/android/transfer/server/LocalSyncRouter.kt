@@ -55,7 +55,13 @@ class LocalSyncRouter(
         }
 
         val response = LocalApiResponse.json(
-            body = manifestJsonEncoder.encode(manifestProvider.currentManifest(sinceCursor, pageCursor))
+            body = manifestJsonEncoder.encode(
+                manifestProvider.currentManifest(
+                    sinceCursor = sinceCursor,
+                    pageCursor = pageCursor,
+                    targetDeviceId = headers.valueFor(RequestSignatureValidator.DEVICE_ID_HEADER),
+                )
+            )
         )
         requestActivityTracker?.record("manifest", response.statusCode)
         return response
@@ -109,6 +115,9 @@ class LocalSyncRouter(
         return try {
             val result = syncResultJsonCodec.decode(body)
             validateSyncResult(result)
+            headers.valueFor(RequestSignatureValidator.DEVICE_ID_HEADER)?.let { requestingDeviceId ->
+                require(requestingDeviceId == result.targetDeviceId)
+            }
             syncResultStore.save(result)
             syncEventStore?.append(SyncEvent.fromResult(result, recordedAtEpochMillis = System.currentTimeMillis()))
             val response = LocalApiResponse.json(
@@ -168,6 +177,12 @@ class LocalSyncRouter(
     companion object {
         const val PAIRING_TOKEN_HEADER = "X-ShareSync-Pairing-Token"
     }
+}
+
+private fun Map<String, String>.valueFor(name: String): String? {
+    return entries.firstOrNull { (key, _) -> key.equals(name, ignoreCase = true) }
+        ?.value
+        ?.takeIf { it.isNotBlank() }
 }
 
 enum class AuthorizationPolicy {

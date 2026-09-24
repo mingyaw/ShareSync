@@ -48,8 +48,15 @@ class PhotoSyncComponents private constructor(
             )
 
             val manifestProvider = object : ManifestProvider {
-                override suspend fun currentManifest(sinceCursor: String?, pageCursor: String?) =
-                    manifestBuilder.buildPhotoManifest(sinceCursor = sinceCursor, pageCursor = pageCursor)
+                override suspend fun currentManifest(
+                    sinceCursor: String?,
+                    pageCursor: String?,
+                    targetDeviceId: String?,
+                ) = manifestBuilder.buildPhotoManifest(
+                    sinceCursor = sinceCursor,
+                    pageCursor = pageCursor,
+                    targetDeviceId = targetDeviceId,
+                )
             }
             val requestActivityTracker = LocalRequestActivityTracker()
 

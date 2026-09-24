@@ -113,7 +113,8 @@ Physical validation is intentionally deferred. The first device pass should veri
 ### Mac M2: gateway ownership
 
 - Add an Android-side active-gateway selection.
-- Scope completion state by gateway or gateway group.
+- Implemented: completion state is persisted per target device, manifests are filtered for the requesting gateway, and signed completion reports must match the requesting device ID.
+- Add a gateway group that lets iPhone and Mac share one iCloud Photos completion boundary when the user enables handoff.
 - Define handoff between iPhone and Mac without duplicate imports.
 - Add conflict and reset semantics to the shared protocol.
 

@@ -13,6 +13,7 @@ class ManifestBuilder(
         limit: Int = 100,
         sinceCursor: String? = null,
         pageCursor: String? = null,
+        targetDeviceId: String? = null,
     ): SyncManifest {
         val safeLimit = limit.coerceIn(1, MAX_PAGE_SIZE)
         val legacyPageCursor = sinceCursor?.takeIf { it.startsWith(LEGACY_PAGE_CURSOR_PREFIX) }
@@ -22,7 +23,9 @@ class ManifestBuilder(
         val offset = page?.pendingOffset
             ?: legacyPageCursor?.removePrefix(LEGACY_PAGE_CURSOR_PREFIX)?.toIntOrNull()?.coerceAtLeast(0)
             ?: 0
-        val completedMediaAssetIds = syncResultStore.completedMediaAssetIds()
+        val completedMediaAssetIds = targetDeviceId
+            ?.let { syncResultStore.completedMediaAssetIds(it) }
+            ?: syncResultStore.completedMediaAssetIds()
         val requiredPendingCount = offset + safeLimit + 1
         val scanChunkSize = (safeLimit * 5).coerceIn(safeLimit, MAX_SCAN_CHUNK_SIZE)
         val allPendingMedia = mutableListOf<MediaAsset>()

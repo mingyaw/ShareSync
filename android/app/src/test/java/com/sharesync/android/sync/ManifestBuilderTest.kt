@@ -45,6 +45,45 @@ class ManifestBuilderTest {
     }
 
     @Test
+    fun buildPhotoManifestOnlyFiltersCompletionForRequestingTargetDevice() {
+        val scanner = FakeMediaScanner(
+            assets = listOf(mediaAsset("media-ios"), mediaAsset("media-mac")),
+        )
+        val store = InMemorySyncResultStore()
+        SuspendBridge.runBlocking {
+            store.save(
+                SyncResult(
+                    syncBatchId = "batch-ios",
+                    targetDeviceId = "ios-device-001",
+                    results = listOf(syncItem("media-ios", SyncItemStatus.synced)),
+                )
+            )
+            store.save(
+                SyncResult(
+                    syncBatchId = "batch-mac",
+                    targetDeviceId = "mac-device-001",
+                    results = listOf(syncItem("media-mac", SyncItemStatus.synced)),
+                )
+            )
+        }
+        val builder = ManifestBuilder(
+            sourceDeviceId = "android-device-001",
+            mediaScanner = scanner,
+            syncResultStore = store,
+        )
+
+        val iosManifest = SuspendBridge.runBlocking {
+            builder.buildPhotoManifest(limit = 100, targetDeviceId = "ios-device-001")
+        }
+        val macManifest = SuspendBridge.runBlocking {
+            builder.buildPhotoManifest(limit = 100, targetDeviceId = "mac-device-001")
+        }
+
+        assertEquals(listOf("media-mac"), iosManifest.media.map { it.assetId })
+        assertEquals(listOf("media-ios"), macManifest.media.map { it.assetId })
+    }
+
+    @Test
     fun buildPhotoManifestExcludesPhotoAfterFailedItemIsRetriedSuccessfully() {
         val scanner = FakeMediaScanner(
             assets = listOf(
