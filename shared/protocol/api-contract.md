@@ -85,6 +85,23 @@ iOS calls this endpoint after scanning an Android QR payload containing a non-ex
 
 The QR registration token is valid for ten minutes. Legacy QR `pairingToken` support remains migration-only and must not be stored by current iOS clients.
 
+### Device Unregistration
+
+```http
+DELETE /v1/pairing/device
+```
+
+iOS or Mac calls this endpoint before forgetting a paired Android phone. The request must be signed with the caller's current device-scoped secret. Android derives the device to remove from `X-Device-Id`; no device ID is accepted in the URL or body. A successful request returns HTTP `202`, revokes the caller's signing credential, and removes its gateway registration.
+
+```json
+{
+  "status": "revoked",
+  "deviceId": "ios-<uuid>"
+}
+```
+
+Apple clients clear their local pairing immediately after starting this best-effort request. If Android is offline, the stale Android registration remains until it is removed in Android settings or replaced by a later registration. Repeating the request after a successful revocation returns `401` because the old secret is no longer valid.
+
 ### Manifest
 
 ```http
@@ -163,6 +180,7 @@ M0 implements only:
 - `GET /v1/media/{assetId}`
 - `POST /v1/sync/result`
 - `POST /v1/pairing/register`
+- `DELETE /v1/pairing/device`
 - signed local HTTP retained for Debug builds
 - signed request enforcement on protected endpoints
 - photo media only

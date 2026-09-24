@@ -67,6 +67,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
     private let sessionStore: PairedDeviceSessionStore
     private let resultStore: SyncResultStore
     private let resultClient: SyncResultClient
+    private let deviceUnregistrationClient: DeviceUnregistrationClient
     private let syncEventStore: SyncEventStore
     private let discovery: LocalPeerDiscovery
     private let endpointResolver: PairedEndpointResolver
@@ -87,6 +88,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
         sessionStore: PairedDeviceSessionStore = FilePairedDeviceSessionStore(),
         resultStore: SyncResultStore = FileSyncResultStore(),
         resultClient: SyncResultClient = SyncResultClient(),
+        deviceUnregistrationClient: DeviceUnregistrationClient = DeviceUnregistrationClient(),
         syncEventStore: SyncEventStore = FileSyncEventStore(),
         discovery: LocalPeerDiscovery? = nil,
         endpointResolver: PairedEndpointResolver = PairedEndpointResolver(),
@@ -109,6 +111,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
         self.sessionStore = sessionStore
         self.resultStore = resultStore
         self.resultClient = resultClient
+        self.deviceUnregistrationClient = deviceUnregistrationClient
         self.syncEventStore = syncEventStore
         self.discovery = discovery ?? BonjourLocalPeerDiscovery()
         self.endpointResolver = endpointResolver
@@ -320,6 +323,23 @@ final class MacPhotoSyncViewModel: ObservableObject {
 
     func forgetDevice() {
         guard !isBusy else { return }
+        if let endpointPort = Int(port),
+           let secret = pairingToken,
+           !host.isEmpty,
+           !secret.isEmpty {
+            let endpointHost = host
+            let transportSecurity = pairedDevice?.transportSecurity
+            Task {
+                try? await deviceUnregistrationClient.unregister(
+                    deviceId: targetDeviceId,
+                    sessionId: "mac-photo-mvp",
+                    secret: secret,
+                    host: endpointHost,
+                    port: endpointPort,
+                    transportSecurity: transportSecurity
+                )
+            }
+        }
         try? sessionStore.clear()
         pairedDevice = nil
         pairingToken = nil

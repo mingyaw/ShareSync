@@ -16,6 +16,48 @@ import java.time.Instant
 
 class LocalSyncRouterTest {
     @Test
+    fun pairedDeviceCanRevokeItsCredentialAndGatewayRegistration() {
+        val credentialStore = InMemoryDeviceCredentialStore { "ios-device-secret" }
+        credentialStore.commit(credentialStore.beginRotation("ios-device-001"))
+        val gatewayStore = InMemoryGatewayOwnershipStore().apply {
+            observe("ios-device-001", "Mingyao iPhone")
+        }
+        val timestamp = "1800000000000"
+        val nonce = "remove-device-nonce"
+        val headers = signedHeaders(
+            deviceId = "ios-device-001",
+            nonce = nonce,
+            signature = RequestSignatureValidator.sign(
+                secret = "ios-device-secret",
+                version = "2",
+                deviceId = "ios-device-001",
+                sessionId = "ios-photo-mvp",
+                method = "DELETE",
+                path = "/v1/pairing/device",
+                timestamp = timestamp,
+                nonce = nonce,
+                body = "",
+            ),
+        )
+
+        val response = SuspendBridge.runBlocking {
+            router(
+                gatewayOwnershipStore = gatewayStore,
+                deviceCredentialStore = credentialStore,
+                signatureValidator = RequestSignatureValidator(
+                    secretProvider = { PAIRING_TOKEN },
+                    deviceSecretsProvider = credentialStore::authorizationSecrets,
+                    clock = { 1_800_000_000_000L },
+                ),
+            ).unregisterDevice(headers = headers)
+        }
+
+        assertEquals(202, response.statusCode)
+        assertEquals(emptyList<String>(), credentialStore.authorizationSecrets("ios-device-001"))
+        assertEquals(emptyList<String>(), gatewayStore.devices().map { it.deviceId })
+    }
+
+    @Test
     fun pairingRegistrationIssuesDeviceScopedSecretAndObservesGateway() {
         val credentialStore = InMemoryDeviceCredentialStore { "ios-device-secret" }
         val gatewayStore = InMemoryGatewayOwnershipStore()

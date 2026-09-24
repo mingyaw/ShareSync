@@ -3,6 +3,32 @@ import XCTest
 @testable import ShareSync
 
 final class ManifestClientTests: XCTestCase {
+    func testUnregisterDeviceSendsSignedDeleteRequest() async throws {
+        let session = StubManifestFetchingSession(data: Data(), statusCode: 202)
+        let client = DeviceUnregistrationClient(
+            session: session,
+            requestSigner: RequestSigner(
+                timestampProvider: { 1_800_000_000_000 },
+                nonceProvider: { "remove-device-nonce" }
+            )
+        )
+
+        try await client.unregister(
+            deviceId: "ios-device-001",
+            sessionId: "ios-photo-mvp",
+            secret: "device-secret",
+            host: "192.168.1.10",
+            port: 48291
+        )
+
+        let request = try XCTUnwrap(session.requests.first)
+        XCTAssertEqual(request.url?.absoluteString, "http://192.168.1.10:48291/v1/pairing/device")
+        XCTAssertEqual(request.httpMethod, "DELETE")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Device-Id"), "ios-device-001")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Nonce"), "remove-device-nonce")
+        XCTAssertNotNil(request.value(forHTTPHeaderField: "X-Signature"))
+    }
+
     func testRegisterDeviceUsesShortLivedTokenAndReturnsDeviceSecret() async throws {
         let response = Data(
             #"{"deviceId":"ios-device-001","pairingToken":"device-secret"}"#.utf8

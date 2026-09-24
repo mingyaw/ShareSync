@@ -22,6 +22,12 @@ enum DeviceRegistrationClientError: Error, Equatable {
     case unexpectedDevice
 }
 
+enum DeviceUnregistrationClientError: Error, Equatable {
+    case invalidBaseURL
+    case nonHTTPResponse
+    case unacceptableStatusCode(Int)
+}
+
 private struct DeviceRegistrationRequest: Encodable {
     let deviceId: String
     let deviceName: String
@@ -118,6 +124,58 @@ final class DeviceRegistrationClient {
             throw DeviceRegistrationClientError.unexpectedDevice
         }
         return result.pairingToken
+    }
+}
+
+final class DeviceUnregistrationClient {
+    private let session: ManifestFetchingSession?
+    private let requestSigner: RequestSigner
+
+    init(
+        session: ManifestFetchingSession? = nil,
+        requestSigner: RequestSigner = RequestSigner()
+    ) {
+        self.session = session
+        self.requestSigner = requestSigner
+    }
+
+    func unregister(
+        deviceId: String,
+        sessionId: String,
+        secret: String,
+        host: String,
+        port: Int,
+        transportSecurity: PairingTransportSecurity? = nil
+    ) async throws {
+        guard let url = LocalTransportURLBuilder.url(
+            host: host,
+            port: port,
+            path: "/v1/pairing/device",
+            transportSecurity: transportSecurity
+        ) else {
+            throw DeviceUnregistrationClientError.invalidBaseURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        requestSigner.sign(
+            request: &request,
+            context: RequestSigningContext(
+                deviceId: deviceId,
+                sessionId: sessionId,
+                secret: secret
+            )
+        )
+        let activeSession = session ?? LocalNetworkURLSessionFactory.shortRequestSession(
+            transportSecurity: transportSecurity
+        )
+        let (_, response) = try await activeSession.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw DeviceUnregistrationClientError.nonHTTPResponse
+        }
+        guard httpResponse.statusCode == 202 else {
+            throw DeviceUnregistrationClientError.unacceptableStatusCode(httpResponse.statusCode)
+        }
     }
 }
 

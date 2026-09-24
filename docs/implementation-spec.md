@@ -400,6 +400,15 @@ Response：
 - iOS 完成註冊及本機 persistence 後才可進入自動同步，避免掃碼與第一個 manifest request 競態。
 - Mac callback payload 不包含 `registrationToken`；Mac 仍使用反向 QR callback 的 device-scoped credential 流程。
 
+### 8.6 雙向解除配對
+
+- iOS 或 Mac 忘記 Android 裝置前，使用目前的 device-scoped credential 簽署 `DELETE /v1/pairing/device`。
+- Android 只採用已簽署的 `X-Device-Id` 判斷撤銷對象，不接受 path、query 或 body 指定其他裝置。
+- 驗證成功後，Android 必須撤銷該裝置 active/pending secret，並移除 gateway ownership；回覆 HTTP `202`。
+- Apple 端採 best-effort remote revoke：送出撤銷請求後立即清除本機 endpoint、secret 與配對狀態，不因 Android 離線而阻塞解除操作。
+- 遠端撤銷失敗時，Android 可能保留失效的配對紀錄；使用者可在 Android 設定頁移除，後續重新註冊同一 device ID 亦會輪替 credential。
+- 已成功撤銷的舊 secret 不得再次授權任何 API，重送解除請求應回覆 `401`。
+
 ## 9. Request 驗證
 
 所有已配對後的 API request 需包含：

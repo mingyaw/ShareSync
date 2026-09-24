@@ -221,6 +221,37 @@ class LocalSyncRouter(
         }
     }
 
+    suspend fun unregisterDevice(
+        headers: Map<String, String> = emptyMap(),
+        path: String = "/v1/pairing/device",
+    ): LocalApiResponse {
+        if (!isAuthorized(method = "DELETE", path = path, body = "", headers = headers)) {
+            val response = LocalApiResponse.jsonError(statusCode = 401, errorCode = "SS-AUTH-001")
+            requestActivityTracker?.record("pairing-remove", response.statusCode)
+            return response
+        }
+
+        val requestingDeviceId = headers.valueFor(RequestSignatureValidator.DEVICE_ID_HEADER)
+        val credentialStore = deviceCredentialStore
+        if (requestingDeviceId == null || credentialStore == null) {
+            val response = LocalApiResponse.jsonError(statusCode = 503, errorCode = "SS-PAIR-503")
+            requestActivityTracker?.record("pairing-remove", response.statusCode)
+            return response
+        }
+
+        credentialStore.revoke(requestingDeviceId)
+        gatewayOwnershipStore?.remove(requestingDeviceId)
+        val response = LocalApiResponse.json(
+            statusCode = 202,
+            body = JSONObject()
+                .put("status", "revoked")
+                .put("deviceId", requestingDeviceId)
+                .toString(),
+        )
+        requestActivityTracker?.record("pairing-remove", response.statusCode)
+        return response
+    }
+
     private fun validateSyncResult(result: SyncResult) {
         require(result.syncBatchId.isNotBlank())
         require(result.targetDeviceId.isNotBlank())

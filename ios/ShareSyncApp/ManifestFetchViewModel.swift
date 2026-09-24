@@ -90,6 +90,7 @@ final class ManifestFetchViewModel: ObservableObject {
     private let syncEventStore: SyncEventStore
     private let syncResultClient: SyncResultClient
     private let deviceRegistrationClient: DeviceRegistrationClient
+    private let deviceUnregistrationClient: DeviceUnregistrationClient
     private let pairedDeviceSessionStore: PairedDeviceSessionStore
     private let pairingPayloadParser: PairingPayloadParser
     private let localPeerDiscovery: LocalPeerDiscovery
@@ -113,6 +114,7 @@ final class ManifestFetchViewModel: ObservableObject {
         syncEventStore: SyncEventStore = FileSyncEventStore(),
         syncResultClient: SyncResultClient = SyncResultClient(),
         deviceRegistrationClient: DeviceRegistrationClient = DeviceRegistrationClient(),
+        deviceUnregistrationClient: DeviceUnregistrationClient = DeviceUnregistrationClient(),
         pairedDeviceSessionStore: PairedDeviceSessionStore = FilePairedDeviceSessionStore(),
         localPeerDiscovery: LocalPeerDiscovery? = nil,
         endpointResolver: PairedEndpointResolver = PairedEndpointResolver(),
@@ -130,6 +132,7 @@ final class ManifestFetchViewModel: ObservableObject {
         self.syncEventStore = syncEventStore
         self.syncResultClient = syncResultClient
         self.deviceRegistrationClient = deviceRegistrationClient
+        self.deviceUnregistrationClient = deviceUnregistrationClient
         self.pairedDeviceSessionStore = pairedDeviceSessionStore
         self.localPeerDiscovery = localPeerDiscovery ?? BonjourLocalPeerDiscovery()
         self.endpointResolver = endpointResolver
@@ -421,6 +424,24 @@ final class ManifestFetchViewModel: ObservableObject {
     func clearPairing() {
         guard !isTransferActive else {
             return
+        }
+
+        if let endpointPort = Int(port),
+           let secret = pairingToken,
+           !host.isEmpty,
+           !secret.isEmpty {
+            let endpointHost = host
+            let transportSecurity = pairedDevice?.transportSecurity
+            Task {
+                try? await deviceUnregistrationClient.unregister(
+                    deviceId: targetDeviceId,
+                    sessionId: "ios-photo-mvp",
+                    secret: secret,
+                    host: endpointHost,
+                    port: endpointPort,
+                    transportSecurity: transportSecurity
+                )
+            }
         }
 
         try? pairedDeviceSessionStore.clear()

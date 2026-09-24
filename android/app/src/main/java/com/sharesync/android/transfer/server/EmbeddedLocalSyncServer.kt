@@ -113,6 +113,17 @@ class EmbeddedLocalSyncServer(
                     },
                 )
             }
+            request.method == "DELETE" && request.path == "/v1/pairing/device" -> {
+                writeApiResponse(
+                    socket.getOutputStream(),
+                    runBlocking {
+                        router.unregisterDevice(
+                            headers = request.headers,
+                            path = request.path,
+                        )
+                    },
+                )
+            }
             request.method != "GET" && request.method != "POST" -> writeJsonError(socket.getOutputStream(), 405, "SS-NET-405")
             else -> writeNotFound(socket.getOutputStream())
         }
