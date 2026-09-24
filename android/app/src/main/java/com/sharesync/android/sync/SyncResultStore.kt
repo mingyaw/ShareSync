@@ -23,14 +23,12 @@ interface SyncResultStore {
     }
 
     suspend fun completedMediaAssetIds(targetDeviceId: String): Set<String> {
-        return latest(targetDeviceId)
-            ?.results
-            .orEmpty()
-            .filter { item ->
-                item.itemType == SyncItemType.media &&
-                    item.status.isCompletedForPhotoManifest
-            }
-            .map { item -> item.sourceItemId }
+        return latest(targetDeviceId).completedMediaAssetIds()
+    }
+
+    suspend fun completedMediaAssetIds(targetDeviceIds: Set<String>): Set<String> {
+        return targetDeviceIds
+            .flatMap { targetDeviceId -> latest(targetDeviceId).completedMediaAssetIds() }
             .toSet()
     }
 }
@@ -178,3 +176,14 @@ private fun SyncItemResult.key(): SyncResultItemKey {
 
 private val SyncItemStatus.isCompletedForPhotoManifest: Boolean
     get() = this == SyncItemStatus.synced || this == SyncItemStatus.skipped
+
+private fun SyncResult?.completedMediaAssetIds(): Set<String> {
+    return this
+        ?.results
+        .orEmpty()
+        .filter { item ->
+            item.itemType == SyncItemType.media && item.status.isCompletedForPhotoManifest
+        }
+        .map { item -> item.sourceItemId }
+        .toSet()
+}

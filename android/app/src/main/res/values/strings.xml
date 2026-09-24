@@ -52,7 +52,7 @@
     <string name="time_minutes_ago">%1$d minutes ago</string>
     <string name="time_hours_ago">%1$d hours ago</string>
     <string name="sync_result_copied">Sync result JSON copied.</string>
-    <string name="sync_state_cleared">Photo sync history cleared. Fetch from iPhone again to rebuild state.</string>
+    <string name="sync_state_cleared">Shared iCloud sync history cleared. Pairing and the active backup device were kept.</string>
     <string name="sync_pairing_payload_unavailable">Pairing code appears after photo sync starts.</string>
     <string name="sync_pairing_instruction_waiting">Allow photo access and keep ShareSync open. The pairing code will appear automatically.</string>
     <string name="sync_pairing_instruction_ready">Scan this code from iPhone to bind or refresh this Android phone. After binding, keep ShareSync open while photos are available.</string>
@@ -83,7 +83,7 @@
     <string name="diagnostics_copied">Diagnostics copied without pairing secrets.</string>
     <string name="pairing_qr_accessibility">Pairing QR code. Scan with ShareSync on iPhone.</string>
     <string name="clear_history_title">Clear photo history?</string>
-    <string name="clear_history_message">Previously completed photos can appear available again after this history is cleared. Photos already stored on either phone are not deleted.</string>
+    <string name="clear_history_message">This resets completion history shared by iPhone and Mac. Previously completed photos may be offered again. Pairing, the active backup device, and photos already stored in iCloud are not removed.</string>
     <string name="clear_history_confirm">Clear History</string>
     <string name="clear_history_cancel">Cancel</string>
     <string name="onboarding_title">Send photos to your iPhone</string>

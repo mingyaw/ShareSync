@@ -84,6 +84,57 @@ class ManifestBuilderTest {
     }
 
     @Test
+    fun buildPhotoManifestUsesSharedCompletionBoundaryDuringGatewayHandoff() {
+        val scanner = FakeMediaScanner(
+            assets = listOf(
+                mediaAsset("media-from-ios"),
+                mediaAsset("media-from-mac"),
+                mediaAsset("media-retry"),
+                mediaAsset("media-conflict"),
+                mediaAsset("media-new"),
+            ),
+        )
+        val store = InMemorySyncResultStore()
+        SuspendBridge.runBlocking {
+            store.save(
+                SyncResult(
+                    syncBatchId = "batch-ios",
+                    targetDeviceId = "ios-device-001",
+                    results = listOf(syncItem("media-from-ios", SyncItemStatus.synced)),
+                )
+            )
+            store.save(
+                SyncResult(
+                    syncBatchId = "batch-mac",
+                    targetDeviceId = "mac-device-001",
+                    results = listOf(
+                        syncItem("media-from-mac", SyncItemStatus.synced),
+                        syncItem("media-retry", SyncItemStatus.failed),
+                        syncItem("media-conflict", SyncItemStatus.conflicted),
+                    ),
+                )
+            )
+        }
+
+        val manifest = SuspendBridge.runBlocking {
+            ManifestBuilder(
+                sourceDeviceId = "android-device-001",
+                mediaScanner = scanner,
+                syncResultStore = store,
+            ).buildPhotoManifest(
+                limit = 100,
+                targetDeviceId = "mac-device-001",
+                completionTargetDeviceIds = setOf("ios-device-001", "mac-device-001"),
+            )
+        }
+
+        assertEquals(
+            listOf("media-retry", "media-conflict", "media-new"),
+            manifest.media.map { it.assetId },
+        )
+    }
+
+    @Test
     fun buildPhotoManifestExcludesPhotoAfterFailedItemIsRetriedSuccessfully() {
         val scanner = FakeMediaScanner(
             assets = listOf(

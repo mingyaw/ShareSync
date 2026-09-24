@@ -35,4 +35,18 @@ class GatewayOwnershipStoreTest {
     fun cannotSelectUnknownDevice() {
         InMemoryGatewayOwnershipStore().select("unknown")
     }
+
+    @Test
+    fun gatewayOwnershipIsIndependentFromSyncHistoryReset() {
+        val gatewayStore = InMemoryGatewayOwnershipStore()
+        val resultStore = InMemorySyncResultStore()
+        gatewayStore.observe("ios-local")
+        gatewayStore.observe("mac-device-001", "Studio Mac")
+        gatewayStore.select("mac-device-001")
+
+        com.sharesync.android.SuspendBridge.runBlocking { resultStore.clear() }
+
+        assertEquals("mac-device-001", gatewayStore.activeDeviceId())
+        assertEquals(2, gatewayStore.devices().size)
+    }
 }

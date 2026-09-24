@@ -94,6 +94,30 @@ class SyncResultStoreTest {
     }
 
     @Test
+    fun inMemoryStoreCombinesCompletedMediaForGatewayGroup() {
+        val store = InMemorySyncResultStore()
+
+        SuspendBridge.runBlocking {
+            store.save(syncResult("batch-ios", syncItem("media-ios", SyncItemStatus.synced)))
+            store.save(
+                syncResult(
+                    "batch-mac",
+                    syncItem("media-mac", SyncItemStatus.skipped),
+                    syncItem("media-retry", SyncItemStatus.failed),
+                    targetDeviceId = "mac-device-001",
+                )
+            )
+        }
+
+        assertEquals(
+            setOf("media-ios", "media-mac"),
+            SuspendBridge.runBlocking {
+                store.completedMediaAssetIds(setOf("ios-device-001", "mac-device-001"))
+            },
+        )
+    }
+
+    @Test
     fun inMemoryStoreClearRemovesResults() {
         val store = InMemorySyncResultStore()
 

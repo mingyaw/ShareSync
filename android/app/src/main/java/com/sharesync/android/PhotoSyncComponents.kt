@@ -5,6 +5,7 @@ import com.sharesync.android.scanner.media.MediaStoreMediaScanner
 import com.sharesync.android.scanner.media.MediaStreamProvider
 import com.sharesync.android.sync.FileSyncEventStore
 import com.sharesync.android.sync.FileSyncResultStore
+import com.sharesync.android.sync.GatewayDevice
 import com.sharesync.android.sync.GatewayOwnershipStore
 import com.sharesync.android.sync.ManifestBuilder
 import com.sharesync.android.sync.SharedPreferencesGatewayOwnershipStore
@@ -60,6 +61,9 @@ class PhotoSyncComponents private constructor(
                     sinceCursor = sinceCursor,
                     pageCursor = pageCursor,
                     targetDeviceId = targetDeviceId,
+                    completionTargetDeviceIds = targetDeviceId?.let {
+                        gatewayOwnershipStore.devices().map(GatewayDevice::deviceId).toSet()
+                    },
                 )
             }
             val requestActivityTracker = LocalRequestActivityTracker()

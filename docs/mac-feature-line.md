@@ -110,13 +110,12 @@ Physical validation is intentionally deferred. The first device pass should veri
 
 - Implemented: menu-bar status, keep-running preference, sync-all, bounded scheduled batches, awake-session scheduling, interrupted-download resume, Photos deletion reconciliation, completion-return retry state, and diagnostics.
 
-### Mac M2: gateway ownership
+### Mac M2: gateway ownership (complete)
 
 - Implemented: Android registers Apple clients, selects one active iCloud backup device, exposes the selection in Settings, and rejects inactive manifest requests with `SS-GATEWAY-409`.
 - Implemented: completion state is persisted per target device, manifests are filtered for the requesting gateway, and signed completion reports must match the requesting device ID.
-- Add a gateway group that lets iPhone and Mac share one iCloud Photos completion boundary when the user enables handoff.
-- Define handoff between iPhone and Mac without duplicate imports.
-- Add conflict and reset semantics to the shared protocol.
+- Implemented: registered iPhone and Mac gateways share one iCloud Photos completion boundary while retaining per-device result history; successful imports are not re-offered after handoff, while failures remain retryable.
+- Implemented: failed and conflicted items remain retryable across handoff; resetting history clears the shared iCloud completion boundary and event log while preserving pairing and active-gateway ownership.
 
 ### Mac M3: pairing hardening
 

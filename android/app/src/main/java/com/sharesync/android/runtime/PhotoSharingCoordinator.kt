@@ -293,7 +293,12 @@ class PhotoSharingCoordinator(
 
     private fun photoCount(builder: ManifestBuilder): Int {
         return SuspendBridge.runBlocking {
-            builder.buildPhotoManifest(targetDeviceId = gatewayOwnershipStore.activeDeviceId()).media.size
+            builder.buildPhotoManifest(
+                targetDeviceId = gatewayOwnershipStore.activeDeviceId(),
+                completionTargetDeviceIds = gatewayOwnershipStore.devices()
+                    .map(GatewayDevice::deviceId)
+                    .toSet(),
+            ).media.size
         }
     }
 

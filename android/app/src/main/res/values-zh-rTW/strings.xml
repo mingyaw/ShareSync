@@ -52,7 +52,7 @@
     <string name="time_minutes_ago">%1$d 分鐘前</string>
     <string name="time_hours_ago">%1$d 小時前</string>
     <string name="sync_result_copied">已複製同步結果 JSON。</string>
-    <string name="sync_state_cleared">照片同步紀錄已清除。請從 iPhone 重新取得清單以重建狀態。</string>
+    <string name="sync_state_cleared">共用 iCloud 同步紀錄已清除，配對與目前備份裝置仍會保留。</string>
     <string name="sync_pairing_payload_unavailable">照片同步啟動後會顯示配對碼。</string>
     <string name="sync_pairing_instruction_waiting">允許照片權限並保持 ShareSync 開啟，配對碼會自動顯示。</string>
     <string name="sync_pairing_instruction_ready">請用 iPhone 掃描此配對碼來綁定或更新這支 Android 手機。綁定後，照片可接收期間請保持 ShareSync 開啟。</string>
@@ -83,7 +83,7 @@
     <string name="diagnostics_copied">已複製診斷資訊，未包含配對密鑰。</string>
     <string name="pairing_qr_accessibility">配對 QR Code，請使用 iPhone 上的 ShareSync 掃描。</string>
     <string name="clear_history_title">要清除照片紀錄嗎？</string>
-    <string name="clear_history_message">清除後，先前已完成的照片可能再次顯示為可同步。兩支手機上已儲存的照片都不會被刪除。</string>
+    <string name="clear_history_message">這會重設 iPhone 與 Mac 共用的完成紀錄，先前照片可能再次出現。配對、目前備份裝置與 iCloud 中已有照片都不會被移除。</string>
     <string name="clear_history_confirm">清除紀錄</string>
     <string name="clear_history_cancel">取消</string>
     <string name="onboarding_title">把照片帶到 iPhone</string>
