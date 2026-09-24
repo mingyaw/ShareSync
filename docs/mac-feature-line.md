@@ -112,7 +112,7 @@ Physical validation is intentionally deferred. The first device pass should veri
 
 ### Mac M2: gateway ownership
 
-- Add an Android-side active-gateway selection.
+- Implemented: Android registers Apple clients, selects one active iCloud backup device, exposes the selection in Settings, and rejects inactive manifest requests with `SS-GATEWAY-409`.
 - Implemented: completion state is persisted per target device, manifests are filtered for the requesting gateway, and signed completion reports must match the requesting device ID.
 - Add a gateway group that lets iPhone and Mac share one iCloud Photos completion boundary when the user enables handoff.
 - Define handoff between iPhone and Mac without duplicate imports.

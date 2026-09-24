@@ -136,6 +136,11 @@
     <string name="history_status_complete">Complete</string>
     <string name="history_status_attention">Needs attention</string>
     <string name="settings_connection">Connection</string>
+    <string name="settings_icloud_gateway">iCloud backup device</string>
+    <string name="settings_gateway_empty">Paired Apple devices will appear here after their first connection.</string>
+    <string name="settings_gateway_description">Only the selected device can request new photos. Switching devices stops duplicate iCloud imports.</string>
+    <string name="settings_gateway_active">Active</string>
+    <string name="settings_gateway_select">Use this device</string>
     <string name="settings_photo_sharing">Photo sharing</string>
     <string name="settings_sharing_on">Available to iPhone on this network</string>
     <string name="settings_sharing_off">Not available to iPhone</string>

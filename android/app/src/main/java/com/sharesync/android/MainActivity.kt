@@ -26,6 +26,7 @@ import com.sharesync.android.runtime.PhotoSharingCoordinator
 import com.sharesync.android.runtime.PhotoSharingCoordinatorEvent
 import com.sharesync.android.runtime.PhotoSharingSnapshot
 import com.sharesync.android.sync.SyncHistorySummary
+import com.sharesync.android.sync.GatewayDevice
 import com.sharesync.android.sync.SyncItemStatus
 import com.sharesync.android.sync.SyncResult
 import com.sharesync.android.sync.SyncResultJsonCodec
@@ -37,6 +38,7 @@ import com.sharesync.android.ui.PhotoSharingScreenState
 import com.sharesync.android.ui.PhotoSyncHomeUiState
 import com.sharesync.android.ui.ActivityUiState
 import com.sharesync.android.ui.HistoryUiItem
+import com.sharesync.android.ui.GatewayUiItem
 import com.sharesync.android.ui.SettingsUiState
 import com.sharesync.android.ui.ShareSyncApp
 import com.sharesync.android.ui.ShareSyncComposeTheme
@@ -57,6 +59,8 @@ class MainActivity : ComponentActivity() {
     private var currentSyncHistory: List<SyncHistorySummary> = emptyList()
     private var currentRequestActivity: LocalRequestActivity? = null
     private var hasConnectedPeer = false
+    private var currentGatewayDevices: List<GatewayDevice> = emptyList()
+    private var currentActiveGatewayDeviceId: String? = null
     private var currentSection by mutableStateOf(MainDestination.SYNC)
     private var isAdvancedSupportExpanded by mutableStateOf(false)
     private var syncHomeState by mutableStateOf(PhotoSyncHomeUiState())
@@ -164,6 +168,7 @@ class MainActivity : ComponentActivity() {
                         onCopyResult = ::copySyncResult,
                         onCopyDiagnostics = ::copyDiagnosticsSummary,
                         onClearHistory = ::showClearSyncStateConfirmation,
+                        onSelectGateway = sharingCoordinator::selectGateway,
                         onToggleAdvanced = {
                             isAdvancedSupportExpanded = !isAdvancedSupportExpanded
                             refreshUi()
@@ -243,6 +248,13 @@ class MainActivity : ComponentActivity() {
             endpointAvailable = screenState.copyEndpointEnabled,
             resultAvailable = screenState.copySyncResultEnabled,
             advancedExpanded = isAdvancedSupportExpanded,
+            gateways = currentGatewayDevices.map { device ->
+                GatewayUiItem(
+                    deviceId = device.deviceId,
+                    displayName = device.displayName,
+                    isActive = device.deviceId == currentActiveGatewayDeviceId,
+                )
+            },
         )
 
         updateKeepScreenAwake()
@@ -382,6 +394,12 @@ class MainActivity : ComponentActivity() {
         val payload = currentPairingPayloadJson ?: return
         if (macPairingCallbackInFlight) return
         macPairingCallbackInFlight = true
+        val previousActiveGatewayDeviceId = currentActiveGatewayDeviceId
+        sharingCoordinator.registerGateway(
+            deviceId = offer.deviceId,
+            displayName = offer.deviceName,
+            makeActive = true,
+        )
         Thread {
             runCatching { MacPairingCallbackClient().complete(offer, payload) }
                 .onSuccess {
@@ -393,6 +411,7 @@ class MainActivity : ComponentActivity() {
                 }
                 .onFailure { error ->
                     Log.e(PAIRING_LOG_TAG, "Mac pairing callback failed", error)
+                    previousActiveGatewayDeviceId?.let(sharingCoordinator::selectGateway)
                     runOnUiThread {
                         pendingMacPairingOffer = null
                         macPairingCallbackInFlight = false
@@ -489,6 +508,8 @@ class MainActivity : ComponentActivity() {
         currentSyncHistory = snapshot.syncHistory
         currentRequestActivity = snapshot.requestActivity
         hasConnectedPeer = snapshot.hasConnectedPeer
+        currentGatewayDevices = snapshot.gatewayDevices
+        currentActiveGatewayDeviceId = snapshot.activeGatewayDeviceId
         if (snapshot.isRunning) {
             PhotoSharingService.update(this, notificationState(snapshot))
         }

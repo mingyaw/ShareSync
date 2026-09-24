@@ -99,5 +99,7 @@
 "mac.error.unexpected_peer" = "此位址回應的是另一部裝置，ShareSync 已停止連線。";
 "mac.error.unreachable" = "目前無法連到 Android。請保持該端 ShareSync 開啟並檢查區域網路。";
 "mac.error.protocol" = "Android 的照片清單格式不支援。";
+"mac.error.inactive_gateway" = "這部 Mac 目前不是 iCloud 備份裝置，請在 Android 的 ShareSync 設定中選取此 Mac。";
+"mac.error.manifest_rejected" = "Android 未允許存取照片清單。";
 "mac.error.transfer" = "照片無法下載或儲存，請再試一次。";
 "mac.error.partial_transfer" = "部分照片需要再次嘗試，重新同步時只會重試這些項目。";

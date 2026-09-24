@@ -744,6 +744,16 @@ final class MacPhotoSyncViewModel: ObservableObject {
         if error is DecodingError {
             return NSLocalizedString("mac.error.protocol", comment: "")
         }
+        if let clientError = error as? ManifestClientError {
+            switch clientError {
+            case .unacceptableStatusCode(409):
+                return NSLocalizedString("mac.error.inactive_gateway", comment: "")
+            case .unacceptableStatusCode:
+                return NSLocalizedString("mac.error.manifest_rejected", comment: "")
+            case .invalidBaseURL, .nonHTTPResponse, .paginationLimitExceeded, .invalidPaginationCursor:
+                return NSLocalizedString("mac.error.protocol", comment: "")
+            }
+        }
         return error.localizedDescription
     }
 

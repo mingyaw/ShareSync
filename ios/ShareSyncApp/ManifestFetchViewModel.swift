@@ -786,6 +786,8 @@ final class ManifestFetchViewModel: ObservableObject {
                 return localized("ios.vm.invalid_local_response")
             case .unacceptableStatusCode(401):
                 return localized("ios.vm.pairing_rejected")
+            case .unacceptableStatusCode(409):
+                return localized("ios.vm.inactive_gateway")
             case .unacceptableStatusCode:
                 return localized("ios.vm.manifest_rejected")
             case .paginationLimitExceeded, .invalidPaginationCursor:

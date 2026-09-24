@@ -2,6 +2,7 @@ package com.sharesync.android.transfer.server
 
 import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.sync.MediaAsset
+import com.sharesync.android.sync.GatewayOwnershipStore
 import com.sharesync.android.sync.SyncItemType
 import com.sharesync.android.sync.SyncItemStatus
 import com.sharesync.android.sync.SyncEvent
@@ -19,6 +20,7 @@ class LocalSyncRouter(
     private val mediaProvider: MediaProvider,
     private val syncResultStore: SyncResultStore,
     private val syncEventStore: SyncEventStore? = null,
+    private val gatewayOwnershipStore: GatewayOwnershipStore? = null,
     private val manifestJsonEncoder: ManifestJsonEncoder = ManifestJsonEncoder(),
     private val syncResultJsonCodec: SyncResultJsonCodec = SyncResultJsonCodec(),
     private val requestActivityTracker: LocalRequestActivityTracker? = null,
@@ -54,12 +56,22 @@ class LocalSyncRouter(
             return response
         }
 
+        val targetDeviceId = headers.valueFor(RequestSignatureValidator.DEVICE_ID_HEADER)
+        if (targetDeviceId != null) {
+            gatewayOwnershipStore?.observe(targetDeviceId)
+            if (gatewayOwnershipStore?.canSync(targetDeviceId) == false) {
+                val response = LocalApiResponse.jsonError(statusCode = 409, errorCode = "SS-GATEWAY-409")
+                requestActivityTracker?.record("manifest", response.statusCode)
+                return response
+            }
+        }
+
         val response = LocalApiResponse.json(
             body = manifestJsonEncoder.encode(
                 manifestProvider.currentManifest(
                     sinceCursor = sinceCursor,
                     pageCursor = pageCursor,
-                    targetDeviceId = headers.valueFor(RequestSignatureValidator.DEVICE_ID_HEADER),
+                    targetDeviceId = targetDeviceId,
                 )
             )
         )

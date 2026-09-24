@@ -12,6 +12,7 @@ import com.sharesync.android.security.LocalServerTlsContextProvider
 import com.sharesync.android.security.SharedPreferencesPairingSecretStore
 import com.sharesync.android.sync.ManifestBuilder
 import com.sharesync.android.sync.ManifestJsonEncoder
+import com.sharesync.android.sync.GatewayOwnershipStore
 import com.sharesync.android.sync.SyncEventStore
 import com.sharesync.android.sync.SyncResultStore
 import com.sharesync.android.transfer.server.EmbeddedLocalHttpsServerBinder
@@ -26,6 +27,7 @@ data class PhotoSharingSession(
     val server: LocalSyncServer,
     val syncResultStore: SyncResultStore,
     val syncEventStore: SyncEventStore,
+    val gatewayOwnershipStore: GatewayOwnershipStore,
     val manifestBuilder: ManifestBuilder,
     val requestActivityTracker: LocalRequestActivityTracker,
     val discoveryAdvertiser: LocalPeerDiscoveryAdvertiser,
@@ -84,6 +86,7 @@ object PhotoSharingSessionController {
             server = server,
             syncResultStore = components.syncResultStore,
             syncEventStore = components.syncEventStore,
+            gatewayOwnershipStore = components.gatewayOwnershipStore,
             manifestBuilder = components.manifestBuilder,
             requestActivityTracker = components.requestActivityTracker,
             discoveryAdvertiser = discoveryAdvertiser,

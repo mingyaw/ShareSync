@@ -99,5 +99,7 @@
 "mac.error.unexpected_peer" = "A different device answered at this address. ShareSync did not connect.";
 "mac.error.unreachable" = "The Android phone could not be reached. Keep ShareSync open there and check the local network.";
 "mac.error.protocol" = "The Android photo list uses an unsupported format.";
+"mac.error.inactive_gateway" = "This Mac is not the active iCloud backup device. Select it in ShareSync settings on Android.";
+"mac.error.manifest_rejected" = "Android did not allow access to the photo list.";
 "mac.error.transfer" = "The photo could not be downloaded or saved. Try again.";
 "mac.error.partial_transfer" = "Some photos need another attempt. Sync again to retry only those items.";

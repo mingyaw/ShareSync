@@ -66,6 +66,7 @@
 "ios.readiness.pairing_required" = "請掃描 Android QR Code，將這支 iPhone 與 Android 手機配對。";
 "ios.readiness.photos_permission_blocked" = "同步 Android 照片前，請先允許這支 iPhone 的照片權限。";
 "ios.readiness.transfer_active" = "照片同步已在進行中。請等待完成或先停止傳輸，再開始新的同步。";
+"ios.vm.inactive_gateway" = "這部 iPhone 目前不是 iCloud 備份裝置，請在 Android 的 ShareSync 設定中選取此裝置。";
 "ios.status.allowed" = "已允許";
 "ios.status.android_peer" = "Android 裝置";
 "ios.status.batch_downloaded" = "批次已下載";

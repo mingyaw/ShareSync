@@ -66,6 +66,7 @@
 "ios.readiness.pairing_required" = "Pair this iPhone with your Android phone by scanning the Android QR code.";
 "ios.readiness.photos_permission_blocked" = "Allow Photos access on this iPhone before syncing Android photos.";
 "ios.readiness.transfer_active" = "A photo sync is already running. Wait for it to finish or stop it before starting another.";
+"ios.vm.inactive_gateway" = "This iPhone is not the active iCloud backup device. Select it in ShareSync settings on Android.";
 "ios.status.allowed" = "Allowed";
 "ios.status.android_peer" = "Android Peer";
 "ios.status.batch_downloaded" = "Batch Downloaded";

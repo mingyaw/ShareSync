@@ -10,7 +10,10 @@ import com.sharesync.android.SuspendBridge
 import com.sharesync.android.security.DeviceIdentityStore
 import com.sharesync.android.sync.FileSyncEventStore
 import com.sharesync.android.sync.FileSyncResultStore
+import com.sharesync.android.sync.GatewayDevice
+import com.sharesync.android.sync.GatewayOwnershipStore
 import com.sharesync.android.sync.ManifestBuilder
+import com.sharesync.android.sync.SharedPreferencesGatewayOwnershipStore
 import com.sharesync.android.sync.SyncEvent
 import com.sharesync.android.sync.SyncEventStore
 import com.sharesync.android.sync.SyncHistorySummary
@@ -34,6 +37,8 @@ data class PhotoSharingSnapshot(
     val syncHistory: List<SyncHistorySummary> = emptyList(),
     val requestActivity: LocalRequestActivity? = null,
     val hasConnectedPeer: Boolean = false,
+    val gatewayDevices: List<GatewayDevice> = emptyList(),
+    val activeGatewayDeviceId: String? = null,
 )
 
 sealed interface PhotoSharingCoordinatorEvent {
@@ -68,6 +73,8 @@ class PhotoSharingCoordinator(
     private var syncEventStore: SyncEventStore? = null
     private var manifestBuilder: ManifestBuilder? = null
     private var requestActivityTracker: LocalRequestActivityTracker? = null
+    private var gatewayOwnershipStore: GatewayOwnershipStore =
+        SharedPreferencesGatewayOwnershipStore(appContext)
     private var pairingPayloadJson: String? = null
     private var transportSecurityMode = PhotoSharingTransportSecurityMode.SIGNED_HTTP
 
@@ -184,6 +191,19 @@ class PhotoSharingCoordinator(
         }.start()
     }
 
+    fun registerGateway(deviceId: String, displayName: String, makeActive: Boolean = false) {
+        gatewayOwnershipStore.observe(deviceId, displayName)
+        if (makeActive) gatewayOwnershipStore.select(deviceId)
+        refreshSnapshot()
+        publish()
+    }
+
+    fun selectGateway(deviceId: String) {
+        gatewayOwnershipStore.select(deviceId)
+        refreshSnapshot()
+        publish()
+    }
+
     fun pauseMonitoring() {
         stopPolling()
     }
@@ -194,6 +214,7 @@ class PhotoSharingCoordinator(
         syncEventStore = session.syncEventStore
         manifestBuilder = session.manifestBuilder
         requestActivityTracker = session.requestActivityTracker
+        gatewayOwnershipStore = session.gatewayOwnershipStore
         pairingPayloadJson = session.pairingPayloadJson
         transportSecurityMode = session.transportSecurityMode
         isStarting = false
@@ -265,11 +286,15 @@ class PhotoSharingCoordinator(
             }.orEmpty(),
             requestActivity = requestActivity,
             hasConnectedPeer = requestActivityTracker?.hasConnectedPeer() == true,
+            gatewayDevices = gatewayOwnershipStore.devices(),
+            activeGatewayDeviceId = gatewayOwnershipStore.activeDeviceId(),
         )
     }
 
     private fun photoCount(builder: ManifestBuilder): Int {
-        return SuspendBridge.runBlocking { builder.buildPhotoManifest().media.size }
+        return SuspendBridge.runBlocking {
+            builder.buildPhotoManifest(targetDeviceId = gatewayOwnershipStore.activeDeviceId()).media.size
+        }
     }
 
     private fun publish(event: PhotoSharingCoordinatorEvent? = null) {

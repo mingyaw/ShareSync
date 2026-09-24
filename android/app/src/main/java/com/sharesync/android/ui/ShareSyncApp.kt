@@ -50,6 +50,12 @@ data class ActivityUiState(
     val history: List<HistoryUiItem> = emptyList(),
 )
 
+data class GatewayUiItem(
+    val deviceId: String,
+    val displayName: String,
+    val isActive: Boolean,
+)
+
 data class SettingsUiState(
     val networkReady: Boolean = false,
     val photoAccess: Boolean = false,
@@ -63,6 +69,7 @@ data class SettingsUiState(
     val endpointAvailable: Boolean = false,
     val resultAvailable: Boolean = false,
     val advancedExpanded: Boolean = false,
+    val gateways: List<GatewayUiItem> = emptyList(),
 )
 
 @Composable
@@ -86,6 +93,7 @@ fun ShareSyncApp(
     onCopyResult: () -> Unit,
     onCopyDiagnostics: () -> Unit,
     onClearHistory: () -> Unit,
+    onSelectGateway: (String) -> Unit,
     onToggleAdvanced: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -178,6 +186,7 @@ fun ShareSyncApp(
                             onCopyResult = onCopyResult,
                             onCopyDiagnostics = onCopyDiagnostics,
                             onClearHistory = onClearHistory,
+                            onSelectGateway = onSelectGateway,
                             onToggleAdvanced = onToggleAdvanced,
                         )
                     }
@@ -267,6 +276,7 @@ private fun SettingsPage(
     onCopyResult: () -> Unit,
     onCopyDiagnostics: () -> Unit,
     onClearHistory: () -> Unit,
+    onSelectGateway: (String) -> Unit,
     onToggleAdvanced: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(22.dp)) {
@@ -348,6 +358,56 @@ private fun SettingsPage(
                     Text(stringResource(R.string.sync_copy_pairing_payload))
                 }
             }
+        }
+        HorizontalDivider()
+        SectionHeading(stringResource(R.string.settings_icloud_gateway))
+        if (state.gateways.isEmpty()) {
+            Text(
+                stringResource(R.string.settings_gateway_empty),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 1.dp,
+            ) {
+                Column {
+                    state.gateways.forEachIndexed { index, gateway ->
+                        if (index > 0) HorizontalDivider(modifier = Modifier.padding(start = 16.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(gateway.displayName, fontWeight = FontWeight.SemiBold)
+                                Text(
+                                    gateway.deviceId,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            TextButton(
+                                onClick = { onSelectGateway(gateway.deviceId) },
+                                enabled = !gateway.isActive,
+                            ) {
+                                Text(
+                                    stringResource(
+                                        if (gateway.isActive) R.string.settings_gateway_active
+                                        else R.string.settings_gateway_select,
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            Text(
+                stringResource(R.string.settings_gateway_description),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
         HorizontalDivider()
         SectionHeading(stringResource(R.string.settings_privacy))

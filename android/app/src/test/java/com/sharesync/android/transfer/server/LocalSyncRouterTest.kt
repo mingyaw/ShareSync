@@ -2,6 +2,7 @@ package com.sharesync.android.transfer.server
 
 import com.sharesync.android.SuspendBridge
 import com.sharesync.android.sync.InMemorySyncEventStore
+import com.sharesync.android.sync.InMemoryGatewayOwnershipStore
 import com.sharesync.android.sync.InMemorySyncResultStore
 import com.sharesync.android.sync.MediaAsset
 import com.sharesync.android.sync.MediaType
@@ -99,6 +100,38 @@ class LocalSyncRouterTest {
 
         assertEquals(200, response.statusCode)
         assertEquals("mac-device-001", requestedTargetDeviceId)
+    }
+
+    @Test
+    fun manifestRejectsNonActiveGateway() {
+        val gatewayStore = InMemoryGatewayOwnershipStore()
+        gatewayStore.observe("ios-device-001")
+        gatewayStore.observe("mac-device-001")
+        val response = SuspendBridge.runBlocking {
+            router(
+                gatewayOwnershipStore = gatewayStore,
+                signatureValidator = RequestSignatureValidator(
+                    secretProvider = { PAIRING_TOKEN },
+                    clock = { 1_800_000_000_000L },
+                ),
+            ).manifest(
+                headers = signedHeaders(
+                    deviceId = "mac-device-001",
+                    nonce = "inactive-gateway",
+                    signature = RequestSignatureValidator.sign(
+                        secret = PAIRING_TOKEN,
+                        method = "GET",
+                        path = "/v1/manifest",
+                        timestamp = "1800000000000",
+                        nonce = "inactive-gateway",
+                        body = "",
+                    ),
+                )
+            )
+        }
+
+        assertEquals(409, response.statusCode)
+        assertEquals("""{"errorCode":"SS-GATEWAY-409"}""", response.body)
     }
 
     @Test
@@ -609,6 +642,7 @@ class LocalSyncRouterTest {
         requestActivityTracker: LocalRequestActivityTracker? = null,
         syncResultStore: InMemorySyncResultStore = InMemorySyncResultStore(),
         syncEventStore: InMemorySyncEventStore? = null,
+        gatewayOwnershipStore: InMemoryGatewayOwnershipStore? = null,
         manifestProvider: ManifestProvider = object : ManifestProvider {
             override suspend fun currentManifest(
                 sinceCursor: String?,
@@ -631,6 +665,7 @@ class LocalSyncRouterTest {
             },
             syncResultStore = syncResultStore,
             syncEventStore = syncEventStore,
+            gatewayOwnershipStore = gatewayOwnershipStore,
             requestActivityTracker = requestActivityTracker,
             signatureValidator = signatureValidator,
             authorizationPolicy = authorizationPolicy,

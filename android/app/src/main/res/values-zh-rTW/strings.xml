@@ -136,6 +136,11 @@
     <string name="history_status_complete">已完成</string>
     <string name="history_status_attention">需要處理</string>
     <string name="settings_connection">連線狀態</string>
+    <string name="settings_icloud_gateway">iCloud 備份裝置</string>
+    <string name="settings_gateway_empty">Apple 裝置首次連線後會顯示在這裡。</string>
+    <string name="settings_gateway_description">只有選定的裝置能取得新照片，切換裝置可避免重複匯入 iCloud。</string>
+    <string name="settings_gateway_active">使用中</string>
+    <string name="settings_gateway_select">改用此裝置</string>
     <string name="settings_photo_sharing">照片分享</string>
     <string name="settings_sharing_on">已在此網路提供給 iPhone</string>
     <string name="settings_sharing_off">目前未提供給 iPhone</string>
