@@ -409,6 +409,15 @@ Response：
 - 遠端撤銷失敗時，Android 可能保留失效的配對紀錄；使用者可在 Android 設定頁移除，後續重新註冊同一 device ID 亦會輪替 credential。
 - 已成功撤銷的舊 secret 不得再次授權任何 API，重送解除請求應回覆 `401`。
 
+### 8.7 配對前附近裝置探索
+
+- Android 分享服務以 `_sharesync._tcp.` 廣播 `deviceId`、`deviceName`、`platform=android` 與 protocol `version`。
+- Mac 開啟配對視窗時可掃描同區域網路的 Android 廣播，顯示可讀裝置名稱與重新掃描狀態。
+- 配對前探索只提供 proximity hint，不得保存 endpoint、credential 或 trusted-device record，也不得自動完成配對。
+- Mac 仍須顯示含一次性 challenge 與 encryption key 的 QR offer，由 Android 掃描後完成可信 callback。
+- 探索結果必須過濾非 Android、缺少 device ID、host 或有效 port 的廣播；同 device ID 僅顯示一次。
+- 舊 Android 未提供 `deviceName` 時，可從 Bonjour service name 產生顯示名稱，但該名稱不得作為安全識別。
+
 ## 9. Request 驗證
 
 所有已配對後的 API request 需包含：

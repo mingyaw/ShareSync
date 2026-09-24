@@ -31,6 +31,8 @@ final class MacPhotoSyncViewModel: ObservableObject {
     @Published var host = ""
     @Published var port = "48291"
     @Published private(set) var pairingQRCodePayload: String?
+    @Published private(set) var nearbyAndroidDevices: [NearbyAndroidDevice] = []
+    @Published private(set) var isDiscoveringNearbyDevices = false
     @Published private(set) var phase: Phase = .ready
     @Published private(set) var pairedDevice: TrustedDevice?
     @Published private(set) var manifest: SyncManifest?
@@ -70,6 +72,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
     private let deviceUnregistrationClient: DeviceUnregistrationClient
     private let syncEventStore: SyncEventStore
     private let discovery: LocalPeerDiscovery
+    private let nearbyDiscovery: NearbyPeerDiscovery
     private let endpointResolver: PairedEndpointResolver
     private let targetDeviceId: String
     private let pairingListener: MacPairingListener
@@ -78,6 +81,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
     private var pairingToken: String?
     private var syncTask: Task<Void, Never>?
     private var scheduledSyncTask: Task<Void, Never>?
+    private var nearbyDiscoveryTask: Task<Void, Never>?
 
     init(
         manifestClient: ManifestClient = ManifestClient(),
@@ -91,6 +95,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
         deviceUnregistrationClient: DeviceUnregistrationClient = DeviceUnregistrationClient(),
         syncEventStore: SyncEventStore = FileSyncEventStore(),
         discovery: LocalPeerDiscovery? = nil,
+        nearbyDiscovery: NearbyPeerDiscovery? = nil,
         endpointResolver: PairedEndpointResolver = PairedEndpointResolver(),
         targetDeviceId: String = MacDeviceIdentity.persistentID(),
         pairingListener: MacPairingListener = MacPairingListener(),
@@ -114,6 +119,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
         self.deviceUnregistrationClient = deviceUnregistrationClient
         self.syncEventStore = syncEventStore
         self.discovery = discovery ?? BonjourLocalPeerDiscovery()
+        self.nearbyDiscovery = nearbyDiscovery ?? BonjourNearbyPeerDiscovery()
         self.endpointResolver = endpointResolver
         self.targetDeviceId = targetDeviceId
         self.pairingListener = pairingListener
@@ -244,6 +250,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
     func beginMacPairing() {
         pairingQRCodePayload = nil
         phase = .connecting
+        refreshNearbyDevices()
         Task {
             do {
                 let offer = try await pairingListener.start(targetDeviceId: targetDeviceId) { [weak self] data in
@@ -265,8 +272,26 @@ final class MacPhotoSyncViewModel: ObservableObject {
 
     func stopMacPairing() {
         pairingListener.stop()
+        nearbyDiscoveryTask?.cancel()
+        nearbyDiscoveryTask = nil
+        nearbyDiscovery.stop()
+        isDiscoveringNearbyDevices = false
         pairingQRCodePayload = nil
         if !isPaired { phase = .ready }
+    }
+
+    func refreshNearbyDevices() {
+        guard !isDiscoveringNearbyDevices else { return }
+        nearbyAndroidDevices = []
+        isDiscoveringNearbyDevices = true
+        nearbyDiscoveryTask = Task {
+            guard !Task.isCancelled else { return }
+            let devices = await nearbyDiscovery.discoverPeers(timeout: 3)
+            guard !Task.isCancelled else { return }
+            nearbyAndroidDevices = devices
+            isDiscoveringNearbyDevices = false
+            nearbyDiscoveryTask = nil
+        }
     }
 
     func refreshPhotos() {

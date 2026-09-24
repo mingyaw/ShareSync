@@ -58,11 +58,14 @@ Android advertises the running local transfer endpoint with Bonjour/mDNS while t
 Service type: _sharesync._tcp.
 Domain: local.
 TXT deviceId: <android-device-id>
+TXT deviceName: <human-readable-android-name>
 TXT platform: android
 TXT version: 1
 ```
 
 iOS uses discovery only to refresh the last known network endpoint for an already paired Android phone. Discovery does not create trust by itself. Before fetching the manifest or downloading photos, iOS must call `GET /v1/health` on the discovered endpoint and verify the returned `deviceId` matches the saved paired device.
+
+Before Mac pairing, the same advertisement may be shown as an untrusted nearby-device hint. The hint must not populate credentials, select a trusted endpoint, or bypass the Android scan of the Mac QR offer. Legacy advertisements without `deviceName` may use the Bonjour service name for display only.
 
 If discovery fails, iOS may fall back to the saved host and port from the pairing session. This keeps the app usable on networks where mDNS is unavailable while avoiding a new QR scan for normal IP changes.
 

@@ -421,6 +421,52 @@ private struct PairingSheet: View {
                 .font(.callout)
                 .foregroundStyle(.secondary)
 
+            HStack(spacing: 10) {
+                Image(
+                    systemName: model.nearbyAndroidDevices.isEmpty
+                        ? "dot.radiowaves.left.and.right"
+                        : "iphone.radiowaves.left.and.right"
+                )
+                    .foregroundStyle(model.nearbyAndroidDevices.isEmpty ? Color.secondary : MacBrand.vault)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    if model.isDiscoveringNearbyDevices {
+                        Text("mac.pair.nearby_searching")
+                            .font(.callout.weight(.medium))
+                    } else if let device = model.nearbyAndroidDevices.first {
+                        Text(
+                            String(
+                                format: NSLocalizedString("mac.pair.nearby_found", comment: ""),
+                                device.deviceName
+                            )
+                        )
+                            .font(.callout.weight(.medium))
+                        Text("mac.pair.nearby_untrusted")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("mac.pair.nearby_none")
+                            .font(.callout.weight(.medium))
+                        Text("mac.pair.nearby_none_detail")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Spacer()
+
+                Button {
+                    model.refreshNearbyDevices()
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .buttonStyle(.borderless)
+                .help("mac.pair.nearby_refresh")
+                .disabled(model.isDiscoveringNearbyDevices)
+            }
+            .padding(12)
+            .background(.quaternary.opacity(0.45), in: RoundedRectangle(cornerRadius: 7))
+
             DisclosureGroup("mac.pair.manual") {
                 TextEditor(text: $model.pairingPayload)
                     .font(.body.monospaced())

@@ -5,6 +5,58 @@ protocol LocalPeerDiscovery {
     func discoverEndpoint(matchingDeviceId deviceId: String, timeout: TimeInterval) async -> PairedDeviceEndpoint?
 }
 
+struct NearbyAndroidDevice: Identifiable, Equatable {
+    let deviceId: String
+    let deviceName: String
+    let endpoint: PairedDeviceEndpoint
+
+    var id: String { deviceId }
+}
+
+@MainActor
+protocol NearbyPeerDiscovery {
+    func discoverPeers(timeout: TimeInterval) async -> [NearbyAndroidDevice]
+    func stop()
+}
+
+struct NearbyAndroidDeviceResolver {
+    func resolve(
+        serviceName: String,
+        hostName: String?,
+        port: Int,
+        attributes: [String: Data],
+        now: Date = Date()
+    ) -> NearbyAndroidDevice? {
+        guard let hostName,
+              !hostName.isEmpty,
+              port > 0,
+              let platformData = attributes["platform"],
+              String(data: platformData, encoding: .utf8) == "android",
+              let deviceIdData = attributes["deviceId"],
+              let deviceId = String(data: deviceIdData, encoding: .utf8),
+              !deviceId.isEmpty
+        else {
+            return nil
+        }
+
+        let advertisedName = attributes["deviceName"]
+            .flatMap { String(data: $0, encoding: .utf8) }?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let fallbackName = serviceName
+            .replacingOccurrences(of: "ShareSync ", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let deviceName = advertisedName.flatMap { $0.isEmpty ? nil : $0 }
+            ?? (fallbackName.isEmpty ? "Android" : fallbackName)
+
+        return NearbyAndroidDevice(
+            deviceId: deviceId,
+            deviceName: deviceName,
+            endpoint: PairedDeviceEndpoint(host: hostName, port: port, updatedAt: now)
+        )
+    }
+}
+
 enum EndpointResolutionError: Error {
     case missingHost
     case invalidPort
@@ -136,5 +188,87 @@ extension BonjourLocalPeerDiscovery: @preconcurrency NetServiceDelegate {
             port: service.port,
             updatedAt: Date()
         )
+    }
+}
+
+@MainActor
+final class BonjourNearbyPeerDiscovery: NSObject, NearbyPeerDiscovery {
+    private let resolver: NearbyAndroidDeviceResolver
+    private var browser: NetServiceBrowser?
+    private var services: [NetService] = []
+    private var discovered: [String: NearbyAndroidDevice] = [:]
+    private var continuation: CheckedContinuation<[NearbyAndroidDevice], Never>?
+    private var timeoutTask: Task<Void, Never>?
+
+    init(resolver: NearbyAndroidDeviceResolver = NearbyAndroidDeviceResolver()) {
+        self.resolver = resolver
+    }
+
+    func discoverPeers(timeout: TimeInterval = 3) async -> [NearbyAndroidDevice] {
+        await withCheckedContinuation { continuation in
+            finish()
+            self.continuation = continuation
+            let browser = NetServiceBrowser()
+            browser.delegate = self
+            self.browser = browser
+            browser.searchForServices(ofType: "_sharesync._tcp.", inDomain: "local.")
+            timeoutTask = Task { [weak self] in
+                try? await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
+                guard !Task.isCancelled else { return }
+                await MainActor.run { self?.finish() }
+            }
+        }
+    }
+
+    func stop() {
+        finish()
+    }
+
+    private func finish() {
+        timeoutTask?.cancel()
+        timeoutTask = nil
+        services.forEach { service in
+            service.stop()
+            service.delegate = nil
+        }
+        services.removeAll()
+        browser?.stop()
+        browser?.delegate = nil
+        browser = nil
+        let result = discovered.values.sorted {
+            $0.deviceName.localizedCaseInsensitiveCompare($1.deviceName) == .orderedAscending
+        }
+        discovered.removeAll()
+        guard let continuation else { return }
+        self.continuation = nil
+        continuation.resume(returning: result)
+    }
+}
+
+extension BonjourNearbyPeerDiscovery: @preconcurrency NetServiceBrowserDelegate {
+    func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
+        service.delegate = self
+        services.append(service)
+        service.resolve(withTimeout: 2)
+    }
+
+    func netServiceBrowser(_ browser: NetServiceBrowser, didNotSearch errorDict: [String: NSNumber]) {
+        Task { @MainActor in finish() }
+    }
+}
+
+extension BonjourNearbyPeerDiscovery: @preconcurrency NetServiceDelegate {
+    func netServiceDidResolveAddress(_ sender: NetService) {
+        guard let data = sender.txtRecordData(),
+              let device = resolver.resolve(
+                serviceName: sender.name,
+                hostName: sender.hostName,
+                port: sender.port,
+                attributes: NetService.dictionary(fromTXTRecord: data)
+              )
+        else {
+            return
+        }
+        discovered[device.deviceId] = device
     }
 }

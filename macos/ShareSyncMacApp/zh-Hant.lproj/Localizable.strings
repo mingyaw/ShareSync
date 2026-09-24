@@ -59,6 +59,12 @@
 "mac.pair.scan_subtitle" = "使用 Android ShareSync 掃描此 QR Code";
 "mac.pair.preparing" = "正在準備配對碼...";
 "mac.pair.scan_hint" = "請讓兩部裝置位於同一個 Wi-Fi。Android 會將可信任連線資料直接回傳此 Mac。";
+"mac.pair.nearby_searching" = "正在尋找附近的 Android 手機...";
+"mac.pair.nearby_found" = "附近偵測到 %@";
+"mac.pair.nearby_untrusted" = "已在區域網路發現，仍需掃描 QR Code 才會信任此 Mac。";
+"mac.pair.nearby_none" = "尚未偵測到 Android 手機";
+"mac.pair.nearby_none_detail" = "請開啟 Android ShareSync 並保持照片分享服務運作。";
+"mac.pair.nearby_refresh" = "重新掃描";
 "mac.pair.manual" = "手動配對備援";
 "mac.pair.apply_manual" = "套用 Android 配對資料";
 "mac.pair.qr_accessibility" = "供 Android 掃描的 Mac 配對 QR Code";

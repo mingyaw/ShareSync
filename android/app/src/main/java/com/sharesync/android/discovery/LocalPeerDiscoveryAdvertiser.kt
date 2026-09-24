@@ -22,6 +22,7 @@ class LocalPeerDiscoveryAdvertiser(
             serviceType = SERVICE_TYPE
             setPort(port)
             setAttribute("deviceId", identity.deviceId)
+            setAttribute("deviceName", identity.deviceName)
             setAttribute("platform", "android")
             setAttribute("version", PROTOCOL_VERSION)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

@@ -59,6 +59,12 @@
 "mac.pair.scan_subtitle" = "Scan this code with ShareSync on Android";
 "mac.pair.preparing" = "Preparing pairing code...";
 "mac.pair.scan_hint" = "Keep both devices on the same Wi-Fi. Android will send its trusted connection details directly to this Mac.";
+"mac.pair.nearby_searching" = "Looking for Android phones nearby...";
+"mac.pair.nearby_found" = "%@ is nearby";
+"mac.pair.nearby_untrusted" = "Detected on this network. Scan the QR code to trust this Mac.";
+"mac.pair.nearby_none" = "No Android phone detected yet";
+"mac.pair.nearby_none_detail" = "Open ShareSync on Android and keep photo sharing active.";
+"mac.pair.nearby_refresh" = "Scan again";
 "mac.pair.manual" = "Manual fallback";
 "mac.pair.apply_manual" = "Apply Android pairing data";
 "mac.pair.qr_accessibility" = "Mac pairing QR code for Android";
