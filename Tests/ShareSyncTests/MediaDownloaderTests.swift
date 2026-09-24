@@ -182,7 +182,7 @@ final class MediaDownloaderTests: XCTestCase {
         )
 
         let request = try XCTUnwrap(session.requests.first)
-        XCTAssertEqual(request.value(forHTTPHeaderField: "X-ShareSync-Version"), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-ShareSync-Version"), "2")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-Device-Id"), "ios-local")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-Session-Id"), "ios-photo-mvp")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-Timestamp"), "1800000000000")
@@ -191,6 +191,9 @@ final class MediaDownloaderTests: XCTestCase {
             request.value(forHTTPHeaderField: "X-Signature"),
             RequestSigner.signature(
                 secret: "pairing-token-001",
+                version: "2",
+                deviceId: "ios-local",
+                sessionId: "ios-photo-mvp",
                 method: "GET",
                 path: "/v1/media/mediastore-1-52",
                 timestamp: "1800000000000",

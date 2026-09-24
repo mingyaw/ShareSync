@@ -6,6 +6,9 @@ final class RequestSignerTests: XCTestCase {
     func testSignatureMatchesSharedFixture() {
         let signature = RequestSigner.signature(
             secret: "pairing-token-001",
+            version: "2",
+            deviceId: "ios-local",
+            sessionId: "ios-photo-mvp",
             method: "GET",
             path: "/v1/manifest",
             timestamp: "1800000000000",
@@ -13,7 +16,7 @@ final class RequestSignerTests: XCTestCase {
             body: Data()
         )
 
-        XCTAssertEqual(signature, "V+Zfc9LZCzOl+H/8ZpZGbCjZ2WiZxwo2mgc17pPqPhY=")
+        XCTAssertEqual(signature, "GBIh1J4UTOluh0qNqDDZIVMZbxRg2aXS4wxAUGusjM8=")
         XCTAssertEqual(
             RequestSigner.sha256Hex(Data()),
             "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -36,11 +39,11 @@ final class RequestSignerTests: XCTestCase {
             )
         )
 
-        XCTAssertEqual(request.value(forHTTPHeaderField: "X-ShareSync-Version"), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-ShareSync-Version"), "2")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-Device-Id"), "ios-local")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-Session-Id"), "ios-photo-mvp")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-Timestamp"), "1800000000000")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-Nonce"), "nonce-001")
-        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Signature"), "V+Zfc9LZCzOl+H/8ZpZGbCjZ2WiZxwo2mgc17pPqPhY=")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Signature"), "GBIh1J4UTOluh0qNqDDZIVMZbxRg2aXS4wxAUGusjM8=")
     }
 }

@@ -35,7 +35,7 @@ final class SyncResultClientTests: XCTestCase {
             request.value(forHTTPHeaderField: "X-ShareSync-Pairing-Token"),
             "pairing-token-001"
         )
-        XCTAssertEqual(request.value(forHTTPHeaderField: "X-ShareSync-Version"), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-ShareSync-Version"), "2")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-Device-Id"), "ios-local")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-Session-Id"), "ios-photo-mvp")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-Timestamp"), "1800000000000")
@@ -48,6 +48,9 @@ final class SyncResultClientTests: XCTestCase {
             request.value(forHTTPHeaderField: "X-Signature"),
             RequestSigner.signature(
                 secret: "pairing-token-001",
+                version: "2",
+                deviceId: "ios-local",
+                sessionId: "ios-photo-mvp",
                 method: "POST",
                 path: "/v1/sync/result",
                 timestamp: "1800000000000",

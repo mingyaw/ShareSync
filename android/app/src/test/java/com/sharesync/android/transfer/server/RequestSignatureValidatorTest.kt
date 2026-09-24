@@ -10,6 +10,9 @@ class RequestSignatureValidatorTest {
     fun signerMatchesSharedFixture() {
         val signature = RequestSignatureValidator.sign(
             secret = "pairing-token-001",
+            version = "2",
+            deviceId = "ios-local",
+            sessionId = "ios-photo-mvp",
             method = "GET",
             path = "/v1/manifest",
             timestamp = "1800000000000",
@@ -17,7 +20,7 @@ class RequestSignatureValidatorTest {
             body = "",
         )
 
-        assertEquals("V+Zfc9LZCzOl+H/8ZpZGbCjZ2WiZxwo2mgc17pPqPhY=", signature)
+        assertEquals("GBIh1J4UTOluh0qNqDDZIVMZbxRg2aXS4wxAUGusjM8=", signature)
         assertEquals(
             "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
             RequestSignatureValidator.sha256Hex(""),
@@ -67,14 +70,47 @@ class RequestSignatureValidatorTest {
         )
     }
 
+    @Test
+    fun validatorRejectsDeviceIdentityChangedAfterSigning() {
+        val validator = RequestSignatureValidator(
+            secretProvider = { "pairing-token-001" },
+            clock = { 1_800_000_000_000L },
+        )
+        val headers = signedHeaders().toMutableMap().apply {
+            this[RequestSignatureValidator.DEVICE_ID_HEADER] = "mac-device-001"
+        }
+
+        assertFalse(
+            validator.isAuthorized(
+                method = "GET",
+                path = "/v1/manifest",
+                body = "",
+                headers = headers,
+            )
+        )
+    }
+
+    @Test
+    fun validatorRejectsLegacySignatureVersion() {
+        val validator = RequestSignatureValidator(
+            secretProvider = { "pairing-token-001" },
+            clock = { 1_800_000_000_000L },
+        )
+        val headers = signedHeaders().toMutableMap().apply {
+            this[RequestSignatureValidator.VERSION_HEADER] = "1"
+        }
+
+        assertFalse(validator.isAuthorized("GET", "/v1/manifest", "", headers))
+    }
+
     private fun signedHeaders(): Map<String, String> {
         return mapOf(
-            RequestSignatureValidator.VERSION_HEADER to "1",
+            RequestSignatureValidator.VERSION_HEADER to "2",
             RequestSignatureValidator.DEVICE_ID_HEADER to "ios-local",
             RequestSignatureValidator.SESSION_ID_HEADER to "ios-photo-mvp",
             RequestSignatureValidator.TIMESTAMP_HEADER to "1800000000000",
             RequestSignatureValidator.NONCE_HEADER to "nonce-001",
-            RequestSignatureValidator.SIGNATURE_HEADER to "V+Zfc9LZCzOl+H/8ZpZGbCjZ2WiZxwo2mgc17pPqPhY=",
+            RequestSignatureValidator.SIGNATURE_HEADER to "GBIh1J4UTOluh0qNqDDZIVMZbxRg2aXS4wxAUGusjM8=",
         )
     }
 }

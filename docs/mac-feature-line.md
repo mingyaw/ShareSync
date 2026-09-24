@@ -119,6 +119,7 @@ Physical validation is intentionally deferred. The first device pass should veri
 
 ### Mac M3: pairing hardening
 
+- Implemented: signed-request protocol v2 binds protocol version, device ID, and session ID into the HMAC payload so gateway identity cannot be replaced after signing.
 - Encrypt the one-time callback payload or move the bootstrap callback to pinned TLS.
 - Add nearby-device discovery before pairing without treating discovery as trust.
 - Add device management and revoked-key handling.

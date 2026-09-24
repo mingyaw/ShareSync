@@ -19,6 +19,9 @@ class RequestSignatureValidator(
         body: String,
         headers: Map<String, String>,
     ): Boolean {
+        val version = headers.valueFor(VERSION_HEADER)?.takeIf { it == CURRENT_VERSION } ?: return false
+        val deviceId = headers.valueFor(DEVICE_ID_HEADER)?.takeIf { it.isNotBlank() } ?: return false
+        val sessionId = headers.valueFor(SESSION_ID_HEADER)?.takeIf { it.isNotBlank() } ?: return false
         val timestamp = headers.valueFor(TIMESTAMP_HEADER)?.toLongOrNull() ?: return false
         if (abs(clock() - timestamp) > allowedSkewMillis) {
             return false
@@ -28,6 +31,9 @@ class RequestSignatureValidator(
 
         val expectedSignature = sign(
             secret = secretProvider(),
+            version = version,
+            deviceId = deviceId,
+            sessionId = sessionId,
             method = method,
             path = path,
             timestamp = timestamp.toString(),
@@ -57,10 +63,14 @@ class RequestSignatureValidator(
         const val TIMESTAMP_HEADER = "X-Timestamp"
         const val NONCE_HEADER = "X-Nonce"
         const val SIGNATURE_HEADER = "X-Signature"
+        const val CURRENT_VERSION = "2"
         const val DEFAULT_ALLOWED_SKEW_MILLIS = 5 * 60 * 1000L
 
         fun sign(
             secret: String,
+            version: String,
+            deviceId: String,
+            sessionId: String,
             method: String,
             path: String,
             timestamp: String,
@@ -68,6 +78,9 @@ class RequestSignatureValidator(
             body: String,
         ): String {
             val canonicalPayload = listOf(
+                version,
+                deviceId,
+                sessionId,
                 method.uppercase(),
                 path,
                 timestamp,

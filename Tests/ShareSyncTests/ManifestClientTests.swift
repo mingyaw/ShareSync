@@ -43,12 +43,12 @@ final class ManifestClientTests: XCTestCase {
         )
 
         let request = try XCTUnwrap(session.requests.first)
-        XCTAssertEqual(request.value(forHTTPHeaderField: "X-ShareSync-Version"), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-ShareSync-Version"), "2")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-Device-Id"), "ios-local")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-Session-Id"), "ios-photo-mvp")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-Timestamp"), "1800000000000")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-Nonce"), "nonce-001")
-        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Signature"), "V+Zfc9LZCzOl+H/8ZpZGbCjZ2WiZxwo2mgc17pPqPhY=")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Signature"), "GBIh1J4UTOluh0qNqDDZIVMZbxRg2aXS4wxAUGusjM8=")
     }
 
     func testFetchAllManifestPagesMergesAssetsAndAdvancesCursor() async throws {

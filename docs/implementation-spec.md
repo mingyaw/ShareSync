@@ -382,7 +382,7 @@ Response：
 所有已配對後的 API request 需包含：
 
 ```text
-X-ShareSync-Version: 1
+X-ShareSync-Version: 2
 X-Device-Id: device-id
 X-Session-Id: session-id
 X-Timestamp: unix-ms
@@ -393,6 +393,9 @@ X-Signature: base64-signature
 簽章內容：
 
 ```text
+X-ShareSync-Version + "\n" +
+X-Device-Id + "\n" +
+X-Session-Id + "\n" +
 METHOD + "\n" +
 PATH + "\n" +
 X-Timestamp + "\n" +
@@ -404,8 +407,9 @@ SHA256(body)
 
 - timestamp 與本機時間差不可超過 5 分鐘。
 - nonce 不可重複。
+- 僅接受簽章版本 `2`；device ID 與 session ID 屬於簽章內容，不可於簽章後替換。
 - session 不可過期。
-- signature 必須使用 trusted public key 驗證通過。
+- signature 必須使用配對時交換的本機共享密鑰進行 HMAC-SHA256 驗證。
 
 ## 10. Local Signed HTTP API
 

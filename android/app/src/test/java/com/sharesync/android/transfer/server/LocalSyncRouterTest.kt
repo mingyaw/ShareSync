@@ -56,7 +56,7 @@ class LocalSyncRouterTest {
                 )
             ).manifest(
                 headers = signedHeaders(
-                    signature = "V+Zfc9LZCzOl+H/8ZpZGbCjZ2WiZxwo2mgc17pPqPhY=",
+                    signature = "wJ/9g1hjKiodbIT7xAKm5apkW0NJWqeTc1BdocF+ywQ=",
                 )
             )
         }
@@ -88,6 +88,9 @@ class LocalSyncRouterTest {
                     deviceId = "mac-device-001",
                     signature = RequestSignatureValidator.sign(
                         secret = PAIRING_TOKEN,
+                        version = "2",
+                        deviceId = "mac-device-001",
+                        sessionId = "ios-photo-mvp",
                         method = "GET",
                         path = "/v1/manifest",
                         timestamp = "1800000000000",
@@ -120,6 +123,9 @@ class LocalSyncRouterTest {
                     nonce = "inactive-gateway",
                     signature = RequestSignatureValidator.sign(
                         secret = PAIRING_TOKEN,
+                        version = "2",
+                        deviceId = "mac-device-001",
+                        sessionId = "ios-photo-mvp",
                         method = "GET",
                         path = "/v1/manifest",
                         timestamp = "1800000000000",
@@ -141,7 +147,7 @@ class LocalSyncRouterTest {
             clock = { 1_800_000_000_000L },
         )
         val router = router(signatureValidator = signatureValidator)
-        val headers = signedHeaders(signature = "V+Zfc9LZCzOl+H/8ZpZGbCjZ2WiZxwo2mgc17pPqPhY=")
+        val headers = signedHeaders(signature = "wJ/9g1hjKiodbIT7xAKm5apkW0NJWqeTc1BdocF+ywQ=")
 
         SuspendBridge.runBlocking {
             assertEquals(200, router.manifest(headers = headers).statusCode)
@@ -161,6 +167,9 @@ class LocalSyncRouterTest {
                 headers = signedHeaders(
                     signature = RequestSignatureValidator.sign(
                         secret = PAIRING_TOKEN,
+                        version = "2",
+                        deviceId = "ios-device-001",
+                        sessionId = "ios-photo-mvp",
                         method = "GET",
                         path = "/v1/manifest",
                         timestamp = "1800000000000",
@@ -210,6 +219,9 @@ class LocalSyncRouterTest {
                     nonce = "media-nonce-001",
                     signature = RequestSignatureValidator.sign(
                         secret = PAIRING_TOKEN,
+                        version = "2",
+                        deviceId = "ios-device-001",
+                        sessionId = "ios-photo-mvp",
                         method = "GET",
                         path = "/v1/media/media-001",
                         timestamp = "1800000000000",
@@ -427,6 +439,9 @@ class LocalSyncRouterTest {
                     nonce = "result-nonce-001",
                     signature = RequestSignatureValidator.sign(
                         secret = PAIRING_TOKEN,
+                        version = "2",
+                        deviceId = "ios-device-001",
+                        sessionId = "ios-photo-mvp",
                         method = "POST",
                         path = "/v1/sync/result",
                         timestamp = "1800000000000",
@@ -463,6 +478,9 @@ class LocalSyncRouterTest {
                     nonce = "wrong-target-device",
                     signature = RequestSignatureValidator.sign(
                         secret = PAIRING_TOKEN,
+                        version = "2",
+                        deviceId = "mac-device-001",
+                        sessionId = "ios-photo-mvp",
                         method = "POST",
                         path = "/v1/sync/result",
                         timestamp = "1800000000000",
@@ -686,7 +704,7 @@ class LocalSyncRouterTest {
         signature: String,
     ): Map<String, String> {
         return mapOf(
-            RequestSignatureValidator.VERSION_HEADER to "1",
+            RequestSignatureValidator.VERSION_HEADER to "2",
             RequestSignatureValidator.DEVICE_ID_HEADER to deviceId,
             RequestSignatureValidator.SESSION_ID_HEADER to "ios-photo-mvp",
             RequestSignatureValidator.TIMESTAMP_HEADER to "1800000000000",

@@ -22,6 +22,9 @@ struct RequestSigner {
         let path = request.url?.path(percentEncoded: true) ?? "/"
         let signature = Self.signature(
             secret: context.secret,
+            version: Self.currentVersion,
+            deviceId: context.deviceId,
+            sessionId: context.sessionId,
             method: method,
             path: path,
             timestamp: timestamp,
@@ -29,7 +32,7 @@ struct RequestSigner {
             body: body
         )
 
-        request.setValue("1", forHTTPHeaderField: Self.versionHeader)
+        request.setValue(Self.currentVersion, forHTTPHeaderField: Self.versionHeader)
         request.setValue(context.deviceId, forHTTPHeaderField: Self.deviceIdHeader)
         request.setValue(context.sessionId, forHTTPHeaderField: Self.sessionIdHeader)
         request.setValue(timestamp, forHTTPHeaderField: Self.timestampHeader)
@@ -39,6 +42,9 @@ struct RequestSigner {
 
     static func signature(
         secret: String,
+        version: String,
+        deviceId: String,
+        sessionId: String,
         method: String,
         path: String,
         timestamp: String,
@@ -46,6 +52,9 @@ struct RequestSigner {
         body: Data
     ) -> String {
         let canonicalPayload = [
+            version,
+            deviceId,
+            sessionId,
             method.uppercased(),
             path,
             timestamp,
@@ -67,6 +76,7 @@ struct RequestSigner {
     }
 
     static let versionHeader = "X-ShareSync-Version"
+    static let currentVersion = "2"
     static let deviceIdHeader = "X-Device-Id"
     static let sessionIdHeader = "X-Session-Id"
     static let timestampHeader = "X-Timestamp"
