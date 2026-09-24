@@ -30,6 +30,10 @@
 "mac.unpair.confirm" = "This removes the Android connection from this Mac. Previously imported photo history is kept.";
 "mac.action.sync_next" = "Sync next photo";
 "mac.action.sync_next_detail" = "The first Mac milestone transfers one photo at a time for low-risk validation.";
+"mac.action.sync_all" = "Sync all photos";
+"mac.action.sync_all_detail" = "Photos are downloaded and saved one at a time, so an interrupted sync can continue safely.";
+"mac.progress.title" = "Sync progress";
+"mac.progress.failed" = "Needs retry";
 "mac.action.pair_android" = "Pair Android phone";
 "mac.action.pair_detail" = "Pairing is stored on this Mac, so you do not repeat it after every launch.";
 "mac.action.cancel" = "Cancel";
@@ -66,3 +70,4 @@
 "mac.error.unreachable" = "The Android phone could not be reached. Keep ShareSync open there and check the local network.";
 "mac.error.protocol" = "The Android photo list uses an unsupported format.";
 "mac.error.transfer" = "The photo could not be downloaded or saved. Try again.";
+"mac.error.partial_transfer" = "Some photos need another attempt. Sync again to retry only those items.";

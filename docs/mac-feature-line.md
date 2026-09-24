@@ -28,13 +28,14 @@ M0 includes:
 - Automatic Android health validation and photo-manifest refresh immediately after pairing.
 - Signed manifest, media, and sync-result requests.
 - Paged photo manifest loading.
-- One-photo transfer with size and optional SHA-256 validation.
+- Single-photo and sync-all transfer with per-photo size and optional SHA-256 validation.
+- Sequential download/import pipeline with visible progress, cancellation, retry, and restart resume.
 - PhotoKit import into the `ShareSync Backup` album.
 - Persistent duplicate-prevention state and stable Mac target identity.
 - Automatic retry of locally stored completion results when the manifest is refreshed.
 - App Sandbox access limited to outbound networking and Photos.
 
-M0 deliberately transfers one photo per action. This keeps the first Mac validation small and exercises the same resumable transfer core already used by iOS.
+The original one-photo validation action remains available, while the primary action now synchronizes all pending photos through the same resumable transfer core used by iOS.
 
 ## Shared-code boundary
 

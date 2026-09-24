@@ -30,6 +30,10 @@
 "mac.unpair.confirm" = "這會從此 Mac 移除 Android 連線，但會保留已匯入照片的紀錄。";
 "mac.action.sync_next" = "同步下一張照片";
 "mac.action.sync_next_detail" = "Mac 第一階段先採單張傳輸，以低風險驗證完整流程。";
+"mac.action.sync_all" = "同步所有照片";
+"mac.action.sync_all_detail" = "照片會逐張下載並存入，傳輸中斷後可以安全接續。";
+"mac.progress.title" = "同步進度";
+"mac.progress.failed" = "需要重試";
 "mac.action.pair_android" = "配對 Android 手機";
 "mac.action.pair_detail" = "完成後會保存在此 Mac，不需要每次啟動重新配對。";
 "mac.action.cancel" = "取消";
@@ -66,3 +70,4 @@
 "mac.error.unreachable" = "目前無法連到 Android。請保持該端 ShareSync 開啟並檢查區域網路。";
 "mac.error.protocol" = "Android 的照片清單格式不支援。";
 "mac.error.transfer" = "照片無法下載或儲存，請再試一次。";
+"mac.error.partial_transfer" = "部分照片需要再次嘗試，重新同步時只會重試這些項目。";

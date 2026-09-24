@@ -27,7 +27,7 @@ struct MacContentView: View {
                 .disabled(!model.isPaired || model.isBusy)
                 .help("mac.action.refresh")
 
-                if model.isBusy {
+                if model.canCancel {
                     Button(role: .cancel) {
                         model.cancel()
                     } label: {
@@ -132,6 +132,7 @@ struct MacContentView: View {
             VStack(alignment: .leading, spacing: 30) {
                 statusHeader
                 photoOverview
+                transferProgress
                 primaryAction
                 recentTransfer
             }
@@ -188,27 +189,82 @@ struct MacContentView: View {
 
     private var primaryAction: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Button {
-                if model.isPaired {
-                    model.syncNextPhoto()
-                } else {
-                    showingPairing = true
-                }
-            } label: {
-                Label(
-                    model.isPaired ? "mac.action.sync_next" : "mac.action.pair_android",
-                    systemImage: model.isPaired ? "photo.badge.arrow.down" : "qrcode.viewfinder"
-                )
-                .frame(minWidth: 190)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .tint(MacBrand.bridge)
-            .disabled(model.isBusy)
+            if model.isPaired {
+                HStack(spacing: 12) {
+                    Button {
+                        model.syncAllPhotos()
+                    } label: {
+                        Label("mac.action.sync_all", systemImage: "photo.stack.fill")
+                            .frame(minWidth: 190)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .tint(MacBrand.bridge)
+                    .disabled(model.isBusy || model.remainingCount == 0)
 
-            Text(model.isPaired ? "mac.action.sync_next_detail" : "mac.action.pair_detail")
-                .font(.callout)
-                .foregroundStyle(.secondary)
+                    Button {
+                        model.syncNextPhoto()
+                    } label: {
+                        Label("mac.action.sync_next", systemImage: "photo.badge.arrow.down")
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+                    .disabled(model.isBusy || model.remainingCount == 0)
+                }
+
+                Text("mac.action.sync_all_detail")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            } else {
+                Button {
+                    showingPairing = true
+                } label: {
+                    Label("mac.action.pair_android", systemImage: "qrcode.viewfinder")
+                        .frame(minWidth: 190)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .tint(MacBrand.bridge)
+
+                Text("mac.action.pair_detail")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var transferProgress: some View {
+        if let batch = model.batchProgress {
+            VStack(alignment: .leading, spacing: 9) {
+                HStack {
+                    Text("mac.progress.title")
+                        .font(.headline)
+                    Spacer()
+                    Text("\(batch.processedCount) / \(batch.totalCount)")
+                        .font(.callout.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                }
+                ProgressView(
+                    value: Double(batch.processedCount),
+                    total: Double(max(batch.totalCount, 1))
+                )
+                .tint(MacBrand.bridge)
+                if let fileName = batch.currentFileName {
+                    Text(fileName)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                } else if batch.failedCount > 0 {
+                    HStack(spacing: 5) {
+                        Text("mac.progress.failed")
+                        Text(batch.failedCount.formatted())
+                    }
+                    .font(.callout)
+                    .foregroundStyle(MacBrand.handoff)
+                }
+            }
+            .padding(.vertical, 4)
         }
     }
 

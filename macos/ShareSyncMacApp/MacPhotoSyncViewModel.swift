@@ -2,6 +2,15 @@ import Foundation
 
 @MainActor
 final class MacPhotoSyncViewModel: ObservableObject {
+    struct BatchProgress: Equatable {
+        let totalCount: Int
+        let completedCount: Int
+        let failedCount: Int
+        let currentFileName: String?
+
+        var processedCount: Int { completedCount + failedCount }
+    }
+
     enum Phase: Equatable {
         case ready
         case connecting
@@ -21,6 +30,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
     @Published private(set) var manifest: SyncManifest?
     @Published private(set) var lastSyncedFileName: String?
     @Published private(set) var progress: MediaDownloadProgress?
+    @Published private(set) var batchProgress: BatchProgress?
 
     private let manifestClient: ManifestClient
     private let healthClient: HealthClient
@@ -73,6 +83,15 @@ final class MacPhotoSyncViewModel: ObservableObject {
         case .connecting, .loadingPhotos, .downloading, .importing:
             return true
         default:
+            return false
+        }
+    }
+
+    var canCancel: Bool {
+        switch phase {
+        case .connecting, .loadingPhotos, .downloading:
+            return true
+        case .ready, .importing, .completed, .failed:
             return false
         }
     }
@@ -198,6 +217,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
 
     func refreshPhotos() {
         guard !isBusy else { return }
+        batchProgress = nil
         syncTask = Task { _ = await loadManifest() }
     }
 
@@ -207,7 +227,17 @@ final class MacPhotoSyncViewModel: ObservableObject {
             if manifest == nil, await loadManifest() == false {
                 return
             }
-            await transferNextPhoto()
+            await transferPhotos(limit: 1)
+        }
+    }
+
+    func syncAllPhotos() {
+        guard !isBusy else { return }
+        syncTask = Task {
+            if manifest == nil, await loadManifest() == false {
+                return
+            }
+            await transferPhotos(limit: Int.max)
         }
     }
 
@@ -216,6 +246,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
         syncTask = nil
         phase = .ready
         progress = nil
+        batchProgress = nil
     }
 
     func forgetDevice() {
@@ -227,6 +258,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
         host = ""
         port = "48291"
         lastSyncedFileName = nil
+        batchProgress = nil
         phase = .ready
     }
 
@@ -261,6 +293,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
         )
         pairingPayload = ""
         pairingQRCodePayload = nil
+        batchProgress = nil
         phase = .ready
         refreshAfterPairing()
     }
@@ -279,6 +312,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
         try? resultStore.clear()
         manifest = nil
         lastSyncedFileName = nil
+        batchProgress = nil
         phase = .ready
     }
 
@@ -318,13 +352,17 @@ final class MacPhotoSyncViewModel: ObservableObject {
         }
     }
 
-    private func transferNextPhoto() async {
-        guard let manifest,
-              let asset = planner.nextTransferCandidates(
-                in: manifest,
-                stateStore: stateStore,
-                limit: 1
-              ).first else {
+    private func transferPhotos(limit: Int) async {
+        guard let manifest else {
+            phase = .failed(text("mac.error.protocol"))
+            return
+        }
+        let assets = planner.nextTransferCandidates(
+            in: manifest,
+            stateStore: stateStore,
+            limit: limit
+        )
+        guard !assets.isEmpty else {
             phase = .completed
             return
         }
@@ -337,51 +375,99 @@ final class MacPhotoSyncViewModel: ObservableObject {
 
         do {
             let endpoint = try await resolvedEndpoint()
-            phase = .downloading
-            let importRequest: PhotoImportRequest
-            if let existing = downloadedRequest(for: asset) {
-                importRequest = existing
-            } else {
-                let downloads = await downloader.downloadMedia(
-                    assets: [asset],
-                    host: endpoint.host,
-                    port: endpoint.port,
-                    stateStore: stateStore,
-                    pairingToken: pairingToken,
-                    signingContext: signingContext,
-                    transportSecurity: pairedDevice?.transportSecurity,
-                    progress: { [weak self] value in
-                        await MainActor.run { self?.progress = value }
+            var completedCount = 0
+            var failedCount = 0
+            batchProgress = BatchProgress(
+                totalCount: assets.count,
+                completedCount: 0,
+                failedCount: 0,
+                currentFileName: assets.first?.fileName
+            )
+
+            for asset in assets {
+                guard !Task.isCancelled else { return }
+                batchProgress = BatchProgress(
+                    totalCount: assets.count,
+                    completedCount: completedCount,
+                    failedCount: failedCount,
+                    currentFileName: asset.fileName
+                )
+                phase = .downloading
+
+                let importRequest: PhotoImportRequest?
+                if let existing = downloadedRequest(for: asset) {
+                    importRequest = existing
+                } else {
+                    let downloads = await downloader.downloadMedia(
+                        assets: [asset],
+                        host: endpoint.host,
+                        port: endpoint.port,
+                        stateStore: stateStore,
+                        pairingToken: pairingToken,
+                        signingContext: signingContext,
+                        transportSecurity: pairedDevice?.transportSecurity,
+                        progress: { [weak self] value in
+                            await MainActor.run { self?.progress = value }
+                        }
+                    )
+                    importRequest = downloads.first.map { download in
+                        PhotoImportRequest(
+                            sourceAssetId: asset.assetId,
+                            sourceHash: asset.sha256,
+                            sourceSize: asset.size,
+                            localFileURL: download.localFileURL,
+                            mediaType: asset.mediaType
+                        )
                     }
-                )
-                guard let download = downloads.first else {
-                    throw MacSyncError.downloadFailed
                 }
-                importRequest = PhotoImportRequest(
-                    sourceAssetId: asset.assetId,
-                    sourceHash: asset.sha256,
-                    sourceSize: asset.size,
-                    localFileURL: download.localFileURL,
-                    mediaType: asset.mediaType
+
+                guard !Task.isCancelled else { return }
+                guard let importRequest else {
+                    failedCount += 1
+                    progress = nil
+                    batchProgress = BatchProgress(
+                        totalCount: assets.count,
+                        completedCount: completedCount,
+                        failedCount: failedCount,
+                        currentFileName: nil
+                    )
+                    await publishResult(for: manifest, endpoint: endpoint)
+                    continue
+                }
+
+                phase = .importing
+                let result = await importer.importBatch([importRequest]).first
+                if let result, result.status == .synced {
+                    try? FileManager.default.removeItem(at: importRequest.localFileURL)
+                    stateStore.markImported(
+                        sourceAssetId: result.sourceAssetId,
+                        photoLocalIdentifier: result.localIdentifier,
+                        now: Date()
+                    )
+                    lastSyncedFileName = asset.fileName
+                    completedCount += 1
+                } else {
+                    stateStore.markFailed(
+                        sourceAssetId: asset.assetId,
+                        errorCode: result?.errorCode ?? "SS-MEDIA-999",
+                        now: Date()
+                    )
+                    failedCount += 1
+                }
+                progress = nil
+                batchProgress = BatchProgress(
+                    totalCount: assets.count,
+                    completedCount: completedCount,
+                    failedCount: failedCount,
+                    currentFileName: nil
                 )
+                await publishResult(for: manifest, endpoint: endpoint)
+                guard !Task.isCancelled else { return }
             }
 
-            guard !Task.isCancelled else { return }
-            phase = .importing
-            guard let result = await importer.importBatch([importRequest]).first,
-                  result.status == .synced else {
-                throw MacSyncError.importFailed
-            }
-            try? FileManager.default.removeItem(at: importRequest.localFileURL)
-            stateStore.markImported(
-                sourceAssetId: result.sourceAssetId,
-                photoLocalIdentifier: result.localIdentifier,
-                now: Date()
-            )
-            lastSyncedFileName = asset.fileName
-            await publishResult(for: manifest, endpoint: endpoint)
-            progress = nil
-            phase = .completed
+            phase = failedCount == 0
+                ? .completed
+                : .failed(text("mac.error.partial_transfer"))
         } catch {
             progress = nil
             phase = .failed(Self.message(for: error))
@@ -407,7 +493,9 @@ final class MacPhotoSyncViewModel: ObservableObject {
 
     private func downloadedRequest(for asset: MediaAsset) -> PhotoImportRequest? {
         guard let record = stateStore.record(for: asset),
-              record.status == .downloaded,
+              record.status == .downloaded || (
+                record.status == .failed && record.downloadedBytes == asset.size
+              ),
               let url = record.localFileURL,
               FileManager.default.fileExists(atPath: url.path) else {
             return nil
@@ -492,14 +580,6 @@ final class MacPhotoSyncViewModel: ObservableObject {
         if error is DecodingError {
             return NSLocalizedString("mac.error.protocol", comment: "")
         }
-        if error is MacSyncError {
-            return NSLocalizedString("mac.error.transfer", comment: "")
-        }
         return error.localizedDescription
     }
-}
-
-private enum MacSyncError: Error {
-    case downloadFailed
-    case importFailed
 }
