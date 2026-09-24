@@ -15,6 +15,7 @@ interface GatewayOwnershipStore {
     fun devices(): List<GatewayDevice>
     fun activeDeviceId(): String?
     fun select(deviceId: String)
+    fun remove(deviceId: String)
 
     fun canSync(deviceId: String): Boolean {
         return activeDeviceId()?.let { it == deviceId } ?: true
@@ -54,6 +55,14 @@ class InMemoryGatewayOwnershipStore(
         require(devicesById.containsKey(deviceId))
         activeId = deviceId
     }
+
+    @Synchronized
+    override fun remove(deviceId: String) {
+        if (devicesById.remove(deviceId) == null) return
+        if (activeId == deviceId) {
+            activeId = devicesById.values.maxByOrNull(GatewayDevice::lastSeenEpochMillis)?.deviceId
+        }
+    }
 }
 
 class SharedPreferencesGatewayOwnershipStore(
@@ -92,6 +101,18 @@ class SharedPreferencesGatewayOwnershipStore(
     override fun select(deviceId: String) {
         require(readDevices().any { it.deviceId == deviceId })
         preferences.edit().putString(KEY_ACTIVE_DEVICE_ID, deviceId).apply()
+    }
+
+    @Synchronized
+    override fun remove(deviceId: String) {
+        val remaining = readDevices().filterNot { it.deviceId == deviceId }
+        val editor = preferences.edit().putString(KEY_DEVICES, encode(remaining))
+        if (activeDeviceId() == deviceId) {
+            val replacement = remaining.maxByOrNull(GatewayDevice::lastSeenEpochMillis)?.deviceId
+            if (replacement == null) editor.remove(KEY_ACTIVE_DEVICE_ID)
+            else editor.putString(KEY_ACTIVE_DEVICE_ID, replacement)
+        }
+        editor.apply()
     }
 
     private fun readDevices(): List<GatewayDevice> {

@@ -54,6 +54,7 @@ data class GatewayUiItem(
     val deviceId: String,
     val displayName: String,
     val isActive: Boolean,
+    val canRemove: Boolean = false,
 )
 
 data class SettingsUiState(
@@ -94,6 +95,7 @@ fun ShareSyncApp(
     onCopyDiagnostics: () -> Unit,
     onClearHistory: () -> Unit,
     onSelectGateway: (String) -> Unit,
+    onRemoveGateway: (String) -> Unit,
     onToggleAdvanced: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -187,6 +189,7 @@ fun ShareSyncApp(
                             onCopyDiagnostics = onCopyDiagnostics,
                             onClearHistory = onClearHistory,
                             onSelectGateway = onSelectGateway,
+                            onRemoveGateway = onRemoveGateway,
                             onToggleAdvanced = onToggleAdvanced,
                         )
                     }
@@ -277,6 +280,7 @@ private fun SettingsPage(
     onCopyDiagnostics: () -> Unit,
     onClearHistory: () -> Unit,
     onSelectGateway: (String) -> Unit,
+    onRemoveGateway: (String) -> Unit,
     onToggleAdvanced: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(22.dp)) {
@@ -398,6 +402,11 @@ private fun SettingsPage(
                                         else R.string.settings_gateway_select,
                                     )
                                 )
+                            }
+                            if (gateway.canRemove) {
+                                TextButton(onClick = { onRemoveGateway(gateway.deviceId) }) {
+                                    Text(stringResource(R.string.settings_gateway_remove))
+                                }
                             }
                         }
                     }

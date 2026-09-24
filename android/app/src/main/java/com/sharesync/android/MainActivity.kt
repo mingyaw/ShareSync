@@ -173,6 +173,7 @@ class MainActivity : ComponentActivity() {
                         onCopyDiagnostics = ::copyDiagnosticsSummary,
                         onClearHistory = ::showClearSyncStateConfirmation,
                         onSelectGateway = sharingCoordinator::selectGateway,
+                        onRemoveGateway = ::showRemoveGatewayConfirmation,
                         onToggleAdvanced = {
                             isAdvancedSupportExpanded = !isAdvancedSupportExpanded
                             refreshUi()
@@ -257,6 +258,7 @@ class MainActivity : ComponentActivity() {
                     deviceId = device.deviceId,
                     displayName = device.displayName,
                     isActive = device.deviceId == currentActiveGatewayDeviceId,
+                    canRemove = deviceCredentialStore.authorizationSecrets(device.deviceId) != null,
                 )
             },
         )
@@ -399,6 +401,7 @@ class MainActivity : ComponentActivity() {
         if (macPairingCallbackInFlight) return
         macPairingCallbackInFlight = true
         val previousActiveGatewayDeviceId = currentActiveGatewayDeviceId
+        val wasKnownGateway = currentGatewayDevices.any { it.deviceId == offer.deviceId }
         val credentialRotation = deviceCredentialStore.beginRotation(offer.deviceId)
         val personalizedPayload = runCatching {
             PairingPayloadPersonalizer().replacePairingToken(
@@ -432,6 +435,7 @@ class MainActivity : ComponentActivity() {
                     deviceCredentialStore.cancel(credentialRotation)
                     Log.e(PAIRING_LOG_TAG, "Mac pairing callback failed", error)
                     previousActiveGatewayDeviceId?.let(sharingCoordinator::selectGateway)
+                    if (!wasKnownGateway) sharingCoordinator.removeGateway(offer.deviceId)
                     runOnUiThread {
                         pendingMacPairingOffer = null
                         macPairingCallbackInFlight = false
@@ -495,6 +499,20 @@ class MainActivity : ComponentActivity() {
             .setNegativeButton(R.string.clear_history_cancel, null)
             .setPositiveButton(R.string.clear_history_confirm) { _, _ ->
                 clearSyncState()
+            }
+            .show()
+    }
+
+    private fun showRemoveGatewayConfirmation(deviceId: String) {
+        val device = currentGatewayDevices.firstOrNull { it.deviceId == deviceId } ?: return
+        AlertDialog.Builder(this)
+            .setTitle(R.string.remove_gateway_title)
+            .setMessage(getString(R.string.remove_gateway_message, device.displayName))
+            .setNegativeButton(R.string.clear_history_cancel, null)
+            .setPositiveButton(R.string.remove_gateway_confirm) { _, _ ->
+                deviceCredentialStore.revoke(deviceId)
+                sharingCoordinator.removeGateway(deviceId)
+                refreshUi(getString(R.string.remove_gateway_complete, device.displayName))
             }
             .show()
     }

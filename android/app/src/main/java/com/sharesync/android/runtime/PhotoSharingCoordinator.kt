@@ -204,6 +204,12 @@ class PhotoSharingCoordinator(
         publish()
     }
 
+    fun removeGateway(deviceId: String) {
+        gatewayOwnershipStore.remove(deviceId)
+        refreshSnapshot()
+        publish()
+    }
+
     fun pauseMonitoring() {
         stopPolling()
     }

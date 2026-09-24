@@ -141,6 +141,11 @@
     <string name="settings_gateway_description">只有選定的裝置能取得新照片，切換裝置可避免重複匯入 iCloud。</string>
     <string name="settings_gateway_active">使用中</string>
     <string name="settings_gateway_select">改用此裝置</string>
+    <string name="settings_gateway_remove">移除</string>
+    <string name="remove_gateway_title">要移除配對裝置嗎？</string>
+    <string name="remove_gateway_message">%1$s 將無法再取得照片，重新配對後才能連線。</string>
+    <string name="remove_gateway_confirm">移除裝置</string>
+    <string name="remove_gateway_complete">已移除 %1$s</string>
     <string name="settings_photo_sharing">照片分享</string>
     <string name="settings_sharing_on">已在此網路提供給 iPhone</string>
     <string name="settings_sharing_off">目前未提供給 iPhone</string>

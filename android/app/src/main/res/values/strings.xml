@@ -141,6 +141,11 @@
     <string name="settings_gateway_description">Only the selected device can request new photos. Switching devices stops duplicate iCloud imports.</string>
     <string name="settings_gateway_active">Active</string>
     <string name="settings_gateway_select">Use this device</string>
+    <string name="settings_gateway_remove">Remove</string>
+    <string name="remove_gateway_title">Remove paired device?</string>
+    <string name="remove_gateway_message">%1$s will no longer be allowed to request photos. Pair it again to reconnect.</string>
+    <string name="remove_gateway_confirm">Remove device</string>
+    <string name="remove_gateway_complete">%1$s was removed</string>
     <string name="settings_photo_sharing">Photo sharing</string>
     <string name="settings_sharing_on">Available to iPhone on this network</string>
     <string name="settings_sharing_off">Not available to iPhone</string>

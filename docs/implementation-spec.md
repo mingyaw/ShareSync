@@ -388,6 +388,7 @@ Response：
 - credential 輪替期間舊 active secret 與新 pending secret 可同時驗證；Mac callback 回覆 `202` 後只保留新 secret，失敗則取消 pending secret。
 - 已註冊裝置只能使用自身 active/pending secret；已撤銷裝置回傳空 secret 集合，不得 fallback 至 bootstrap token。
 - 尚未遷移的 iOS 裝置暫時保留 bootstrap token 相容路徑，後續由裝置註冊 API 完成遷移。
+- Android 設定頁只允許移除已具 device-scoped credential 的裝置；移除時同時撤銷 secret 與 gateway ownership。legacy iOS 必須完成註冊 API 遷移後才開放相同行為。
 
 ## 9. Request 驗證
 

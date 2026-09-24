@@ -49,4 +49,19 @@ class GatewayOwnershipStoreTest {
         assertEquals("mac-device-001", gatewayStore.activeDeviceId())
         assertEquals(2, gatewayStore.devices().size)
     }
+
+    @Test
+    fun removingActiveGatewaySelectsMostRecentlySeenRemainingDevice() {
+        var now = 100L
+        val store = InMemoryGatewayOwnershipStore(clock = { now })
+        store.observe("ios-device-001", "iPhone")
+        now = 200L
+        store.observe("mac-device-001", "Mac")
+        store.select("ios-device-001")
+
+        store.remove("ios-device-001")
+
+        assertEquals("mac-device-001", store.activeDeviceId())
+        assertEquals(listOf("mac-device-001"), store.devices().map(GatewayDevice::deviceId))
+    }
 }
