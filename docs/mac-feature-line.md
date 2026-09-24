@@ -37,6 +37,22 @@ M0 includes:
 
 The original one-photo validation action remains available, while the primary action now synchronizes all pending photos through the same resumable transfer core used by iOS.
 
+## M1 progress
+
+Implemented:
+
+- Sync-all with sequential transfer, visible progress, cancellation boundaries, and restart resume.
+- Persistent recent-sync history restored when the app launches.
+- Visible Android completion-return status, diagnostic code, and manual retry action.
+- Automatic completion-return retries during later manifest refreshes and transfers.
+- Photos deletion reconciliation; an imported Android photo that is removed from Photos becomes eligible for sync again.
+
+Still planned for the reliable unattended session:
+
+- Menu-bar status and a keep-running preference.
+- Bounded batch-size controls.
+- Scheduled refreshes while the app is running and the Mac is awake.
+
 ## Shared-code boundary
 
 The macOS target compiles the 18 files under `ios/ShareSync` directly. These files are platform-neutral or use Apple frameworks available on both iOS and macOS:
@@ -93,10 +109,9 @@ Physical validation is intentionally deferred. The first device pass should veri
 ### Mac M1: reliable unattended session
 
 - Add menu-bar status and a keep-running preference.
-- Add sync-all and bounded batch controls.
+- Add bounded batch controls; sync-all is implemented.
 - Schedule refreshes while the app is running and the Mac is awake.
-- Reconcile Photos deletion and interrupted downloads.
-- Add visible completion-return retry state and diagnostics.
+- Interrupted downloads, Photos deletion reconciliation, completion-return retry state, and diagnostics are implemented.
 
 ### Mac M2: gateway ownership
 

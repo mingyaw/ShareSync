@@ -11,6 +11,12 @@ final class MacPhotoSyncViewModel: ObservableObject {
         var processedCount: Int { completedCount + failedCount }
     }
 
+    enum CompletionReturnState: Equatable {
+        case none
+        case delivered(Date)
+        case pendingRetry(Date, String)
+    }
+
     enum Phase: Equatable {
         case ready
         case connecting
@@ -31,6 +37,8 @@ final class MacPhotoSyncViewModel: ObservableObject {
     @Published private(set) var lastSyncedFileName: String?
     @Published private(set) var progress: MediaDownloadProgress?
     @Published private(set) var batchProgress: BatchProgress?
+    @Published private(set) var completionReturnState: CompletionReturnState = .none
+    @Published private(set) var recentSyncHistory: [SyncHistorySummary] = []
 
     private let manifestClient: ManifestClient
     private let healthClient: HealthClient
@@ -40,6 +48,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
     private let sessionStore: PairedDeviceSessionStore
     private let resultStore: SyncResultStore
     private let resultClient: SyncResultClient
+    private let syncEventStore: SyncEventStore
     private let discovery: LocalPeerDiscovery
     private let endpointResolver: PairedEndpointResolver
     private let targetDeviceId: String
@@ -57,6 +66,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
         sessionStore: PairedDeviceSessionStore = FilePairedDeviceSessionStore(),
         resultStore: SyncResultStore = FileSyncResultStore(),
         resultClient: SyncResultClient = SyncResultClient(),
+        syncEventStore: SyncEventStore = FileSyncEventStore(),
         discovery: LocalPeerDiscovery? = nil,
         endpointResolver: PairedEndpointResolver = PairedEndpointResolver(),
         targetDeviceId: String = MacDeviceIdentity.persistentID(),
@@ -70,11 +80,13 @@ final class MacPhotoSyncViewModel: ObservableObject {
         self.sessionStore = sessionStore
         self.resultStore = resultStore
         self.resultClient = resultClient
+        self.syncEventStore = syncEventStore
         self.discovery = discovery ?? BonjourLocalPeerDiscovery()
         self.endpointResolver = endpointResolver
         self.targetDeviceId = targetDeviceId
         self.pairingListener = pairingListener
         restorePairing()
+        restoreSyncHistory()
     }
 
     var isPaired: Bool { pairedDevice != nil }
@@ -310,9 +322,12 @@ final class MacPhotoSyncViewModel: ObservableObject {
         guard !isBusy else { return }
         stateStore.clear()
         try? resultStore.clear()
+        try? syncEventStore.clear()
         manifest = nil
         lastSyncedFileName = nil
         batchProgress = nil
+        completionReturnState = .none
+        recentSyncHistory = []
         phase = .ready
     }
 
@@ -343,6 +358,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
                 transportSecurity: pairedDevice?.transportSecurity
             )
             manifest = loaded
+            await reconcileMissingPhotoAssets(in: loaded)
             await publishResult(for: loaded, endpoint: endpoint)
             phase = .ready
             return true
@@ -481,14 +497,65 @@ final class MacPhotoSyncViewModel: ObservableObject {
             records: planner.syncResultRecords(in: manifest, stateStore: stateStore)
         )
         try? resultStore.save(result)
-        _ = try? await resultClient.postSyncResult(
-            result,
-            to: endpoint.host,
-            port: endpoint.port,
-            pairingToken: pairingToken,
-            signingContext: signingContext,
-            transportSecurity: pairedDevice?.transportSecurity
+        do {
+            _ = try await resultClient.postSyncResult(
+                result,
+                to: endpoint.host,
+                port: endpoint.port,
+                pairingToken: pairingToken,
+                signingContext: signingContext,
+                transportSecurity: pairedDevice?.transportSecurity
+            )
+            recordCompletionReturn(result: result, status: .success)
+        } catch {
+            recordCompletionReturn(
+                result: result,
+                status: .failed,
+                errorCode: Self.errorCode(for: error)
+            )
+        }
+    }
+
+    private func reconcileMissingPhotoAssets(in manifest: SyncManifest) async {
+        let importedAssets = planner.photoAssets(in: manifest).compactMap { asset -> (MediaAsset, String)? in
+            guard let record = stateStore.record(for: asset),
+                  record.status == .imported,
+                  let localIdentifier = record.photoLocalIdentifier,
+                  !localIdentifier.isEmpty else { return nil }
+            return (asset, localIdentifier)
+        }
+        guard !importedAssets.isEmpty else { return }
+
+        do {
+            let existing = try await importer.existingAssetIdentifiers(
+                from: importedAssets.map(\.1)
+            )
+            let now = Date()
+            for (asset, localIdentifier) in importedAssets where !existing.contains(localIdentifier) {
+                stateStore.markMissing(sourceAssetId: asset.assetId, now: now)
+            }
+        } catch {
+            return
+        }
+    }
+
+    private func recordCompletionReturn(
+        result: SyncResult,
+        status: SyncEventStatus,
+        errorCode: String? = nil
+    ) {
+        let recordedAt = Date()
+        let event = SyncEvent.fromResultPost(
+            result: result,
+            status: status,
+            recordedAt: recordedAt,
+            errorCode: errorCode
         )
+        try? syncEventStore.append(event)
+        recentSyncHistory = (try? syncEventStore.recentHistorySummaries(limit: 3)) ?? []
+        completionReturnState = status == .success
+            ? .delivered(recordedAt)
+            : .pendingRetry(recordedAt, errorCode ?? "SS-RESULT-POST")
     }
 
     private func downloadedRequest(for asset: MediaAsset) -> PhotoImportRequest? {
@@ -548,6 +615,22 @@ final class MacPhotoSyncViewModel: ObservableObject {
         port = String(session.port)
     }
 
+    private func restoreSyncHistory() {
+        recentSyncHistory = (try? syncEventStore.recentHistorySummaries(limit: 3)) ?? []
+        guard let event = try? syncEventStore.latest(), event.phase == .resultPost else {
+            return
+        }
+        switch event.status {
+        case .success:
+            completionReturnState = .delivered(event.recordedAt)
+        case .failed, .cancelled:
+            completionReturnState = .pendingRetry(
+                event.recordedAt,
+                event.errorCode ?? "SS-RESULT-POST"
+            )
+        }
+    }
+
     private var signingContext: RequestSigningContext? {
         guard let pairingToken, !pairingToken.isEmpty else { return nil }
         return RequestSigningContext(
@@ -581,5 +664,16 @@ final class MacPhotoSyncViewModel: ObservableObject {
             return NSLocalizedString("mac.error.protocol", comment: "")
         }
         return error.localizedDescription
+    }
+
+    private static func errorCode(for error: Error) -> String {
+        if let clientError = error as? SyncResultClientError,
+           case .unacceptableStatusCode(let statusCode) = clientError {
+            return "HTTP-\(statusCode)"
+        }
+        if let urlError = error as? URLError {
+            return urlError.code.rawValue.description
+        }
+        return String(describing: type(of: error))
     }
 }

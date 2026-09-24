@@ -34,6 +34,17 @@
 "mac.action.sync_all_detail" = "Photos are downloaded and saved one at a time, so an interrupted sync can continue safely.";
 "mac.progress.title" = "Sync progress";
 "mac.progress.failed" = "Needs retry";
+"mac.return.delivered" = "Android status updated";
+"mac.return.delivered_detail" = "Your phone knows which photos have been saved on this Mac.";
+"mac.return.pending" = "Android status update pending";
+"mac.return.pending_detail" = "The photos are safe on this Mac. ShareSync will retry the status update when the phone is reachable.";
+"mac.return.retry" = "Retry now";
+"mac.history.title" = "Recent syncs";
+"mac.history.complete" = "Sync complete";
+"mac.history.attention" = "Some photos need attention";
+"mac.history.saved" = "Saved";
+"mac.history.retry" = "Retry";
+"mac.history.separator" = "·";
 "mac.action.pair_android" = "Pair Android phone";
 "mac.action.pair_detail" = "Pairing is stored on this Mac, so you do not repeat it after every launch.";
 "mac.action.cancel" = "Cancel";

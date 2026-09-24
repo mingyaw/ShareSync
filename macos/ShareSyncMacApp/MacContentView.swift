@@ -134,7 +134,8 @@ struct MacContentView: View {
                 photoOverview
                 transferProgress
                 primaryAction
-                recentTransfer
+                completionReturnStatus
+                syncHistory
             }
             .frame(maxWidth: 760, alignment: .leading)
             .padding(38)
@@ -269,21 +270,83 @@ struct MacContentView: View {
     }
 
     @ViewBuilder
-    private var recentTransfer: some View {
-        if let fileName = model.lastSyncedFileName {
-            VStack(alignment: .leading, spacing: 10) {
-                Text("mac.recent.title")
-                    .font(.headline)
-                HStack(spacing: 10) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(MacBrand.vault)
-                    Text(fileName)
-                        .lineLimit(1)
-                    Spacer()
-                    Text("mac.recent.photos")
+    private var completionReturnStatus: some View {
+        switch model.completionReturnState {
+        case .none:
+            EmptyView()
+        case .delivered(let date):
+            HStack(spacing: 12) {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(MacBrand.vault)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("mac.return.delivered")
+                        .fontWeight(.medium)
+                    Text("mac.return.delivered_detail")
+                        .font(.callout)
                         .foregroundStyle(.secondary)
                 }
-                .padding(.vertical, 10)
+                Spacer()
+                Text(date, style: .relative)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.vertical, 4)
+        case .pendingRetry(_, let errorCode):
+            HStack(spacing: 12) {
+                Image(systemName: "exclamationmark.arrow.triangle.2.circlepath")
+                    .foregroundStyle(MacBrand.handoff)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("mac.return.pending")
+                        .fontWeight(.medium)
+                    Text("mac.return.pending_detail")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                    Text(errorCode)
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button("mac.return.retry") {
+                    model.refreshPhotos()
+                }
+                .disabled(model.isBusy || !model.isPaired)
+            }
+            .padding(14)
+            .background(MacBrand.handoff.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+        }
+    }
+
+    @ViewBuilder
+    private var syncHistory: some View {
+        if !model.recentSyncHistory.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("mac.history.title")
+                    .font(.headline)
+
+                ForEach(model.recentSyncHistory) { summary in
+                    HStack(spacing: 12) {
+                        Image(systemName: summary.needsRetry ? "exclamationmark.circle.fill" : "checkmark.circle.fill")
+                            .foregroundStyle(summary.needsRetry ? MacBrand.handoff : MacBrand.vault)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(summary.needsRetry ? "mac.history.attention" : "mac.history.complete")
+                                .fontWeight(.medium)
+                            HStack(spacing: 5) {
+                                Text("mac.history.saved")
+                                Text(summary.successfulCount.formatted())
+                                Text("mac.history.separator")
+                                Text("mac.history.retry")
+                                Text(summary.failedCount.formatted())
+                            }
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Text(summary.recordedAt, style: .relative)
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 7)
+                }
             }
         }
     }

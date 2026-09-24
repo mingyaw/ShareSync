@@ -22,6 +22,16 @@ final class PhotoImportRequestValidatorTests: XCTestCase {
         }
     }
 
+    func testDefaultPresenceBatchReturnsOnlyExistingIdentifiers() async throws {
+        let checker = SelectivePhotoPresenceChecker(existing: ["photo-001", "photo-003"])
+
+        let result = try await checker.existingAssetIdentifiers(
+            from: ["photo-001", "photo-002", "photo-003"]
+        )
+
+        XCTAssertEqual(result, ["photo-001", "photo-003"])
+    }
+
     private func makeRequest(sourceSize: Int64) -> PhotoImportRequest {
         PhotoImportRequest(
             sourceAssetId: "media-001",
@@ -30,5 +40,13 @@ final class PhotoImportRequestValidatorTests: XCTestCase {
             localFileURL: URL(fileURLWithPath: "/tmp/media-001.jpg"),
             mediaType: .photo
         )
+    }
+}
+
+private struct SelectivePhotoPresenceChecker: PhotoAssetPresenceChecking {
+    let existing: Set<String>
+
+    func assetExists(localIdentifier: String) async throws -> Bool {
+        existing.contains(localIdentifier)
     }
 }

@@ -45,6 +45,17 @@ final class PhotoKitPhotoImporter: PhotoImporter, PhotoLibraryPermissionChecking
         return result.firstObject != nil
     }
 
+    func existingAssetIdentifiers(from localIdentifiers: [String]) async throws -> Set<String> {
+        guard !localIdentifiers.isEmpty else { return [] }
+        try await ensurePhotoPermission()
+        let result = PHAsset.fetchAssets(withLocalIdentifiers: localIdentifiers, options: nil)
+        var existing = Set<String>()
+        result.enumerateObjects { asset, _, _ in
+            existing.insert(asset.localIdentifier)
+        }
+        return existing
+    }
+
     func photoLibraryPermissionStatus() -> PhotoLibraryPermissionStatus {
         Self.permissionStatus(from: PHPhotoLibrary.authorizationStatus(for: .readWrite))
     }

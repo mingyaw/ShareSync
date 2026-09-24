@@ -34,6 +34,17 @@
 "mac.action.sync_all_detail" = "照片會逐張下載並存入，傳輸中斷後可以安全接續。";
 "mac.progress.title" = "同步進度";
 "mac.progress.failed" = "需要重試";
+"mac.return.delivered" = "已更新 Android 狀態";
+"mac.return.delivered_detail" = "手機已知道哪些照片儲存在此 Mac。";
+"mac.return.pending" = "等待更新 Android 狀態";
+"mac.return.pending_detail" = "照片已安全存入此 Mac，手機恢復連線後 ShareSync 會再次回報。";
+"mac.return.retry" = "立即重試";
+"mac.history.title" = "最近同步";
+"mac.history.complete" = "同步完成";
+"mac.history.attention" = "部分照片需要處理";
+"mac.history.saved" = "已儲存";
+"mac.history.retry" = "重試";
+"mac.history.separator" = "·";
 "mac.action.pair_android" = "配對 Android 手機";
 "mac.action.pair_detail" = "完成後會保存在此 Mac，不需要每次啟動重新配對。";
 "mac.action.cancel" = "取消";

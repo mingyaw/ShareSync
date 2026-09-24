@@ -66,6 +66,19 @@ protocol PhotoLibraryPermissionChecking {
 
 protocol PhotoAssetPresenceChecking {
     func assetExists(localIdentifier: String) async throws -> Bool
+    func existingAssetIdentifiers(from localIdentifiers: [String]) async throws -> Set<String>
+}
+
+extension PhotoAssetPresenceChecking {
+    func existingAssetIdentifiers(from localIdentifiers: [String]) async throws -> Set<String> {
+        var existing = Set<String>()
+        for localIdentifier in localIdentifiers {
+            if try await assetExists(localIdentifier: localIdentifier) {
+                existing.insert(localIdentifier)
+            }
+        }
+        return existing
+    }
 }
 
 final class PhotoImporterStub: PhotoImporter {
