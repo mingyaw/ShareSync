@@ -32,6 +32,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
     @Published var port = "48291"
     @Published private(set) var pairingQRCodePayload: String?
     @Published private(set) var nearbyAndroidDevices: [NearbyAndroidDevice] = []
+    @Published private(set) var selectedNearbyAndroidDeviceID: String?
     @Published private(set) var isDiscoveringNearbyDevices = false
     @Published private(set) var phase: Phase = .ready
     @Published private(set) var pairedDevice: TrustedDevice?
@@ -82,6 +83,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
     private var syncTask: Task<Void, Never>?
     private var scheduledSyncTask: Task<Void, Never>?
     private var nearbyDiscoveryTask: Task<Void, Never>?
+    private var pairingSetupTask: Task<Void, Never>?
 
     init(
         manifestClient: ManifestClient = ManifestClient(),
@@ -248,14 +250,29 @@ final class MacPhotoSyncViewModel: ObservableObject {
     }
 
     func beginMacPairing() {
+        selectedNearbyAndroidDeviceID = nil
+        startMacPairing(expectedPeerDeviceID: nil)
+    }
+
+    func beginMacPairing(with device: NearbyAndroidDevice) {
+        selectedNearbyAndroidDeviceID = device.deviceId
+        startMacPairing(expectedPeerDeviceID: device.deviceId)
+    }
+
+    private func startMacPairing(expectedPeerDeviceID: String?) {
+        pairingSetupTask?.cancel()
+        pairingListener.stop()
         pairingQRCodePayload = nil
         phase = .connecting
-        refreshNearbyDevices()
-        Task {
+        pairingSetupTask = Task {
             do {
-                let offer = try await pairingListener.start(targetDeviceId: targetDeviceId) { [weak self] data in
+                let offer = try await pairingListener.start(
+                    localDeviceId: targetDeviceId,
+                    expectedPeerDeviceId: expectedPeerDeviceID
+                ) { [weak self] data in
                     Task { @MainActor in self?.acceptAndroidPairing(data) }
                 }
+                guard !Task.isCancelled else { return }
                 let encoder = JSONEncoder()
                 encoder.dateEncodingStrategy = .iso8601
                 encoder.outputFormatting = [.sortedKeys]
@@ -267,15 +284,20 @@ final class MacPhotoSyncViewModel: ObservableObject {
                 pairingQRCodePayload = nil
                 phase = .failed(text("mac.error.pairing_listener"))
             }
+            pairingSetupTask = nil
         }
+        if nearbyAndroidDevices.isEmpty { refreshNearbyDevices() }
     }
 
     func stopMacPairing() {
+        pairingSetupTask?.cancel()
+        pairingSetupTask = nil
         pairingListener.stop()
         nearbyDiscoveryTask?.cancel()
         nearbyDiscoveryTask = nil
         nearbyDiscovery.stop()
         isDiscoveringNearbyDevices = false
+        selectedNearbyAndroidDeviceID = nil
         pairingQRCodePayload = nil
         if !isPaired { phase = .ready }
     }

@@ -28,10 +28,15 @@ final class MacPairingListener {
     private var listener: NWListener?
     private var challenge = ""
     private var expiresAt = Date.distantPast
+    private var expectedPeerDeviceId: String?
     private var callbackEncryptionKey: SymmetricKey?
     private var onPairing: PairingHandler?
 
-    func start(targetDeviceId: String, onPairing: @escaping PairingHandler) async throws -> MacPairingOffer {
+    func start(
+        localDeviceId: String,
+        expectedPeerDeviceId: String? = nil,
+        onPairing: @escaping PairingHandler
+    ) async throws -> MacPairingOffer {
         stop()
         guard let address = Self.firstPrivateIPv4Address() else {
             throw MacPairingListenerError.localAddressUnavailable
@@ -42,6 +47,7 @@ final class MacPairingListener {
         let callbackEncryptionKey = SymmetricKey(size: .bits256)
         self.listener = listener
         self.challenge = challenge
+        self.expectedPeerDeviceId = expectedPeerDeviceId
         self.callbackEncryptionKey = callbackEncryptionKey
         self.onPairing = onPairing
         listener.newConnectionHandler = { [weak self] connection in
@@ -76,7 +82,7 @@ final class MacPairingListener {
         return MacPairingOffer(
             version: 2,
             type: "sharesync_mac_pairing",
-            deviceId: targetDeviceId,
+            deviceId: localDeviceId,
             deviceName: Host.current().localizedName ?? "Mac",
             platform: "macos",
             callbackURL: "http://\(address):\(port)/v1/pairing/complete",
@@ -90,6 +96,7 @@ final class MacPairingListener {
         listener?.cancel()
         listener = nil
         challenge = ""
+        expectedPeerDeviceId = nil
         callbackEncryptionKey = nil
         expiresAt = .distantPast
         onPairing = nil
@@ -149,7 +156,8 @@ final class MacPairingListener {
         guard Date() < expiresAt,
               request.headers["x-sharesync-pairing-challenge"] == challenge,
               let plaintext = decrypt(request.body),
-              (try? PairingPayloadParser().parse(plaintext, now: .distantPast)) != nil else {
+              let payload = try? PairingPayloadParser().parse(plaintext, now: .distantPast),
+              expectedPeerDeviceId == nil || payload.deviceId == expectedPeerDeviceId else {
             respond(status: 401, on: connection)
             return
         }

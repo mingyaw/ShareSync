@@ -460,7 +460,11 @@ private struct PairingSheet: View {
                             )
                         )
                             .font(.callout.weight(.medium))
-                        Text("mac.pair.nearby_untrusted")
+                        Text(LocalizedStringKey(
+                            model.selectedNearbyAndroidDeviceID == device.deviceId
+                                ? "mac.pair.nearby_selected"
+                                : "mac.pair.nearby_untrusted"
+                        ))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     } else {
@@ -474,14 +478,27 @@ private struct PairingSheet: View {
 
                 Spacer()
 
-                Button {
-                    model.refreshNearbyDevices()
-                } label: {
-                    Image(systemName: "arrow.clockwise")
+                if let device = model.nearbyAndroidDevices.first {
+                    Button {
+                        model.beginMacPairing(with: device)
+                    } label: {
+                        if model.selectedNearbyAndroidDeviceID == device.deviceId {
+                            Label("mac.pair.nearby_waiting", systemImage: "checkmark.circle.fill")
+                        } else {
+                            Text("mac.pair.nearby_pair")
+                        }
+                    }
+                    .disabled(model.selectedNearbyAndroidDeviceID == device.deviceId)
+                } else {
+                    Button {
+                        model.refreshNearbyDevices()
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .buttonStyle(.borderless)
+                    .help("mac.pair.nearby_refresh")
+                    .disabled(model.isDiscoveringNearbyDevices)
                 }
-                .buttonStyle(.borderless)
-                .help("mac.pair.nearby_refresh")
-                .disabled(model.isDiscoveringNearbyDevices)
             }
             .padding(12)
             .background(.quaternary.opacity(0.45), in: RoundedRectangle(cornerRadius: 7))

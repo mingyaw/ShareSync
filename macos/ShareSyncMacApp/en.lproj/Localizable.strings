@@ -64,6 +64,9 @@
 "mac.pair.nearby_searching" = "Looking for Android phones nearby...";
 "mac.pair.nearby_found" = "%@ is nearby";
 "mac.pair.nearby_untrusted" = "Detected on this network. Scan the QR code to trust this Mac.";
+"mac.pair.nearby_pair" = "Start pairing";
+"mac.pair.nearby_waiting" = "Waiting for scan";
+"mac.pair.nearby_selected" = "Selected. Scan the refreshed QR code on this Android phone.";
 "mac.pair.nearby_none" = "No Android phone detected yet";
 "mac.pair.nearby_none_detail" = "Open ShareSync on Android and keep photo sharing active.";
 "mac.pair.nearby_refresh" = "Scan again";

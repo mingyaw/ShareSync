@@ -64,6 +64,9 @@
 "mac.pair.nearby_searching" = "正在尋找附近的 Android 手機...";
 "mac.pair.nearby_found" = "附近偵測到 %@";
 "mac.pair.nearby_untrusted" = "已在區域網路發現，仍需掃描 QR Code 才會信任此 Mac。";
+"mac.pair.nearby_pair" = "開始配對";
+"mac.pair.nearby_waiting" = "等待掃描";
+"mac.pair.nearby_selected" = "已選擇，請用這部 Android 手機掃描更新後的 QR Code。";
 "mac.pair.nearby_none" = "尚未偵測到 Android 手機";
 "mac.pair.nearby_none_detail" = "請開啟 Android ShareSync 並保持照片分享服務運作。";
 "mac.pair.nearby_refresh" = "重新掃描";
