@@ -126,7 +126,7 @@ Physical validation is intentionally deferred. The first device pass should veri
 - Implemented: iOS scans a short-lived registration credential from Android QR, registers its persistent device identity, and stores only the returned device-scoped signing secret before automatic sync begins.
 - Implemented: iPhone and Mac can sign a best-effort remote unpair request that revokes their Android credential and gateway registration before local pairing data is cleared; Android settings remain the offline fallback.
 - Implemented: the Mac pairing sheet discovers nearby Android advertisements and presents their readable names as untrusted hints; QR scan and encrypted callback remain the only trust path.
-- Add device-management presentation for revoked, stale, and recently active gateways.
+- Implemented: Android device management presents the active iCloud gateway, available, stale, legacy-security, and revoked states with stable recency buckets; revoked gateway history remains visible until trusted re-pairing restores the same device ID.
 
 ### Mac M4: distribution readiness
 

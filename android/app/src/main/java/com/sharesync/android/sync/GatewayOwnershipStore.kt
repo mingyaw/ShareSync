@@ -13,6 +13,7 @@ data class GatewayDevice(
 interface GatewayOwnershipStore {
     fun observe(deviceId: String, displayName: String? = null): GatewayDevice
     fun devices(): List<GatewayDevice>
+    fun revokedDevices(): List<GatewayDevice>
     fun activeDeviceId(): String?
     fun select(deviceId: String)
     fun remove(deviceId: String)
@@ -26,6 +27,7 @@ class InMemoryGatewayOwnershipStore(
     private val clock: () -> Long = System::currentTimeMillis,
 ) : GatewayOwnershipStore {
     private val devicesById = LinkedHashMap<String, GatewayDevice>()
+    private val revokedById = LinkedHashMap<String, GatewayDevice>()
     private var activeId: String? = null
 
     @Synchronized
@@ -39,6 +41,7 @@ class InMemoryGatewayOwnershipStore(
                 ?: defaultGatewayName(deviceId),
             lastSeenEpochMillis = clock(),
         )
+        revokedById.remove(deviceId)
         devicesById[deviceId] = device
         if (activeId == null) activeId = deviceId
         return device
@@ -46,6 +49,9 @@ class InMemoryGatewayOwnershipStore(
 
     @Synchronized
     override fun devices(): List<GatewayDevice> = devicesById.values.sortedByDescending { it.lastSeenEpochMillis }
+
+    @Synchronized
+    override fun revokedDevices(): List<GatewayDevice> = revokedById.values.sortedByDescending { it.lastSeenEpochMillis }
 
     @Synchronized
     override fun activeDeviceId(): String? = activeId
@@ -58,7 +64,8 @@ class InMemoryGatewayOwnershipStore(
 
     @Synchronized
     override fun remove(deviceId: String) {
-        if (devicesById.remove(deviceId) == null) return
+        val removed = devicesById.remove(deviceId) ?: return
+        revokedById[deviceId] = removed
         if (activeId == deviceId) {
             activeId = devicesById.values.maxByOrNull(GatewayDevice::lastSeenEpochMillis)?.deviceId
         }
@@ -84,7 +91,10 @@ class SharedPreferencesGatewayOwnershipStore(
             lastSeenEpochMillis = clock(),
         )
         devices[deviceId] = device
-        val editor = preferences.edit().putString(KEY_DEVICES, encode(devices.values))
+        val revoked = readRevokedDevices().filterNot { it.deviceId == deviceId }
+        val editor = preferences.edit()
+            .putString(KEY_DEVICES, encode(devices.values))
+            .putString(KEY_REVOKED_DEVICES, encode(revoked))
         if (activeDeviceId().isNullOrBlank()) editor.putString(KEY_ACTIVE_DEVICE_ID, deviceId)
         editor.apply()
         return device
@@ -92,6 +102,10 @@ class SharedPreferencesGatewayOwnershipStore(
 
     @Synchronized
     override fun devices(): List<GatewayDevice> = readDevices().sortedByDescending { it.lastSeenEpochMillis }
+
+    @Synchronized
+    override fun revokedDevices(): List<GatewayDevice> =
+        readRevokedDevices().sortedByDescending { it.lastSeenEpochMillis }
 
     override fun activeDeviceId(): String? {
         return preferences.getString(KEY_ACTIVE_DEVICE_ID, null)?.takeIf { it.isNotBlank() }
@@ -105,8 +119,15 @@ class SharedPreferencesGatewayOwnershipStore(
 
     @Synchronized
     override fun remove(deviceId: String) {
-        val remaining = readDevices().filterNot { it.deviceId == deviceId }
-        val editor = preferences.edit().putString(KEY_DEVICES, encode(remaining))
+        val devices = readDevices()
+        val removed = devices.firstOrNull { it.deviceId == deviceId } ?: return
+        val remaining = devices.filterNot { it.deviceId == deviceId }
+        val revoked = readRevokedDevices()
+            .filterNot { it.deviceId == deviceId }
+            .plus(removed)
+        val editor = preferences.edit()
+            .putString(KEY_DEVICES, encode(remaining))
+            .putString(KEY_REVOKED_DEVICES, encode(revoked))
         if (activeDeviceId() == deviceId) {
             val replacement = remaining.maxByOrNull(GatewayDevice::lastSeenEpochMillis)?.deviceId
             if (replacement == null) editor.remove(KEY_ACTIVE_DEVICE_ID)
@@ -116,7 +137,15 @@ class SharedPreferencesGatewayOwnershipStore(
     }
 
     private fun readDevices(): List<GatewayDevice> {
-        val value = preferences.getString(KEY_DEVICES, null) ?: return emptyList()
+        return readDevices(KEY_DEVICES)
+    }
+
+    private fun readRevokedDevices(): List<GatewayDevice> {
+        return readDevices(KEY_REVOKED_DEVICES)
+    }
+
+    private fun readDevices(key: String): List<GatewayDevice> {
+        val value = preferences.getString(key, null) ?: return emptyList()
         return runCatching {
             val array = JSONArray(value)
             buildList {
@@ -150,6 +179,7 @@ class SharedPreferencesGatewayOwnershipStore(
     private companion object {
         const val PREFERENCES_NAME = "share_sync_gateway_ownership"
         const val KEY_DEVICES = "devices"
+        const val KEY_REVOKED_DEVICES = "revoked_devices"
         const val KEY_ACTIVE_DEVICE_ID = "active_device_id"
     }
 }

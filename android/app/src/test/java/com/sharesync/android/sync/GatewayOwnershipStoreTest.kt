@@ -63,5 +63,18 @@ class GatewayOwnershipStoreTest {
 
         assertEquals("mac-device-001", store.activeDeviceId())
         assertEquals(listOf("mac-device-001"), store.devices().map(GatewayDevice::deviceId))
+        assertEquals(listOf("ios-device-001"), store.revokedDevices().map(GatewayDevice::deviceId))
+    }
+
+    @Test
+    fun observingRevokedGatewayRestoresItWithoutDuplicatingHistory() {
+        val store = InMemoryGatewayOwnershipStore(clock = { 100L })
+        store.observe("mac-device-001", "Studio Mac")
+        store.remove("mac-device-001")
+
+        store.observe("mac-device-001", "Studio Mac")
+
+        assertEquals(listOf("mac-device-001"), store.devices().map(GatewayDevice::deviceId))
+        assertEquals(emptyList<String>(), store.revokedDevices().map(GatewayDevice::deviceId))
     }
 }

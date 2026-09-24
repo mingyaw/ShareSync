@@ -408,6 +408,9 @@ Response：
 - Apple 端採 best-effort remote revoke：送出撤銷請求後立即清除本機 endpoint、secret 與配對狀態，不因 Android 離線而阻塞解除操作。
 - 遠端撤銷失敗時，Android 可能保留失效的配對紀錄；使用者可在 Android 設定頁移除，後續重新註冊同一 device ID 亦會輪替 credential。
 - 已成功撤銷的舊 secret 不得再次授權任何 API，重送解除請求應回覆 `401`。
+- Android 將撤銷裝置從有效 gateway 清單移至本機撤銷歷史，但不得刪除 credential tombstone；否則 legacy bootstrap fallback 可能讓舊 device ID 再次取得權限。
+- 設定頁依序呈現目前備份裝置、可切換裝置、久未連線、需更新配對及已撤銷裝置。最近使用時間只作為狀態提示，不得自動撤銷 credential。
+- 同一 device ID 重新完成可信配對後，從撤銷歷史移回有效 gateway 清單並輪替 device-scoped secret。
 
 ### 8.7 配對前附近裝置探索
 

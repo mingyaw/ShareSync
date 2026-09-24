@@ -40,7 +40,7 @@ import com.sharesync.android.ui.PhotoSharingScreenState
 import com.sharesync.android.ui.PhotoSyncHomeUiState
 import com.sharesync.android.ui.ActivityUiState
 import com.sharesync.android.ui.HistoryUiItem
-import com.sharesync.android.ui.GatewayUiItem
+import com.sharesync.android.ui.buildGatewayUiItems
 import com.sharesync.android.ui.SettingsUiState
 import com.sharesync.android.ui.ShareSyncApp
 import com.sharesync.android.ui.ShareSyncComposeTheme
@@ -63,6 +63,7 @@ class MainActivity : ComponentActivity() {
     private var currentRequestActivity: LocalRequestActivity? = null
     private var hasConnectedPeer = false
     private var currentGatewayDevices: List<GatewayDevice> = emptyList()
+    private var currentRevokedGatewayDevices: List<GatewayDevice> = emptyList()
     private var currentActiveGatewayDeviceId: String? = null
     private var currentSection by mutableStateOf(MainDestination.SYNC)
     private var isAdvancedSupportExpanded by mutableStateOf(false)
@@ -253,14 +254,12 @@ class MainActivity : ComponentActivity() {
             endpointAvailable = screenState.copyEndpointEnabled,
             resultAvailable = screenState.copySyncResultEnabled,
             advancedExpanded = isAdvancedSupportExpanded,
-            gateways = currentGatewayDevices.map { device ->
-                GatewayUiItem(
-                    deviceId = device.deviceId,
-                    displayName = device.displayName,
-                    isActive = device.deviceId == currentActiveGatewayDeviceId,
-                    canRemove = deviceCredentialStore.authorizationSecrets(device.deviceId) != null,
-                )
-            },
+            gateways = buildGatewayUiItems(
+                registered = currentGatewayDevices,
+                revoked = currentRevokedGatewayDevices,
+                activeDeviceId = currentActiveGatewayDeviceId,
+                credentialSecrets = deviceCredentialStore::authorizationSecrets,
+            ),
         )
 
         updateKeepScreenAwake()
@@ -547,6 +546,7 @@ class MainActivity : ComponentActivity() {
         currentRequestActivity = snapshot.requestActivity
         hasConnectedPeer = snapshot.hasConnectedPeer
         currentGatewayDevices = snapshot.gatewayDevices
+        currentRevokedGatewayDevices = snapshot.revokedGatewayDevices
         currentActiveGatewayDeviceId = snapshot.activeGatewayDeviceId
         if (snapshot.isRunning) {
             PhotoSharingService.update(this, notificationState(snapshot))

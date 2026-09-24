@@ -19,6 +19,7 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -48,13 +49,6 @@ data class HistoryUiItem(val date: String, val completed: Int, val failed: Int)
 data class ActivityUiState(
     val latestResult: String = "",
     val history: List<HistoryUiItem> = emptyList(),
-)
-
-data class GatewayUiItem(
-    val deviceId: String,
-    val displayName: String,
-    val isActive: Boolean,
-    val canRemove: Boolean = false,
 )
 
 data class SettingsUiState(
@@ -381,31 +375,35 @@ private fun SettingsPage(
                     state.gateways.forEachIndexed { index, gateway ->
                         if (index > 0) HorizontalDivider(modifier = Modifier.padding(start = 16.dp))
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(gateway.displayName, fontWeight = FontWeight.SemiBold)
                                 Text(
-                                    gateway.deviceId,
+                                    gatewayStatusLabel(gateway.status),
                                     style = MaterialTheme.typography.bodySmall,
+                                    color = gatewayStatusColor(gateway.status),
+                                    fontWeight = FontWeight.Medium,
+                                )
+                                Text(
+                                    gatewayRecencyLabel(gateway.recency),
+                                    style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
-                            TextButton(
-                                onClick = { onSelectGateway(gateway.deviceId) },
-                                enabled = !gateway.isActive,
-                            ) {
-                                Text(
-                                    stringResource(
-                                        if (gateway.isActive) R.string.settings_gateway_active
-                                        else R.string.settings_gateway_select,
-                                    )
-                                )
+                            if (gateway.canSelect) {
+                                TextButton(onClick = { onSelectGateway(gateway.deviceId) }) {
+                                    Text(stringResource(R.string.settings_gateway_select))
+                                }
                             }
                             if (gateway.canRemove) {
-                                TextButton(onClick = { onRemoveGateway(gateway.deviceId) }) {
-                                    Text(stringResource(R.string.settings_gateway_remove))
+                                IconButton(onClick = { onRemoveGateway(gateway.deviceId) }) {
+                                    Icon(
+                                        painterResource(R.drawable.ic_action_delete),
+                                        contentDescription = stringResource(R.string.settings_gateway_remove),
+                                        tint = MaterialTheme.colorScheme.error,
+                                    )
                                 }
                             }
                         }
@@ -466,6 +464,41 @@ private fun SettingsPage(
         }
         Spacer(modifier = Modifier.padding(4.dp))
     }
+}
+
+@Composable
+private fun gatewayStatusLabel(status: GatewayUiStatus): String {
+    return stringResource(
+        when (status) {
+            GatewayUiStatus.ACTIVE -> R.string.settings_gateway_status_active
+            GatewayUiStatus.AVAILABLE -> R.string.settings_gateway_status_available
+            GatewayUiStatus.STALE -> R.string.settings_gateway_status_stale
+            GatewayUiStatus.REPAIR_REQUIRED -> R.string.settings_gateway_status_repair
+            GatewayUiStatus.REVOKED -> R.string.settings_gateway_status_revoked
+        },
+    )
+}
+
+@Composable
+private fun gatewayStatusColor(status: GatewayUiStatus) = when (status) {
+    GatewayUiStatus.ACTIVE -> MaterialTheme.colorScheme.primary
+    GatewayUiStatus.REVOKED -> MaterialTheme.colorScheme.error
+    GatewayUiStatus.STALE,
+    GatewayUiStatus.REPAIR_REQUIRED,
+    GatewayUiStatus.AVAILABLE,
+    -> MaterialTheme.colorScheme.onSurfaceVariant
+}
+
+@Composable
+private fun gatewayRecencyLabel(recency: GatewayRecency): String {
+    return stringResource(
+        when (recency) {
+            GatewayRecency.JUST_NOW -> R.string.settings_gateway_seen_now
+            GatewayRecency.TODAY -> R.string.settings_gateway_seen_today
+            GatewayRecency.THIS_WEEK -> R.string.settings_gateway_seen_week
+            GatewayRecency.OLDER -> R.string.settings_gateway_seen_older
+        },
+    )
 }
 
 @Composable

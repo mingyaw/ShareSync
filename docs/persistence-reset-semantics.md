@@ -63,4 +63,5 @@ Deleting Android app data or uninstalling Android ShareSync deletes the Android 
 - Never clear local sync state automatically as an error recovery action.
 - Never delete Photos library items as part of reset or clear pairing.
 - Keep diagnostics explicit: users should be able to tell whether they are clearing pairing, sync state, or Android history.
+- Keep Android credential tombstones and revoked gateway history after unpairing so a removed device cannot fall back to legacy authorization. Trusted re-pairing of the same device ID restores it to the active device list.
 - Any future bidirectional or delete-sync feature must define a new persistence contract before implementation.

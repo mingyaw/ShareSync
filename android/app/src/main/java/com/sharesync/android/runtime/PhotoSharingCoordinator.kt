@@ -38,6 +38,7 @@ data class PhotoSharingSnapshot(
     val requestActivity: LocalRequestActivity? = null,
     val hasConnectedPeer: Boolean = false,
     val gatewayDevices: List<GatewayDevice> = emptyList(),
+    val revokedGatewayDevices: List<GatewayDevice> = emptyList(),
     val activeGatewayDeviceId: String? = null,
 )
 
@@ -293,6 +294,7 @@ class PhotoSharingCoordinator(
             requestActivity = requestActivity,
             hasConnectedPeer = requestActivityTracker?.hasConnectedPeer() == true,
             gatewayDevices = gatewayOwnershipStore.devices(),
+            revokedGatewayDevices = gatewayOwnershipStore.revokedDevices(),
             activeGatewayDeviceId = gatewayOwnershipStore.activeDeviceId(),
         )
     }
