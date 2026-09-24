@@ -1,3 +1,4 @@
+import CryptoKit
 import Darwin
 import Foundation
 import Network
@@ -10,6 +11,7 @@ struct MacPairingOffer: Codable, Equatable {
     let platform: String
     let callbackURL: String
     let pairingChallenge: String
+    let callbackEncryptionKey: String
     let expiresAt: Date
 }
 
@@ -26,6 +28,7 @@ final class MacPairingListener {
     private var listener: NWListener?
     private var challenge = ""
     private var expiresAt = Date.distantPast
+    private var callbackEncryptionKey: SymmetricKey?
     private var onPairing: PairingHandler?
 
     func start(targetDeviceId: String, onPairing: @escaping PairingHandler) async throws -> MacPairingOffer {
@@ -36,8 +39,10 @@ final class MacPairingListener {
 
         let listener = try NWListener(using: .tcp, on: .any)
         let challenge = UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased()
+        let callbackEncryptionKey = SymmetricKey(size: .bits256)
         self.listener = listener
         self.challenge = challenge
+        self.callbackEncryptionKey = callbackEncryptionKey
         self.onPairing = onPairing
         listener.newConnectionHandler = { [weak self] connection in
             self?.receiveRequest(on: connection)
@@ -69,13 +74,14 @@ final class MacPairingListener {
         let expiration = Date().addingTimeInterval(180)
         expiresAt = expiration
         return MacPairingOffer(
-            version: 1,
+            version: 2,
             type: "sharesync_mac_pairing",
             deviceId: targetDeviceId,
             deviceName: Host.current().localizedName ?? "Mac",
             platform: "macos",
             callbackURL: "http://\(address):\(port)/v1/pairing/complete",
             pairingChallenge: challenge,
+            callbackEncryptionKey: callbackEncryptionKey.withUnsafeBytes { Data($0).base64EncodedString() },
             expiresAt: expiration
         )
     }
@@ -84,6 +90,7 @@ final class MacPairingListener {
         listener?.cancel()
         listener = nil
         challenge = ""
+        callbackEncryptionKey = nil
         expiresAt = .distantPast
         onPairing = nil
     }
@@ -141,14 +148,37 @@ final class MacPairingListener {
     private func handle(request: (headers: [String: String], body: Data), on connection: NWConnection) {
         guard Date() < expiresAt,
               request.headers["x-sharesync-pairing-challenge"] == challenge,
-              (try? PairingPayloadParser().parse(request.body, now: .distantPast)) != nil else {
+              let plaintext = decrypt(request.body),
+              (try? PairingPayloadParser().parse(plaintext, now: .distantPast)) != nil else {
             respond(status: 401, on: connection)
             return
         }
         let handler = onPairing
         respond(status: 202, on: connection)
-        handler?(request.body)
+        handler?(plaintext)
         stop()
+    }
+
+    private func decrypt(_ envelopeData: Data) -> Data? {
+        struct EncryptedEnvelope: Decodable {
+            let version: Int
+            let algorithm: String
+            let sealedPayload: String
+        }
+
+        guard let key = callbackEncryptionKey,
+              let envelope = try? JSONDecoder().decode(EncryptedEnvelope.self, from: envelopeData),
+              envelope.version == 1,
+              envelope.algorithm == "AES-256-GCM",
+              let combined = Data(base64Encoded: envelope.sealedPayload),
+              let sealedBox = try? AES.GCM.SealedBox(combined: combined) else {
+            return nil
+        }
+        return try? AES.GCM.open(
+            sealedBox,
+            using: key,
+            authenticating: Data(challenge.utf8)
+        )
     }
 
     private func respond(status: Int, on connection: NWConnection) {

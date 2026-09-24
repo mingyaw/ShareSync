@@ -15,6 +15,7 @@ class MacPairingOfferParserTest {
         assertEquals("mac-device", offer.deviceId)
         assertEquals("Mingyao Mac", offer.deviceName)
         assertEquals("http://192.168.1.20:49152/v1/pairing/complete", offer.callbackUrl)
+        assertEquals(ENCRYPTION_KEY, offer.callbackEncryptionKey)
     }
 
     @Test
@@ -42,14 +43,19 @@ class MacPairingOfferParserTest {
         expiresAt: String = "2026-09-23T08:03:00Z",
     ): String = """
         {
-          "version": 1,
+          "version": 2,
           "type": "sharesync_mac_pairing",
           "deviceId": "mac-device",
           "deviceName": "Mingyao Mac",
           "platform": "macos",
           "callbackURL": "$callback",
           "pairingChallenge": "0123456789abcdef0123456789abcdef",
+          "callbackEncryptionKey": "$ENCRYPTION_KEY",
           "expiresAt": "$expiresAt"
         }
     """.trimIndent()
+
+    private companion object {
+        const val ENCRYPTION_KEY = "MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE="
+    }
 }

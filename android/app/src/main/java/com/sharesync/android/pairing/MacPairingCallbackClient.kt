@@ -7,14 +7,20 @@ import java.net.Socket
 import java.net.URI
 import java.time.Instant
 
-class MacPairingCallbackClient {
+class MacPairingCallbackClient(
+    private val payloadCipher: MacPairingPayloadCipher = MacPairingPayloadCipher(),
+) {
     fun complete(offer: MacPairingOffer, androidPairingPayload: String) {
         require(offer.expiresAt.isAfter(Instant.now()))
         val callback = URI(offer.callbackUrl)
         require(callback.scheme == "http")
         require(callback.path == "/v1/pairing/complete")
         require(callback.port in 1..65_535)
-        val body = androidPairingPayload.toByteArray(Charsets.UTF_8)
+        val body = payloadCipher.encrypt(
+            plaintext = androidPairingPayload.toByteArray(Charsets.UTF_8),
+            encodedKey = offer.callbackEncryptionKey,
+            associatedData = offer.pairingChallenge.toByteArray(Charsets.UTF_8),
+        ).toByteArray(Charsets.UTF_8)
         val request = buildString {
             append("POST ${callback.rawPath} HTTP/1.1\r\n")
             append("Host: ${callback.host}:${callback.port}\r\n")

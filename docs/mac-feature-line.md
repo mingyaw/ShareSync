@@ -16,7 +16,7 @@ M0 includes:
 - Traditional Chinese and English UI.
 - Mac-generated, three-minute pairing QR scanned by Android.
 - Android in-app live camera scanner that completes pairing without taking a photo.
-- One-time, challenge-protected Android pairing callback accepted only while the Mac pairing sheet is open.
+- One-time, challenge-bound AES-256-GCM encrypted Android pairing callback accepted only while the Mac pairing sheet is open.
 - Private-LAN socket callback avoids enabling unrestricted Android cleartext HTTP traffic.
 - Manual Android payload import retained only as a development fallback.
 - Durable trusted-device binding in Application Support.
@@ -120,7 +120,7 @@ Physical validation is intentionally deferred. The first device pass should veri
 ### Mac M3: pairing hardening
 
 - Implemented: signed-request protocol v2 binds protocol version, device ID, and session ID into the HMAC payload so gateway identity cannot be replaced after signing.
-- Encrypt the one-time callback payload or move the bootstrap callback to pinned TLS.
+- Implemented: Mac pairing offer v2 carries a one-time 256-bit key in the QR trust channel; Android encrypts the callback payload with AES-GCM and binds it to the pairing challenge before sending it over the private LAN.
 - Add nearby-device discovery before pairing without treating discovery as trust.
 - Add device management and revoked-key handling.
 

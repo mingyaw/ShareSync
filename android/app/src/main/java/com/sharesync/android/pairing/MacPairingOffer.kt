@@ -9,13 +9,14 @@ data class MacPairingOffer(
     val deviceName: String,
     val callbackUrl: String,
     val pairingChallenge: String,
+    val callbackEncryptionKey: String,
     val expiresAt: Instant,
 )
 
 class MacPairingOfferParser {
     fun parse(json: String, now: Instant = Instant.now()): MacPairingOffer {
         val root = JSONObject(json)
-        require(root.getInt("version") == 1)
+        require(root.getInt("version") == 2)
         require(root.getString("type") == "sharesync_mac_pairing")
         require(root.getString("platform") == "macos")
         val callbackUrl = root.getString("callbackURL")
@@ -27,6 +28,9 @@ class MacPairingOfferParser {
             deviceName = root.getString("deviceName").also { require(it.isNotBlank()) },
             callbackUrl = callbackUrl,
             pairingChallenge = root.getString("pairingChallenge").also { require(it.length >= 24) },
+            callbackEncryptionKey = root.getString("callbackEncryptionKey").also { encodedKey ->
+                require(runCatching { java.util.Base64.getDecoder().decode(encodedKey).size == 32 }.getOrDefault(false))
+            },
             expiresAt = expiration,
         )
     }

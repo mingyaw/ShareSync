@@ -377,6 +377,14 @@ Response：
 - public key 保存在 trusted device record。
 - 使用者可在任一端解除配對。
 
+### 8.4 Mac 反向 QR 配對
+
+- Mac QR offer 使用版本 `2`，包含一次性 `callbackEncryptionKey` 與 `pairingChallenge`。
+- `callbackEncryptionKey` 必須為 32 bytes 隨機值，以 Base64 編碼，只透過 QR trust channel 傳遞。
+- Android callback body 使用 AES-256-GCM 加密；12-byte nonce 與 ciphertext/tag 以 `sealedPayload` Base64 傳送。
+- `pairingChallenge` 必須作為 AES-GCM associated data，避免密文被移用到另一個配對流程。
+- Mac 只在 offer 未過期、challenge 相符且解密及 pairing payload 驗證成功後接受配對。
+
 ## 9. Request 驗證
 
 所有已配對後的 API request 需包含：
