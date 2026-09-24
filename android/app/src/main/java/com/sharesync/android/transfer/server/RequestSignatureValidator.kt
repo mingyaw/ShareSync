@@ -8,6 +8,7 @@ import kotlin.math.abs
 
 class RequestSignatureValidator(
     private val secretProvider: () -> String,
+    private val deviceSecretsProvider: (String) -> List<String>? = { null },
     private val clock: () -> Long = System::currentTimeMillis,
     private val allowedSkewMillis: Long = DEFAULT_ALLOWED_SKEW_MILLIS,
 ) {
@@ -29,22 +30,25 @@ class RequestSignatureValidator(
 
         val nonce = headers.valueFor(NONCE_HEADER)?.takeIf { it.isNotBlank() } ?: return false
 
-        val expectedSignature = sign(
-            secret = secretProvider(),
-            version = version,
-            deviceId = deviceId,
-            sessionId = sessionId,
-            method = method,
-            path = path,
-            timestamp = timestamp.toString(),
-            nonce = nonce,
-            body = body,
-        )
         val providedSignature = headers.valueFor(SIGNATURE_HEADER) ?: return false
-        val matches = MessageDigest.isEqual(
-            expectedSignature.toByteArray(Charsets.UTF_8),
-            providedSignature.toByteArray(Charsets.UTF_8),
-        )
+        val secrets = deviceSecretsProvider(deviceId) ?: listOf(secretProvider())
+        val matches = secrets.any { secret ->
+            val expectedSignature = sign(
+                secret = secret,
+                version = version,
+                deviceId = deviceId,
+                sessionId = sessionId,
+                method = method,
+                path = path,
+                timestamp = timestamp.toString(),
+                nonce = nonce,
+                body = body,
+            )
+            MessageDigest.isEqual(
+                expectedSignature.toByteArray(Charsets.UTF_8),
+                providedSignature.toByteArray(Charsets.UTF_8),
+            )
+        }
         if (matches) {
             synchronized(usedNonces) {
                 if (usedNonces.contains(nonce)) {

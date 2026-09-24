@@ -1,5 +1,6 @@
 package com.sharesync.android.transfer.server
 
+import com.sharesync.android.security.DeviceCredentialStore
 import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.sync.MediaAsset
 import com.sharesync.android.sync.GatewayOwnershipStore
@@ -21,11 +22,15 @@ class LocalSyncRouter(
     private val syncResultStore: SyncResultStore,
     private val syncEventStore: SyncEventStore? = null,
     private val gatewayOwnershipStore: GatewayOwnershipStore? = null,
+    private val deviceCredentialStore: DeviceCredentialStore? = null,
     private val manifestJsonEncoder: ManifestJsonEncoder = ManifestJsonEncoder(),
     private val syncResultJsonCodec: SyncResultJsonCodec = SyncResultJsonCodec(),
     private val requestActivityTracker: LocalRequestActivityTracker? = null,
     private val signatureValidator: RequestSignatureValidator = RequestSignatureValidator(
         secretProvider = { pairingToken },
+        deviceSecretsProvider = { requestingDeviceId ->
+            deviceCredentialStore?.authorizationSecrets(requestingDeviceId)
+        },
     ),
     private val authorizationPolicy: AuthorizationPolicy = AuthorizationPolicy.SignedRequestsOnly,
 ) {

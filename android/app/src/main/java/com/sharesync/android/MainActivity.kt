@@ -18,13 +18,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import com.sharesync.android.security.SharedPreferencesDeviceIdentityStore
 import com.sharesync.android.pairing.MacPairingCallbackClient
 import com.sharesync.android.pairing.MacPairingOffer
 import com.sharesync.android.pairing.MacPairingOfferParser
+import com.sharesync.android.pairing.PairingPayloadPersonalizer
 import com.sharesync.android.runtime.PhotoSharingCoordinator
 import com.sharesync.android.runtime.PhotoSharingCoordinatorEvent
 import com.sharesync.android.runtime.PhotoSharingSnapshot
+import com.sharesync.android.security.SharedPreferencesDeviceCredentialStore
+import com.sharesync.android.security.SharedPreferencesDeviceIdentityStore
 import com.sharesync.android.sync.SyncHistorySummary
 import com.sharesync.android.sync.GatewayDevice
 import com.sharesync.android.sync.SyncItemStatus
@@ -49,6 +51,7 @@ import java.time.format.FormatStyle
 
 class MainActivity : ComponentActivity() {
     private lateinit var sharingCoordinator: PhotoSharingCoordinator
+    private lateinit var deviceCredentialStore: SharedPreferencesDeviceCredentialStore
     private var isServerRunning = false
     private var isServerStarting = false
     private var currentServerPort: Int? = null
@@ -108,6 +111,7 @@ class MainActivity : ComponentActivity() {
         isAdvancedSupportExpanded = savedInstanceState
             ?.getBoolean(STATE_ADVANCED_SUPPORT_EXPANDED)
             ?: false
+        deviceCredentialStore = SharedPreferencesDeviceCredentialStore(applicationContext)
         sharingCoordinator = PhotoSharingCoordinator(
             context = applicationContext,
             deviceIdentityStore = SharedPreferencesDeviceIdentityStore(this),
@@ -395,14 +399,29 @@ class MainActivity : ComponentActivity() {
         if (macPairingCallbackInFlight) return
         macPairingCallbackInFlight = true
         val previousActiveGatewayDeviceId = currentActiveGatewayDeviceId
+        val credentialRotation = deviceCredentialStore.beginRotation(offer.deviceId)
+        val personalizedPayload = runCatching {
+            PairingPayloadPersonalizer().replacePairingToken(
+                payloadJson = payload,
+                pairingToken = credentialRotation.secret,
+            )
+        }.getOrElse { error ->
+            deviceCredentialStore.cancel(credentialRotation)
+            pendingMacPairingOffer = null
+            macPairingCallbackInFlight = false
+            Log.e(PAIRING_LOG_TAG, "Mac pairing payload personalization failed", error)
+            refreshUi(getString(R.string.mac_pairing_callback_failed))
+            return
+        }
         sharingCoordinator.registerGateway(
             deviceId = offer.deviceId,
             displayName = offer.deviceName,
             makeActive = true,
         )
         Thread {
-            runCatching { MacPairingCallbackClient().complete(offer, payload) }
+            runCatching { MacPairingCallbackClient().complete(offer, personalizedPayload) }
                 .onSuccess {
+                    deviceCredentialStore.commit(credentialRotation)
                     runOnUiThread {
                         pendingMacPairingOffer = null
                         macPairingCallbackInFlight = false
@@ -410,6 +429,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 .onFailure { error ->
+                    deviceCredentialStore.cancel(credentialRotation)
                     Log.e(PAIRING_LOG_TAG, "Mac pairing callback failed", error)
                     previousActiveGatewayDeviceId?.let(sharingCoordinator::selectGateway)
                     runOnUiThread {

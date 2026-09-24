@@ -3,6 +3,7 @@ package com.sharesync.android
 import android.content.Context
 import com.sharesync.android.scanner.media.MediaStoreMediaScanner
 import com.sharesync.android.scanner.media.MediaStreamProvider
+import com.sharesync.android.security.SharedPreferencesDeviceCredentialStore
 import com.sharesync.android.sync.FileSyncEventStore
 import com.sharesync.android.sync.FileSyncResultStore
 import com.sharesync.android.sync.GatewayDevice
@@ -46,6 +47,7 @@ class PhotoSyncComponents private constructor(
                 file = FileSyncEventStore.defaultFile(context.applicationContext.filesDir),
             )
             val gatewayOwnershipStore = SharedPreferencesGatewayOwnershipStore(context.applicationContext)
+            val deviceCredentialStore = SharedPreferencesDeviceCredentialStore(context.applicationContext)
             val manifestBuilder = ManifestBuilder(
                 sourceDeviceId = deviceId,
                 mediaScanner = mediaScanner,
@@ -85,6 +87,7 @@ class PhotoSyncComponents private constructor(
                     syncResultStore = syncResultStore,
                     syncEventStore = syncEventStore,
                     gatewayOwnershipStore = gatewayOwnershipStore,
+                    deviceCredentialStore = deviceCredentialStore,
                     requestActivityTracker = requestActivityTracker,
                 ),
             )

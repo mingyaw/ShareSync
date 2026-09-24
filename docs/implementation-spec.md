@@ -384,6 +384,10 @@ Response：
 - Android callback body 使用 AES-256-GCM 加密；12-byte nonce 與 ciphertext/tag 以 `sealedPayload` Base64 傳送。
 - `pairingChallenge` 必須作為 AES-GCM associated data，避免密文被移用到另一個配對流程。
 - Mac 只在 offer 未過期、challenge 相符且解密及 pairing payload 驗證成功後接受配對。
+- Android 為 QR 中的 Mac `deviceId` 建立獨立 256-bit credential，並以該 credential 取代 callback pairing payload 內的 bootstrap token。
+- credential 輪替期間舊 active secret 與新 pending secret 可同時驗證；Mac callback 回覆 `202` 後只保留新 secret，失敗則取消 pending secret。
+- 已註冊裝置只能使用自身 active/pending secret；已撤銷裝置回傳空 secret 集合，不得 fallback 至 bootstrap token。
+- 尚未遷移的 iOS 裝置暫時保留 bootstrap token 相容路徑，後續由裝置註冊 API 完成遷移。
 
 ## 9. Request 驗證
 
