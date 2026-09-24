@@ -4,22 +4,35 @@ struct MacContentView: View {
     @EnvironmentObject private var model: MacPhotoSyncViewModel
     @State private var showingPairing = false
     @State private var confirmUnpair = false
-    @State private var columnVisibility: NavigationSplitViewVisibility = .all
+    @State private var isSidebarVisible = true
 
     var body: some View {
-        NavigationSplitView(columnVisibility: $columnVisibility) {
-            sidebar
-                .navigationSplitViewColumnWidth(min: 230, ideal: 260, max: 300)
-        } detail: {
+        HStack(spacing: 0) {
+            if isSidebarVisible {
+                sidebar
+                    .frame(width: 260)
+
+                Divider()
+            }
+
             mainContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .navigationSplitViewStyle(.balanced)
         .background(MacBrand.canvas)
         .sheet(isPresented: $showingPairing) {
             PairingSheet(isPresented: $showingPairing)
                 .environmentObject(model)
         }
         .toolbar {
+            ToolbarItem(placement: .navigation) {
+                Button {
+                    isSidebarVisible.toggle()
+                } label: {
+                    Label(sidebarToggleTitle, systemImage: "sidebar.leading")
+                }
+                .help(sidebarToggleTitle)
+            }
+
             ToolbarItemGroup {
                 Button {
                     model.refreshPhotos()
@@ -52,6 +65,10 @@ struct MacContentView: View {
                 showingPairing = true
             }
         }
+    }
+
+    private var sidebarToggleTitle: LocalizedStringKey {
+        isSidebarVisible ? "mac.action.hide_sidebar" : "mac.action.show_sidebar"
     }
 
     private var sidebar: some View {

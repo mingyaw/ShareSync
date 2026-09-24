@@ -27,6 +27,8 @@
 "mac.action.pair" = "配對";
 "mac.action.replace_device" = "更換綁定手機";
 "mac.action.unpair" = "解除手機配對";
+"mac.action.hide_sidebar" = "隱藏側邊欄";
+"mac.action.show_sidebar" = "顯示側邊欄";
 "mac.unpair.confirm" = "這會從此 Mac 移除 Android 連線，但會保留已匯入照片的紀錄。";
 "mac.action.sync_next" = "同步下一張照片";
 "mac.action.sync_next_detail" = "Mac 第一階段先採單張傳輸，以低風險驗證完整流程。";
