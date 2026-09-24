@@ -46,12 +46,12 @@ Implemented:
 - Visible Android completion-return status, diagnostic code, and manual retry action.
 - Automatic completion-return retries during later manifest refreshes and transfers.
 - Photos deletion reconciliation; an imported Android photo that is removed from Photos becomes eligible for sync again.
+- Menu-bar status with open, sync-now, settings, and quit actions.
+- A keep-running preference that controls whether closing the last window terminates ShareSync.
+- Optional 5, 15, 30, or 60 minute scheduled sync while ShareSync is running and the Mac is awake.
+- A per-scheduled-run limit of 25, 50, 100, or all remaining photos.
 
-Still planned for the reliable unattended session:
-
-- Menu-bar status and a keep-running preference.
-- Bounded batch-size controls.
-- Scheduled refreshes while the app is running and the Mac is awake.
+Automatic sync is off by default. Enabling it does not register a login item or claim execution while the app is quit, the user is logged out, or the Mac is asleep.
 
 ## Shared-code boundary
 
@@ -108,10 +108,7 @@ Physical validation is intentionally deferred. The first device pass should veri
 
 ### Mac M1: reliable unattended session
 
-- Add menu-bar status and a keep-running preference.
-- Add bounded batch controls; sync-all is implemented.
-- Schedule refreshes while the app is running and the Mac is awake.
-- Interrupted downloads, Photos deletion reconciliation, completion-return retry state, and diagnostics are implemented.
+- Implemented: menu-bar status, keep-running preference, sync-all, bounded scheduled batches, awake-session scheduling, interrupted-download resume, Photos deletion reconciliation, completion-return retry state, and diagnostics.
 
 ### Mac M2: gateway ownership
 

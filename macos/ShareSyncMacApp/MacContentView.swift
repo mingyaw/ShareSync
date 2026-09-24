@@ -469,6 +469,37 @@ struct MacSettingsView: View {
 
     var body: some View {
         Form {
+            Section("mac.settings.automation") {
+                Toggle("mac.settings.automatic_sync", isOn: $model.automaticSyncEnabled)
+
+                Picker("mac.settings.interval", selection: $model.scheduledSyncIntervalMinutes) {
+                    Text("mac.settings.interval.5").tag(5)
+                    Text("mac.settings.interval.15").tag(15)
+                    Text("mac.settings.interval.30").tag(30)
+                    Text("mac.settings.interval.60").tag(60)
+                }
+                .disabled(!model.automaticSyncEnabled)
+
+                Picker("mac.settings.batch", selection: $model.scheduledBatchLimit) {
+                    Text("mac.settings.batch.25").tag(25)
+                    Text("mac.settings.batch.50").tag(50)
+                    Text("mac.settings.batch.100").tag(100)
+                    Text("mac.settings.batch.all").tag(0)
+                }
+                .disabled(!model.automaticSyncEnabled)
+
+                if let date = model.nextScheduledSyncAt, model.automaticSyncEnabled {
+                    LabeledContent("mac.settings.next_sync") {
+                        Text(date, style: .relative)
+                    }
+                }
+
+                Toggle("mac.settings.keep_running", isOn: $model.keepRunning)
+                Text("mac.settings.keep_running_detail")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             Section("mac.settings.connection") {
                 TextField("mac.settings.host", text: $model.host)
                 TextField("mac.settings.port", text: $model.port)

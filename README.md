@@ -25,7 +25,7 @@ The current codebase contains:
 - Shared protocol schemas.
 - An Android Studio project under `android/`.
 - An Xcode iOS app project at `ios/ShareSync.xcodeproj`.
-- An Xcode macOS M0 app project at `macos/ShareSyncMac.xcodeproj`.
+- An Xcode macOS app project at `macos/ShareSyncMac.xcodeproj`, including the M1 awake-session sync workflow.
 - A Swift Package core at the repository root for fast iOS core tests.
 - An embedded Android local HTTP server for M0 health, manifest, and media endpoints.
 - Android QR pairing payload UI with stable local device identity and actual bound port.

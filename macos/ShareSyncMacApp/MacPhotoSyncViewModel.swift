@@ -39,6 +39,25 @@ final class MacPhotoSyncViewModel: ObservableObject {
     @Published private(set) var batchProgress: BatchProgress?
     @Published private(set) var completionReturnState: CompletionReturnState = .none
     @Published private(set) var recentSyncHistory: [SyncHistorySummary] = []
+    @Published var keepRunning: Bool {
+        didSet { defaults.set(keepRunning, forKey: MacPreferenceKeys.keepRunning) }
+    }
+    @Published var automaticSyncEnabled: Bool {
+        didSet {
+            defaults.set(automaticSyncEnabled, forKey: MacPreferenceKeys.automaticSync)
+            restartScheduledSync()
+        }
+    }
+    @Published var scheduledSyncIntervalMinutes: Int {
+        didSet {
+            defaults.set(scheduledSyncIntervalMinutes, forKey: MacPreferenceKeys.syncIntervalMinutes)
+            restartScheduledSync()
+        }
+    }
+    @Published var scheduledBatchLimit: Int {
+        didSet { defaults.set(scheduledBatchLimit, forKey: MacPreferenceKeys.batchLimit) }
+    }
+    @Published private(set) var nextScheduledSyncAt: Date?
 
     private let manifestClient: ManifestClient
     private let healthClient: HealthClient
@@ -53,9 +72,11 @@ final class MacPhotoSyncViewModel: ObservableObject {
     private let endpointResolver: PairedEndpointResolver
     private let targetDeviceId: String
     private let pairingListener: MacPairingListener
+    private let defaults: UserDefaults
     private let planner = M0PhotoTransferPlanner()
     private var pairingToken: String?
     private var syncTask: Task<Void, Never>?
+    private var scheduledSyncTask: Task<Void, Never>?
 
     init(
         manifestClient: ManifestClient = ManifestClient(),
@@ -70,8 +91,16 @@ final class MacPhotoSyncViewModel: ObservableObject {
         discovery: LocalPeerDiscovery? = nil,
         endpointResolver: PairedEndpointResolver = PairedEndpointResolver(),
         targetDeviceId: String = MacDeviceIdentity.persistentID(),
-        pairingListener: MacPairingListener = MacPairingListener()
+        pairingListener: MacPairingListener = MacPairingListener(),
+        defaults: UserDefaults = .standard
     ) {
+        self.defaults = defaults
+        self.keepRunning = defaults.object(forKey: MacPreferenceKeys.keepRunning) as? Bool ?? true
+        self.automaticSyncEnabled = defaults.object(forKey: MacPreferenceKeys.automaticSync) as? Bool ?? false
+        let storedInterval = defaults.object(forKey: MacPreferenceKeys.syncIntervalMinutes) as? Int ?? 15
+        self.scheduledSyncIntervalMinutes = [5, 15, 30, 60].contains(storedInterval) ? storedInterval : 15
+        let storedBatchLimit = defaults.object(forKey: MacPreferenceKeys.batchLimit) as? Int ?? 50
+        self.scheduledBatchLimit = [0, 25, 50, 100].contains(storedBatchLimit) ? storedBatchLimit : 50
         self.manifestClient = manifestClient
         self.healthClient = healthClient
         self.downloader = downloader
@@ -87,6 +116,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
         self.pairingListener = pairingListener
         restorePairing()
         restoreSyncHistory()
+        restartScheduledSync()
     }
 
     var isPaired: Bool { pairedDevice != nil }
@@ -105,6 +135,15 @@ final class MacPhotoSyncViewModel: ObservableObject {
             return true
         case .ready, .importing, .completed, .failed:
             return false
+        }
+    }
+
+    var menuBarSymbol: String {
+        switch phase {
+        case .failed: return "exclamationmark.arrow.triangle.2.circlepath"
+        case .connecting, .loadingPhotos, .downloading, .importing: return "arrow.triangle.2.circlepath"
+        case .completed: return "checkmark.circle.fill"
+        case .ready: return isPaired ? "arrow.left.arrow.right.circle.fill" : "qrcode"
         }
     }
 
@@ -253,6 +292,24 @@ final class MacPhotoSyncViewModel: ObservableObject {
         }
     }
 
+    func syncNow() {
+        startFreshSync(limit: Int.max)
+    }
+
+    private func syncScheduledBatch() {
+        let limit = scheduledBatchLimit == 0 ? Int.max : scheduledBatchLimit
+        startFreshSync(limit: limit)
+    }
+
+    private func startFreshSync(limit: Int) {
+        guard !isBusy, isPaired else { return }
+        batchProgress = nil
+        syncTask = Task {
+            guard await loadManifest() else { return }
+            await transferPhotos(limit: limit)
+        }
+    }
+
     func cancel() {
         syncTask?.cancel()
         syncTask = nil
@@ -329,6 +386,30 @@ final class MacPhotoSyncViewModel: ObservableObject {
         completionReturnState = .none
         recentSyncHistory = []
         phase = .ready
+    }
+
+    private func restartScheduledSync() {
+        scheduledSyncTask?.cancel()
+        scheduledSyncTask = nil
+        nextScheduledSyncAt = nil
+        guard automaticSyncEnabled else { return }
+
+        scheduledSyncTask = Task { [weak self] in
+            while !Task.isCancelled {
+                guard let self else { return }
+                let interval = max(self.scheduledSyncIntervalMinutes, 1)
+                self.nextScheduledSyncAt = Date().addingTimeInterval(TimeInterval(interval * 60))
+                do {
+                    try await Task.sleep(nanoseconds: UInt64(interval) * 60 * 1_000_000_000)
+                } catch {
+                    return
+                }
+                guard !Task.isCancelled else { return }
+                if self.isPaired && !self.isBusy {
+                    self.syncScheduledBatch()
+                }
+            }
+        }
     }
 
     private func loadManifest() async -> Bool {
