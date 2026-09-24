@@ -132,6 +132,7 @@
 "ios.vm.paste_pairing_payload" = "Paste the Android pairing payload.";
 "ios.vm.pairing_expired" = "Pairing payload expired. Generate a new one on Android.";
 "ios.vm.pairing_invalid" = "Pairing payload is not valid.";
+"ios.vm.pairing_registration_failed" = "Could not register this iPhone with Android. Scan the current pairing code and try again.";
 "ios.vm.fetch_manifest_before_download" = "Check the latest Android photos before syncing.";
 "ios.vm.transfer_stopped" = "Transfer paused. Completed photos are kept; tap Resume Photo Sync to continue remaining photos.";
 "ios.vm.transfer_paused_background" = "Transfer paused because ShareSync left the foreground. Completed photos are kept; tap Resume Photo Sync when you return.";

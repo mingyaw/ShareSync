@@ -10,6 +10,7 @@ struct PairingPayload: Codable, Equatable {
     let ip: String
     let port: Int
     let pairingToken: String
+    let registrationToken: String?
     let expiresAt: Date
     let transportSecurity: PairingTransportSecurity?
 }

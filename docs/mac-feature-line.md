@@ -123,6 +123,7 @@ Physical validation is intentionally deferred. The first device pass should veri
 - Implemented: Mac pairing offer v2 carries a one-time 256-bit key in the QR trust channel; Android encrypts the callback payload with AES-GCM and binds it to the pairing challenge before sending it over the private LAN.
 - Implemented: each Mac pairing rotates a device-scoped request-signing secret; pending and active credentials overlap only for the callback handoff, and registered or revoked devices cannot fall back to the legacy bootstrap secret.
 - Implemented: Android can remove a credential-managed Mac, revoke its signing secret, and select the most recently seen remaining iCloud gateway when the removed Mac was active.
+- Implemented: iOS scans a short-lived registration credential from Android QR, registers its persistent device identity, and stores only the returned device-scoped signing secret before automatic sync begins.
 - Add nearby-device discovery before pairing without treating discovery as trust.
 - Add device management and revoked-key handling.
 

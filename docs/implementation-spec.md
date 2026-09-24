@@ -390,6 +390,16 @@ Response：
 - 尚未遷移的 iOS 裝置暫時保留 bootstrap token 相容路徑，後續由裝置註冊 API 完成遷移。
 - Android 設定頁只允許移除已具 device-scoped credential 的裝置；移除時同時撤銷 secret 與 gateway ownership。legacy iOS 必須完成註冊 API 遷移後才開放相同行為。
 
+### 8.5 iOS 裝置憑證註冊
+
+- Android QR pairing payload 可選帶入 `registrationToken`；此值為 32-byte 隨機值，僅在 payload 的 10 分鐘有效期內可用。
+- iOS 每次安裝保存唯一 `ios-{UUID}` target device ID。掃描新版 QR 後，以 registration token 簽署 `POST /v1/pairing/register`。
+- request body 必須包含 `deviceId`、`deviceName`、`platform`，且 body `deviceId` 必須與 `X-Device-Id` 一致。
+- Android 驗證時效、HMAC、nonce、平台與 device ID 後，建立或輪替 device-scoped credential，回覆 `201` 與新的 `pairingToken`。
+- iOS 只保存回覆中的 device-scoped token；QR 中的 legacy `pairingToken` 不作為新版 iOS 的長期憑證。
+- iOS 完成註冊及本機 persistence 後才可進入自動同步，避免掃碼與第一個 manifest request 競態。
+- Mac callback payload 不包含 `registrationToken`；Mac 仍使用反向 QR callback 的 device-scoped credential 流程。
+
 ## 9. Request 驗證
 
 所有已配對後的 API request 需包含：

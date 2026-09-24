@@ -15,6 +15,24 @@ enum HealthClientError: Error, Equatable {
     case peerNotReady(String)
 }
 
+enum DeviceRegistrationClientError: Error, Equatable {
+    case invalidBaseURL
+    case nonHTTPResponse
+    case unacceptableStatusCode(Int)
+    case unexpectedDevice
+}
+
+private struct DeviceRegistrationRequest: Encodable {
+    let deviceId: String
+    let deviceName: String
+    let platform: String
+}
+
+private struct DeviceRegistrationResponse: Decodable {
+    let deviceId: String
+    let pairingToken: String
+}
+
 struct LocalPeerHealth: Decodable, Equatable {
     let status: String
     let deviceId: String
@@ -31,6 +49,77 @@ protocol ManifestFetchingSession {
 }
 
 extension URLSession: ManifestFetchingSession {}
+
+final class DeviceRegistrationClient {
+    private let session: ManifestFetchingSession?
+    private let requestSigner: RequestSigner
+
+    init(
+        session: ManifestFetchingSession? = nil,
+        requestSigner: RequestSigner = RequestSigner()
+    ) {
+        self.session = session
+        self.requestSigner = requestSigner
+    }
+
+    func register(
+        deviceId: String,
+        deviceName: String,
+        platform: String,
+        registrationToken: String,
+        host: String,
+        port: Int,
+        transportSecurity: PairingTransportSecurity? = nil
+    ) async throws -> String {
+        guard let url = LocalTransportURLBuilder.url(
+            host: host,
+            port: port,
+            path: "/v1/pairing/register",
+            transportSecurity: transportSecurity
+        ) else {
+            throw DeviceRegistrationClientError.invalidBaseURL
+        }
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        let body = try encoder.encode(
+            DeviceRegistrationRequest(
+                deviceId: deviceId,
+                deviceName: deviceName,
+                platform: platform
+            )
+        )
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = body
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        requestSigner.sign(
+            request: &request,
+            context: RequestSigningContext(
+                deviceId: deviceId,
+                sessionId: "ios-pairing-registration",
+                secret: registrationToken
+            ),
+            body: body
+        )
+
+        let activeSession = session ?? LocalNetworkURLSessionFactory.shortRequestSession(
+            transportSecurity: transportSecurity
+        )
+        let (data, response) = try await activeSession.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw DeviceRegistrationClientError.nonHTTPResponse
+        }
+        guard httpResponse.statusCode == 201 else {
+            throw DeviceRegistrationClientError.unacceptableStatusCode(httpResponse.statusCode)
+        }
+        let result = try JSONDecoder().decode(DeviceRegistrationResponse.self, from: data)
+        guard result.deviceId == deviceId else {
+            throw DeviceRegistrationClientError.unexpectedDevice
+        }
+        return result.pairingToken
+    }
+}
 
 final class ManifestClient {
     private let session: ManifestFetchingSession?

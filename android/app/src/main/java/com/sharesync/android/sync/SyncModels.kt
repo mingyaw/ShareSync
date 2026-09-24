@@ -10,6 +10,7 @@ data class PairingPayload(
     val ip: String,
     val port: Int,
     val pairingToken: String,
+    val registrationToken: String? = null,
     val expiresAt: String,
     val transportSecurity: PairingTransportSecurity? = null,
 )

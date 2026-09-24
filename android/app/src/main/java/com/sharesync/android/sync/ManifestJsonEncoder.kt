@@ -21,6 +21,10 @@ class ManifestJsonEncoder {
             appendJsonField("port", payload.port)
             append(",")
             appendJsonField("pairingToken", payload.pairingToken)
+            payload.registrationToken?.let {
+                append(",")
+                appendJsonField("registrationToken", it)
+            }
             append(",")
             appendJsonField("expiresAt", payload.expiresAt)
             payload.transportSecurity?.let { security ->

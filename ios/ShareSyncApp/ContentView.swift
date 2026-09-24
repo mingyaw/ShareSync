@@ -48,10 +48,7 @@ struct ContentView: View {
         .fullScreenCover(isPresented: $isShowingPairingScanner) {
             QRCodeScannerView { payload in
                 viewModel.pairingPayloadText = payload
-                viewModel.applyPairingPayload()
-                if autoSyncAllPhotos {
-                    viewModel.syncAllPhotos()
-                }
+                viewModel.applyPairingPayload(autoSyncAfterPairing: autoSyncAllPhotos)
             }
         }
         .confirmationDialog(

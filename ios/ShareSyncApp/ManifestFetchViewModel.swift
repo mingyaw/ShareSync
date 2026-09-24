@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 @MainActor
 final class ManifestFetchViewModel: ObservableObject {
@@ -88,6 +89,7 @@ final class ManifestFetchViewModel: ObservableObject {
     private let syncResultStore: SyncResultStore
     private let syncEventStore: SyncEventStore
     private let syncResultClient: SyncResultClient
+    private let deviceRegistrationClient: DeviceRegistrationClient
     private let pairedDeviceSessionStore: PairedDeviceSessionStore
     private let pairingPayloadParser: PairingPayloadParser
     private let localPeerDiscovery: LocalPeerDiscovery
@@ -110,6 +112,7 @@ final class ManifestFetchViewModel: ObservableObject {
         syncResultStore: SyncResultStore = FileSyncResultStore(),
         syncEventStore: SyncEventStore = FileSyncEventStore(),
         syncResultClient: SyncResultClient = SyncResultClient(),
+        deviceRegistrationClient: DeviceRegistrationClient = DeviceRegistrationClient(),
         pairedDeviceSessionStore: PairedDeviceSessionStore = FilePairedDeviceSessionStore(),
         localPeerDiscovery: LocalPeerDiscovery? = nil,
         endpointResolver: PairedEndpointResolver = PairedEndpointResolver(),
@@ -126,6 +129,7 @@ final class ManifestFetchViewModel: ObservableObject {
         self.syncResultStore = syncResultStore
         self.syncEventStore = syncEventStore
         self.syncResultClient = syncResultClient
+        self.deviceRegistrationClient = deviceRegistrationClient
         self.pairedDeviceSessionStore = pairedDeviceSessionStore
         self.localPeerDiscovery = localPeerDiscovery ?? BonjourLocalPeerDiscovery()
         self.endpointResolver = endpointResolver
@@ -301,7 +305,7 @@ final class ManifestFetchViewModel: ObservableObject {
         }
     }
 
-    func applyPairingPayload() {
+    func applyPairingPayload(autoSyncAfterPairing: Bool = false) {
         let trimmedPayload = pairingPayloadText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let data = trimmedPayload.data(using: .utf8), !data.isEmpty else {
             state = .failed(Self.localized("ios.vm.paste_pairing_payload"))
@@ -312,33 +316,56 @@ final class ManifestFetchViewModel: ObservableObject {
             let payload = try pairingPayloadParser.parse(data)
             host = payload.ip
             port = "\(payload.port)"
-            let trustedDevice = TrustedDevice(
-                deviceId: payload.deviceId,
-                deviceName: payload.deviceName,
-                platform: payload.platform,
-                publicKey: payload.publicKey,
-                pairingToken: payload.pairingToken,
-                pairedAt: Date(),
-                lastSeenAt: nil,
-                trustStatus: .trusted,
-                transportSecurity: payload.transportSecurity
-            )
-            pairedDevice = trustedDevice
-            pairingToken = payload.pairingToken
-            manifestCursor = nil
-            try? pairedDeviceSessionStore.save(
-                PairedDeviceSession(
-                    host: payload.ip,
-                    port: payload.port,
-                    device: trustedDevice
-                )
-            )
-            state = .idle
+            guard let registrationToken = payload.registrationToken else {
+                savePairing(payload: payload, pairingToken: payload.pairingToken)
+                if autoSyncAfterPairing { syncAllPhotos() }
+                return
+            }
+
+            state = .loading
+            Task {
+                do {
+                    let deviceSecret = try await deviceRegistrationClient.register(
+                        deviceId: targetDeviceId,
+                        deviceName: UIDevice.current.name,
+                        platform: "ios",
+                        registrationToken: registrationToken,
+                        host: payload.ip,
+                        port: payload.port,
+                        transportSecurity: payload.transportSecurity
+                    )
+                    savePairing(payload: payload, pairingToken: deviceSecret)
+                    if autoSyncAfterPairing { syncAllPhotos() }
+                } catch {
+                    state = .failed(Self.localized("ios.vm.pairing_registration_failed"))
+                }
+            }
         } catch PairingPayloadParserError.expired {
             state = .failed(Self.localized("ios.vm.pairing_expired"))
         } catch {
             state = .failed(Self.localized("ios.vm.pairing_invalid"))
         }
+    }
+
+    private func savePairing(payload: PairingPayload, pairingToken: String) {
+        let trustedDevice = TrustedDevice(
+            deviceId: payload.deviceId,
+            deviceName: payload.deviceName,
+            platform: payload.platform,
+            publicKey: payload.publicKey,
+            pairingToken: pairingToken,
+            pairedAt: Date(),
+            lastSeenAt: nil,
+            trustStatus: .trusted,
+            transportSecurity: payload.transportSecurity
+        )
+        pairedDevice = trustedDevice
+        self.pairingToken = pairingToken
+        manifestCursor = nil
+        try? pairedDeviceSessionStore.save(
+            PairedDeviceSession(host: payload.ip, port: payload.port, device: trustedDevice)
+        )
+        state = .idle
     }
 
     func downloadFirstMedia() {

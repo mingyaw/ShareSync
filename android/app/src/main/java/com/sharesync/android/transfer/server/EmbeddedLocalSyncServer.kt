@@ -101,6 +101,18 @@ class EmbeddedLocalSyncServer(
                     },
                 )
             }
+            request.method == "POST" && request.path == "/v1/pairing/register" -> {
+                writeApiResponse(
+                    socket.getOutputStream(),
+                    runBlocking {
+                        router.registerDevice(
+                            body = request.body,
+                            headers = request.headers,
+                            path = request.path,
+                        )
+                    },
+                )
+            }
             request.method != "GET" && request.method != "POST" -> writeJsonError(socket.getOutputStream(), 405, "SS-NET-405")
             else -> writeNotFound(socket.getOutputStream())
         }

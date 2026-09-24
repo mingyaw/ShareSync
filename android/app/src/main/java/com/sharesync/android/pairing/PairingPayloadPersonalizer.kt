@@ -8,6 +8,8 @@ class PairingPayloadPersonalizer {
         val payload = JSONObject(payloadJson)
         require(payload.getString("type") == "sharesync_pairing")
         require(payload.getString("platform") == "android")
-        return payload.put("pairingToken", pairingToken).toString()
+        payload.put("pairingToken", pairingToken)
+        payload.remove("registrationToken")
+        return payload.toString()
     }
 }

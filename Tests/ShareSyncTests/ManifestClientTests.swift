@@ -3,6 +3,41 @@ import XCTest
 @testable import ShareSync
 
 final class ManifestClientTests: XCTestCase {
+    func testRegisterDeviceUsesShortLivedTokenAndReturnsDeviceSecret() async throws {
+        let response = Data(
+            #"{"deviceId":"ios-device-001","pairingToken":"device-secret"}"#.utf8
+        )
+        let session = StubManifestFetchingSession(data: response, statusCode: 201)
+        let client = DeviceRegistrationClient(
+            session: session,
+            requestSigner: RequestSigner(
+                timestampProvider: { 1_800_000_000_000 },
+                nonceProvider: { "registration-nonce" }
+            )
+        )
+
+        let secret = try await client.register(
+            deviceId: "ios-device-001",
+            deviceName: "Mingyao iPhone",
+            platform: "ios",
+            registrationToken: "registration-token",
+            host: "192.168.1.10",
+            port: 48291
+        )
+
+        XCTAssertEqual(secret, "device-secret")
+        let request = try XCTUnwrap(session.requests.first)
+        XCTAssertEqual(request.url?.absoluteString, "http://192.168.1.10:48291/v1/pairing/register")
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Device-Id"), "ios-device-001")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Session-Id"), "ios-pairing-registration")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Nonce"), "registration-nonce")
+        let body = try XCTUnwrap(request.httpBody)
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: String])
+        XCTAssertEqual(object["deviceName"], "Mingyao iPhone")
+        XCTAssertNotNil(request.value(forHTTPHeaderField: "X-Signature"))
+    }
+
     func testFetchManifestSendsPairingTokenHeader() async throws {
         let session = StubManifestFetchingSession(data: try fixtureData("sample-manifest", extension: "json"))
         let client = ManifestClient(session: session)

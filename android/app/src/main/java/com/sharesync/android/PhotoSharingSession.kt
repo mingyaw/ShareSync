@@ -3,6 +3,7 @@ package com.sharesync.android
 import android.content.Context
 import com.sharesync.android.discovery.LocalPeerDiscoveryAdvertiser
 import com.sharesync.android.pairing.PairingPayloadFactory
+import com.sharesync.android.pairing.PairingRegistrationWindow
 import com.sharesync.android.pairing.PairingTransportSecurityFactory
 import com.sharesync.android.security.AndroidKeyStoreLocalCertificateProvider
 import com.sharesync.android.security.DeviceIdentity
@@ -22,6 +23,7 @@ import com.sharesync.android.transfer.server.LocalRequestActivityTracker
 import com.sharesync.android.transfer.server.LocalSyncRouter
 import com.sharesync.android.transfer.server.LocalSyncServer
 import java.net.BindException
+import java.time.Instant
 
 data class PhotoSharingSession(
     val server: LocalSyncServer,
@@ -66,6 +68,8 @@ object PhotoSharingSessionController {
             deviceIdentityStore.getOrCreate()
         }
         val pairingToken = SharedPreferencesPairingSecretStore(context).getOrCreate()
+        val pairingCreatedAt = Instant.now()
+        val registrationWindow = PairingRegistrationWindow.create(pairingCreatedAt)
         val transportConfiguration = PhotoSharingTransportConfigurationFactory.create(
             enableQrPinnedHttps = PhotoSharingTransportFlags.enableQrPinnedHttps,
         )
@@ -74,6 +78,7 @@ object PhotoSharingSessionController {
             deviceId = identity.deviceId,
             appVersion = appVersion,
             pairingToken = pairingToken,
+            pairingRegistrationWindow = registrationWindow,
         )
         val server = startLocalServer(
             serverBinder = transportConfiguration.serverBinder,
@@ -94,6 +99,8 @@ object PhotoSharingSessionController {
                 identity = identity,
                 port = server.port,
                 pairingToken = pairingToken,
+                registrationWindow = registrationWindow,
+                pairingCreatedAt = pairingCreatedAt,
                 transportSecurityFactory = transportConfiguration.transportSecurityFactory,
             ),
             transportSecurityMode = transportConfiguration.mode,
@@ -152,6 +159,8 @@ object PhotoSharingSessionController {
         identity: DeviceIdentity,
         port: Int,
         pairingToken: String,
+        registrationWindow: PairingRegistrationWindow,
+        pairingCreatedAt: Instant,
         transportSecurityFactory: PairingTransportSecurityFactory?,
     ): String? {
         val ip = LocalNetworkAddresses.firstIpv4Address() ?: return null
@@ -162,8 +171,9 @@ object PhotoSharingSessionController {
             localIpProvider = { ip },
             portProvider = { port },
             pairingTokenProvider = { pairingToken },
+            registrationTokenProvider = { registrationWindow.token },
             transportSecurityProvider = { transportSecurityFactory?.currentTransportSecurity() },
-        ).createPayload()
+        ).createPayload(now = pairingCreatedAt)
         return ManifestJsonEncoder().encode(payload)
     }
 

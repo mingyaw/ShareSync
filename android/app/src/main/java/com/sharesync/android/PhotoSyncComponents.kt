@@ -3,6 +3,7 @@ package com.sharesync.android
 import android.content.Context
 import com.sharesync.android.scanner.media.MediaStoreMediaScanner
 import com.sharesync.android.scanner.media.MediaStreamProvider
+import com.sharesync.android.pairing.PairingRegistrationWindow
 import com.sharesync.android.security.SharedPreferencesDeviceCredentialStore
 import com.sharesync.android.sync.FileSyncEventStore
 import com.sharesync.android.sync.FileSyncResultStore
@@ -34,6 +35,7 @@ class PhotoSyncComponents private constructor(
             deviceId: String,
             appVersion: String,
             pairingToken: String,
+            pairingRegistrationWindow: PairingRegistrationWindow,
         ): PhotoSyncComponents {
             val contentResolver = context.applicationContext.contentResolver
             val mediaScanner = MediaStoreMediaScanner(
@@ -88,6 +90,7 @@ class PhotoSyncComponents private constructor(
                     syncEventStore = syncEventStore,
                     gatewayOwnershipStore = gatewayOwnershipStore,
                     deviceCredentialStore = deviceCredentialStore,
+                    pairingRegistrationWindow = pairingRegistrationWindow,
                     requestActivityTracker = requestActivityTracker,
                 ),
             )

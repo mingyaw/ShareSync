@@ -9,6 +9,8 @@ SS-{DOMAIN}-{CODE}
 | Code | Meaning | User-facing direction |
 |---|---|---|
 | SS-PAIR-001 | QR code expired | Regenerate the pairing code |
+| SS-PAIR-401 | Pairing registration is expired or unauthorized | Scan the current Android pairing code |
+| SS-PAIR-503 | Pairing credential store unavailable | Restart photo sharing and retry |
 | SS-AUTH-001 | Invalid signature | Re-pair the trusted device |
 | SS-REQ-001 | Invalid request | Refresh pairing and retry |
 | SS-REQ-416 | Requested byte range is not available | Refresh the manifest and retry |

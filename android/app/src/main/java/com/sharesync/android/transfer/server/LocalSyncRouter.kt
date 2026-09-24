@@ -1,5 +1,6 @@
 package com.sharesync.android.transfer.server
 
+import com.sharesync.android.pairing.PairingRegistrationWindow
 import com.sharesync.android.security.DeviceCredentialStore
 import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.sync.MediaAsset
@@ -12,6 +13,7 @@ import com.sharesync.android.sync.SyncResult
 import com.sharesync.android.sync.SyncResultJsonCodec
 import com.sharesync.android.sync.SyncResultStore
 import org.json.JSONException
+import org.json.JSONObject
 
 class LocalSyncRouter(
     private val deviceId: String,
@@ -23,6 +25,7 @@ class LocalSyncRouter(
     private val syncEventStore: SyncEventStore? = null,
     private val gatewayOwnershipStore: GatewayOwnershipStore? = null,
     private val deviceCredentialStore: DeviceCredentialStore? = null,
+    private val pairingRegistrationWindow: PairingRegistrationWindow? = null,
     private val manifestJsonEncoder: ManifestJsonEncoder = ManifestJsonEncoder(),
     private val syncResultJsonCodec: SyncResultJsonCodec = SyncResultJsonCodec(),
     private val requestActivityTracker: LocalRequestActivityTracker? = null,
@@ -34,6 +37,10 @@ class LocalSyncRouter(
     ),
     private val authorizationPolicy: AuthorizationPolicy = AuthorizationPolicy.SignedRequestsOnly,
 ) {
+    private val registrationSignatureValidator = pairingRegistrationWindow?.let { window ->
+        RequestSignatureValidator(secretProvider = { window.token })
+    }
+
     suspend fun health(): LocalApiResponse {
         val response = LocalApiResponse.json(
             body = """
@@ -156,6 +163,60 @@ class LocalSyncRouter(
         } catch (_: IllegalArgumentException) {
             val response = LocalApiResponse.jsonError(statusCode = 400, errorCode = "SS-REQ-001")
             requestActivityTracker?.record("sync-result", response.statusCode)
+            response
+        }
+    }
+
+    suspend fun registerDevice(
+        body: String,
+        headers: Map<String, String> = emptyMap(),
+        path: String = "/v1/pairing/register",
+    ): LocalApiResponse {
+        val window = pairingRegistrationWindow
+        val validator = registrationSignatureValidator
+        if (window == null || validator == null || !window.isOpen() ||
+            !validator.isAuthorized(method = "POST", path = path, body = body, headers = headers)
+        ) {
+            val response = LocalApiResponse.jsonError(statusCode = 401, errorCode = "SS-PAIR-401")
+            requestActivityTracker?.record("pairing-register", response.statusCode)
+            return response
+        }
+
+        val credentialStore = deviceCredentialStore
+        if (credentialStore == null) {
+            val response = LocalApiResponse.jsonError(statusCode = 503, errorCode = "SS-PAIR-503")
+            requestActivityTracker?.record("pairing-register", response.statusCode)
+            return response
+        }
+
+        return try {
+            val payload = JSONObject(body)
+            val requestingDeviceId = headers.valueFor(RequestSignatureValidator.DEVICE_ID_HEADER)
+            val registeredDeviceId = payload.getString("deviceId").also { require(it.isNotBlank()) }
+            require(requestingDeviceId == registeredDeviceId)
+            val displayName = payload.getString("deviceName").also { require(it.isNotBlank()) }
+            val platform = payload.getString("platform")
+            require(platform == "ios" || platform == "macos")
+
+            val rotation = credentialStore.beginRotation(registeredDeviceId)
+            credentialStore.commit(rotation)
+            gatewayOwnershipStore?.observe(registeredDeviceId, displayName)
+            val response = LocalApiResponse.json(
+                statusCode = 201,
+                body = JSONObject()
+                    .put("deviceId", registeredDeviceId)
+                    .put("pairingToken", rotation.secret)
+                    .toString(),
+            )
+            requestActivityTracker?.record("pairing-register", response.statusCode)
+            response
+        } catch (_: JSONException) {
+            val response = LocalApiResponse.jsonError(statusCode = 400, errorCode = "SS-REQ-001")
+            requestActivityTracker?.record("pairing-register", response.statusCode)
+            response
+        } catch (_: IllegalArgumentException) {
+            val response = LocalApiResponse.jsonError(statusCode = 400, errorCode = "SS-REQ-001")
+            requestActivityTracker?.record("pairing-register", response.statusCode)
             response
         }
     }

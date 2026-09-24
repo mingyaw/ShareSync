@@ -132,6 +132,7 @@
 "ios.vm.paste_pairing_payload" = "請貼上 Android 配對資料。";
 "ios.vm.pairing_expired" = "配對資料已過期，請在 Android 重新產生。";
 "ios.vm.pairing_invalid" = "配對資料無效。";
+"ios.vm.pairing_registration_failed" = "無法向 Android 註冊這支 iPhone，請掃描目前的配對碼後再試一次。";
 "ios.vm.fetch_manifest_before_download" = "同步前請先檢查最新 Android 照片。";
 "ios.vm.transfer_stopped" = "傳輸已暫停。已完成照片會保留紀錄，點選繼續同步照片即可接續剩餘照片。";
 "ios.vm.transfer_paused_background" = "ShareSync 離開前景，傳輸已暫停。已完成照片會保留紀錄，回到 App 後點選繼續同步照片即可接續。";

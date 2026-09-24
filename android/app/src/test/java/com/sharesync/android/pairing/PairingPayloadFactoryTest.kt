@@ -44,6 +44,22 @@ class PairingPayloadFactoryTest {
         assertTrue(!json.contains("\"transportSecurity\""))
     }
 
+    @Test
+    fun createPayloadIncludesShortLivedRegistrationToken() {
+        val payload = PairingPayloadFactory(
+            deviceIdProvider = { "android-demo-device" },
+            deviceNameProvider = { "Pixel Demo" },
+            publicKeyProvider = { "demo-public-key" },
+            localIpProvider = { "192.168.1.20" },
+            portProvider = { 48291 },
+            pairingTokenProvider = { "legacy-token" },
+            registrationTokenProvider = { "registration-token" },
+        ).createPayload(now = Instant.parse("2026-09-08T00:00:00Z"))
+
+        assertEquals("registration-token", payload.registrationToken)
+        assertTrue(ManifestJsonEncoder().encode(payload).contains("\"registrationToken\":\"registration-token\""))
+    }
+
     private fun pairingPayloadFactory(
         transportSecurity: PairingTransportSecurity? = null,
     ): PairingPayloadFactory {

@@ -39,6 +39,20 @@ final class PairingPayloadParserTests: XCTestCase {
         XCTAssertEqual(parsed.deviceId, "android-demo-device")
     }
 
+    func testParsePayloadWithRegistrationToken() throws {
+        var payload = try JSONSerialization.jsonObject(
+            with: try fixtureData("sample-pairing-payload", extension: "json")
+        ) as! [String: Any]
+        payload["registrationToken"] = "short-lived-registration-token"
+
+        let parsed = try PairingPayloadParser().parse(
+            JSONSerialization.data(withJSONObject: payload),
+            now: ISO8601DateFormatter().date(from: "2026-08-19T06:00:00Z")!
+        )
+
+        XCTAssertEqual(parsed.registrationToken, "short-lived-registration-token")
+    }
+
     func testRejectsExpiredPayload() throws {
         let data = try fixtureData("sample-pairing-payload", extension: "json")
 

@@ -1,6 +1,9 @@
 package com.sharesync.android.transfer.server
 
 import com.sharesync.android.SuspendBridge
+import com.sharesync.android.pairing.PairingRegistrationWindow
+import com.sharesync.android.security.DeviceCredentialStore
+import com.sharesync.android.security.InMemoryDeviceCredentialStore
 import com.sharesync.android.sync.InMemorySyncEventStore
 import com.sharesync.android.sync.InMemoryGatewayOwnershipStore
 import com.sharesync.android.sync.InMemorySyncResultStore
@@ -9,8 +12,53 @@ import com.sharesync.android.sync.MediaType
 import com.sharesync.android.sync.SyncManifest
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.time.Instant
 
 class LocalSyncRouterTest {
+    @Test
+    fun pairingRegistrationIssuesDeviceScopedSecretAndObservesGateway() {
+        val credentialStore = InMemoryDeviceCredentialStore { "ios-device-secret" }
+        val gatewayStore = InMemoryGatewayOwnershipStore()
+        val window = PairingRegistrationWindow(
+            token = "registration-token",
+            expiresAt = Instant.parse("2100-01-01T00:10:00Z"),
+            clock = { Instant.parse("2100-01-01T00:00:00Z") },
+        )
+        val body = """{"deviceId":"ios-device-001","deviceName":"Mingyao iPhone","platform":"ios"}"""
+        val timestamp = System.currentTimeMillis().toString()
+        val nonce = "registration-nonce"
+        val headers = signedHeaders(
+            deviceId = "ios-device-001",
+            nonce = nonce,
+            signature = RequestSignatureValidator.sign(
+                secret = window.token,
+                version = "2",
+                deviceId = "ios-device-001",
+                sessionId = "ios-pairing-registration",
+                method = "POST",
+                path = "/v1/pairing/register",
+                timestamp = timestamp,
+                nonce = nonce,
+                body = body,
+            ),
+            timestamp = timestamp,
+            sessionId = "ios-pairing-registration",
+        )
+
+        val response = SuspendBridge.runBlocking {
+            router(
+                gatewayOwnershipStore = gatewayStore,
+                deviceCredentialStore = credentialStore,
+                pairingRegistrationWindow = window,
+            ).registerDevice(body = body, headers = headers)
+        }
+
+        assertEquals(201, response.statusCode)
+        assertEquals("ios-device-secret", org.json.JSONObject(response.body).getString("pairingToken"))
+        assertEquals(listOf("ios-device-secret"), credentialStore.authorizationSecrets("ios-device-001"))
+        assertEquals("Mingyao iPhone", gatewayStore.devices().single().displayName)
+    }
+
     @Test
     fun manifestRejectsMissingPairingToken() {
         val response = SuspendBridge.runBlocking {
@@ -661,6 +709,8 @@ class LocalSyncRouterTest {
         syncResultStore: InMemorySyncResultStore = InMemorySyncResultStore(),
         syncEventStore: InMemorySyncEventStore? = null,
         gatewayOwnershipStore: InMemoryGatewayOwnershipStore? = null,
+        deviceCredentialStore: DeviceCredentialStore? = null,
+        pairingRegistrationWindow: PairingRegistrationWindow? = null,
         manifestProvider: ManifestProvider = object : ManifestProvider {
             override suspend fun currentManifest(
                 sinceCursor: String?,
@@ -684,6 +734,8 @@ class LocalSyncRouterTest {
             syncResultStore = syncResultStore,
             syncEventStore = syncEventStore,
             gatewayOwnershipStore = gatewayOwnershipStore,
+            deviceCredentialStore = deviceCredentialStore,
+            pairingRegistrationWindow = pairingRegistrationWindow,
             requestActivityTracker = requestActivityTracker,
             signatureValidator = signatureValidator,
             authorizationPolicy = authorizationPolicy,
@@ -702,12 +754,14 @@ class LocalSyncRouterTest {
         nonce: String = "nonce-001",
         deviceId: String = "ios-device-001",
         signature: String,
+        timestamp: String = "1800000000000",
+        sessionId: String = "ios-photo-mvp",
     ): Map<String, String> {
         return mapOf(
             RequestSignatureValidator.VERSION_HEADER to "2",
             RequestSignatureValidator.DEVICE_ID_HEADER to deviceId,
-            RequestSignatureValidator.SESSION_ID_HEADER to "ios-photo-mvp",
-            RequestSignatureValidator.TIMESTAMP_HEADER to "1800000000000",
+            RequestSignatureValidator.SESSION_ID_HEADER to sessionId,
+            RequestSignatureValidator.TIMESTAMP_HEADER to timestamp,
             RequestSignatureValidator.NONCE_HEADER to nonce,
             RequestSignatureValidator.SIGNATURE_HEADER to signature,
         )

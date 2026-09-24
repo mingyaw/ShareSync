@@ -9,7 +9,7 @@ Beta and Release transport: QR-pinned local HTTPS plus signed requests
 All paired requests must include:
 
 ```text
-X-ShareSync-Version: 1
+X-ShareSync-Version: 2
 X-Device-Id: <device-id>
 X-Session-Id: <session-id>
 X-Timestamp: <unix-ms>
@@ -17,7 +17,7 @@ X-Nonce: <random-string>
 X-Signature: <base64-signature>
 ```
 
-The QR pairing token is currently used as the M1 HMAC-SHA256 shared secret while the permanent key-exchange model is still being hardened. The token-only header is no longer sufficient for production local photo endpoints.
+Registered iOS and Mac devices use a device-scoped HMAC-SHA256 secret. A short-lived QR registration token may only authorize device registration and is never retained as the long-term request secret.
 
 Legacy validation mode can still enable this lightweight M0 header explicitly:
 
@@ -28,6 +28,9 @@ X-ShareSync-Pairing-Token: <pairing-token-from-qr-payload>
 Signature payload:
 
 ```text
+X-ShareSync-Version + "\n" +
+X-Device-Id + "\n" +
+X-Session-Id + "\n" +
 METHOD + "\n" +
 PATH + "\n" +
 X-Timestamp + "\n" +
@@ -63,14 +66,24 @@ iOS uses discovery only to refresh the last known network endpoint for an alread
 
 If discovery fails, iOS may fall back to the saved host and port from the pairing session. This keeps the app usable on networks where mDNS is unavailable while avoiding a new QR scan for normal IP changes.
 
-### Pairing
+### Device Registration
 
 ```http
-POST /v1/pairing/accept
+POST /v1/pairing/register
 Content-Type: application/json
 ```
 
-iOS calls this endpoint after scanning the Android QR payload.
+iOS calls this endpoint after scanning an Android QR payload containing a non-expired `registrationToken`. The request is signed with that token and the persistent iOS device ID. Android requires the body device ID to match `X-Device-Id`, then returns a device-scoped `pairingToken` with HTTP `201`.
+
+```json
+{
+  "deviceId": "ios-<uuid>",
+  "deviceName": "Mingyao iPhone",
+  "platform": "ios"
+}
+```
+
+The QR registration token is valid for ten minutes. Legacy QR `pairingToken` support remains migration-only and must not be stored by current iOS clients.
 
 ### Manifest
 
@@ -149,6 +162,7 @@ M0 implements only:
 - `GET /v1/manifest`
 - `GET /v1/media/{assetId}`
 - `POST /v1/sync/result`
+- `POST /v1/pairing/register`
 - signed local HTTP retained for Debug builds
 - signed request enforcement on protected endpoints
 - photo media only
