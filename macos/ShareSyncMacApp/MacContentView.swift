@@ -4,14 +4,16 @@ struct MacContentView: View {
     @EnvironmentObject private var model: MacPhotoSyncViewModel
     @State private var showingPairing = false
     @State private var confirmUnpair = false
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             sidebar
                 .navigationSplitViewColumnWidth(min: 230, ideal: 260, max: 300)
         } detail: {
             mainContent
         }
+        .navigationSplitViewStyle(.balanced)
         .background(MacBrand.canvas)
         .sheet(isPresented: $showingPairing) {
             PairingSheet(isPresented: $showingPairing)
