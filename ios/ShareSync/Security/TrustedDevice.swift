@@ -1,5 +1,19 @@
 import Foundation
 
+struct AppleDeviceIdentity {
+    private static let key = "sharesync.ios.target-device-id"
+
+    static func persistentID(defaults: UserDefaults = .standard) -> String {
+        if let existing = defaults.string(forKey: key), !existing.isEmpty {
+            return existing
+        }
+
+        let value = "ios-\(UUID().uuidString.lowercased())"
+        defaults.set(value, forKey: key)
+        return value
+    }
+}
+
 struct TrustedDevice: Codable, Equatable, Identifiable {
     var id: String { deviceId }
 

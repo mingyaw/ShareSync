@@ -3,6 +3,19 @@ import XCTest
 @testable import ShareSync
 
 final class PairedDeviceSessionStoreTests: XCTestCase {
+    func testAppleDeviceIdentityPersistsOneUniqueIOSIdentifier() throws {
+        let suiteName = "ShareSyncAppleDeviceIdentityTests-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let first = AppleDeviceIdentity.persistentID(defaults: defaults)
+        let second = AppleDeviceIdentity.persistentID(defaults: defaults)
+
+        XCTAssertEqual(first, second)
+        XCTAssertTrue(first.hasPrefix("ios-"))
+        XCTAssertNotEqual(first, "ios-local")
+    }
+
     func testFileStorePersistsPairedDeviceSession() throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("ShareSyncPairedDeviceSessionTests-\(UUID().uuidString)", isDirectory: true)

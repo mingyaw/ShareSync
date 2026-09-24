@@ -92,6 +92,7 @@ final class ManifestFetchViewModel: ObservableObject {
     private let pairingPayloadParser: PairingPayloadParser
     private let localPeerDiscovery: LocalPeerDiscovery
     private let endpointResolver: PairedEndpointResolver
+    private let targetDeviceId: String
     private let photoTransferPlanner = M0PhotoTransferPlanner()
     private var latestManifest: SyncManifest?
     private var manifestCursor: String?
@@ -111,7 +112,8 @@ final class ManifestFetchViewModel: ObservableObject {
         syncResultClient: SyncResultClient = SyncResultClient(),
         pairedDeviceSessionStore: PairedDeviceSessionStore = FilePairedDeviceSessionStore(),
         localPeerDiscovery: LocalPeerDiscovery? = nil,
-        endpointResolver: PairedEndpointResolver = PairedEndpointResolver()
+        endpointResolver: PairedEndpointResolver = PairedEndpointResolver(),
+        targetDeviceId: String = AppleDeviceIdentity.persistentID()
     ) {
         self.client = client
         self.healthClient = healthClient
@@ -127,6 +129,7 @@ final class ManifestFetchViewModel: ObservableObject {
         self.pairedDeviceSessionStore = pairedDeviceSessionStore
         self.localPeerDiscovery = localPeerDiscovery ?? BonjourLocalPeerDiscovery()
         self.endpointResolver = endpointResolver
+        self.targetDeviceId = targetDeviceId
         self.photoLibraryPermissionStatus = photoLibraryPermissionChecker.photoLibraryPermissionStatus()
         restorePairedDeviceSession()
         restoreLatestSyncResult()
@@ -736,7 +739,7 @@ final class ManifestFetchViewModel: ObservableObject {
             status: status,
             recordedAt: Date(),
             sourceDeviceId: manifest?.sourceDeviceId,
-            targetDeviceId: "ios-local",
+            targetDeviceId: targetDeviceId,
             syncBatchId: syncBatchId ?? manifest.map { "m0-\($0.cursor)" },
             photoCount: manifest?.media.count ?? 0,
             syncedCount: syncedCount,
@@ -884,7 +887,7 @@ final class ManifestFetchViewModel: ObservableObject {
     ) async -> (resultSummary: SyncResultSummary, returnSummary: SyncResultReturnSummary) {
         let result = SyncResultBuilder().buildMediaResult(
             syncBatchId: "m0-\(manifest.cursor)",
-            targetDeviceId: "ios-local",
+            targetDeviceId: targetDeviceId,
             records: records(for: manifest)
         )
         try? syncResultStore.save(result)
@@ -953,7 +956,7 @@ final class ManifestFetchViewModel: ObservableObject {
         }
 
         return RequestSigningContext(
-            deviceId: "ios-local",
+            deviceId: targetDeviceId,
             sessionId: "ios-photo-mvp",
             secret: pairingToken
         )
