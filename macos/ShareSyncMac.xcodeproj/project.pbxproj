@@ -49,6 +49,7 @@
 		B1000000000000000000000F /* MessageForwardingAudit.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001B /* MessageForwardingAudit.swift */; };
 		B10000000000000000000010 /* MessageAttributedBodyDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001C /* MessageAttributedBodyDecoder.swift */; };
 		B10000000000000000000011 /* MessageConnectorEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001D /* MessageConnectorEnvelope.swift */; };
+		B10000000000000000000012 /* MessagePollingPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001E /* MessagePollingPlanner.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -101,6 +102,7 @@
 		B2000000000000000000001B /* MessageForwardingAudit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageForwardingAudit.swift; sourceTree = "<group>"; };
 		B2000000000000000000001C /* MessageAttributedBodyDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageAttributedBodyDecoder.swift; sourceTree = "<group>"; };
 		B2000000000000000000001D /* MessageConnectorEnvelope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageConnectorEnvelope.swift; sourceTree = "<group>"; };
+		B2000000000000000000001E /* MessagePollingPlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagePollingPlanner.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -210,6 +212,7 @@
 				B2000000000000000000001B /* MessageForwardingAudit.swift */,
 				B2000000000000000000001C /* MessageAttributedBodyDecoder.swift */,
 				B2000000000000000000001D /* MessageConnectorEnvelope.swift */,
+				B2000000000000000000001E /* MessagePollingPlanner.swift */,
 			);
 			path = MessageBridgeCore;
 			sourceTree = "<group>";
@@ -360,6 +363,7 @@
 				B1000000000000000000000F /* MessageForwardingAudit.swift in Sources */,
 				B10000000000000000000010 /* MessageAttributedBodyDecoder.swift in Sources */,
 				B10000000000000000000011 /* MessageConnectorEnvelope.swift in Sources */,
+				B10000000000000000000012 /* MessagePollingPlanner.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

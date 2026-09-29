@@ -131,6 +131,10 @@ interruption without requiring a new pairing.
 - Validation and preview state have separate destructive reset actions. Preview
   reset deletes its cursor, delivery ledger, audit counts, and in-memory sender;
   access loss also closes both workflows until permission is restored.
+- A testable polling planner now distinguishes idle intervals, immediate
+  continuation for full batches, bounded exponential failure backoff, explicit
+  rate-limit delays, and immediate wake/network recovery without touching the
+  message cursor.
 - The feasibility build contains no external forwarding connector or networking code.
 
 ### Remaining
