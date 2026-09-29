@@ -52,6 +52,8 @@
 		B10000000000000000000012 /* MessagePollingPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001E /* MessagePollingPlanner.swift */; };
 		B10000000000000000000013 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000A /* PrivacyInfo.xcprivacy */; };
 		B10000000000000000000014 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000009 /* InfoPlist.strings */; };
+		B10000000000000000000015 /* MessageConnectorCredentialVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001F /* MessageConnectorCredentialVault.swift */; };
+		B10000000000000000000016 /* KeychainMessageConnectorCredentialVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000B /* KeychainMessageConnectorCredentialVault.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -93,6 +95,7 @@
 		B20000000000000000000006 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		B20000000000000000000007 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		B2000000000000000000000A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		B2000000000000000000000B /* KeychainMessageConnectorCredentialVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainMessageConnectorCredentialVault.swift; sourceTree = "<group>"; };
 		B20000000000000000000010 /* MessageBridgeError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBridgeError.swift; sourceTree = "<group>"; };
 		B20000000000000000000011 /* MessageCursorStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCursorStore.swift; sourceTree = "<group>"; };
 		B20000000000000000000012 /* MessageDatabaseAccessProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDatabaseAccessProbe.swift; sourceTree = "<group>"; };
@@ -108,6 +111,7 @@
 		B2000000000000000000001C /* MessageAttributedBodyDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageAttributedBodyDecoder.swift; sourceTree = "<group>"; };
 		B2000000000000000000001D /* MessageConnectorEnvelope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageConnectorEnvelope.swift; sourceTree = "<group>"; };
 		B2000000000000000000001E /* MessagePollingPlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagePollingPlanner.swift; sourceTree = "<group>"; };
+		B2000000000000000000001F /* MessageConnectorCredentialVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageConnectorCredentialVault.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -198,6 +202,7 @@
 				B20000000000000000000008 /* Localizable.strings */,
 				B20000000000000000000009 /* InfoPlist.strings */,
 				B2000000000000000000000A /* PrivacyInfo.xcprivacy */,
+				B2000000000000000000000B /* KeychainMessageConnectorCredentialVault.swift */,
 			);
 			path = ShareSyncMessagesBridge;
 			sourceTree = "<group>";
@@ -220,6 +225,7 @@
 				B2000000000000000000001C /* MessageAttributedBodyDecoder.swift */,
 				B2000000000000000000001D /* MessageConnectorEnvelope.swift */,
 				B2000000000000000000001E /* MessagePollingPlanner.swift */,
+				B2000000000000000000001F /* MessageConnectorCredentialVault.swift */,
 			);
 			path = MessageBridgeCore;
 			sourceTree = "<group>";
@@ -373,6 +379,8 @@
 				B10000000000000000000010 /* MessageAttributedBodyDecoder.swift in Sources */,
 				B10000000000000000000011 /* MessageConnectorEnvelope.swift in Sources */,
 				B10000000000000000000012 /* MessagePollingPlanner.swift in Sources */,
+				B10000000000000000000015 /* MessageConnectorCredentialVault.swift in Sources */,
+				B10000000000000000000016 /* KeychainMessageConnectorCredentialVault.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

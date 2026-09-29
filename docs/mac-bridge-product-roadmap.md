@@ -138,6 +138,9 @@ interruption without requiring a new pairing.
 - The helper now includes a no-collection privacy manifest, localized system
   permission copy, and an explicit separate-product signing, notarization,
   permission, and future-connector release boundary.
+- Connector credentials now have an isolated vault contract and a production
+  macOS Keychain implementation using device-only accessibility. No credential
+  is stored in cursors, delivery state, audit history, or app preferences.
 - The feasibility build contains no external forwarding connector or networking code.
 
 ### Remaining

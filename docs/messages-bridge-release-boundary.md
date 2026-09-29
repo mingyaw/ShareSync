@@ -42,7 +42,8 @@ Do not distribute an ad-hoc-signed feasibility build as a production artifact.
 
 Adding an external connector is a separate security review. Before that release:
 
-- credentials must be stored in Keychain;
+- credentials must be stored through `MessageConnectorCredentialVault`; the
+  production helper implementation uses a device-only macOS Keychain item;
 - the connector must accept only `MessageConnectorEnvelope`;
 - endpoint and redirect behavior must be allowlisted;
 - TLS validation must use system trust;
