@@ -32,7 +32,7 @@
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>ShareSync connects directly to your paired Android phone on the local network.</string>
 	<key>NSAppDataUsageDescription</key>
-	<string>ShareSync checks local Messages compatibility and, only after you create a baseline, inspects new message fields for local validation or preview. Message content is not logged or sent by this build.</string>
+	<string>ShareSync reads only messages newer than your explicit baseline. It can forward messages from allowed senders directly to a Telegram Bot you configure; content is not written to ShareSync logs or servers.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>ShareSync imports Android photos into your Mac photo library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

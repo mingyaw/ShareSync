@@ -17,6 +17,19 @@ final class MessageBridgePermissionViewModel: ObservableObject {
     @Published private(set) var validationState: ValidationState = .inactive
     @Published var previewSenderIdentifier = ""
     @Published private(set) var previewState: PreviewState = .inactive
+    @Published var telegramTokenDraft = ""
+    @Published var telegramChatID = ""
+    @Published var telegramAllowedSender = ""
+    @Published private(set) var telegramState: TelegramState = .unconfigured
+    @Published private(set) var telegramResult: MessageForwardingRunResult?
+    @Published private(set) var isTelegramAutoForwarding = false
+
+    private let telegramSettingsStore = TelegramBotSettingsStore()
+    private let telegramRateLimiter = MessageDeliveryRateLimiter(
+        maximumDeliveries: 20,
+        interval: 60
+    )
+    private var telegramPollingTask: Task<Void, Never>?
 
     enum ValidationState: Equatable {
         case inactive
@@ -36,6 +49,27 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         case running
         case result(MessageForwardingRunResult)
         case failed
+    }
+
+    enum TelegramState: Equatable {
+        case unconfigured
+        case saved
+        case testing
+        case ready
+        case baselineRequired
+        case forwarding
+        case forwarded
+        case invalidConfiguration
+        case failed
+    }
+
+    init() {
+        let settings = telegramSettingsStore.loadSettings()
+        telegramChatID = settings.chatID
+        telegramAllowedSender = settings.allowedSenderIdentifier
+        if (try? telegramSettingsStore.loadToken()) != nil, !settings.chatID.isEmpty {
+            telegramState = .saved
+        }
     }
 
     var titleKey: LocalizedStringKey {
@@ -203,6 +237,139 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         }
     }
 
+    func saveAndTestTelegram() {
+        guard telegramState != .testing else { return }
+        do {
+            try persistTelegramConfiguration()
+            let configuration = try telegramConfiguration()
+            telegramState = .testing
+            Task {
+                do {
+                    try await Task.detached(priority: .userInitiated) {
+                        try TelegramBotConnector(configuration: configuration).verifyDelivery()
+                    }.value
+                    telegramState = .ready
+                } catch {
+                    telegramState = .failed
+                }
+            }
+        } catch {
+            telegramState = .invalidConfiguration
+        }
+    }
+
+    func establishTelegramBaseline() {
+        guard case .available = state else { return }
+        do {
+            try persistTelegramConfiguration()
+            _ = try ControlledMessageValidationSession(
+                reader: messageReader(),
+                cursorStore: telegramCursorStore()
+            ).activate()
+            telegramResult = nil
+            telegramState = .ready
+        } catch {
+            telegramState = .invalidConfiguration
+        }
+    }
+
+    func forwardTelegramNow() {
+        guard case .available = state, telegramState != .forwarding else { return }
+        do {
+            try persistTelegramConfiguration()
+            let configuration = try telegramConfiguration()
+            let sender = telegramAllowedSender.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !sender.isEmpty else {
+                telegramState = .invalidConfiguration
+                return
+            }
+            let reader = messageReader()
+            let cursorStore = telegramCursorStore()
+            let deliveryLedger = telegramDeliveryLedger()
+            let auditStore = telegramAuditStore()
+            let rateLimiter = telegramRateLimiter
+            telegramState = .forwarding
+            Task {
+                do {
+                    let result = try await Task.detached(priority: .utility) {
+                        let pipeline = MessageForwardingPipeline(
+                            reader: reader,
+                            cursorStore: cursorStore,
+                            policy: MessageForwardingPolicy(allowedSenderIdentifiers: [sender]),
+                            connector: TelegramBotConnector(configuration: configuration),
+                            deliveryLedger: deliveryLedger,
+                            rateLimiter: rateLimiter,
+                            envelopeBuilder: MessageConnectorEnvelopeBuilder(
+                                senderLabels: [sender: sender]
+                            )
+                        )
+                        return try AuditedMessageForwardingRunner(
+                            pipeline: pipeline,
+                            auditStore: auditStore
+                        ).run(limit: 50)
+                    }.value
+                    telegramResult = result
+                    telegramState = .forwarded
+                } catch MessageValidationSessionError.baselineRequired {
+                    telegramState = .baselineRequired
+                    setTelegramAutoForwarding(false)
+                } catch {
+                    telegramState = .failed
+                }
+            }
+        } catch {
+            telegramState = .invalidConfiguration
+        }
+    }
+
+    func setTelegramAutoForwarding(_ enabled: Bool) {
+        guard enabled != isTelegramAutoForwarding else { return }
+        telegramPollingTask?.cancel()
+        telegramPollingTask = nil
+        guard enabled else {
+            isTelegramAutoForwarding = false
+            return
+        }
+        do {
+            try persistTelegramConfiguration()
+            guard !telegramAllowedSender.isEmpty else {
+                telegramState = .invalidConfiguration
+                return
+            }
+            guard try telegramCursorStore().load() != nil else {
+                telegramState = .baselineRequired
+                return
+            }
+        } catch {
+            telegramState = .invalidConfiguration
+            return
+        }
+        isTelegramAutoForwarding = true
+        telegramPollingTask = Task { [weak self] in
+            while !Task.isCancelled {
+                self?.forwardTelegramNow()
+                try? await Task.sleep(for: .seconds(10))
+            }
+        }
+    }
+
+    func resetTelegram() {
+        setTelegramAutoForwarding(false)
+        do {
+            try telegramSettingsStore.clear()
+            try telegramCursorStore().clear()
+            try telegramDeliveryLedger().clear()
+            try telegramAuditStore().clear()
+            telegramTokenDraft = ""
+            telegramChatID = ""
+            telegramAllowedSender = ""
+            telegramResult = nil
+            telegramState = .unconfigured
+        } catch {
+            telegramState = .failed
+        }
+    }
+
     func openPrivacySettings() {
         guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles") else {
             return
@@ -264,6 +431,47 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         )
     }
 
+    private func persistTelegramConfiguration() throws {
+        let chatID = telegramChatID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let sender = telegramAllowedSender.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !telegramTokenDraft.isEmpty {
+            _ = try TelegramBotConfiguration(token: telegramTokenDraft, chatID: chatID)
+            try telegramSettingsStore.saveToken(telegramTokenDraft)
+            telegramTokenDraft = ""
+        }
+        _ = try telegramConfiguration(chatID: chatID)
+        telegramSettingsStore.saveSettings(
+            TelegramBotSettings(chatID: chatID, allowedSenderIdentifier: sender)
+        )
+        telegramChatID = chatID
+        telegramAllowedSender = sender
+    }
+
+    private func telegramConfiguration(chatID: String? = nil) throws -> TelegramBotConfiguration {
+        guard let token = try telegramSettingsStore.loadToken() else {
+            throw TelegramBotConnectorError.invalidToken
+        }
+        return try TelegramBotConfiguration(token: token, chatID: chatID ?? telegramChatID)
+    }
+
+    private func telegramCursorStore() -> FileMessageCursorStore {
+        FileMessageCursorStore(
+            fileURL: bridgeSupportDirectory().appendingPathComponent("telegram-cursor.json")
+        )
+    }
+
+    private func telegramDeliveryLedger() -> FileMessageDeliveryLedgerStore {
+        FileMessageDeliveryLedgerStore(
+            fileURL: bridgeSupportDirectory().appendingPathComponent("telegram-delivery-ledger.json")
+        )
+    }
+
+    private func telegramAuditStore() -> FileMessageForwardingAuditStore {
+        FileMessageForwardingAuditStore(
+            fileURL: bridgeSupportDirectory().appendingPathComponent("telegram-audit.json")
+        )
+    }
+
     private func bridgeSupportDirectory() -> URL {
         let applicationSupport = try? FileManager.default.url(
             for: .applicationSupportDirectory,
@@ -284,6 +492,7 @@ struct MessageBridgePermissionView: View {
     private enum ResetTarget: String, Identifiable {
         case validation
         case preview
+        case telegram
 
         var id: String { rawValue }
     }
@@ -324,7 +533,7 @@ struct MessageBridgePermissionView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Label("bridge.privacy.schema_only", systemImage: "checkmark.circle")
                 Label("bridge.privacy.no_content", systemImage: "checkmark.circle")
-                Label("bridge.privacy.no_network", systemImage: "checkmark.circle")
+                Label("bridge.privacy.explicit_network", systemImage: "checkmark.circle")
             }
             .font(.callout)
             .foregroundStyle(.secondary)
@@ -334,6 +543,8 @@ struct MessageBridgePermissionView: View {
                 validationSection
                 Divider()
                 previewSection
+                Divider()
+                telegramSection
             }
 
             HStack {
@@ -366,6 +577,7 @@ struct MessageBridgePermissionView: View {
                 switch resetTarget {
                 case .validation?: model.resetValidation()
                 case .preview?: model.resetPreview()
+                case .telegram?: model.resetTelegram()
                 case nil: break
                 }
             }
@@ -494,10 +706,98 @@ struct MessageBridgePermissionView: View {
         }
     }
 
+    @ViewBuilder
+    private var telegramSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Label("bridge.telegram.title", systemImage: "paperplane.fill")
+                    .font(.headline)
+                Spacer()
+                Text("bridge.telegram.keychain")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Text(telegramDetail)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            SecureField("bridge.telegram.token.placeholder", text: $model.telegramTokenDraft)
+                .textFieldStyle(.roundedBorder)
+            TextField("bridge.telegram.chat_id.placeholder", text: $model.telegramChatID)
+                .textFieldStyle(.roundedBorder)
+            TextField("bridge.telegram.sender.placeholder", text: $model.telegramAllowedSender)
+                .textFieldStyle(.roundedBorder)
+
+            if let result = model.telegramResult {
+                HStack(spacing: 18) {
+                    validationMetric("bridge.preview.metric.inspected", value: result.inspectedCount)
+                    validationMetric("bridge.telegram.metric.sent", value: result.deliveredCount)
+                    validationMetric("bridge.preview.metric.blocked", value: result.deniedCounts.values.reduce(0, +))
+                }
+            }
+
+            HStack {
+                Button("bridge.telegram.action.test") {
+                    model.saveAndTestTelegram()
+                }
+                .disabled(model.telegramState == .testing || model.telegramState == .forwarding)
+
+                if model.telegramState == .baselineRequired || model.telegramState == .saved || model.telegramState == .ready {
+                    Button("bridge.telegram.action.baseline") {
+                        model.establishTelegramBaseline()
+                    }
+                }
+
+                Button("bridge.telegram.action.forward") {
+                    model.forwardTelegramNow()
+                }
+                .disabled(model.telegramState == .forwarding)
+
+                Spacer()
+
+                Toggle(
+                    "bridge.telegram.auto",
+                    isOn: Binding(
+                        get: { model.isTelegramAutoForwarding },
+                        set: { model.setTelegramAutoForwarding($0) }
+                    )
+                )
+                .toggleStyle(.switch)
+            }
+
+            HStack {
+                Text("bridge.telegram.auto.detail")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button("bridge.action.reset", role: .destructive) {
+                    resetTarget = .telegram
+                }
+            }
+        }
+    }
+
+    private var telegramDetail: LocalizedStringKey {
+        switch model.telegramState {
+        case .unconfigured: return "bridge.telegram.unconfigured"
+        case .saved: return "bridge.telegram.saved"
+        case .testing: return "bridge.telegram.testing"
+        case .ready: return "bridge.telegram.ready"
+        case .baselineRequired: return "bridge.telegram.baseline_required"
+        case .forwarding: return "bridge.telegram.forwarding"
+        case .forwarded: return "bridge.telegram.forwarded"
+        case .invalidConfiguration: return "bridge.telegram.invalid"
+        case .failed: return "bridge.telegram.failed"
+        }
+    }
+
     private var resetDialogTitle: LocalizedStringKey {
         switch resetTarget {
         case .validation: return "bridge.reset.validation.title"
-        case .preview, .none: return "bridge.reset.preview.title"
+        case .preview: return "bridge.reset.preview.title"
+        case .telegram: return "bridge.reset.telegram.title"
+        case .none: return "bridge.reset.preview.title"
         }
     }
 

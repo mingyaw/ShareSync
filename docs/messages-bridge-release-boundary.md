@@ -45,15 +45,14 @@ Do not distribute an ad-hoc-signed feasibility build as a production artifact.
 
 ## Connector Gate
 
-Adding an external connector is a separate security review. Before that release:
+The Telegram Bot connector is the first reviewed external destination. Its
+release and any later connector must satisfy all of the following:
 
 - credentials must be stored through `MessageConnectorCredentialVault`; the
   production Mac implementation uses a device-only macOS Keychain item;
 - the connector must accept only `MessageConnectorEnvelope`;
-- endpoint and redirect behavior must be allowlisted;
-- `MessageConnectorEndpointPolicy` must validate the initial endpoint and every
-  redirect using exact HTTPS hosts and explicit ports; URL credentials and
-  fragments remain forbidden;
+- endpoints must use the exact Telegram HTTPS host; the current transport rejects
+  every HTTP redirect rather than forwarding message content to another URL;
 - TLS validation must use system trust;
 - the opaque delivery key must be used for idempotency where supported;
 - network failures must preserve the message cursor;

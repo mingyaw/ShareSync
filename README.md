@@ -26,7 +26,7 @@ The current codebase contains:
 - Shared protocol schemas.
 - An Android Studio project under `android/`.
 - An Xcode iOS app project at `ios/ShareSync.xcodeproj`.
-- An Xcode macOS app project at `macos/ShareSyncMac.xcodeproj`, with Photos and Messages as first-class destinations in `ShareSyncMac`.
+- An Xcode macOS app project at `macos/ShareSyncMac.xcodeproj`, with Photos and Messages as first-class destinations in `ShareSyncMac`. Messages can forward allowlisted new iMessages to a user-configured Telegram Bot while the Mac app is running.
 - A Swift Package core at the repository root for fast iOS core tests.
 - An embedded Android local HTTP server for M0 health, manifest, and media endpoints.
 - Android QR pairing payload UI with stable local device identity and actual bound port.

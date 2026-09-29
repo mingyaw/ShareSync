@@ -5,7 +5,22 @@
 > The separate target described below remains a diagnostic harness; the shipping
 > implementation now lives in the unified Mac app with explicit permission UI.
 
-Status: Feasibility assessment only. No message access is implemented.
+Status: macOS implementation in progress. Read-only incremental access, local
+policy evaluation, and Telegram Bot forwarding are integrated in `ShareSyncMac`.
+
+## Telegram Forwarding
+
+`ShareSyncMac` uses Telegram Bot API `sendMessage` as its first production
+message destination. The user supplies a BotFather token, destination Chat ID,
+and one exact iMessage sender allowlist entry. The token is stored in the macOS
+Keychain; the Chat ID and sender setting remain in local preferences.
+
+Forwarding is opt-in and starts from an explicit baseline, so existing Messages
+history is not sent. Manual forwarding and a 10-second in-app polling mode share
+the same cursor, opaque delivery ledger, sensitive-content policy, rate limiter,
+and aggregate audit store. The connector accepts only Telegram's fixed HTTPS
+host and rejects HTTP redirects. Attachments are summarized by count and MIME
+type in this phase; attachment files are not uploaded.
 
 ## Goal
 

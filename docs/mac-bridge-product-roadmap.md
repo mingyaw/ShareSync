@@ -143,10 +143,11 @@ interruption without requiring a new pairing.
 - Connector credentials now have an isolated vault contract and a production
   macOS Keychain implementation using device-only accessibility. No credential
   is stored in cursors, delivery state, audit history, or app preferences.
-- A connector endpoint policy now rejects non-HTTPS URLs, embedded credentials,
-  fragments, lookalike hosts, unexpected ports, and redirects outside an exact
-  destination allowlist before any network connector is implemented.
-- The feasibility build contains no external forwarding connector or networking code.
+- Telegram Bot API is the first external connector. It sends JSON only to the
+  fixed `https://api.telegram.org` host, rejects redirects, stores its token in
+  Keychain, and preserves the cursor when delivery fails.
+- Telegram setup, test delivery, explicit baseline, manual forwarding, and
+  opt-in polling while the Mac app runs are available in the unified Messages UI.
 
 ### Remaining
 
@@ -154,11 +155,13 @@ interruption without requiring a new pairing.
 - Verify text, Unicode, group, reply, edit, retract, reaction, attachment
   metadata, sleep catch-up, and deduplication behavior on supported macOS
   versions.
-- Normalize new-message events without logging message bodies.
-- Add sender and conversation allowlists, sensitive-message blocking, schedules,
-  preview mode, pause, rate limits, and loop prevention.
-- Implement a local fake connector before adding one official bot or webhook API.
-- Store connector credentials in Keychain and use idempotency keys for retries.
+- Expand the current single-sender allowlist UI to multiple senders and optional
+  conversation rules, schedules, pause controls, and loop prevention.
+- Add attachment upload only after explicit media privacy and size-limit design.
+- Add launch-at-login/background-agent lifecycle and sleep/network recovery using
+  the existing polling planner.
+- Verify duplicate behavior for the narrow case where Telegram accepts a request
+  but the response is lost; Bot API `sendMessage` has no idempotency-key field.
 - Complete Developer ID signing and notarization for the unified non-sandboxed app.
 
 ### Acceptance Gate

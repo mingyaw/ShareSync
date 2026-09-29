@@ -55,6 +55,8 @@
 		B10000000000000000000015 /* MessageConnectorCredentialVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001F /* MessageConnectorCredentialVault.swift */; };
 		B10000000000000000000016 /* KeychainMessageConnectorCredentialVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000B /* KeychainMessageConnectorCredentialVault.swift */; };
 		B10000000000000000000017 /* MessageConnectorEndpointPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000020 /* MessageConnectorEndpointPolicy.swift */; };
+		B10000000000000000000018 /* TelegramBotConnector.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000021 /* TelegramBotConnector.swift */; };
+		B10000000000000000000019 /* TelegramBotSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000C /* TelegramBotSettingsStore.swift */; };
 		C10000000000000000000001 /* MessageBridgePermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* MessageBridgePermissionView.swift */; };
 		C10000000000000000000002 /* MessageBridgeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000010 /* MessageBridgeError.swift */; };
 		C10000000000000000000003 /* MessageCursorStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000011 /* MessageCursorStore.swift */; };
@@ -71,6 +73,10 @@
 		C1000000000000000000000E /* MessageAttributedBodyDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001C /* MessageAttributedBodyDecoder.swift */; };
 		C1000000000000000000000F /* MessageConnectorEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001D /* MessageConnectorEnvelope.swift */; };
 		C10000000000000000000010 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000A /* PrivacyInfo.xcprivacy */; };
+		C10000000000000000000011 /* TelegramBotConnector.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000021 /* TelegramBotConnector.swift */; };
+		C10000000000000000000012 /* TelegramBotSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000C /* TelegramBotSettingsStore.swift */; };
+		C10000000000000000000013 /* MessageConnectorCredentialVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001F /* MessageConnectorCredentialVault.swift */; };
+		C10000000000000000000014 /* KeychainMessageConnectorCredentialVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000B /* KeychainMessageConnectorCredentialVault.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -113,6 +119,7 @@
 		B20000000000000000000007 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		B2000000000000000000000A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B2000000000000000000000B /* KeychainMessageConnectorCredentialVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainMessageConnectorCredentialVault.swift; sourceTree = "<group>"; };
+		B2000000000000000000000C /* TelegramBotSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelegramBotSettingsStore.swift; sourceTree = "<group>"; };
 		B20000000000000000000010 /* MessageBridgeError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBridgeError.swift; sourceTree = "<group>"; };
 		B20000000000000000000011 /* MessageCursorStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCursorStore.swift; sourceTree = "<group>"; };
 		B20000000000000000000012 /* MessageDatabaseAccessProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDatabaseAccessProbe.swift; sourceTree = "<group>"; };
@@ -130,6 +137,7 @@
 		B2000000000000000000001E /* MessagePollingPlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagePollingPlanner.swift; sourceTree = "<group>"; };
 		B2000000000000000000001F /* MessageConnectorCredentialVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageConnectorCredentialVault.swift; sourceTree = "<group>"; };
 		B20000000000000000000020 /* MessageConnectorEndpointPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageConnectorEndpointPolicy.swift; sourceTree = "<group>"; };
+		B20000000000000000000021 /* TelegramBotConnector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelegramBotConnector.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -221,6 +229,7 @@
 				B20000000000000000000009 /* InfoPlist.strings */,
 				B2000000000000000000000A /* PrivacyInfo.xcprivacy */,
 				B2000000000000000000000B /* KeychainMessageConnectorCredentialVault.swift */,
+				B2000000000000000000000C /* TelegramBotSettingsStore.swift */,
 			);
 			path = ShareSyncMessagesBridge;
 			sourceTree = "<group>";
@@ -245,6 +254,7 @@
 				B2000000000000000000001E /* MessagePollingPlanner.swift */,
 				B2000000000000000000001F /* MessageConnectorCredentialVault.swift */,
 				B20000000000000000000020 /* MessageConnectorEndpointPolicy.swift */,
+				B20000000000000000000021 /* TelegramBotConnector.swift */,
 			);
 			path = MessageBridgeCore;
 			sourceTree = "<group>";
@@ -390,6 +400,10 @@
 				C1000000000000000000000D /* MessageForwardingAudit.swift in Sources */,
 				C1000000000000000000000E /* MessageAttributedBodyDecoder.swift in Sources */,
 				C1000000000000000000000F /* MessageConnectorEnvelope.swift in Sources */,
+				C10000000000000000000011 /* TelegramBotConnector.swift in Sources */,
+				C10000000000000000000012 /* TelegramBotSettingsStore.swift in Sources */,
+				C10000000000000000000013 /* MessageConnectorCredentialVault.swift in Sources */,
+				C10000000000000000000014 /* KeychainMessageConnectorCredentialVault.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -417,6 +431,8 @@
 				B10000000000000000000015 /* MessageConnectorCredentialVault.swift in Sources */,
 				B10000000000000000000016 /* KeychainMessageConnectorCredentialVault.swift in Sources */,
 				B10000000000000000000017 /* MessageConnectorEndpointPolicy.swift in Sources */,
+				B10000000000000000000018 /* TelegramBotConnector.swift in Sources */,
+				B10000000000000000000019 /* TelegramBotSettingsStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
