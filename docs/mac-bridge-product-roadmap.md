@@ -124,6 +124,10 @@ interruption without requiring a new pairing.
   event. Raw message GUIDs, row IDs, sender accounts, conversation identifiers,
   and associated-message IDs cannot be passed to a connector; optional sender
   labels require an explicit local alias mapping.
+- The helper UI now offers a separate-baseline forwarding preview. An exact
+  sender allowlist is kept only in the running app session; new rows are checked
+  through the real policy and delivery pipeline, while only aggregate counts
+  and the redacted audit are retained and nothing leaves the Mac.
 - The feasibility build contains no external forwarding connector or networking code.
 
 ### Remaining

@@ -15,6 +15,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
 
     @Published private(set) var state: State = .idle
     @Published private(set) var validationState: ValidationState = .inactive
+    @Published var previewSenderIdentifier = ""
+    @Published private(set) var previewState: PreviewState = .inactive
 
     enum ValidationState: Equatable {
         case inactive
@@ -23,6 +25,16 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         case checking
         case empty
         case result(MessageValidationSummary)
+        case failed
+    }
+
+    enum PreviewState: Equatable {
+        case inactive
+        case establishing
+        case ready
+        case needsSender
+        case running
+        case result(MessageForwardingRunResult)
         case failed
     }
 
@@ -83,6 +95,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         case .available(let fingerprint):
             state = .available(fingerprint)
             refreshValidationState()
+            refreshPreviewState()
         case .permissionRequired:
             state = .permissionRequired
         case .unavailable:
@@ -118,6 +131,49 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         }
     }
 
+    func establishPreviewBaseline() {
+        guard case .available = state, previewState != .establishing else { return }
+        previewState = .establishing
+        do {
+            _ = try ControlledMessageValidationSession(
+                reader: messageReader(),
+                cursorStore: previewCursorStore()
+            ).activate()
+            previewState = .ready
+        } catch {
+            previewState = .failed
+        }
+    }
+
+    func runLocalPreview() {
+        let sender = previewSenderIdentifier.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !sender.isEmpty else {
+            previewState = .needsSender
+            return
+        }
+        guard previewState != .running else { return }
+        previewState = .running
+        do {
+            let pipeline = MessageForwardingPipeline(
+                reader: messageReader(),
+                cursorStore: previewCursorStore(),
+                policy: MessageForwardingPolicy(allowedSenderIdentifiers: [sender]),
+                connector: InMemoryMessageForwardingConnector(),
+                deliveryLedger: previewDeliveryLedger(),
+                rateLimiter: MessageDeliveryRateLimiter(maximumDeliveries: 30, interval: 60)
+            )
+            let result = try AuditedMessageForwardingRunner(
+                pipeline: pipeline,
+                auditStore: previewAuditStore()
+            ).run()
+            previewState = .result(result)
+        } catch MessageValidationSessionError.baselineRequired {
+            previewState = .inactive
+        } catch {
+            previewState = .failed
+        }
+    }
+
     func openPrivacySettings() {
         guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles") else {
             return
@@ -134,15 +190,52 @@ final class MessageBridgePermissionViewModel: ObservableObject {
     }
 
     private func validationSession() -> ControlledMessageValidationSession {
-        let databaseURL = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Messages/chat.db")
         return ControlledMessageValidationSession(
-            reader: MessageEventReader(databaseURL: databaseURL),
+            reader: messageReader(),
             cursorStore: cursorStore()
         )
     }
 
+    private func messageReader() -> MessageEventReader {
+        MessageEventReader(
+            databaseURL: FileManager.default.homeDirectoryForCurrentUser
+                .appendingPathComponent("Library/Messages/chat.db")
+        )
+    }
+
     private func cursorStore() -> FileMessageCursorStore {
+        FileMessageCursorStore(
+            fileURL: bridgeSupportDirectory().appendingPathComponent("validation-cursor.json")
+        )
+    }
+
+    private func refreshPreviewState() {
+        do {
+            previewState = try previewCursorStore().load() == nil ? .inactive : .ready
+        } catch {
+            previewState = .failed
+        }
+    }
+
+    private func previewCursorStore() -> FileMessageCursorStore {
+        FileMessageCursorStore(
+            fileURL: bridgeSupportDirectory().appendingPathComponent("preview-cursor.json")
+        )
+    }
+
+    private func previewDeliveryLedger() -> FileMessageDeliveryLedgerStore {
+        FileMessageDeliveryLedgerStore(
+            fileURL: bridgeSupportDirectory().appendingPathComponent("preview-delivery-ledger.json")
+        )
+    }
+
+    private func previewAuditStore() -> FileMessageForwardingAuditStore {
+        FileMessageForwardingAuditStore(
+            fileURL: bridgeSupportDirectory().appendingPathComponent("preview-audit.json")
+        )
+    }
+
+    private func bridgeSupportDirectory() -> URL {
         let applicationSupport = try? FileManager.default.url(
             for: .applicationSupportDirectory,
             in: .userDomainMask,
@@ -151,11 +244,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         )
         let root = applicationSupport ?? FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Library/Application Support", isDirectory: true)
-        return FileMessageCursorStore(
-            fileURL: root
-                .appendingPathComponent("ShareSync/MessagesBridge", isDirectory: true)
-                .appendingPathComponent("validation-cursor.json")
-        )
+        return root.appendingPathComponent("ShareSync/MessagesBridge", isDirectory: true)
     }
 }
 
@@ -206,6 +295,8 @@ struct MessageBridgePermissionView: View {
             if case .available = model.state {
                 Divider()
                 validationSection
+                Divider()
+                previewSection
             }
 
             HStack {
@@ -284,6 +375,58 @@ struct MessageBridgePermissionView: View {
         case .empty: return "bridge.validation.empty"
         case .result: return "bridge.validation.result"
         case .failed: return "bridge.validation.failed"
+        }
+    }
+
+    @ViewBuilder
+    private var previewSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("bridge.preview.title")
+                .font(.headline)
+            Text(previewDetail)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            TextField("bridge.preview.sender.placeholder", text: $model.previewSenderIdentifier)
+                .textFieldStyle(.roundedBorder)
+                .disabled(model.previewState == .inactive || model.previewState == .establishing)
+
+            if case .result(let result) = model.previewState {
+                HStack(spacing: 18) {
+                    validationMetric("bridge.preview.metric.inspected", value: result.inspectedCount)
+                    validationMetric("bridge.preview.metric.matched", value: result.eligibleCount)
+                    validationMetric("bridge.preview.metric.blocked", value: result.deniedCounts.values.reduce(0, +))
+                }
+            }
+
+            HStack {
+                if model.previewState == .inactive || model.previewState == .failed {
+                    Button("bridge.preview.action.baseline") {
+                        model.establishPreviewBaseline()
+                    }
+                } else {
+                    Button("bridge.preview.action.run") {
+                        model.runLocalPreview()
+                    }
+                    .disabled(model.previewState == .running || model.previewState == .establishing)
+                }
+                Spacer()
+                Text("bridge.preview.session_only")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var previewDetail: LocalizedStringKey {
+        switch model.previewState {
+        case .inactive: return "bridge.preview.inactive"
+        case .establishing: return "bridge.preview.establishing"
+        case .ready: return "bridge.preview.ready"
+        case .needsSender: return "bridge.preview.needs_sender"
+        case .running: return "bridge.preview.running"
+        case .result: return "bridge.preview.result"
+        case .failed: return "bridge.preview.failed"
         }
     }
 
