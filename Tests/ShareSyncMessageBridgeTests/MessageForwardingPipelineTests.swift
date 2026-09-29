@@ -124,6 +124,7 @@ final class MessageForwardingPipelineTests: XCTestCase {
         XCTAssertEqual(result.inspectedCount, 2)
         XCTAssertEqual(result.eligibleCount, 1)
         XCTAssertEqual(result.deliveredCount, 1)
+        XCTAssertEqual(result.deniedCounts, [.outgoingMessage: 1])
         XCTAssertEqual(connector.deliveries.map(\.sourceGUID), ["accepted"])
         XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 2))
     }

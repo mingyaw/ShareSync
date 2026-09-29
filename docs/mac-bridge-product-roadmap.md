@@ -111,6 +111,9 @@ interruption without requiring a new pairing.
   skip confirmed deliveries before contacting a connector.
 - A sliding-window rate limiter stops the batch without advancing its cursor,
   allowing later retry instead of silently dropping excess messages.
+- A bounded, versioned audit history stores only batch counts, typed outcomes,
+  and aggregate denial reasons. It deliberately excludes message bodies,
+  sender identifiers, conversation identifiers, and source message IDs.
 - The feasibility build contains no external forwarding connector or networking code.
 
 ### Remaining

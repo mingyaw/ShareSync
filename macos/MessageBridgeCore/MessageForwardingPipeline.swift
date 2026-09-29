@@ -59,7 +59,7 @@ public struct MessageForwardingPolicy: Equatable, Sendable {
     }
 }
 
-public enum MessageForwardingDenialReason: Equatable, Sendable {
+public enum MessageForwardingDenialReason: String, Codable, Hashable, Sendable {
     case senderNotAllowed
     case serviceNotAllowed
     case outgoingMessage
@@ -101,6 +101,7 @@ public struct MessageForwardingRunResult: Equatable, Sendable {
     public let eligibleCount: Int
     public let deliveredCount: Int
     public let duplicateCount: Int
+    public let deniedCounts: [MessageForwardingDenialReason: Int]
     public let nextCursor: MessageCursor
 }
 
@@ -151,10 +152,17 @@ public struct MessageForwardingPipeline {
         var eligibleCount = 0
         var deliveredCount = 0
         var duplicateCount = 0
+        var deniedCounts: [MessageForwardingDenialReason: Int] = [:]
 
         for sourceEvent in batch.events {
             let event = normalizer.normalize(sourceEvent)
-            guard policy.permits(event) else { continue }
+            switch policy.evaluate(event) {
+            case .allow:
+                break
+            case .deny(let reason):
+                deniedCounts[reason, default: 0] += 1
+                continue
+            }
             eligibleCount += 1
             if try deliveryLedger.record(for: event.deliveryKey)?.state == .delivered {
                 duplicateCount += 1
@@ -183,6 +191,7 @@ public struct MessageForwardingPipeline {
             eligibleCount: eligibleCount,
             deliveredCount: deliveredCount,
             duplicateCount: duplicateCount,
+            deniedCounts: deniedCounts,
             nextCursor: batch.nextCursor
         )
     }
