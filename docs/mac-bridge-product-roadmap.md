@@ -106,6 +106,11 @@ interruption without requiring a new pairing.
   messages and the durable cursor until forwarding is allowed again.
 - User-defined sensitive terms and likely one-time verification codes are
   blocked locally, with typed denial reasons ready for product UI diagnostics.
+- A versioned, content-free delivery ledger records only opaque delivery keys
+  and pending/delivered state. Restarts retry pending work with the same key and
+  skip confirmed deliveries before contacting a connector.
+- A sliding-window rate limiter stops the batch without advancing its cursor,
+  allowing later retry instead of silently dropping excess messages.
 - The feasibility build contains no external forwarding connector or networking code.
 
 ### Remaining

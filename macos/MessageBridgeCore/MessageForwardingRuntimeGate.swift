@@ -69,3 +69,33 @@ public struct MessageForwardingRuntimeGate: Equatable, Sendable {
         }
     }
 }
+
+public enum MessageRateLimitDecision: Equatable, Sendable {
+    case allowed
+    case limited(retryAfter: TimeInterval)
+}
+
+public final class MessageDeliveryRateLimiter {
+    private let maximumDeliveries: Int
+    private let interval: TimeInterval
+    private var reservations: [Date] = []
+    private let lock = NSLock()
+
+    public init(maximumDeliveries: Int, interval: TimeInterval) {
+        self.maximumDeliveries = max(maximumDeliveries, 1)
+        self.interval = max(interval, 1)
+    }
+
+    public func reserve(at date: Date) -> MessageRateLimitDecision {
+        lock.lock()
+        defer { lock.unlock() }
+        let cutoff = date.addingTimeInterval(-interval)
+        reservations.removeAll { $0 <= cutoff }
+        guard reservations.count >= maximumDeliveries else {
+            reservations.append(date)
+            return .allowed
+        }
+        let retryAfter = max((reservations[0].addingTimeInterval(interval)).timeIntervalSince(date), 0)
+        return .limited(retryAfter: retryAfter)
+    }
+}

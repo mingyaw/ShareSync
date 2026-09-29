@@ -79,6 +79,31 @@ final class MessageForwardingPipelineTests: XCTestCase {
         XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 0))
     }
 
+    func testRateLimitKeepsBatchCursorForLaterRetry() throws {
+        let fixture = try MessageBridgeFixture()
+        try fixture.insertHandle(identifier: "allowed")
+        let store = try makeStore()
+        try store.store.save(MessageCursor(rowID: 0))
+        try fixture.insertMessage(guid: "first", body: "one")
+        try fixture.insertMessage(guid: "second", body: "two")
+        let connector = InMemoryMessageForwardingConnector()
+        let pipeline = MessageForwardingPipeline(
+            reader: MessageEventReader(databaseURL: fixture.databaseURL),
+            cursorStore: store.store,
+            policy: MessageForwardingPolicy(allowedSenderIdentifiers: ["allowed"]),
+            connector: connector,
+            deliveryLedger: InMemoryMessageDeliveryLedgerStore(),
+            rateLimiter: MessageDeliveryRateLimiter(maximumDeliveries: 1, interval: 60),
+            now: { Date(timeIntervalSince1970: 1_000) }
+        )
+
+        XCTAssertThrowsError(try pipeline.run()) { error in
+            XCTAssertEqual(error as? MessageForwardingPipelineError, .rateLimited(retryAfter: 60))
+        }
+        XCTAssertEqual(connector.deliveries.map(\.sourceGUID), ["first"])
+        XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 0))
+    }
+
     func testPipelineFiltersAndAdvancesPastInspectedRows() throws {
         let fixture = try MessageBridgeFixture()
         try fixture.insertHandle(identifier: "allowed")

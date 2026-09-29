@@ -104,6 +104,10 @@ public struct MessageForwardingRunResult: Equatable, Sendable {
     public let nextCursor: MessageCursor
 }
 
+public enum MessageForwardingPipelineError: Error, Equatable, Sendable {
+    case rateLimited(retryAfter: TimeInterval)
+}
+
 public struct MessageForwardingPipeline {
     private let reader: any MessageEventReading
     private let cursorStore: any MessageCursorStore
@@ -111,6 +115,8 @@ public struct MessageForwardingPipeline {
     private let policy: MessageForwardingPolicy
     private let connector: any MessageForwardingConnector
     private let runtimeGate: MessageForwardingRuntimeGate
+    private let deliveryLedger: any MessageDeliveryLedgerStore
+    private let rateLimiter: MessageDeliveryRateLimiter?
     private let now: () -> Date
 
     public init(
@@ -120,6 +126,8 @@ public struct MessageForwardingPipeline {
         policy: MessageForwardingPolicy,
         connector: any MessageForwardingConnector,
         runtimeGate: MessageForwardingRuntimeGate = MessageForwardingRuntimeGate(),
+        deliveryLedger: any MessageDeliveryLedgerStore = InMemoryMessageDeliveryLedgerStore(),
+        rateLimiter: MessageDeliveryRateLimiter? = nil,
         now: @escaping () -> Date = Date.init
     ) {
         self.reader = reader
@@ -128,6 +136,8 @@ public struct MessageForwardingPipeline {
         self.policy = policy
         self.connector = connector
         self.runtimeGate = runtimeGate
+        self.deliveryLedger = deliveryLedger
+        self.rateLimiter = rateLimiter
         self.now = now
     }
 
@@ -146,10 +156,23 @@ public struct MessageForwardingPipeline {
             let event = normalizer.normalize(sourceEvent)
             guard policy.permits(event) else { continue }
             eligibleCount += 1
-            switch try connector.deliver(event) {
-            case .delivered: deliveredCount += 1
-            case .duplicate: duplicateCount += 1
+            if try deliveryLedger.record(for: event.deliveryKey)?.state == .delivered {
+                duplicateCount += 1
+                continue
             }
+            let deliveryDate = now()
+            if let rateLimiter,
+               case .limited(let retryAfter) = rateLimiter.reserve(at: deliveryDate) {
+                throw MessageForwardingPipelineError.rateLimited(retryAfter: retryAfter)
+            }
+            try deliveryLedger.markPending(deliveryKey: event.deliveryKey, at: deliveryDate)
+            switch try connector.deliver(event) {
+            case .delivered:
+                deliveredCount += 1
+            case .duplicate:
+                duplicateCount += 1
+            }
+            try deliveryLedger.markDelivered(deliveryKey: event.deliveryKey, at: now())
         }
 
         if batch.nextCursor != cursor {

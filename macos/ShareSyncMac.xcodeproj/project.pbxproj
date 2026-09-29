@@ -45,6 +45,7 @@
 		B1000000000000000000000B /* NormalizedMessageEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000017 /* NormalizedMessageEvent.swift */; };
 		B1000000000000000000000C /* MessageForwardingPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000018 /* MessageForwardingPipeline.swift */; };
 		B1000000000000000000000D /* MessageForwardingRuntimeGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000019 /* MessageForwardingRuntimeGate.swift */; };
+		B1000000000000000000000E /* MessageDeliveryLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001A /* MessageDeliveryLedger.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -93,6 +94,7 @@
 		B20000000000000000000017 /* NormalizedMessageEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NormalizedMessageEvent.swift; sourceTree = "<group>"; };
 		B20000000000000000000018 /* MessageForwardingPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageForwardingPipeline.swift; sourceTree = "<group>"; };
 		B20000000000000000000019 /* MessageForwardingRuntimeGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageForwardingRuntimeGate.swift; sourceTree = "<group>"; };
+		B2000000000000000000001A /* MessageDeliveryLedger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDeliveryLedger.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -198,6 +200,7 @@
 				B20000000000000000000017 /* NormalizedMessageEvent.swift */,
 				B20000000000000000000018 /* MessageForwardingPipeline.swift */,
 				B20000000000000000000019 /* MessageForwardingRuntimeGate.swift */,
+				B2000000000000000000001A /* MessageDeliveryLedger.swift */,
 			);
 			path = MessageBridgeCore;
 			sourceTree = "<group>";
@@ -344,6 +347,7 @@
 				B1000000000000000000000B /* NormalizedMessageEvent.swift in Sources */,
 				B1000000000000000000000C /* MessageForwardingPipeline.swift in Sources */,
 				B1000000000000000000000D /* MessageForwardingRuntimeGate.swift in Sources */,
+				B1000000000000000000000E /* MessageDeliveryLedger.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
