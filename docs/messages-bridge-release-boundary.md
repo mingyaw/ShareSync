@@ -46,6 +46,9 @@ Adding an external connector is a separate security review. Before that release:
   production helper implementation uses a device-only macOS Keychain item;
 - the connector must accept only `MessageConnectorEnvelope`;
 - endpoint and redirect behavior must be allowlisted;
+- `MessageConnectorEndpointPolicy` must validate the initial endpoint and every
+  redirect using exact HTTPS hosts and explicit ports; URL credentials and
+  fragments remain forbidden;
 - TLS validation must use system trust;
 - the opaque delivery key must be used for idempotency where supported;
 - network failures must preserve the message cursor;

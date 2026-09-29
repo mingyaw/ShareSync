@@ -54,6 +54,7 @@
 		B10000000000000000000014 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000009 /* InfoPlist.strings */; };
 		B10000000000000000000015 /* MessageConnectorCredentialVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001F /* MessageConnectorCredentialVault.swift */; };
 		B10000000000000000000016 /* KeychainMessageConnectorCredentialVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000B /* KeychainMessageConnectorCredentialVault.swift */; };
+		B10000000000000000000017 /* MessageConnectorEndpointPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000020 /* MessageConnectorEndpointPolicy.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -112,6 +113,7 @@
 		B2000000000000000000001D /* MessageConnectorEnvelope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageConnectorEnvelope.swift; sourceTree = "<group>"; };
 		B2000000000000000000001E /* MessagePollingPlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagePollingPlanner.swift; sourceTree = "<group>"; };
 		B2000000000000000000001F /* MessageConnectorCredentialVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageConnectorCredentialVault.swift; sourceTree = "<group>"; };
+		B20000000000000000000020 /* MessageConnectorEndpointPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageConnectorEndpointPolicy.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -226,6 +228,7 @@
 				B2000000000000000000001D /* MessageConnectorEnvelope.swift */,
 				B2000000000000000000001E /* MessagePollingPlanner.swift */,
 				B2000000000000000000001F /* MessageConnectorCredentialVault.swift */,
+				B20000000000000000000020 /* MessageConnectorEndpointPolicy.swift */,
 			);
 			path = MessageBridgeCore;
 			sourceTree = "<group>";
@@ -381,6 +384,7 @@
 				B10000000000000000000012 /* MessagePollingPlanner.swift in Sources */,
 				B10000000000000000000015 /* MessageConnectorCredentialVault.swift in Sources */,
 				B10000000000000000000016 /* KeychainMessageConnectorCredentialVault.swift in Sources */,
+				B10000000000000000000017 /* MessageConnectorEndpointPolicy.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

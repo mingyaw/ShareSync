@@ -141,6 +141,9 @@ interruption without requiring a new pairing.
 - Connector credentials now have an isolated vault contract and a production
   macOS Keychain implementation using device-only accessibility. No credential
   is stored in cursors, delivery state, audit history, or app preferences.
+- A connector endpoint policy now rejects non-HTTPS URLs, embedded credentials,
+  fragments, lookalike hosts, unexpected ports, and redirects outside an exact
+  destination allowlist before any network connector is implemented.
 - The feasibility build contains no external forwarding connector or networking code.
 
 ### Remaining
