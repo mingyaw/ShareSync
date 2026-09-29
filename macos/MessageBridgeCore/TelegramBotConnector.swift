@@ -241,9 +241,6 @@ public struct TelegramBotMessageFormatter: Equatable, Sendable {
             lines.append("")
             lines.append("Attachments: \(envelope.attachmentCount)\(suffix)")
         }
-        if envelope.containsRichText {
-            lines.append("Rich text was converted to plain text.")
-        }
         return truncate(lines.joined(separator: "\n"))
     }
 

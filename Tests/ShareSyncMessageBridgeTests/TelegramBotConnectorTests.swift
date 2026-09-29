@@ -112,6 +112,23 @@ final class TelegramBotConnectorTests: XCTestCase {
         XCTAssertTrue(output.hasSuffix("\n…"))
     }
 
+    func testFormatterDoesNotAddRichTextDiagnosticToForwardedMessage() {
+        let envelope = MessageConnectorEnvelope(
+            deliveryKey: "key",
+            body: "hello",
+            timestamp: Date(timeIntervalSince1970: 1_000),
+            senderLabel: "Work",
+            attachmentCount: 0,
+            attachmentMIMETypes: [],
+            containsRichText: true
+        )
+
+        let output = TelegramBotMessageFormatter().message(for: envelope)
+
+        XCTAssertFalse(output.contains("Rich text was converted"))
+        XCTAssertTrue(output.contains("hello"))
+    }
+
     private func successResponse() -> TelegramBotHTTPResponse {
         TelegramBotHTTPResponse(
             statusCode: 200,
