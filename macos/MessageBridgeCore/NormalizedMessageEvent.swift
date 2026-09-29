@@ -21,6 +21,7 @@ public struct NormalizedMessageEvent: Equatable, Sendable {
     public let timestamp: Date
     public let direction: MessageDirection
     public let senderIdentifier: String?
+    public let conversationIdentifiers: Set<String>
     public let service: String?
     public let contentKinds: Set<MessageContentKind>
     public let associatedMessageGUID: String?
@@ -44,6 +45,7 @@ public struct MessageEventNormalizer {
             timestamp: Self.messageDate(rawValue: event.rawDate),
             direction: event.isFromMe ? .outgoing : .incoming,
             senderIdentifier: event.senderIdentifier,
+            conversationIdentifiers: Set(event.conversationIdentifiers),
             service: event.service,
             contentKinds: contentKinds,
             associatedMessageGUID: event.associatedMessageGUID

@@ -71,7 +71,19 @@ final class SQLiteReadOnlyDatabase {
         }
     }
 
-    func messageRows(after rowID: Int64, limit: Int) throws -> [MessageEvent] {
+    func messageRows(
+        after rowID: Int64,
+        limit: Int,
+        includeConversationContext: Bool
+    ) throws -> [MessageEvent] {
+        let conversationExpression = includeConversationContext
+            ? """
+              (SELECT GROUP_CONCAT(chat.guid, CHAR(31))
+               FROM chat_message_join
+               JOIN chat ON chat.ROWID = chat_message_join.chat_id
+               WHERE chat_message_join.message_id = message.ROWID)
+              """
+            : "NULL"
         let sql = """
         SELECT
             message.ROWID,
@@ -84,7 +96,8 @@ final class SQLiteReadOnlyDatabase {
             message.associated_message_type,
             message.associated_message_guid,
             message.attributedBody IS NOT NULL,
-            handle.id
+            handle.id,
+            \(conversationExpression)
         FROM message
         LEFT JOIN handle ON handle.ROWID = message.handle_id
         WHERE message.ROWID > ?
@@ -114,7 +127,8 @@ final class SQLiteReadOnlyDatabase {
                 associatedMessageType: sqlite3_column_int64(statement, 7),
                 associatedMessageGUID: string(statement, column: 8),
                 hasAttributedBody: sqlite3_column_int(statement, 9) != 0,
-                senderIdentifier: string(statement, column: 10)
+                senderIdentifier: string(statement, column: 10),
+                conversationIdentifiers: conversationIdentifiers(statement, column: 11)
             ))
         }
     }
@@ -130,6 +144,11 @@ final class SQLiteReadOnlyDatabase {
             return nil
         }
         return String(cString: value)
+    }
+
+    private func conversationIdentifiers(_ statement: OpaquePointer?, column: Int32) -> [String] {
+        guard let joined = string(statement, column: column), !joined.isEmpty else { return [] }
+        return joined.split(separator: "\u{1F}").map(String.init).sorted()
     }
 
     private func queryError(code: Int32) -> MessageBridgeError {

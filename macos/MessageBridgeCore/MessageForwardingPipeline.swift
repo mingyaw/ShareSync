@@ -2,17 +2,20 @@ import Foundation
 
 public struct MessageForwardingPolicy: Equatable, Sendable {
     public let allowedSenderIdentifiers: Set<String>
+    public let allowedConversationIdentifiers: Set<String>?
     public let allowedServices: Set<String>
     public let incomingOnly: Bool
     public let allowAssociatedEvents: Bool
 
     public init(
         allowedSenderIdentifiers: Set<String>,
+        allowedConversationIdentifiers: Set<String>? = nil,
         allowedServices: Set<String> = ["iMessage"],
         incomingOnly: Bool = true,
         allowAssociatedEvents: Bool = false
     ) {
         self.allowedSenderIdentifiers = allowedSenderIdentifiers
+        self.allowedConversationIdentifiers = allowedConversationIdentifiers
         self.allowedServices = allowedServices
         self.incomingOnly = incomingOnly
         self.allowAssociatedEvents = allowAssociatedEvents
@@ -26,6 +29,10 @@ public struct MessageForwardingPolicy: Equatable, Sendable {
             return false
         }
         if incomingOnly && event.direction != .incoming { return false }
+        if let allowedConversationIdentifiers,
+           event.conversationIdentifiers.isDisjoint(with: allowedConversationIdentifiers) {
+            return false
+        }
         if !allowAssociatedEvents && event.contentKinds.contains(.associatedEvent) { return false }
         return !event.contentKinds.isEmpty
     }

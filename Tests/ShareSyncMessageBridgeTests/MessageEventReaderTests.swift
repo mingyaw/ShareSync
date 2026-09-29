@@ -65,6 +65,19 @@ final class MessageEventReaderTests: XCTestCase {
         XCTAssertEqual(second.events.map(\.guid), ["message-2"])
     }
 
+    func testConversationContextIsReadWhenSchemaSupportsIt() throws {
+        let fixture = try MessageBridgeFixture()
+        try fixture.insertHandle()
+        try fixture.insertChat(guid: "iMessage;-;group-id")
+        try fixture.insertMessage(guid: "group-message", body: "controlled test")
+        try fixture.linkMessage(rowID: 1)
+        let reader = MessageEventReader(databaseURL: fixture.databaseURL)
+
+        let event = try XCTUnwrap(reader.events(after: MessageCursor(rowID: 0)).events.first)
+
+        XCTAssertEqual(event.conversationIdentifiers, ["iMessage;-;group-id"])
+    }
+
     func testUnsupportedSchemaFailsClosed() throws {
         let fixture = try MessageBridgeFixture()
         try fixture.execute("ALTER TABLE message RENAME TO legacy_message")

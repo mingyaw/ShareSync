@@ -8,6 +8,7 @@ final class MessageDatabaseSchemaInspectorTests: XCTestCase {
         let schema = try MessageDatabaseSchemaInspector().inspect(databaseURL: fixture.databaseURL)
 
         XCTAssertTrue(schema.supportsIncrementalTextEvents)
+        XCTAssertTrue(schema.supportsConversationContext)
         XCTAssertEqual(schema.fingerprint.count, 64)
         XCTAssertTrue(schema.tables.contains("message"))
         XCTAssertTrue(schema.columnsByTable["message", default: []].contains("guid"))

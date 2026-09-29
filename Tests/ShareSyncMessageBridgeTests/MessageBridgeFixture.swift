@@ -29,6 +29,8 @@ final class MessageBridgeFixture {
             associated_message_type INTEGER,
             associated_message_guid TEXT
         );
+        CREATE TABLE chat (ROWID INTEGER PRIMARY KEY, guid TEXT);
+        CREATE TABLE chat_message_join (chat_id INTEGER, message_id INTEGER);
         """)
     }
 
@@ -63,6 +65,14 @@ final class MessageBridgeFixture {
             'iMessage', \(hasAttachments ? 1 : 0), \(associatedType), \(associatedValue)
         )
         """)
+    }
+
+    func insertChat(rowID: Int64 = 1, guid: String = "synthetic-conversation") throws {
+        try execute("INSERT INTO chat (ROWID, guid) VALUES (\(rowID), '\(escaped(guid))')")
+    }
+
+    func linkMessage(rowID: Int64, toChat chatRowID: Int64 = 1) throws {
+        try execute("INSERT INTO chat_message_join (chat_id, message_id) VALUES (\(chatRowID), \(rowID))")
     }
 
     func execute(_ sql: String) throws {

@@ -10,6 +10,15 @@ public struct MessageDatabaseSchema: Equatable, Sendable {
         missingIncrementalTextRequirements.isEmpty
     }
 
+    public var supportsConversationContext: Bool {
+        let chatColumns = columnsByTable["chat"] ?? []
+        let joinColumns = columnsByTable["chat_message_join"] ?? []
+        return tables.contains("chat")
+            && tables.contains("chat_message_join")
+            && chatColumns.contains("guid")
+            && joinColumns.isSuperset(of: ["chat_id", "message_id"])
+    }
+
     public var missingIncrementalTextRequirements: [String] {
         var missing: [String] = []
         let messageColumns = columnsByTable["message"] ?? []

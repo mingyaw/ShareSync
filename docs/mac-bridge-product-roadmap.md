@@ -99,6 +99,9 @@ interruption without requiring a new pairing.
 - The forwarding pipeline fails closed on sender and service allowlists, blocks
   outgoing and associated events by default, and retries safely through an
   idempotent in-memory connector.
+- Conversation identifiers are collected only when the installed Messages
+  schema supports them, allowing an optional conversation allowlist to prevent
+  an approved sender from matching unrelated chats.
 - The feasibility build contains no external forwarding connector or networking code.
 
 ### Remaining

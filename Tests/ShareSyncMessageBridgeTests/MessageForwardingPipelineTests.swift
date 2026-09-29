@@ -26,6 +26,18 @@ final class MessageForwardingPipelineTests: XCTestCase {
         XCTAssertFalse(policy.permits(normalizer.normalize(makeEvent(sender: "allowed", associatedType: 2000))))
     }
 
+    func testPolicyCanRestrictAnAllowedSenderToSpecificConversation() {
+        let normalizer = MessageEventNormalizer()
+        let policy = MessageForwardingPolicy(
+            allowedSenderIdentifiers: ["allowed"],
+            allowedConversationIdentifiers: ["work-chat"]
+        )
+
+        XCTAssertTrue(policy.permits(normalizer.normalize(makeEvent(conversations: ["work-chat"]))))
+        XCTAssertFalse(policy.permits(normalizer.normalize(makeEvent(conversations: ["private-chat"]))))
+        XCTAssertFalse(policy.permits(normalizer.normalize(makeEvent(conversations: []))))
+    }
+
     func testPipelineFiltersAndAdvancesPastInspectedRows() throws {
         let fixture = try MessageBridgeFixture()
         try fixture.insertHandle(identifier: "allowed")
@@ -96,7 +108,8 @@ final class MessageForwardingPipelineTests: XCTestCase {
         rawDate: Int64 = 1,
         sender: String? = "allowed",
         isFromMe: Bool = false,
-        associatedType: Int64 = 0
+        associatedType: Int64 = 0,
+        conversations: [String] = []
     ) -> MessageEvent {
         MessageEvent(
             rowID: rowID,
@@ -109,7 +122,8 @@ final class MessageForwardingPipelineTests: XCTestCase {
             associatedMessageType: associatedType,
             associatedMessageGUID: nil,
             hasAttributedBody: false,
-            senderIdentifier: sender
+            senderIdentifier: sender,
+            conversationIdentifiers: conversations
         )
     }
 

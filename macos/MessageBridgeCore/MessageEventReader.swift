@@ -20,6 +20,7 @@ public struct MessageEvent: Equatable, Sendable {
     public let associatedMessageGUID: String?
     public let hasAttributedBody: Bool
     public let senderIdentifier: String?
+    public let conversationIdentifiers: [String]
 
     public var needsRichBodyDecoding: Bool {
         body == nil && hasAttributedBody
@@ -55,7 +56,11 @@ public struct MessageEventReader: MessageEventReading {
         try validate(schema)
         let boundedLimit = min(max(limit, 1), 500)
         let database = try SQLiteReadOnlyDatabase(url: databaseURL)
-        let events = try database.messageRows(after: cursor.rowID, limit: boundedLimit)
+        let events = try database.messageRows(
+            after: cursor.rowID,
+            limit: boundedLimit,
+            includeConversationContext: schema.supportsConversationContext
+        )
         return MessageEventBatch(
             events: events,
             nextCursor: MessageCursor(rowID: events.last?.rowID ?? cursor.rowID)
