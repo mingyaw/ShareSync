@@ -42,4 +42,18 @@ final class MessageDeliveryLedgerTests: XCTestCase {
         XCTAssertEqual(limiter.reserve(at: start.addingTimeInterval(10)), .limited(retryAfter: 50))
         XCTAssertEqual(limiter.reserve(at: start.addingTimeInterval(60)), .allowed)
     }
+
+    func testClearRemovesPersistedDeliveryState() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = FileMessageDeliveryLedgerStore(
+            fileURL: directory.appendingPathComponent("ledger.json")
+        )
+        try store.markDelivered(deliveryKey: "key", at: Date())
+
+        try store.clear()
+
+        XCTAssertNil(try store.record(for: "key"))
+    }
 }

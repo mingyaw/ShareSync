@@ -98,12 +98,20 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             refreshPreviewState()
         case .permissionRequired:
             state = .permissionRequired
+            validationState = .inactive
+            previewState = .inactive
         case .unavailable:
             state = .unavailable
+            validationState = .inactive
+            previewState = .inactive
         case .unsupportedSchema(_, let missing):
             state = .unsupported(missing)
+            validationState = .inactive
+            previewState = .inactive
         case .failed(let code):
             state = .failed(code)
+            validationState = .inactive
+            previewState = .inactive
         }
     }
 
@@ -168,6 +176,27 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             ).run()
             previewState = .result(result)
         } catch MessageValidationSessionError.baselineRequired {
+            previewState = .inactive
+        } catch {
+            previewState = .failed
+        }
+    }
+
+    func resetValidation() {
+        do {
+            try cursorStore().clear()
+            validationState = .inactive
+        } catch {
+            validationState = .failed
+        }
+    }
+
+    func resetPreview() {
+        do {
+            try previewCursorStore().clear()
+            try previewDeliveryLedger().clear()
+            try previewAuditStore().clear()
+            previewSenderIdentifier = ""
             previewState = .inactive
         } catch {
             previewState = .failed
@@ -250,6 +279,14 @@ final class MessageBridgePermissionViewModel: ObservableObject {
 
 struct MessageBridgePermissionView: View {
     @EnvironmentObject private var model: MessageBridgePermissionViewModel
+    @State private var resetTarget: ResetTarget?
+
+    private enum ResetTarget: String, Identifiable {
+        case validation
+        case preview
+
+        var id: String { rawValue }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
@@ -317,6 +354,23 @@ struct MessageBridgePermissionView: View {
         }
         .padding(28)
         .frame(width: 520)
+        .confirmationDialog(
+            resetDialogTitle,
+            isPresented: Binding(
+                get: { resetTarget != nil },
+                set: { if !$0 { resetTarget = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button("bridge.reset.confirm", role: .destructive) {
+                switch resetTarget {
+                case .validation?: model.resetValidation()
+                case .preview?: model.resetPreview()
+                case nil: break
+                }
+            }
+            Button("bridge.reset.cancel", role: .cancel) {}
+        }
     }
 
     @ViewBuilder
@@ -349,6 +403,11 @@ struct MessageBridgePermissionView: View {
                         model.checkControlledMessages()
                     }
                     .disabled(model.validationState == .checking)
+                }
+                if model.validationState != .inactive {
+                    Button("bridge.action.reset") {
+                        resetTarget = .validation
+                    }
                 }
                 Spacer()
             }
@@ -410,6 +469,11 @@ struct MessageBridgePermissionView: View {
                     }
                     .disabled(model.previewState == .running || model.previewState == .establishing)
                 }
+                if model.previewState != .inactive {
+                    Button("bridge.action.reset") {
+                        resetTarget = .preview
+                    }
+                }
                 Spacer()
                 Text("bridge.preview.session_only")
                     .font(.caption)
@@ -427,6 +491,13 @@ struct MessageBridgePermissionView: View {
         case .running: return "bridge.preview.running"
         case .result: return "bridge.preview.result"
         case .failed: return "bridge.preview.failed"
+        }
+    }
+
+    private var resetDialogTitle: LocalizedStringKey {
+        switch resetTarget {
+        case .validation: return "bridge.reset.validation.title"
+        case .preview, .none: return "bridge.reset.preview.title"
         }
     }
 

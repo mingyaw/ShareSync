@@ -48,3 +48,8 @@
 "bridge.preview.action.baseline" = "Create Preview Baseline";
 "bridge.preview.action.run" = "Run Local Preview";
 "bridge.preview.session_only" = "Sender stays in this app session";
+"bridge.action.reset" = "Reset";
+"bridge.reset.validation.title" = "Reset controlled validation? The saved baseline will be deleted.";
+"bridge.reset.preview.title" = "Reset local preview? Its baseline, delivery state, audit counts, and current sender will be deleted.";
+"bridge.reset.confirm" = "Delete Local State";
+"bridge.reset.cancel" = "Cancel";

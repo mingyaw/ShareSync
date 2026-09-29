@@ -128,6 +128,9 @@ interruption without requiring a new pairing.
   sender allowlist is kept only in the running app session; new rows are checked
   through the real policy and delivery pipeline, while only aggregate counts
   and the redacted audit are retained and nothing leaves the Mac.
+- Validation and preview state have separate destructive reset actions. Preview
+  reset deletes its cursor, delivery ledger, audit counts, and in-memory sender;
+  access loss also closes both workflows until permission is restored.
 - The feasibility build contains no external forwarding connector or networking code.
 
 ### Remaining

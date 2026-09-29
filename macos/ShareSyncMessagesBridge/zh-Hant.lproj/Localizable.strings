@@ -48,3 +48,8 @@
 "bridge.preview.action.baseline" = "建立預覽基準點";
 "bridge.preview.action.run" = "執行本機預覽";
 "bridge.preview.session_only" = "寄件者只保留於本次 App 執行期間";
+"bridge.action.reset" = "重設";
+"bridge.reset.validation.title" = "要重設受控驗證嗎？已保存的基準點將被刪除。";
+"bridge.reset.preview.title" = "要重設本機預覽嗎？基準點、交付狀態、稽核計數與目前寄件者都會被刪除。";
+"bridge.reset.confirm" = "刪除本機狀態";
+"bridge.reset.cancel" = "取消";

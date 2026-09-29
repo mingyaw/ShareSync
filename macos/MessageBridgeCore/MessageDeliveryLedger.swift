@@ -15,6 +15,7 @@ public protocol MessageDeliveryLedgerStore: AnyObject {
     func markPending(deliveryKey: String, at date: Date) throws
     func markDelivered(deliveryKey: String, at date: Date) throws
     func pruneDelivered(before date: Date) throws
+    func clear() throws
 }
 
 public final class InMemoryMessageDeliveryLedgerStore: MessageDeliveryLedgerStore {
@@ -38,6 +39,10 @@ public final class InMemoryMessageDeliveryLedgerStore: MessageDeliveryLedgerStor
         records = records.filter { _, record in
             record.state != .delivered || record.updatedAt >= date
         }
+    }
+
+    public func clear() throws {
+        records.removeAll()
     }
 }
 
@@ -83,6 +88,11 @@ public final class FileMessageDeliveryLedgerStore: MessageDeliveryLedgerStore {
             record.state != .delivered || record.updatedAt >= date
         }
         try save(envelope)
+    }
+
+    public func clear() throws {
+        guard fileManager.fileExists(atPath: fileURL.path) else { return }
+        try fileManager.removeItem(at: fileURL)
     }
 
     private func load() throws -> Envelope {
