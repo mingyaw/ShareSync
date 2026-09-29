@@ -59,6 +59,41 @@ final class TelegramBotConnectorTests: XCTestCase {
         }
     }
 
+    func testSuccessfulDeliveryStoresLocalReplyRouteFromTelegramMessageID() throws {
+        let data = try JSONSerialization.data(withJSONObject: [
+            "ok": true,
+            "result": ["message_id": 321],
+        ])
+        let transport = RecordingTelegramTransport(
+            response: TelegramBotHTTPResponse(statusCode: 200, data: data)
+        )
+        let routes = RecordingRouteStore()
+        let configuration = try TelegramBotConfiguration(
+            token: "123456:abcdefghijklmnopqrstuvwxyz_ABC",
+            chatID: "42"
+        )
+        let connector = TelegramBotConnector(
+            configuration: configuration,
+            transport: transport,
+            replyRouteStore: routes
+        )
+        let envelope = MessageConnectorEnvelope(
+            deliveryKey: "opaque",
+            body: "hello",
+            timestamp: Date(timeIntervalSince1970: 1_000),
+            senderLabel: "+886912345678",
+            attachmentCount: 0,
+            attachmentMIMETypes: [],
+            containsRichText: false
+        )
+
+        _ = try connector.deliver(envelope)
+
+        XCTAssertEqual(routes.routes.first?.telegramMessageID, 321)
+        XCTAssertEqual(routes.routes.first?.recipientHandle, "+886912345678")
+        XCTAssertEqual(routes.routes.first?.telegramChatID, "42")
+    }
+
     func testFormatterRespectsTelegramTextLimitAndSummarizesAttachments() {
         let formatter = TelegramBotMessageFormatter(maximumLength: 128)
         let envelope = MessageConnectorEnvelope(
@@ -78,8 +113,18 @@ final class TelegramBotConnectorTests: XCTestCase {
     }
 
     private func successResponse() -> TelegramBotHTTPResponse {
-        TelegramBotHTTPResponse(statusCode: 200, data: Data(#"{"ok":true,"result":{}}"#.utf8))
+        TelegramBotHTTPResponse(
+            statusCode: 200,
+            data: Data(#"{"ok":true,"result":{"message_id":123}}"#.utf8)
+        )
     }
+}
+
+private final class RecordingRouteStore: TelegramReplyRouteStoring {
+    private(set) var routes: [TelegramReplyRoute] = []
+    func save(_ route: TelegramReplyRoute) throws { routes.append(route) }
+    func route(chatID: String, messageID: Int64) throws -> TelegramReplyRoute? { nil }
+    func clear() throws { routes.removeAll() }
 }
 
 private final class RecordingTelegramTransport: TelegramBotTransport {

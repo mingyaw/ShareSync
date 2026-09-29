@@ -129,39 +129,58 @@ public final class TelegramBotConnector: MessageForwardingConnector {
         let errorCode: Int?
         let description: String?
         let parameters: Parameters?
+        let result: SentMessage?
+
+        struct SentMessage: Decodable {
+            let messageID: Int64
+            enum CodingKeys: String, CodingKey { case messageID = "message_id" }
+        }
 
         enum CodingKeys: String, CodingKey {
             case ok
             case errorCode = "error_code"
             case description
-            case parameters
+            case parameters, result
         }
     }
 
     private let configuration: TelegramBotConfiguration
     private let transport: any TelegramBotTransport
     private let formatter: TelegramBotMessageFormatter
+    private let replyRouteStore: (any TelegramReplyRouteStoring)?
 
     public init(
         configuration: TelegramBotConfiguration,
         transport: any TelegramBotTransport = URLSessionTelegramBotTransport(),
-        formatter: TelegramBotMessageFormatter = TelegramBotMessageFormatter()
+        formatter: TelegramBotMessageFormatter = TelegramBotMessageFormatter(),
+        replyRouteStore: (any TelegramReplyRouteStoring)? = nil
     ) {
         self.configuration = configuration
         self.transport = transport
         self.formatter = formatter
+        self.replyRouteStore = replyRouteStore
     }
 
     public func verifyDelivery() throws {
-        try send(text: formatter.testMessage())
+        _ = try send(text: formatter.testMessage())
     }
 
     public func deliver(_ envelope: MessageConnectorEnvelope) throws -> MessageDeliveryOutcome {
-        try send(text: formatter.message(for: envelope))
+        let messageID = try send(text: formatter.message(for: envelope))
+        if let messageID,
+           let recipientHandle = envelope.senderLabel,
+           !recipientHandle.isEmpty,
+           let replyRouteStore {
+            try replyRouteStore.save(TelegramReplyRoute(
+                telegramChatID: configuration.chatID,
+                telegramMessageID: messageID,
+                recipientHandle: recipientHandle
+            ))
+        }
         return .delivered
     }
 
-    private func send(text: String) throws {
+    private func send(text: String) throws -> Int64? {
         let endpoint = "https://api.telegram.org/bot\(configuration.token)/sendMessage"
         guard let url = URL(string: endpoint), url.scheme == "https", url.host == "api.telegram.org" else {
             throw TelegramBotConnectorError.invalidToken
@@ -180,7 +199,9 @@ public final class TelegramBotConnector: MessageForwardingConnector {
         guard let payload = try? JSONDecoder().decode(APIResponse.self, from: response.data) else {
             throw TelegramBotConnectorError.invalidResponse
         }
-        if payload.ok, (200..<300).contains(response.statusCode) { return }
+        if payload.ok, (200..<300).contains(response.statusCode) {
+            return payload.result?.messageID
+        }
         if response.statusCode == 429 || payload.errorCode == 429 {
             throw TelegramBotConnectorError.rateLimited(
                 retryAfter: TimeInterval(payload.parameters?.retryAfter ?? 60)

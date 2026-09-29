@@ -21,7 +21,9 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSAppDataUsageDescription</key>
-	<string>ShareSync Messages Bridge checks local Messages compatibility and, only after you establish a baseline, inspects new message fields during a controlled validation. It does not display or log message content, and this build cannot forward messages.</string>
+	<string>ShareSync Messages Bridge checks local Messages compatibility and can forward allowed new messages to your configured Telegram Bot. Message content is not written to ShareSync logs or servers.</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>ShareSync uses Messages only when you enable Telegram replies, so a reply to a ShareSync-forwarded message can be sent back to its original iMessage sender.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2026 HansLi. All rights reserved.</string>
 	<key>NSPrincipalClass</key>

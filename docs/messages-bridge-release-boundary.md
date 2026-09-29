@@ -27,6 +27,10 @@ installed alongside the release app during permission acceptance testing.
 - Local validation and preview do not send network requests.
 - Permission loss closes validation and preview until access is restored.
 - Reset removes the selected workflow's local cursor and redacted state.
+- Telegram-to-iMessage sending requires a separate, explicit opt-in and macOS
+  Automation permission for Messages. Incoming Telegram text is accepted only
+  as a reply to a locally mapped forwarded message from the configured private
+  chat owner; Telegram cannot provide an arbitrary recipient.
 
 The app never attempts to automate System Settings or grant permission itself.
 
@@ -58,3 +62,7 @@ release and any later connector must satisfy all of the following:
 - network failures must preserve the message cursor;
 - logs and analytics must remain free of bodies and source identifiers;
 - the privacy manifest and permission copy must be reviewed again.
+- reverse-message routes and the Telegram update cursor must remain local and be
+  deleted by Telegram reset;
+- AppleScript source must remain fixed, with recipient and body passed as
+  arguments rather than interpolated into executable script text.

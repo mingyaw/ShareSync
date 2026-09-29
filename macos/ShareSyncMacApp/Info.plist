@@ -31,6 +31,8 @@
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>ShareSync connects directly to your paired Android phone on the local network.</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>ShareSync uses Messages only when you enable Telegram replies, so a reply to a ShareSync-forwarded message can be sent back to its original iMessage sender.</string>
 	<key>NSAppDataUsageDescription</key>
 	<string>ShareSync reads only messages newer than your explicit baseline. It can forward messages from allowed senders directly to a Telegram Bot you configure; content is not written to ShareSync logs or servers.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

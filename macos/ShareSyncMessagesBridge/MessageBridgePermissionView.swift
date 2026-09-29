@@ -23,6 +23,9 @@ final class MessageBridgePermissionViewModel: ObservableObject {
     @Published private(set) var telegramState: TelegramState = .unconfigured
     @Published private(set) var telegramResult: MessageForwardingRunResult?
     @Published private(set) var isTelegramAutoForwarding = false
+    @Published private(set) var telegramReplyState: TelegramReplyState = .disabled
+    @Published private(set) var telegramReplyResult: TelegramReplyRunResult?
+    @Published private(set) var isTelegramReplyEnabled = false
 
     private let telegramSettingsStore = TelegramBotSettingsStore()
     private let telegramRateLimiter = MessageDeliveryRateLimiter(
@@ -60,6 +63,17 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         case forwarding
         case forwarded
         case invalidConfiguration
+        case failed
+    }
+
+    enum TelegramReplyState: Equatable {
+        case disabled
+        case establishing
+        case ready
+        case checking
+        case sent
+        case noReplies
+        case privateChatRequired
         case failed
     }
 
@@ -287,6 +301,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             let cursorStore = telegramCursorStore()
             let deliveryLedger = telegramDeliveryLedger()
             let auditStore = telegramAuditStore()
+            let replyRouteStore = telegramReplyRouteStore()
             let rateLimiter = telegramRateLimiter
             telegramState = .forwarding
             Task {
@@ -296,7 +311,10 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                             reader: reader,
                             cursorStore: cursorStore,
                             policy: MessageForwardingPolicy(allowedSenderIdentifiers: [sender]),
-                            connector: TelegramBotConnector(configuration: configuration),
+                            connector: TelegramBotConnector(
+                                configuration: configuration,
+                                replyRouteStore: replyRouteStore
+                            ),
                             deliveryLedger: deliveryLedger,
                             rateLimiter: rateLimiter,
                             envelopeBuilder: MessageConnectorEnvelopeBuilder(
@@ -348,9 +366,84 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         telegramPollingTask = Task { [weak self] in
             while !Task.isCancelled {
                 self?.forwardTelegramNow()
+                if self?.isTelegramReplyEnabled == true {
+                    self?.checkTelegramReplies()
+                }
                 try? await Task.sleep(for: .seconds(10))
             }
         }
+    }
+
+    func enableTelegramReplies() {
+        guard telegramReplyState != .establishing else { return }
+        do {
+            try persistTelegramConfiguration()
+            let configuration = try telegramConfiguration()
+            guard let chatID = Int64(telegramChatID), chatID > 0 else {
+                telegramReplyState = .privateChatRequired
+                return
+            }
+            let cursorStore = telegramUpdateCursorStore()
+            let processor = telegramReplyProcessor(
+                configuration: configuration,
+                authorizedPrivateChatID: String(chatID),
+                cursorStore: cursorStore
+            )
+            telegramReplyState = .establishing
+            Task {
+                do {
+                    if !cursorStore.hasStoredCursor {
+                        try await Task.detached(priority: .userInitiated) {
+                            try processor.establishBaseline()
+                        }.value
+                    }
+                    isTelegramReplyEnabled = true
+                    telegramReplyState = .ready
+                } catch {
+                    isTelegramReplyEnabled = false
+                    telegramReplyState = .failed
+                }
+            }
+        } catch {
+            telegramReplyState = .failed
+        }
+    }
+
+    func checkTelegramReplies() {
+        guard isTelegramReplyEnabled, telegramReplyState != .checking else { return }
+        do {
+            let configuration = try telegramConfiguration()
+            guard let chatID = Int64(telegramChatID), chatID > 0 else {
+                telegramReplyState = .privateChatRequired
+                isTelegramReplyEnabled = false
+                return
+            }
+            let processor = telegramReplyProcessor(
+                configuration: configuration,
+                authorizedPrivateChatID: String(chatID),
+                cursorStore: telegramUpdateCursorStore()
+            )
+            telegramReplyState = .checking
+            Task {
+                do {
+                    let result = try await Task.detached(priority: .utility) {
+                        try processor.run()
+                    }.value
+                    telegramReplyResult = result
+                    telegramReplyState = result.sentCount > 0 ? .sent : .noReplies
+                } catch {
+                    telegramReplyState = .failed
+                }
+            }
+        } catch {
+            telegramReplyState = .failed
+        }
+    }
+
+    func disableTelegramReplies() {
+        isTelegramReplyEnabled = false
+        telegramReplyResult = nil
+        telegramReplyState = .disabled
     }
 
     func resetTelegram() {
@@ -360,10 +453,15 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             try telegramCursorStore().clear()
             try telegramDeliveryLedger().clear()
             try telegramAuditStore().clear()
+            try telegramReplyRouteStore().clear()
+            try telegramUpdateCursorStore().clear()
             telegramTokenDraft = ""
             telegramChatID = ""
             telegramAllowedSender = ""
             telegramResult = nil
+            telegramReplyResult = nil
+            isTelegramReplyEnabled = false
+            telegramReplyState = .disabled
             telegramState = .unconfigured
         } catch {
             telegramState = .failed
@@ -469,6 +567,32 @@ final class MessageBridgePermissionViewModel: ObservableObject {
     private func telegramAuditStore() -> FileMessageForwardingAuditStore {
         FileMessageForwardingAuditStore(
             fileURL: bridgeSupportDirectory().appendingPathComponent("telegram-audit.json")
+        )
+    }
+
+    private func telegramReplyRouteStore() -> FileTelegramReplyRouteStore {
+        FileTelegramReplyRouteStore(
+            fileURL: bridgeSupportDirectory().appendingPathComponent("telegram-reply-routes.json")
+        )
+    }
+
+    private func telegramUpdateCursorStore() -> FileTelegramUpdateCursorStore {
+        FileTelegramUpdateCursorStore(
+            fileURL: bridgeSupportDirectory().appendingPathComponent("telegram-update-cursor.json")
+        )
+    }
+
+    private func telegramReplyProcessor(
+        configuration: TelegramBotConfiguration,
+        authorizedPrivateChatID: String,
+        cursorStore: FileTelegramUpdateCursorStore
+    ) -> TelegramReplyProcessor {
+        TelegramReplyProcessor(
+            updates: TelegramBotUpdateClient(configuration: configuration),
+            cursorStore: cursorStore,
+            routeStore: telegramReplyRouteStore(),
+            sender: MessagesAutomationSender(),
+            authorizedPrivateChatID: authorizedPrivateChatID
         )
     }
 
@@ -775,6 +899,52 @@ struct MessageBridgePermissionView: View {
                     resetTarget = .telegram
                 }
             }
+
+            Divider()
+
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "arrowshape.turn.up.left.circle.fill")
+                    .foregroundStyle(model.isTelegramReplyEnabled ? .green : .secondary)
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("bridge.telegram.reply.title")
+                        .font(.subheadline.weight(.semibold))
+                    Text(telegramReplyDetail)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            if let result = model.telegramReplyResult {
+                HStack(spacing: 18) {
+                    validationMetric("bridge.telegram.reply.metric.checked", value: result.inspectedCount)
+                    validationMetric("bridge.telegram.reply.metric.sent", value: result.sentCount)
+                    validationMetric("bridge.telegram.reply.metric.ignored", value: result.ignoredCount)
+                }
+            }
+
+            HStack {
+                if model.isTelegramReplyEnabled {
+                    Button("bridge.telegram.reply.action.check") {
+                        model.checkTelegramReplies()
+                    }
+                    .disabled(model.telegramReplyState == .checking)
+                    Button("bridge.telegram.reply.action.disable") {
+                        model.disableTelegramReplies()
+                    }
+                } else {
+                    Button("bridge.telegram.reply.action.enable") {
+                        model.enableTelegramReplies()
+                    }
+                    .disabled(model.telegramReplyState == .establishing)
+                }
+                Spacer()
+                if model.isTelegramReplyEnabled {
+                    Label("bridge.telegram.reply.enabled", systemImage: "lock.shield.fill")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
     }
 
@@ -789,6 +959,19 @@ struct MessageBridgePermissionView: View {
         case .forwarded: return "bridge.telegram.forwarded"
         case .invalidConfiguration: return "bridge.telegram.invalid"
         case .failed: return "bridge.telegram.failed"
+        }
+    }
+
+    private var telegramReplyDetail: LocalizedStringKey {
+        switch model.telegramReplyState {
+        case .disabled: return "bridge.telegram.reply.disabled"
+        case .establishing: return "bridge.telegram.reply.establishing"
+        case .ready: return "bridge.telegram.reply.ready"
+        case .checking: return "bridge.telegram.reply.checking"
+        case .sent: return "bridge.telegram.reply.sent"
+        case .noReplies: return "bridge.telegram.reply.none"
+        case .privateChatRequired: return "bridge.telegram.reply.private_chat"
+        case .failed: return "bridge.telegram.reply.failed"
         }
     }
 

@@ -6,9 +6,12 @@ struct ShareSyncMessagesBridgeApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MessageBridgePermissionView()
-                .environmentObject(model)
+            ScrollView {
+                MessageBridgePermissionView()
+                    .environmentObject(model)
+            }
+            .frame(minHeight: 640)
         }
-        .windowResizability(.contentSize)
+        .defaultSize(width: 576, height: 760)
     }
 }

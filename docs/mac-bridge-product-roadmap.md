@@ -148,6 +148,10 @@ interruption without requiring a new pairing.
   Keychain, and preserves the cursor when delivery fails.
 - Telegram setup, test delivery, explicit baseline, manual forwarding, and
   opt-in polling while the Mac app runs are available in the unified Messages UI.
+- Telegram replies can be sent back through Messages only when the Telegram
+  account and private Chat ID match and the user replies to a ShareSync-forwarded
+  message with a locally stored route. First use requires explicit Messages
+  Automation approval.
 
 ### Remaining
 
@@ -160,6 +164,9 @@ interruption without requiring a new pairing.
 - Add attachment upload only after explicit media privacy and size-limit design.
 - Add launch-at-login/background-agent lifecycle and sleep/network recovery using
   the existing polling planner.
+- Validate Telegram reply routing and Messages Automation permission on a
+  physical Mac, including denied/revoked permission and an unavailable iMessage
+  participant.
 - Verify duplicate behavior for the narrow case where Telegram accepts a request
   but the response is lost; Bot API `sendMessage` has no idempotency-key field.
 - Complete Developer ID signing and notarization for the unified non-sandboxed app.

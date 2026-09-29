@@ -6,7 +6,8 @@
 > implementation now lives in the unified Mac app with explicit permission UI.
 
 Status: macOS implementation in progress. Read-only incremental access, local
-policy evaluation, and Telegram Bot forwarding are integrated in `ShareSyncMac`.
+policy evaluation, Telegram Bot forwarding, and constrained reply routing are
+integrated in `ShareSyncMac`.
 
 ## Telegram Forwarding
 
@@ -21,6 +22,21 @@ the same cursor, opaque delivery ledger, sensitive-content policy, rate limiter,
 and aggregate audit store. The connector accepts only Telegram's fixed HTTPS
 host and rejects HTTP redirects. Attachments are summarized by count and MIME
 type in this phase; attachment files are not uploaded.
+
+Telegram-to-iMessage replies are deliberately narrower than forwarding. The
+configured Chat ID must be a private chat whose user ID matches the update
+sender. The Telegram message must be a native reply to a message previously
+forwarded by this ShareSync installation, whose message ID is mapped locally to
+the original iMessage handle. ShareSync does not accept recipient names,
+addresses, or bot commands from Telegram. Sending is performed by a fixed
+AppleScript with recipient and body passed as process arguments, and macOS asks
+for Messages Automation permission on first use.
+
+On first enablement, pending bot updates are baselined and ignored. The update
+cursor and at most 1,000 reply routes persist locally so the app can resume after
+a restart. Reset removes both stores. Reply polling runs only while ShareSync is
+running and automatic Telegram polling is enabled, or when the user checks
+manually.
 
 ## Goal
 
