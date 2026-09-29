@@ -94,7 +94,12 @@ interruption without requiring a new pairing.
 - Controlled validation reads only rows newer than the baseline and reports
   aggregate field availability without displaying or logging bodies or senders.
 - Failed validation does not advance the cursor, while successful validation does.
-- The feasibility build contains no forwarding connector or networking code.
+- New-message events normalize into a connector-neutral model with an opaque,
+  stable delivery key and Apple timestamp conversion.
+- The forwarding pipeline fails closed on sender and service allowlists, blocks
+  outgoing and associated events by default, and retries safely through an
+  idempotent in-memory connector.
+- The feasibility build contains no external forwarding connector or networking code.
 
 ### Remaining
 
