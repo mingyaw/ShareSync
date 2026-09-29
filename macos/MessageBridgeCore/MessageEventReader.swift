@@ -31,7 +31,12 @@ public struct MessageEventBatch: Equatable, Sendable {
     public let nextCursor: MessageCursor
 }
 
-public struct MessageEventReader {
+public protocol MessageEventReading {
+    func baselineCursor() throws -> MessageCursor
+    func events(after cursor: MessageCursor, limit: Int) throws -> MessageEventBatch
+}
+
+public struct MessageEventReader: MessageEventReading {
     private let databaseURL: URL
 
     public init(databaseURL: URL) {

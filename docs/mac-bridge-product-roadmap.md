@@ -84,17 +84,24 @@ interruption without requiring a new pairing.
 - There is no public API for reading a complete Messages transcript.
 - iOS is not required for the proposed Mac forwarding workflow.
 
+### Implemented on the feasibility branch
+
+- A separate `ShareSync Messages Bridge` macOS app target keeps Messages access
+  outside the sandboxed photo gateway.
+- The helper performs a schema-only compatibility check before message-row access
+  and provides explicit permission onboarding in Traditional Chinese and English.
+- A durable baseline cursor excludes existing message history and survives restart.
+- Controlled validation reads only rows newer than the baseline and reports
+  aggregate field availability without displaying or logging bodies or senders.
+- Failed validation does not advance the cursor, while successful validation does.
+- The feasibility build contains no forwarding connector or networking code.
+
 ### Remaining
 
-- Build a separately permissioned Messages Bridge helper without expanding the
-  photo gateway's sandbox privileges.
-- Add explicit other-app-data permission onboarding and revocation handling.
-- Inspect schema only before reading any controlled test message.
+- Complete physical-Mac permission, revocation, and controlled-message validation.
 - Verify text, Unicode, group, reply, edit, retract, reaction, attachment
   metadata, sleep catch-up, and deduplication behavior on supported macOS
   versions.
-- Establish a baseline cursor so existing history is not forwarded when the
-  feature is enabled.
 - Normalize new-message events without logging message bodies.
 - Add sender and conversation allowlists, sensitive-message blocking, schedules,
   preview mode, pause, rate limits, and loop prevention.

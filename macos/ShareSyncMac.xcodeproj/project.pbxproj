@@ -32,6 +32,16 @@
 		A1000000000000000000001F /* ManifestClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001F /* ManifestClient.swift */; };
 		A10000000000000000000020 /* MediaDownloadState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000020 /* MediaDownloadState.swift */; };
 		A10000000000000000000021 /* MediaDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000021 /* MediaDownloader.swift */; };
+		B10000000000000000000001 /* ShareSyncMessagesBridgeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* ShareSyncMessagesBridgeApp.swift */; };
+		B10000000000000000000002 /* MessageBridgePermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* MessageBridgePermissionView.swift */; };
+		B10000000000000000000003 /* MessageBridgeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000010 /* MessageBridgeError.swift */; };
+		B10000000000000000000004 /* MessageCursorStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000011 /* MessageCursorStore.swift */; };
+		B10000000000000000000005 /* MessageDatabaseAccessProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000012 /* MessageDatabaseAccessProbe.swift */; };
+		B10000000000000000000006 /* MessageDatabaseSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000013 /* MessageDatabaseSchema.swift */; };
+		B10000000000000000000007 /* MessageEventReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000014 /* MessageEventReader.swift */; };
+		B10000000000000000000008 /* SQLiteReadOnlyDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000015 /* SQLiteReadOnlyDatabase.swift */; };
+		B10000000000000000000009 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000008 /* Localizable.strings */; };
+		B1000000000000000000000A /* ControlledMessageValidationSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000016 /* ControlledMessageValidationSession.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -64,10 +74,30 @@
 		A2000000000000000000001F /* ManifestClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ManifestClient.swift; path = ../ios/ShareSync/Transfer/ManifestClient.swift; sourceTree = SOURCE_ROOT; };
 		A20000000000000000000020 /* MediaDownloadState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MediaDownloadState.swift; path = ../ios/ShareSync/Transfer/MediaDownloadState.swift; sourceTree = SOURCE_ROOT; };
 		A20000000000000000000021 /* MediaDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MediaDownloader.swift; path = ../ios/ShareSync/Transfer/MediaDownloader.swift; sourceTree = SOURCE_ROOT; };
+		B20000000000000000000000 /* ShareSync Messages Bridge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ShareSync Messages Bridge.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B20000000000000000000001 /* ShareSyncMessagesBridgeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSyncMessagesBridgeApp.swift; sourceTree = "<group>"; };
+		B20000000000000000000002 /* MessageBridgePermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBridgePermissionView.swift; sourceTree = "<group>"; };
+		B20000000000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B20000000000000000000004 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B20000000000000000000005 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		B20000000000000000000010 /* MessageBridgeError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBridgeError.swift; sourceTree = "<group>"; };
+		B20000000000000000000011 /* MessageCursorStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCursorStore.swift; sourceTree = "<group>"; };
+		B20000000000000000000012 /* MessageDatabaseAccessProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDatabaseAccessProbe.swift; sourceTree = "<group>"; };
+		B20000000000000000000013 /* MessageDatabaseSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDatabaseSchema.swift; sourceTree = "<group>"; };
+		B20000000000000000000014 /* MessageEventReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEventReader.swift; sourceTree = "<group>"; };
+		B20000000000000000000015 /* SQLiteReadOnlyDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SQLiteReadOnlyDatabase.swift; sourceTree = "<group>"; };
+		B20000000000000000000016 /* ControlledMessageValidationSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlledMessageValidationSession.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A30000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B30000000000000000000001 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -81,6 +111,8 @@
 			isa = PBXGroup;
 			children = (
 				A40000000000000000000001 /* ShareSyncMacApp */,
+				B40000000000000000000001 /* ShareSyncMessagesBridge */,
+				B40000000000000000000002 /* MessageBridgeCore */,
 				A40000000000000000000002 /* SharedCore */,
 				A40000000000000000000003 /* Products */,
 			);
@@ -131,8 +163,34 @@
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000000 /* ShareSync Mac.app */,
+				B20000000000000000000000 /* ShareSync Messages Bridge.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		B40000000000000000000001 /* ShareSyncMessagesBridge */ = {
+			isa = PBXGroup;
+			children = (
+				B20000000000000000000001 /* ShareSyncMessagesBridgeApp.swift */,
+				B20000000000000000000002 /* MessageBridgePermissionView.swift */,
+				B20000000000000000000003 /* Info.plist */,
+				B20000000000000000000008 /* Localizable.strings */,
+			);
+			path = ShareSyncMessagesBridge;
+			sourceTree = "<group>";
+		};
+		B40000000000000000000002 /* MessageBridgeCore */ = {
+			isa = PBXGroup;
+			children = (
+				B20000000000000000000010 /* MessageBridgeError.swift */,
+				B20000000000000000000011 /* MessageCursorStore.swift */,
+				B20000000000000000000012 /* MessageDatabaseAccessProbe.swift */,
+				B20000000000000000000013 /* MessageDatabaseSchema.swift */,
+				B20000000000000000000014 /* MessageEventReader.swift */,
+				B20000000000000000000015 /* SQLiteReadOnlyDatabase.swift */,
+				B20000000000000000000016 /* ControlledMessageValidationSession.swift */,
+			);
+			path = MessageBridgeCore;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -155,6 +213,23 @@
 			productReference = A20000000000000000000000 /* ShareSync Mac.app */;
 			productType = "com.apple.product-type.application";
 		};
+		B50000000000000000000001 /* ShareSyncMessagesBridge */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B90000000000000000000001 /* Build configuration list for PBXNativeTarget "ShareSyncMessagesBridge" */;
+			buildPhases = (
+				B30000000000000000000003 /* Sources */,
+				B30000000000000000000001 /* Frameworks */,
+				B30000000000000000000002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ShareSyncMessagesBridge;
+			productName = "ShareSync Messages Bridge";
+			productReference = B20000000000000000000000 /* ShareSync Messages Bridge.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -166,6 +241,9 @@
 				LastUpgradeCheck = 2660;
 				TargetAttributes = {
 					A50000000000000000000001 = {
+						CreatedOnToolsVersion = 26.6;
+					};
+					B50000000000000000000001 = {
 						CreatedOnToolsVersion = 26.6;
 					};
 				};
@@ -185,6 +263,7 @@
 			projectRoot = "";
 			targets = (
 				A50000000000000000000001 /* ShareSyncMac */,
+				B50000000000000000000001 /* ShareSyncMessagesBridge */,
 			);
 		};
 /* End PBXProject section */
@@ -195,6 +274,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000005 /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B30000000000000000000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10000000000000000000009 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -232,6 +319,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B30000000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10000000000000000000001 /* ShareSyncMessagesBridgeApp.swift in Sources */,
+				B10000000000000000000002 /* MessageBridgePermissionView.swift in Sources */,
+				B10000000000000000000003 /* MessageBridgeError.swift in Sources */,
+				B10000000000000000000004 /* MessageCursorStore.swift in Sources */,
+				B10000000000000000000005 /* MessageDatabaseAccessProbe.swift in Sources */,
+				B10000000000000000000006 /* MessageDatabaseSchema.swift in Sources */,
+				B10000000000000000000007 /* MessageEventReader.swift in Sources */,
+				B10000000000000000000008 /* SQLiteReadOnlyDatabase.swift in Sources */,
+				B1000000000000000000000A /* ControlledMessageValidationSession.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
@@ -240,6 +343,15 @@
 			children = (
 				A20000000000000000000009 /* en */,
 				A2000000000000000000000A /* zh-Hant */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		B20000000000000000000008 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B20000000000000000000004 /* en */,
+				B20000000000000000000005 /* zh-Hant */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -326,6 +438,53 @@
 			};
 			name = Release;
 		};
+		B80000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BRIDGE_DISPLAY_NAME = "ShareSync Messages Bridge Dev";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 72HVCU235Z;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ShareSyncMessagesBridge/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 0.1.0;
+				OTHER_LDFLAGS = "-lsqlite3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.sharesync.messages-bridge.debug;
+				PRODUCT_NAME = "ShareSync Messages Bridge";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		B80000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BRIDGE_DISPLAY_NAME = "ShareSync Messages Bridge";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 72HVCU235Z;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ShareSyncMessagesBridge/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 0.1.0;
+				OTHER_LDFLAGS = "-lsqlite3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.sharesync.messages-bridge;
+				PRODUCT_NAME = "ShareSync Messages Bridge";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -343,6 +502,15 @@
 			buildConfigurations = (
 				A80000000000000000000003 /* Debug */,
 				A80000000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B90000000000000000000001 /* Build configuration list for PBXNativeTarget "ShareSyncMessagesBridge" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B80000000000000000000001 /* Debug */,
+				B80000000000000000000002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
