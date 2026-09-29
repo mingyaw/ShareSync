@@ -74,6 +74,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         case sent
         case noReplies
         case privateChatRequired
+        case automationPermissionRequired
+        case recipientUnavailable
         case failed
     }
 
@@ -431,6 +433,10 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                     }.value
                     telegramReplyResult = result
                     telegramReplyState = result.sentCount > 0 ? .sent : .noReplies
+                } catch MessagesAutomationSender.AutomationError.permissionDenied {
+                    telegramReplyState = .automationPermissionRequired
+                } catch MessagesAutomationSender.AutomationError.recipientUnavailable {
+                    telegramReplyState = .recipientUnavailable
                 } catch {
                     telegramReplyState = .failed
                 }
@@ -472,6 +478,13 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles") else {
             return
         }
+        NSWorkspace.shared.open(url)
+    }
+
+    func openAutomationSettings() {
+        guard let url = URL(
+            string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation"
+        ) else { return }
         NSWorkspace.shared.open(url)
     }
 
@@ -945,6 +958,12 @@ struct MessageBridgePermissionView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+
+            if model.telegramReplyState == .automationPermissionRequired {
+                Button("bridge.telegram.reply.action.open_automation") {
+                    model.openAutomationSettings()
+                }
+            }
         }
     }
 
@@ -971,6 +990,8 @@ struct MessageBridgePermissionView: View {
         case .sent: return "bridge.telegram.reply.sent"
         case .noReplies: return "bridge.telegram.reply.none"
         case .privateChatRequired: return "bridge.telegram.reply.private_chat"
+        case .automationPermissionRequired: return "bridge.telegram.reply.automation_permission"
+        case .recipientUnavailable: return "bridge.telegram.reply.recipient_unavailable"
         case .failed: return "bridge.telegram.reply.failed"
         }
     }

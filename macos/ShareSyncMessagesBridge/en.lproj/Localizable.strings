@@ -82,10 +82,13 @@
 "bridge.telegram.reply.sent" = "Eligible replies were sent through Messages on this Mac.";
 "bridge.telegram.reply.none" = "No new eligible replies. Bot commands and unknown messages were ignored.";
 "bridge.telegram.reply.private_chat" = "Replies require a positive Telegram private Chat ID. Groups and channels are not supported.";
+"bridge.telegram.reply.automation_permission" = "macOS has not allowed ShareSync to control Messages. Allow access and check again; this reply remains available for retry.";
+"bridge.telegram.reply.recipient_unavailable" = "Messages could not find the original iMessage recipient. Confirm that the address is still available in Messages.";
 "bridge.telegram.reply.failed" = "The reply could not be processed. Check the network, Telegram bot settings, and Messages automation permission.";
 "bridge.telegram.reply.action.enable" = "Enable Secure Replies";
 "bridge.telegram.reply.action.check" = "Check Telegram Replies";
 "bridge.telegram.reply.action.disable" = "Disable Replies";
+"bridge.telegram.reply.action.open_automation" = "Open Automation Settings";
 "bridge.telegram.reply.enabled" = "Restricted replies enabled";
 "bridge.telegram.reply.metric.checked" = "Checked";
 "bridge.telegram.reply.metric.sent" = "Replied";

@@ -1,8 +1,10 @@
 import Foundation
 
 final class MessagesAutomationSender: IMessageReplySending {
-    enum AutomationError: Error {
+    enum AutomationError: Error, Equatable {
         case launchFailed
+        case permissionDenied
+        case recipientUnavailable
         case sendFailed(Int32)
     }
 
@@ -12,7 +14,7 @@ final class MessagesAutomationSender: IMessageReplySending {
         set messageBody to item 2 of argv
         tell application "Messages"
             set targetAccount to first account whose service type is iMessage
-            set targetParticipant to first participant of targetAccount whose handle is targetHandle
+            set targetParticipant to participant targetHandle of targetAccount
             send messageBody to targetParticipant
         end tell
     end run
@@ -23,14 +25,23 @@ final class MessagesAutomationSender: IMessageReplySending {
         process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
         process.arguments = ["-e", Self.script, recipientHandle, text]
         process.standardOutput = Pipe()
-        process.standardError = Pipe()
+        let errorPipe = Pipe()
+        process.standardError = errorPipe
         do {
             try process.run()
         } catch {
             throw AutomationError.launchFailed
         }
         process.waitUntilExit()
+        let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+        let errorOutput = String(data: errorData, encoding: .utf8) ?? ""
         guard process.terminationStatus == 0 else {
+            if errorOutput.contains("(-1743)") {
+                throw AutomationError.permissionDenied
+            }
+            if errorOutput.contains("(-1728)") {
+                throw AutomationError.recipientUnavailable
+            }
             throw AutomationError.sendFailed(process.terminationStatus)
         }
     }
