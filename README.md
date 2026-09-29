@@ -1,12 +1,13 @@
 # ShareSync
 
-Status: M0 photo PoC through M50 photo MVP Source RC are complete. M51A establishes the Local Bridge product color system for the photo-only release track.
+Status: the photo MVP Source RC is complete. The macOS product now combines the Android-to-Photos gateway with the local Messages feasibility workflow.
 
 ShareSync is a native Android, iOS, and macOS local sync app for a personal-device workflow:
 
 - Android is the primary phone and sync controller.
 - iPhone is the iCloud gateway.
-- Mac can act as an alternate always-available Photos gateway.
+- Mac acts as the primary always-available Photos gateway and local Apple ecosystem bridge.
+- The unified Mac app includes an explicitly permissioned Messages page for controlled detection and forwarding preview.
 - Data transfers locally between the two phones without a cloud relay.
 - iPhone imports received photos into Photos, allowing iCloud Photos to back them up through Apple's normal Photos pipeline.
 
@@ -25,7 +26,7 @@ The current codebase contains:
 - Shared protocol schemas.
 - An Android Studio project under `android/`.
 - An Xcode iOS app project at `ios/ShareSync.xcodeproj`.
-- An Xcode macOS app project at `macos/ShareSyncMac.xcodeproj`, including the M1 awake-session sync workflow.
+- An Xcode macOS app project at `macos/ShareSyncMac.xcodeproj`, with Photos and Messages as first-class destinations in `ShareSyncMac`.
 - A Swift Package core at the repository root for fast iOS core tests.
 - An embedded Android local HTTP server for M0 health, manifest, and media endpoints.
 - Android QR pairing payload UI with stable local device identity and actual bound port.
@@ -123,6 +124,8 @@ ios/
 macos/
   ShareSyncMac.xcodeproj
   ShareSyncMacApp/
+  MessageBridgeCore/
+  ShareSyncMessagesBridge/  # diagnostic target; not the shipping product path
 
 shared/
   protocol/
@@ -142,6 +145,8 @@ tasks/
 - [Product Development Plan](docs/product-development-plan.md)
 - [Implementation Spec](docs/implementation-spec.md)
 - [macOS Feature Line](docs/mac-feature-line.md)
+- [Mac Bridge Product Roadmap](docs/mac-bridge-product-roadmap.md)
+- [Messages Release Boundary](docs/messages-bridge-release-boundary.md)
 - [Developer Quickstart](docs/developer-quickstart.md)
 - [M1 Release Readiness](docs/m1-release-readiness.md)
 - [M3 Pre-Release Readiness](docs/m3-release-readiness.md)

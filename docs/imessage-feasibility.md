@@ -1,5 +1,10 @@
 # iMessage Capture Feasibility
 
+> Product decision update (2026-09-29): the user accepted the non-sandboxed
+> distribution tradeoff and requested direct integration into `ShareSyncMac`.
+> The separate target described below remains a diagnostic harness; the shipping
+> implementation now lives in the unified Mac app with explicit permission UI.
+
 Status: Feasibility assessment only. No message access is implemented.
 
 ## Goal

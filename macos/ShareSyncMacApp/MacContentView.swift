@@ -1,10 +1,17 @@
 import SwiftUI
 
 struct MacContentView: View {
+    private enum Section: String {
+        case photos
+        case messages
+    }
+
     @EnvironmentObject private var model: MacPhotoSyncViewModel
+    @StateObject private var messageModel = MessageBridgePermissionViewModel()
     @State private var showingPairing = false
     @State private var confirmUnpair = false
     @State private var isSidebarVisible = true
+    @State private var selectedSection: Section = .photos
 
     var body: some View {
         HStack(spacing: 0) {
@@ -34,29 +41,42 @@ struct MacContentView: View {
             }
 
             ToolbarItemGroup {
-                Button {
-                    model.refreshPhotos()
-                } label: {
-                    Label("mac.action.refresh", systemImage: "arrow.clockwise")
-                }
-                .disabled(!model.isPaired || model.isBusy)
-                .help("mac.action.refresh")
-
-                if model.canCancel {
-                    Button(role: .cancel) {
-                        model.cancel()
+                if selectedSection == .photos {
+                    Button {
+                        model.refreshPhotos()
                     } label: {
-                        Label("mac.action.stop", systemImage: "stop.fill")
+                        Label("mac.action.refresh", systemImage: "arrow.clockwise")
                     }
-                    .help("mac.action.stop")
+                    .disabled(!model.isPaired || model.isBusy)
+                    .help("mac.action.refresh")
+
+                    if model.canCancel {
+                        Button(role: .cancel) {
+                            model.cancel()
+                        } label: {
+                            Label("mac.action.stop", systemImage: "stop.fill")
+                        }
+                        .help("mac.action.stop")
+                    }
+                } else {
+                    Button {
+                        messageModel.checkAccess()
+                    } label: {
+                        Label("bridge.action.check", systemImage: "checkmark.shield")
+                    }
+                    .disabled(messageModel.state == .checking)
+                    .help("bridge.action.check")
                 }
             }
         }
         .onAppear {
-            if !model.isPaired {
-                showingPairing = true
-            } else {
+            if model.isPaired {
                 model.refreshPhotos()
+            }
+        }
+        .onChange(of: selectedSection) { section in
+            if section == .messages {
+                messageModel.checkAccess()
             }
         }
         .confirmationDialog("mac.unpair.confirm", isPresented: $confirmUnpair) {
@@ -82,6 +102,26 @@ struct MacContentView: View {
                     .foregroundStyle(.secondary)
             }
             .padding(20)
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("mac.sidebar.features")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+
+                sidebarItem(
+                    title: "mac.sidebar.photos",
+                    systemImage: "photo.on.rectangle.angled",
+                    section: .photos
+                )
+                sidebarItem(
+                    title: "mac.sidebar.messages",
+                    systemImage: "message.fill",
+                    section: .messages
+                )
+            }
+            .padding(14)
 
             Divider()
 
@@ -146,18 +186,51 @@ struct MacContentView: View {
         .background(Color(nsColor: .underPageBackgroundColor))
     }
 
+    private func sidebarItem(
+        title: LocalizedStringKey,
+        systemImage: String,
+        section: Section
+    ) -> some View {
+        Button {
+            selectedSection = section
+        } label: {
+            Label(title, systemImage: systemImage)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 10)
+                .frame(height: 34)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(selectedSection == section ? MacBrand.bridge : .primary)
+        .background(
+            selectedSection == section ? MacBrand.bridge.opacity(0.12) : Color.clear,
+            in: RoundedRectangle(cornerRadius: 6)
+        )
+    }
+
+    @ViewBuilder
     private var mainContent: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 30) {
-                statusHeader
-                photoOverview
-                transferProgress
-                primaryAction
-                completionReturnStatus
-                syncHistory
+        switch selectedSection {
+        case .photos:
+            ScrollView {
+                VStack(alignment: .leading, spacing: 30) {
+                    statusHeader
+                    photoOverview
+                    transferProgress
+                    primaryAction
+                    completionReturnStatus
+                    syncHistory
+                }
+                .frame(maxWidth: 760, alignment: .leading)
+                .padding(38)
             }
-            .frame(maxWidth: 760, alignment: .leading)
-            .padding(38)
+        case .messages:
+            ScrollView {
+                MessageBridgePermissionView()
+                    .environmentObject(messageModel)
+                    .frame(maxWidth: 760, alignment: .leading)
+                    .padding(.vertical, 10)
+            }
         }
     }
 

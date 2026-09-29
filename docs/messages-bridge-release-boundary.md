@@ -1,17 +1,22 @@
 # Messages Bridge Release Boundary
 
-Status: distribution requirements for the iMessage feasibility helper.
+Status: distribution requirements for Messages inside the unified Mac app.
 
-## Separate Product
+## Unified Product
 
-`ShareSync Messages Bridge.app` is a separately signed macOS product. It is not
-embedded into `ShareSync Mac.app`, and the photo gateway remains sandboxed. The
-helper is non-sandboxed only because macOS protects the local Messages database
-outside the photo gateway's container.
+`ShareSyncMac` contains both the Android photo bridge and the Messages feature.
+The Messages page performs permission onboarding, controlled validation, and
+local forwarding preview directly in the main app. Because macOS protects the
+Messages database outside the app container, the unified product is intentionally
+non-sandboxed.
 
-The helper must keep a stable release bundle identifier and signing requirement.
+The main app must keep a stable release bundle identifier and signing requirement.
 Changing either can make macOS treat an update as a different app and require the
 user to review permission again.
+
+`ShareSync Messages Bridge.app` remains a diagnostic target for development and
+schema troubleshooting. It is not the shipping product path and must not be
+installed alongside the release app during permission acceptance testing.
 
 ## Permission Contract
 
@@ -29,8 +34,8 @@ The app never attempts to automate System Settings or grant permission itself.
 
 Release acceptance requires all of the following:
 
-1. Archive the helper with a Developer ID Application identity and hardened runtime.
-2. Verify that the helper has no network, Apple Events, address-book, or photo entitlements.
+1. Archive `ShareSyncMac` with a Developer ID Application identity and hardened runtime.
+2. Verify that the app has only the local-network, Photos, and explicitly reviewed Messages-related access required by its features.
 3. Confirm `PrivacyInfo.xcprivacy` is present in the signed app bundle.
 4. Submit the archive to Apple's notary service and staple the accepted ticket.
 5. Verify the stapled artifact on a clean supported macOS account.
@@ -43,7 +48,7 @@ Do not distribute an ad-hoc-signed feasibility build as a production artifact.
 Adding an external connector is a separate security review. Before that release:
 
 - credentials must be stored through `MessageConnectorCredentialVault`; the
-  production helper implementation uses a device-only macOS Keychain item;
+  production Mac implementation uses a device-only macOS Keychain item;
 - the connector must accept only `MessageConnectorEnvelope`;
 - endpoint and redirect behavior must be allowlisted;
 - `MessageConnectorEndpointPolicy` must validate the initial endpoint and every

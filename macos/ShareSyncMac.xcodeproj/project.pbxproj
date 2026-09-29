@@ -55,6 +55,22 @@
 		B10000000000000000000015 /* MessageConnectorCredentialVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001F /* MessageConnectorCredentialVault.swift */; };
 		B10000000000000000000016 /* KeychainMessageConnectorCredentialVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000B /* KeychainMessageConnectorCredentialVault.swift */; };
 		B10000000000000000000017 /* MessageConnectorEndpointPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000020 /* MessageConnectorEndpointPolicy.swift */; };
+		C10000000000000000000001 /* MessageBridgePermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* MessageBridgePermissionView.swift */; };
+		C10000000000000000000002 /* MessageBridgeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000010 /* MessageBridgeError.swift */; };
+		C10000000000000000000003 /* MessageCursorStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000011 /* MessageCursorStore.swift */; };
+		C10000000000000000000004 /* MessageDatabaseAccessProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000012 /* MessageDatabaseAccessProbe.swift */; };
+		C10000000000000000000005 /* MessageDatabaseSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000013 /* MessageDatabaseSchema.swift */; };
+		C10000000000000000000006 /* MessageEventReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000014 /* MessageEventReader.swift */; };
+		C10000000000000000000007 /* SQLiteReadOnlyDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000015 /* SQLiteReadOnlyDatabase.swift */; };
+		C10000000000000000000008 /* ControlledMessageValidationSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000016 /* ControlledMessageValidationSession.swift */; };
+		C10000000000000000000009 /* NormalizedMessageEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000017 /* NormalizedMessageEvent.swift */; };
+		C1000000000000000000000A /* MessageForwardingPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000018 /* MessageForwardingPipeline.swift */; };
+		C1000000000000000000000B /* MessageForwardingRuntimeGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000019 /* MessageForwardingRuntimeGate.swift */; };
+		C1000000000000000000000C /* MessageDeliveryLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001A /* MessageDeliveryLedger.swift */; };
+		C1000000000000000000000D /* MessageForwardingAudit.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001B /* MessageForwardingAudit.swift */; };
+		C1000000000000000000000E /* MessageAttributedBodyDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001C /* MessageAttributedBodyDecoder.swift */; };
+		C1000000000000000000000F /* MessageConnectorEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001D /* MessageConnectorEnvelope.swift */; };
+		C10000000000000000000010 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000A /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -314,6 +330,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000005 /* Localizable.strings in Resources */,
+				C10000000000000000000010 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -358,6 +375,21 @@
 				A1000000000000000000001F /* ManifestClient.swift in Sources */,
 				A10000000000000000000020 /* MediaDownloadState.swift in Sources */,
 				A10000000000000000000021 /* MediaDownloader.swift in Sources */,
+				C10000000000000000000001 /* MessageBridgePermissionView.swift in Sources */,
+				C10000000000000000000002 /* MessageBridgeError.swift in Sources */,
+				C10000000000000000000003 /* MessageCursorStore.swift in Sources */,
+				C10000000000000000000004 /* MessageDatabaseAccessProbe.swift in Sources */,
+				C10000000000000000000005 /* MessageDatabaseSchema.swift in Sources */,
+				C10000000000000000000006 /* MessageEventReader.swift in Sources */,
+				C10000000000000000000007 /* SQLiteReadOnlyDatabase.swift in Sources */,
+				C10000000000000000000008 /* ControlledMessageValidationSession.swift in Sources */,
+				C10000000000000000000009 /* NormalizedMessageEvent.swift in Sources */,
+				C1000000000000000000000A /* MessageForwardingPipeline.swift in Sources */,
+				C1000000000000000000000B /* MessageForwardingRuntimeGate.swift in Sources */,
+				C1000000000000000000000C /* MessageDeliveryLedger.swift in Sources */,
+				C1000000000000000000000D /* MessageForwardingAudit.swift in Sources */,
+				C1000000000000000000000E /* MessageAttributedBodyDecoder.swift in Sources */,
+				C1000000000000000000000F /* MessageConnectorEnvelope.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -462,13 +494,14 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 72HVCU235Z;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ShareSyncMacApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 0.1.0;
+				OTHER_LDFLAGS = "-lsqlite3";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sharesync.mac.debug;
 				PRODUCT_NAME = "ShareSync Mac";
 				SHARESYNC_DISPLAY_NAME = "ShareSync Mac Dev";
@@ -485,13 +518,14 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 72HVCU235Z;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ShareSyncMacApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 0.1.0;
+				OTHER_LDFLAGS = "-lsqlite3";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sharesync.mac;
 				PRODUCT_NAME = "ShareSync Mac";
 				SHARESYNC_DISPLAY_NAME = "ShareSync Mac";

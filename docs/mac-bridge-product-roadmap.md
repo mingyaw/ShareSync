@@ -23,7 +23,8 @@ Platform roles:
 - Prefer direct local-network transfer between Android and Mac.
 - Do not add a ShareSync-operated cloud relay.
 - Request sensitive Mac permissions only for the feature that needs them.
-- Keep the existing sandboxed photo gateway isolated from Messages access.
+- Keep Messages access explicit and feature-scoped inside the unified Mac app;
+  the product accepts that direct Messages access makes the Mac app non-sandboxed.
 - Make every external forwarding destination explicit to the user.
 - Use durable device identity, signed requests, versioned ledgers, tombstones,
   and idempotency keys for cross-device state.
@@ -86,9 +87,10 @@ interruption without requiring a new pairing.
 
 ### Implemented on the feasibility branch
 
-- A separate `ShareSync Messages Bridge` macOS app target keeps Messages access
-  outside the sandboxed photo gateway.
-- The helper performs a schema-only compatibility check before message-row access
+- `ShareSyncMac` now contains Photos and Messages as first-class sidebar
+  destinations. The Messages core, permission UI, validation, and preview are
+  compiled directly into the main target.
+- The unified app performs a schema-only compatibility check before message-row access
   and provides explicit permission onboarding in Traditional Chinese and English.
 - A durable baseline cursor excludes existing message history and survives restart.
 - Controlled validation reads only rows newer than the baseline and reports
@@ -124,7 +126,7 @@ interruption without requiring a new pairing.
   event. Raw message GUIDs, row IDs, sender accounts, conversation identifiers,
   and associated-message IDs cannot be passed to a connector; optional sender
   labels require an explicit local alias mapping.
-- The helper UI now offers a separate-baseline forwarding preview. An exact
+- The Messages page offers a separate-baseline forwarding preview. An exact
   sender allowlist is kept only in the running app session; new rows are checked
   through the real policy and delivery pipeline, while only aggregate counts
   and the redacted audit are retained and nothing leaves the Mac.
@@ -135,9 +137,9 @@ interruption without requiring a new pairing.
   continuation for full batches, bounded exponential failure backoff, explicit
   rate-limit delays, and immediate wake/network recovery without touching the
   message cursor.
-- The helper now includes a no-collection privacy manifest, localized system
-  permission copy, and an explicit separate-product signing, notarization,
-  permission, and future-connector release boundary.
+- The main app bundle includes a no-collection privacy manifest and Messages
+  usage description. Its release boundary documents non-sandboxed signing,
+  notarization, permission, and future connector requirements.
 - Connector credentials now have an isolated vault contract and a production
   macOS Keychain implementation using device-only accessibility. No credential
   is stored in cursors, delivery state, audit history, or app preferences.
@@ -157,7 +159,7 @@ interruption without requiring a new pairing.
   preview mode, pause, rate limits, and loop prevention.
 - Implement a local fake connector before adding one official bot or webhook API.
 - Store connector credentials in Keychain and use idempotency keys for retries.
-- Define the separately distributed Developer ID and notarization strategy.
+- Complete Developer ID signing and notarization for the unified non-sandboxed app.
 
 ### Acceptance Gate
 
@@ -248,6 +250,6 @@ The integration line must eventually provide:
 6. Create the integration branch and unify navigation, permissions, activity,
    lifecycle, and packaging.
 
-Notes and Calendar must not be implemented on the iMessage branch. The iMessage
-helper must not be merged into the photo gateway until its permission boundary
-and distribution strategy are accepted.
+Notes and Calendar must not be implemented on the iMessage branch. The former
+standalone Messages target remains available only as a diagnostic harness; the
+shipping product path is the unified `ShareSyncMac` target.
