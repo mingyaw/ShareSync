@@ -120,6 +120,10 @@ interruption without requiring a new pairing.
 - Rich text uses an allowlisted secure Foundation attributed-string decoder.
   Unknown private archive formats fail closed and are never decoded through
   private APIs or unrestricted object deserialization.
+- The connector boundary receives a minimized envelope instead of the internal
+  event. Raw message GUIDs, row IDs, sender accounts, conversation identifiers,
+  and associated-message IDs cannot be passed to a connector; optional sender
+  labels require an explicit local alias mapping.
 - The feasibility build contains no external forwarding connector or networking code.
 
 ### Remaining

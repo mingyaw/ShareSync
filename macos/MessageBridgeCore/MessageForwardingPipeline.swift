@@ -80,18 +80,18 @@ public enum MessageDeliveryOutcome: Equatable, Sendable {
 }
 
 public protocol MessageForwardingConnector: AnyObject {
-    func deliver(_ event: NormalizedMessageEvent) throws -> MessageDeliveryOutcome
+    func deliver(_ envelope: MessageConnectorEnvelope) throws -> MessageDeliveryOutcome
 }
 
 public final class InMemoryMessageForwardingConnector: MessageForwardingConnector {
-    public private(set) var deliveries: [NormalizedMessageEvent] = []
+    public private(set) var deliveries: [MessageConnectorEnvelope] = []
     private var deliveredKeys: Set<String> = []
 
     public init() {}
 
-    public func deliver(_ event: NormalizedMessageEvent) throws -> MessageDeliveryOutcome {
-        guard deliveredKeys.insert(event.deliveryKey).inserted else { return .duplicate }
-        deliveries.append(event)
+    public func deliver(_ envelope: MessageConnectorEnvelope) throws -> MessageDeliveryOutcome {
+        guard deliveredKeys.insert(envelope.deliveryKey).inserted else { return .duplicate }
+        deliveries.append(envelope)
         return .delivered
     }
 }
@@ -118,6 +118,7 @@ public struct MessageForwardingPipeline {
     private let runtimeGate: MessageForwardingRuntimeGate
     private let deliveryLedger: any MessageDeliveryLedgerStore
     private let rateLimiter: MessageDeliveryRateLimiter?
+    private let envelopeBuilder: MessageConnectorEnvelopeBuilder
     private let now: () -> Date
 
     public init(
@@ -129,6 +130,7 @@ public struct MessageForwardingPipeline {
         runtimeGate: MessageForwardingRuntimeGate = MessageForwardingRuntimeGate(),
         deliveryLedger: any MessageDeliveryLedgerStore = InMemoryMessageDeliveryLedgerStore(),
         rateLimiter: MessageDeliveryRateLimiter? = nil,
+        envelopeBuilder: MessageConnectorEnvelopeBuilder = MessageConnectorEnvelopeBuilder(),
         now: @escaping () -> Date = Date.init
     ) {
         self.reader = reader
@@ -139,6 +141,7 @@ public struct MessageForwardingPipeline {
         self.runtimeGate = runtimeGate
         self.deliveryLedger = deliveryLedger
         self.rateLimiter = rateLimiter
+        self.envelopeBuilder = envelopeBuilder
         self.now = now
     }
 
@@ -174,7 +177,8 @@ public struct MessageForwardingPipeline {
                 throw MessageForwardingPipelineError.rateLimited(retryAfter: retryAfter)
             }
             try deliveryLedger.markPending(deliveryKey: event.deliveryKey, at: deliveryDate)
-            switch try connector.deliver(event) {
+            let envelope = envelopeBuilder.build(from: event)
+            switch try connector.deliver(envelope) {
             case .delivered:
                 deliveredCount += 1
             case .duplicate:

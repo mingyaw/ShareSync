@@ -100,7 +100,7 @@ final class MessageForwardingPipelineTests: XCTestCase {
         XCTAssertThrowsError(try pipeline.run()) { error in
             XCTAssertEqual(error as? MessageForwardingPipelineError, .rateLimited(retryAfter: 60))
         }
-        XCTAssertEqual(connector.deliveries.map(\.sourceGUID), ["first"])
+        XCTAssertEqual(connector.deliveries.map(\.body), ["one"])
         XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 0))
     }
 
@@ -125,7 +125,7 @@ final class MessageForwardingPipelineTests: XCTestCase {
         XCTAssertEqual(result.eligibleCount, 1)
         XCTAssertEqual(result.deliveredCount, 1)
         XCTAssertEqual(result.deniedCounts, [.outgoingMessage: 1])
-        XCTAssertEqual(connector.deliveries.map(\.sourceGUID), ["accepted"])
+        XCTAssertEqual(connector.deliveries.map(\.body), ["one"])
         XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 2))
     }
 
@@ -217,13 +217,14 @@ private final class FailOnceConnector: MessageForwardingConnector {
         self.failingGUID = failingGUID
     }
 
-    func deliver(_ event: NormalizedMessageEvent) throws -> MessageDeliveryOutcome {
-        if event.sourceGUID == failingGUID && !hasFailed {
+    func deliver(_ envelope: MessageConnectorEnvelope) throws -> MessageDeliveryOutcome {
+        let syntheticGUID = envelope.body == "two" ? "second" : "first"
+        if syntheticGUID == failingGUID && !hasFailed {
             hasFailed = true
             throw TestError.failed
         }
-        guard deliveredKeys.insert(event.deliveryKey).inserted else { return .duplicate }
-        deliveredGUIDs.append(event.sourceGUID)
+        guard deliveredKeys.insert(envelope.deliveryKey).inserted else { return .duplicate }
+        deliveredGUIDs.append(syntheticGUID)
         return .delivered
     }
 

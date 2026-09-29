@@ -48,6 +48,7 @@
 		B1000000000000000000000E /* MessageDeliveryLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001A /* MessageDeliveryLedger.swift */; };
 		B1000000000000000000000F /* MessageForwardingAudit.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001B /* MessageForwardingAudit.swift */; };
 		B10000000000000000000010 /* MessageAttributedBodyDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001C /* MessageAttributedBodyDecoder.swift */; };
+		B10000000000000000000011 /* MessageConnectorEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001D /* MessageConnectorEnvelope.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -99,6 +100,7 @@
 		B2000000000000000000001A /* MessageDeliveryLedger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDeliveryLedger.swift; sourceTree = "<group>"; };
 		B2000000000000000000001B /* MessageForwardingAudit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageForwardingAudit.swift; sourceTree = "<group>"; };
 		B2000000000000000000001C /* MessageAttributedBodyDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageAttributedBodyDecoder.swift; sourceTree = "<group>"; };
+		B2000000000000000000001D /* MessageConnectorEnvelope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageConnectorEnvelope.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -207,6 +209,7 @@
 				B2000000000000000000001A /* MessageDeliveryLedger.swift */,
 				B2000000000000000000001B /* MessageForwardingAudit.swift */,
 				B2000000000000000000001C /* MessageAttributedBodyDecoder.swift */,
+				B2000000000000000000001D /* MessageConnectorEnvelope.swift */,
 			);
 			path = MessageBridgeCore;
 			sourceTree = "<group>";
@@ -356,6 +359,7 @@
 				B1000000000000000000000E /* MessageDeliveryLedger.swift in Sources */,
 				B1000000000000000000000F /* MessageForwardingAudit.swift in Sources */,
 				B10000000000000000000010 /* MessageAttributedBodyDecoder.swift in Sources */,
+				B10000000000000000000011 /* MessageConnectorEnvelope.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
