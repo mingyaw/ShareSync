@@ -112,7 +112,7 @@ final class SQLiteReadOnlyDatabase {
             message.cache_has_attachments,
             message.associated_message_type,
             message.associated_message_guid,
-            message.attributedBody IS NOT NULL,
+            message.attributedBody,
             handle.id,
             \(conversationExpression),
             \(attachmentCountExpression),
@@ -145,7 +145,8 @@ final class SQLiteReadOnlyDatabase {
                 hasAttachments: sqlite3_column_int(statement, 6) != 0,
                 associatedMessageType: sqlite3_column_int64(statement, 7),
                 associatedMessageGUID: string(statement, column: 8),
-                hasAttributedBody: sqlite3_column_int(statement, 9) != 0,
+                hasAttributedBody: sqlite3_column_type(statement, 9) != SQLITE_NULL,
+                attributedBodyData: data(statement, column: 9),
                 senderIdentifier: string(statement, column: 10),
                 conversationIdentifiers: separatedStrings(statement, column: 11),
                 attachmentCount: Int(sqlite3_column_int64(statement, 12)),
@@ -165,6 +166,14 @@ final class SQLiteReadOnlyDatabase {
             return nil
         }
         return String(cString: value)
+    }
+
+    private func data(_ statement: OpaquePointer?, column: Int32) -> Data? {
+        guard sqlite3_column_type(statement, column) != SQLITE_NULL,
+              let bytes = sqlite3_column_blob(statement, column) else {
+            return nil
+        }
+        return Data(bytes: bytes, count: Int(sqlite3_column_bytes(statement, column)))
     }
 
     private func separatedStrings(_ statement: OpaquePointer?, column: Int32) -> [String] {

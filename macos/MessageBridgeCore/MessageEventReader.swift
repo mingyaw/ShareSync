@@ -19,13 +19,14 @@ public struct MessageEvent: Equatable, Sendable {
     public let associatedMessageType: Int64
     public let associatedMessageGUID: String?
     public let hasAttributedBody: Bool
+    public let attributedBodyData: Data?
     public let senderIdentifier: String?
     public let conversationIdentifiers: [String]
     public let attachmentCount: Int
     public let attachmentMIMETypes: Set<String>
 
     public var needsRichBodyDecoding: Bool {
-        body == nil && hasAttributedBody
+        body == nil && attributedBodyData != nil
     }
 }
 

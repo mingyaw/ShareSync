@@ -117,6 +117,9 @@ interruption without requiring a new pairing.
 - Optional attachment joins expose only attachment count and MIME types for
   fidelity decisions. The reader does not access attachment files, paths, or
   filenames.
+- Rich text uses an allowlisted secure Foundation attributed-string decoder.
+  Unknown private archive formats fail closed and are never decoded through
+  private APIs or unrestricted object deserialization.
 - The feasibility build contains no external forwarding connector or networking code.
 
 ### Remaining

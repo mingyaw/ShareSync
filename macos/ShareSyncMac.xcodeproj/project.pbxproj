@@ -47,6 +47,7 @@
 		B1000000000000000000000D /* MessageForwardingRuntimeGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000019 /* MessageForwardingRuntimeGate.swift */; };
 		B1000000000000000000000E /* MessageDeliveryLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001A /* MessageDeliveryLedger.swift */; };
 		B1000000000000000000000F /* MessageForwardingAudit.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001B /* MessageForwardingAudit.swift */; };
+		B10000000000000000000010 /* MessageAttributedBodyDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001C /* MessageAttributedBodyDecoder.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -97,6 +98,7 @@
 		B20000000000000000000019 /* MessageForwardingRuntimeGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageForwardingRuntimeGate.swift; sourceTree = "<group>"; };
 		B2000000000000000000001A /* MessageDeliveryLedger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDeliveryLedger.swift; sourceTree = "<group>"; };
 		B2000000000000000000001B /* MessageForwardingAudit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageForwardingAudit.swift; sourceTree = "<group>"; };
+		B2000000000000000000001C /* MessageAttributedBodyDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageAttributedBodyDecoder.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -204,6 +206,7 @@
 				B20000000000000000000019 /* MessageForwardingRuntimeGate.swift */,
 				B2000000000000000000001A /* MessageDeliveryLedger.swift */,
 				B2000000000000000000001B /* MessageForwardingAudit.swift */,
+				B2000000000000000000001C /* MessageAttributedBodyDecoder.swift */,
 			);
 			path = MessageBridgeCore;
 			sourceTree = "<group>";
@@ -352,6 +355,7 @@
 				B1000000000000000000000D /* MessageForwardingRuntimeGate.swift in Sources */,
 				B1000000000000000000000E /* MessageDeliveryLedger.swift in Sources */,
 				B1000000000000000000000F /* MessageForwardingAudit.swift in Sources */,
+				B10000000000000000000010 /* MessageAttributedBodyDecoder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

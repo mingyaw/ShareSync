@@ -190,6 +190,7 @@ final class MessageForwardingPipelineTests: XCTestCase {
             associatedMessageType: associatedType,
             associatedMessageGUID: nil,
             hasAttributedBody: false,
+            attributedBodyData: nil,
             senderIdentifier: sender,
             conversationIdentifiers: conversations,
             attachmentCount: 0,

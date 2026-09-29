@@ -47,6 +47,7 @@ final class MessageEventReaderTests: XCTestCase {
 
         XCTAssertNil(event.body)
         XCTAssertTrue(event.needsRichBodyDecoding)
+        XCTAssertEqual(event.attributedBodyData, Data([0x01, 0x02, 0x03]))
     }
 
     func testBatchLimitIsBoundedAndCursorAdvances() throws {

@@ -30,11 +30,19 @@ public struct NormalizedMessageEvent: Equatable, Sendable {
 }
 
 public struct MessageEventNormalizer {
-    public init() {}
+    private let attributedBodyDecoder: any MessageAttributedBodyDecoding
+
+    public init(
+        attributedBodyDecoder: any MessageAttributedBodyDecoding = SecureKeyedAttributedBodyDecoder()
+    ) {
+        self.attributedBodyDecoder = attributedBodyDecoder
+    }
 
     public func normalize(_ event: MessageEvent) -> NormalizedMessageEvent {
+        let decodedRichBody = event.attributedBodyData.flatMap(attributedBodyDecoder.decodeText)
+        let body = event.body ?? decodedRichBody
         var contentKinds: Set<MessageContentKind> = []
-        if event.body != nil { contentKinds.insert(.text) }
+        if body != nil { contentKinds.insert(.text) }
         if event.hasAttributedBody { contentKinds.insert(.richText) }
         if event.hasAttachments { contentKinds.insert(.attachment) }
         if event.associatedMessageType != 0 { contentKinds.insert(.associatedEvent) }
@@ -43,7 +51,7 @@ public struct MessageEventNormalizer {
             deliveryKey: deliveryKey(guid: event.guid, rowID: event.rowID),
             sourceRowID: event.rowID,
             sourceGUID: event.guid,
-            body: event.body,
+            body: body,
             timestamp: Self.messageDate(rawValue: event.rawDate),
             direction: event.isFromMe ? .outgoing : .incoming,
             senderIdentifier: event.senderIdentifier,
