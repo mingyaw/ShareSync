@@ -50,6 +50,8 @@
 		B10000000000000000000010 /* MessageAttributedBodyDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001C /* MessageAttributedBodyDecoder.swift */; };
 		B10000000000000000000011 /* MessageConnectorEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001D /* MessageConnectorEnvelope.swift */; };
 		B10000000000000000000012 /* MessagePollingPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001E /* MessagePollingPlanner.swift */; };
+		B10000000000000000000013 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000A /* PrivacyInfo.xcprivacy */; };
+		B10000000000000000000014 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000009 /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -88,6 +90,9 @@
 		B20000000000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B20000000000000000000004 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		B20000000000000000000005 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		B20000000000000000000006 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B20000000000000000000007 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		B2000000000000000000000A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B20000000000000000000010 /* MessageBridgeError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBridgeError.swift; sourceTree = "<group>"; };
 		B20000000000000000000011 /* MessageCursorStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCursorStore.swift; sourceTree = "<group>"; };
 		B20000000000000000000012 /* MessageDatabaseAccessProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDatabaseAccessProbe.swift; sourceTree = "<group>"; };
@@ -191,6 +196,8 @@
 				B20000000000000000000002 /* MessageBridgePermissionView.swift */,
 				B20000000000000000000003 /* Info.plist */,
 				B20000000000000000000008 /* Localizable.strings */,
+				B20000000000000000000009 /* InfoPlist.strings */,
+				B2000000000000000000000A /* PrivacyInfo.xcprivacy */,
 			);
 			path = ShareSyncMessagesBridge;
 			sourceTree = "<group>";
@@ -306,6 +313,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				B10000000000000000000009 /* Localizable.strings in Resources */,
+				B10000000000000000000013 /* PrivacyInfo.xcprivacy in Resources */,
+				B10000000000000000000014 /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -386,6 +395,15 @@
 				B20000000000000000000005 /* zh-Hant */,
 			);
 			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		B20000000000000000000009 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B20000000000000000000006 /* en */,
+				B20000000000000000000007 /* zh-Hant */,
+			);
+			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

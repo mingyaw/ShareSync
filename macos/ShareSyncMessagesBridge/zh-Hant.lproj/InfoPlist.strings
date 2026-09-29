@@ -1,0 +1,2 @@
+"CFBundleDisplayName" = "ShareSync 訊息橋接工具";
+"NSAppDataUsageDescription" = "ShareSync 會檢查本機 Messages 相容性，並只在你建立基準點後，檢查新訊息欄位以進行本機驗證或預覽。訊息內容不會被記錄，此版本也無法透過網路送出。";

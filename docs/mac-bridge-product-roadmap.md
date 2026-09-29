@@ -135,6 +135,9 @@ interruption without requiring a new pairing.
   continuation for full batches, bounded exponential failure backoff, explicit
   rate-limit delays, and immediate wake/network recovery without touching the
   message cursor.
+- The helper now includes a no-collection privacy manifest, localized system
+  permission copy, and an explicit separate-product signing, notarization,
+  permission, and future-connector release boundary.
 - The feasibility build contains no external forwarding connector or networking code.
 
 ### Remaining

@@ -1,0 +1,2 @@
+"CFBundleDisplayName" = "ShareSync Messages Bridge";
+"NSAppDataUsageDescription" = "ShareSync checks local Messages compatibility and, only after you create a baseline, inspects new message fields for local validation or preview. Message content is not logged, and this build cannot send it over a network.";
