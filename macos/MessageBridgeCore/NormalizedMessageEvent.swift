@@ -25,6 +25,8 @@ public struct NormalizedMessageEvent: Equatable, Sendable {
     public let service: String?
     public let contentKinds: Set<MessageContentKind>
     public let associatedMessageGUID: String?
+    public let attachmentCount: Int
+    public let attachmentMIMETypes: Set<String>
 }
 
 public struct MessageEventNormalizer {
@@ -48,7 +50,9 @@ public struct MessageEventNormalizer {
             conversationIdentifiers: Set(event.conversationIdentifiers),
             service: event.service,
             contentKinds: contentKinds,
-            associatedMessageGUID: event.associatedMessageGUID
+            associatedMessageGUID: event.associatedMessageGUID,
+            attachmentCount: event.attachmentCount,
+            attachmentMIMETypes: event.attachmentMIMETypes
         )
     }
 

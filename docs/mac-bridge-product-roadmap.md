@@ -114,6 +114,9 @@ interruption without requiring a new pairing.
 - A bounded, versioned audit history stores only batch counts, typed outcomes,
   and aggregate denial reasons. It deliberately excludes message bodies,
   sender identifiers, conversation identifiers, and source message IDs.
+- Optional attachment joins expose only attachment count and MIME types for
+  fidelity decisions. The reader does not access attachment files, paths, or
+  filenames.
 - The feasibility build contains no external forwarding connector or networking code.
 
 ### Remaining

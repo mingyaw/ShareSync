@@ -9,6 +9,7 @@ final class MessageDatabaseSchemaInspectorTests: XCTestCase {
 
         XCTAssertTrue(schema.supportsIncrementalTextEvents)
         XCTAssertTrue(schema.supportsConversationContext)
+        XCTAssertTrue(schema.supportsAttachmentMetadata)
         XCTAssertEqual(schema.fingerprint.count, 64)
         XCTAssertTrue(schema.tables.contains("message"))
         XCTAssertTrue(schema.columnsByTable["message", default: []].contains("guid"))

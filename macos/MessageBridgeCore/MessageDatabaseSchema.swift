@@ -19,6 +19,15 @@ public struct MessageDatabaseSchema: Equatable, Sendable {
             && joinColumns.isSuperset(of: ["chat_id", "message_id"])
     }
 
+    public var supportsAttachmentMetadata: Bool {
+        let attachmentColumns = columnsByTable["attachment"] ?? []
+        let joinColumns = columnsByTable["message_attachment_join"] ?? []
+        return tables.contains("attachment")
+            && tables.contains("message_attachment_join")
+            && attachmentColumns.contains("mime_type")
+            && joinColumns.isSuperset(of: ["attachment_id", "message_id"])
+    }
+
     public var missingIncrementalTextRequirements: [String] {
         var missing: [String] = []
         let messageColumns = columnsByTable["message"] ?? []

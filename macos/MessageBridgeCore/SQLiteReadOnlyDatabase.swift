@@ -74,7 +74,8 @@ final class SQLiteReadOnlyDatabase {
     func messageRows(
         after rowID: Int64,
         limit: Int,
-        includeConversationContext: Bool
+        includeConversationContext: Bool,
+        includeAttachmentMetadata: Bool
     ) throws -> [MessageEvent] {
         let conversationExpression = includeConversationContext
             ? """
@@ -82,6 +83,22 @@ final class SQLiteReadOnlyDatabase {
                FROM chat_message_join
                JOIN chat ON chat.ROWID = chat_message_join.chat_id
                WHERE chat_message_join.message_id = message.ROWID)
+              """
+            : "NULL"
+        let attachmentCountExpression = includeAttachmentMetadata
+            ? """
+              (SELECT COUNT(*)
+               FROM message_attachment_join
+               WHERE message_attachment_join.message_id = message.ROWID)
+              """
+            : "0"
+        let attachmentTypesExpression = includeAttachmentMetadata
+            ? """
+              (SELECT GROUP_CONCAT(attachment.mime_type, CHAR(31))
+               FROM message_attachment_join
+               JOIN attachment ON attachment.ROWID = message_attachment_join.attachment_id
+               WHERE message_attachment_join.message_id = message.ROWID
+                 AND attachment.mime_type IS NOT NULL)
               """
             : "NULL"
         let sql = """
@@ -97,7 +114,9 @@ final class SQLiteReadOnlyDatabase {
             message.associated_message_guid,
             message.attributedBody IS NOT NULL,
             handle.id,
-            \(conversationExpression)
+            \(conversationExpression),
+            \(attachmentCountExpression),
+            \(attachmentTypesExpression)
         FROM message
         LEFT JOIN handle ON handle.ROWID = message.handle_id
         WHERE message.ROWID > ?
@@ -128,7 +147,9 @@ final class SQLiteReadOnlyDatabase {
                 associatedMessageGUID: string(statement, column: 8),
                 hasAttributedBody: sqlite3_column_int(statement, 9) != 0,
                 senderIdentifier: string(statement, column: 10),
-                conversationIdentifiers: conversationIdentifiers(statement, column: 11)
+                conversationIdentifiers: separatedStrings(statement, column: 11),
+                attachmentCount: Int(sqlite3_column_int64(statement, 12)),
+                attachmentMIMETypes: Set(separatedStrings(statement, column: 13))
             ))
         }
     }
@@ -146,7 +167,7 @@ final class SQLiteReadOnlyDatabase {
         return String(cString: value)
     }
 
-    private func conversationIdentifiers(_ statement: OpaquePointer?, column: Int32) -> [String] {
+    private func separatedStrings(_ statement: OpaquePointer?, column: Int32) -> [String] {
         guard let joined = string(statement, column: column), !joined.isEmpty else { return [] }
         return joined.split(separator: "\u{1F}").map(String.init).sorted()
     }

@@ -78,6 +78,22 @@ final class MessageEventReaderTests: XCTestCase {
         XCTAssertEqual(event.conversationIdentifiers, ["iMessage;-;group-id"])
     }
 
+    func testAttachmentMetadataExcludesFilePathsAndNames() throws {
+        let fixture = try MessageBridgeFixture()
+        try fixture.insertHandle()
+        try fixture.insertMessage(guid: "attachment-message", body: nil, hasAttachments: true)
+        try fixture.insertAttachment(rowID: 1, mimeType: "image/jpeg")
+        try fixture.insertAttachment(rowID: 2, mimeType: "application/pdf")
+        try fixture.linkAttachment(rowID: 1, toMessage: 1)
+        try fixture.linkAttachment(rowID: 2, toMessage: 1)
+        let reader = MessageEventReader(databaseURL: fixture.databaseURL)
+
+        let event = try XCTUnwrap(reader.events(after: MessageCursor(rowID: 0)).events.first)
+
+        XCTAssertEqual(event.attachmentCount, 2)
+        XCTAssertEqual(event.attachmentMIMETypes, ["image/jpeg", "application/pdf"])
+    }
+
     func testUnsupportedSchemaFailsClosed() throws {
         let fixture = try MessageBridgeFixture()
         try fixture.execute("ALTER TABLE message RENAME TO legacy_message")

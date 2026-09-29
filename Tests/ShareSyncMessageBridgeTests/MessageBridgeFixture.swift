@@ -31,6 +31,8 @@ final class MessageBridgeFixture {
         );
         CREATE TABLE chat (ROWID INTEGER PRIMARY KEY, guid TEXT);
         CREATE TABLE chat_message_join (chat_id INTEGER, message_id INTEGER);
+        CREATE TABLE attachment (ROWID INTEGER PRIMARY KEY, mime_type TEXT);
+        CREATE TABLE message_attachment_join (message_id INTEGER, attachment_id INTEGER);
         """)
     }
 
@@ -73,6 +75,17 @@ final class MessageBridgeFixture {
 
     func linkMessage(rowID: Int64, toChat chatRowID: Int64 = 1) throws {
         try execute("INSERT INTO chat_message_join (chat_id, message_id) VALUES (\(chatRowID), \(rowID))")
+    }
+
+    func insertAttachment(rowID: Int64 = 1, mimeType: String?) throws {
+        let mimeValue = mimeType.map { "'\(escaped($0))'" } ?? "NULL"
+        try execute("INSERT INTO attachment (ROWID, mime_type) VALUES (\(rowID), \(mimeValue))")
+    }
+
+    func linkAttachment(rowID: Int64, toMessage messageRowID: Int64) throws {
+        try execute(
+            "INSERT INTO message_attachment_join (message_id, attachment_id) VALUES (\(messageRowID), \(rowID))"
+        )
     }
 
     func execute(_ sql: String) throws {

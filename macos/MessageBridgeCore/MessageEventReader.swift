@@ -21,6 +21,8 @@ public struct MessageEvent: Equatable, Sendable {
     public let hasAttributedBody: Bool
     public let senderIdentifier: String?
     public let conversationIdentifiers: [String]
+    public let attachmentCount: Int
+    public let attachmentMIMETypes: Set<String>
 
     public var needsRichBodyDecoding: Bool {
         body == nil && hasAttributedBody
@@ -59,7 +61,8 @@ public struct MessageEventReader: MessageEventReading {
         let events = try database.messageRows(
             after: cursor.rowID,
             limit: boundedLimit,
-            includeConversationContext: schema.supportsConversationContext
+            includeConversationContext: schema.supportsConversationContext,
+            includeAttachmentMetadata: schema.supportsAttachmentMetadata
         )
         return MessageEventBatch(
             events: events,
