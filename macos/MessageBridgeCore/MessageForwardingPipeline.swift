@@ -6,36 +6,72 @@ public struct MessageForwardingPolicy: Equatable, Sendable {
     public let allowedServices: Set<String>
     public let incomingOnly: Bool
     public let allowAssociatedEvents: Bool
+    public let blockedBodyTerms: Set<String>
+    public let blockLikelyOneTimeCodes: Bool
 
     public init(
         allowedSenderIdentifiers: Set<String>,
         allowedConversationIdentifiers: Set<String>? = nil,
         allowedServices: Set<String> = ["iMessage"],
         incomingOnly: Bool = true,
-        allowAssociatedEvents: Bool = false
+        allowAssociatedEvents: Bool = false,
+        blockedBodyTerms: Set<String> = [],
+        blockLikelyOneTimeCodes: Bool = true
     ) {
         self.allowedSenderIdentifiers = allowedSenderIdentifiers
         self.allowedConversationIdentifiers = allowedConversationIdentifiers
         self.allowedServices = allowedServices
         self.incomingOnly = incomingOnly
         self.allowAssociatedEvents = allowAssociatedEvents
+        self.blockedBodyTerms = Set(blockedBodyTerms.map { $0.foldingForComparison })
+        self.blockLikelyOneTimeCodes = blockLikelyOneTimeCodes
     }
 
     public func permits(_ event: NormalizedMessageEvent) -> Bool {
+        evaluate(event) == .allow
+    }
+
+    public func evaluate(_ event: NormalizedMessageEvent) -> MessageForwardingDecision {
         guard let sender = event.senderIdentifier,
-              allowedSenderIdentifiers.contains(sender),
-              let service = event.service,
-              allowedServices.contains(service) else {
-            return false
-        }
-        if incomingOnly && event.direction != .incoming { return false }
+              allowedSenderIdentifiers.contains(sender) else { return .deny(.senderNotAllowed) }
+        guard let service = event.service,
+              allowedServices.contains(service) else { return .deny(.serviceNotAllowed) }
+        if incomingOnly && event.direction != .incoming { return .deny(.outgoingMessage) }
         if let allowedConversationIdentifiers,
            event.conversationIdentifiers.isDisjoint(with: allowedConversationIdentifiers) {
-            return false
+            return .deny(.conversationNotAllowed)
         }
-        if !allowAssociatedEvents && event.contentKinds.contains(.associatedEvent) { return false }
-        return !event.contentKinds.isEmpty
+        if !allowAssociatedEvents && event.contentKinds.contains(.associatedEvent) {
+            return .deny(.associatedEventBlocked)
+        }
+        guard !event.contentKinds.isEmpty else { return .deny(.emptyContent) }
+        if let body = event.body, isSensitive(body) { return .deny(.sensitiveContent) }
+        return .allow
     }
+
+    private func isSensitive(_ body: String) -> Bool {
+        let foldedBody = body.foldingForComparison
+        if blockedBodyTerms.contains(where: foldedBody.contains) { return true }
+        guard blockLikelyOneTimeCodes else { return false }
+        let keywords = ["otp", "code", "passcode", "verification", "驗證碼", "動態密碼", "一次性密碼"]
+        guard keywords.contains(where: foldedBody.contains) else { return false }
+        return foldedBody.range(of: #"(?<!\d)\d{4,8}(?!\d)"#, options: .regularExpression) != nil
+    }
+}
+
+public enum MessageForwardingDenialReason: Equatable, Sendable {
+    case senderNotAllowed
+    case serviceNotAllowed
+    case outgoingMessage
+    case conversationNotAllowed
+    case associatedEventBlocked
+    case emptyContent
+    case sensitiveContent
+}
+
+public enum MessageForwardingDecision: Equatable, Sendable {
+    case allow
+    case deny(MessageForwardingDenialReason)
 }
 
 public enum MessageDeliveryOutcome: Equatable, Sendable {
@@ -74,22 +110,29 @@ public struct MessageForwardingPipeline {
     private let normalizer: MessageEventNormalizer
     private let policy: MessageForwardingPolicy
     private let connector: any MessageForwardingConnector
+    private let runtimeGate: MessageForwardingRuntimeGate
+    private let now: () -> Date
 
     public init(
         reader: any MessageEventReading,
         cursorStore: any MessageCursorStore,
         normalizer: MessageEventNormalizer = MessageEventNormalizer(),
         policy: MessageForwardingPolicy,
-        connector: any MessageForwardingConnector
+        connector: any MessageForwardingConnector,
+        runtimeGate: MessageForwardingRuntimeGate = MessageForwardingRuntimeGate(),
+        now: @escaping () -> Date = Date.init
     ) {
         self.reader = reader
         self.cursorStore = cursorStore
         self.normalizer = normalizer
         self.policy = policy
         self.connector = connector
+        self.runtimeGate = runtimeGate
+        self.now = now
     }
 
     public func run(limit: Int = 100) throws -> MessageForwardingRunResult {
+        try runtimeGate.validate(at: now())
         guard let cursor = try cursorStore.load() else {
             throw MessageValidationSessionError.baselineRequired
         }
@@ -119,5 +162,11 @@ public struct MessageForwardingPipeline {
             duplicateCount: duplicateCount,
             nextCursor: batch.nextCursor
         )
+    }
+}
+
+private extension String {
+    var foldingForComparison: String {
+        folding(options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive], locale: .current)
     }
 }

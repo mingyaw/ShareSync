@@ -102,6 +102,10 @@ interruption without requiring a new pairing.
 - Conversation identifiers are collected only when the installed Messages
   schema supports them, allowing an optional conversation allowlist to prevent
   an approved sender from matching unrelated chats.
+- Pause and local-time schedules stop before reading rows, preserving queued
+  messages and the durable cursor until forwarding is allowed again.
+- User-defined sensitive terms and likely one-time verification codes are
+  blocked locally, with typed denial reasons ready for product UI diagnostics.
 - The feasibility build contains no external forwarding connector or networking code.
 
 ### Remaining

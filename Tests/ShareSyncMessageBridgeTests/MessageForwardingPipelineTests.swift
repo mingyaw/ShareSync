@@ -38,6 +38,47 @@ final class MessageForwardingPipelineTests: XCTestCase {
         XCTAssertFalse(policy.permits(normalizer.normalize(makeEvent(conversations: []))))
     }
 
+    func testPolicyBlocksConfiguredSensitiveTermAndLikelyOneTimeCode() {
+        let normalizer = MessageEventNormalizer()
+        let policy = MessageForwardingPolicy(
+            allowedSenderIdentifiers: ["allowed"],
+            blockedBodyTerms: ["confidential"]
+        )
+
+        XCTAssertEqual(
+            policy.evaluate(normalizer.normalize(makeEvent(body: "Confidential plan"))),
+            .deny(.sensitiveContent)
+        )
+        XCTAssertEqual(
+            policy.evaluate(normalizer.normalize(makeEvent(body: "Your verification code is 482901"))),
+            .deny(.sensitiveContent)
+        )
+        XCTAssertEqual(
+            policy.evaluate(normalizer.normalize(makeEvent(body: "Meeting room 482901"))),
+            .allow
+        )
+    }
+
+    func testPausedPipelineKeepsCursorAndMessagesQueued() throws {
+        let fixture = try MessageBridgeFixture()
+        try fixture.insertHandle(identifier: "allowed")
+        let store = try makeStore()
+        try store.store.save(MessageCursor(rowID: 0))
+        try fixture.insertMessage(guid: "queued", body: "one")
+        let pipeline = MessageForwardingPipeline(
+            reader: MessageEventReader(databaseURL: fixture.databaseURL),
+            cursorStore: store.store,
+            policy: MessageForwardingPolicy(allowedSenderIdentifiers: ["allowed"]),
+            connector: InMemoryMessageForwardingConnector(),
+            runtimeGate: MessageForwardingRuntimeGate(isPaused: true)
+        )
+
+        XCTAssertThrowsError(try pipeline.run()) { error in
+            XCTAssertEqual(error as? MessageForwardingRuntimeBlock, .paused)
+        }
+        XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 0))
+    }
+
     func testPipelineFiltersAndAdvancesPastInspectedRows() throws {
         let fixture = try MessageBridgeFixture()
         try fixture.insertHandle(identifier: "allowed")
@@ -109,12 +150,13 @@ final class MessageForwardingPipelineTests: XCTestCase {
         sender: String? = "allowed",
         isFromMe: Bool = false,
         associatedType: Int64 = 0,
-        conversations: [String] = []
+        conversations: [String] = [],
+        body: String = "body"
     ) -> MessageEvent {
         MessageEvent(
             rowID: rowID,
             guid: guid,
-            body: "body",
+            body: body,
             rawDate: rawDate,
             isFromMe: isFromMe,
             service: "iMessage",
