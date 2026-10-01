@@ -66,6 +66,7 @@
 "bridge.telegram.outside_schedule" = "目前不在允許轉發時段；新訊息會保留到下一個允許時段。";
 "bridge.telegram.invalid" = "請檢查 Bot Token、數字 Chat ID 與寄件者白名單。";
 "bridge.telegram.failed" = "Telegram 傳送失敗；訊息游標未前移，可安全重試。";
+"bridge.telegram.attachment_rejected" = "附件被本機安全規則阻擋。請檢查「訊息」檔案權限、圖片格式與大小；訊息游標未前移。";
 "bridge.telegram.token.placeholder" = "Bot Token（留空會沿用已保存的 Token）";
 "bridge.telegram.chat_id.placeholder" = "目的地 Chat ID，例如 -1001234567890";
 "bridge.telegram.sender.placeholder" = "允許的 iMessage 寄件者帳號或電話";

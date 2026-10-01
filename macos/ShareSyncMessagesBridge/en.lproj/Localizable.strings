@@ -66,6 +66,7 @@
 "bridge.telegram.outside_schedule" = "Outside the forwarding schedule. New messages remain queued for the next allowed time.";
 "bridge.telegram.invalid" = "Check the Bot token, numeric Chat ID, and allowed sender list.";
 "bridge.telegram.failed" = "Telegram delivery failed. The message cursor was not advanced, so it can be retried safely.";
+"bridge.telegram.attachment_rejected" = "An attachment was blocked by the local safety policy. Check Messages file access, image format, and size. The message cursor was not advanced.";
 "bridge.telegram.token.placeholder" = "Bot token (leave blank to keep saved token)";
 "bridge.telegram.chat_id.placeholder" = "Destination Chat ID, for example -1001234567890";
 "bridge.telegram.sender.placeholder" = "Allowed iMessage sender address or phone number";

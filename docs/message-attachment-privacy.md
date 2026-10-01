@@ -76,6 +76,10 @@ already-confirmed attachment counts. They never retain filenames, paths, media
 bytes, source row IDs, or Telegram message IDs. Legacy audit records decode
 missing attachment counters as zero.
 
+Attachment candidate, access, and validation failures are recorded only as the
+aggregate `attachmentRejected` outcome. The record does not retain the rejected
+path, MIME type, filename, sender, conversation, or message body.
+
 The unified Mac app now instantiates these components only when the stored
 `MessageAttachmentConsent` is enabled and matches the current consent version.
 The independent summary preference does not grant file access. Disabling media

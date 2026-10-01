@@ -106,6 +106,21 @@ final class MessageForwardingAuditTests: XCTestCase {
         XCTAssertEqual(try cursorStore.store.load(), MessageCursor(rowID: 4))
     }
 
+    func testAttachmentSafetyErrorsHaveContentFreeAuditOutcome() {
+        let errors: [Error] = [
+            MessageAttachmentValidationError.outsideAttachmentRoot,
+            MessageAttachmentAccessError.noAttachmentCandidates,
+            MessageAttachmentCandidateProviderError.invalidStoredPath,
+        ]
+
+        for error in errors {
+            XCTAssertEqual(
+                MessageForwardingAuditOutcome.classify(error),
+                .attachmentRejected
+            )
+        }
+    }
+
     private func makeCursorStore() throws -> (store: FileMessageCursorStore, directory: URL) {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)

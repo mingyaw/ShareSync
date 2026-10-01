@@ -80,6 +80,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         case forwarded
         case paused
         case outsideSchedule
+        case attachmentRejected
         case invalidConfiguration
         case failed
     }
@@ -542,6 +543,15 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             } catch MessageForwardingRuntimeBlock.outsideSchedule {
                 telegramState = .outsideSchedule
                 return .idle
+            } catch is MessageAttachmentValidationError {
+                telegramState = .attachmentRejected
+                return .failed
+            } catch is MessageAttachmentAccessError {
+                telegramState = .attachmentRejected
+                return .failed
+            } catch is MessageAttachmentCandidateProviderError {
+                telegramState = .attachmentRejected
+                return .failed
             } catch {
                 telegramState = .failed
                 return MessagePollingOutcomeMapper(batchLimit: 50).outcome(error: error)
@@ -1504,6 +1514,7 @@ struct MessageBridgePermissionView: View {
         case .forwarded: return "bridge.telegram.forwarded"
         case .paused: return "bridge.telegram.paused"
         case .outsideSchedule: return "bridge.telegram.outside_schedule"
+        case .attachmentRejected: return "bridge.telegram.attachment_rejected"
         case .invalidConfiguration: return "bridge.telegram.invalid"
         case .failed: return "bridge.telegram.failed"
         }

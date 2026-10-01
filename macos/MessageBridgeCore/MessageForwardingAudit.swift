@@ -5,7 +5,24 @@ public enum MessageForwardingAuditOutcome: String, Codable, Equatable, Sendable 
     case paused
     case outsideSchedule
     case rateLimited
+    case attachmentRejected
     case failed
+}
+
+extension MessageForwardingAuditOutcome {
+    static func classify(_ error: Error) -> MessageForwardingAuditOutcome {
+        switch error {
+        case MessageForwardingRuntimeBlock.paused: return .paused
+        case MessageForwardingRuntimeBlock.outsideSchedule: return .outsideSchedule
+        case MessageForwardingPipelineError.rateLimited: return .rateLimited
+        case TelegramBotConnectorError.rateLimited: return .rateLimited
+        case is MessageAttachmentValidationError,
+             is MessageAttachmentAccessError,
+             is MessageAttachmentCandidateProviderError:
+            return .attachmentRejected
+        default: return .failed
+        }
+    }
 }
 
 public struct MessageForwardingAuditRecord: Codable, Equatable, Sendable {
@@ -182,19 +199,9 @@ public struct AuditedMessageForwardingRunner {
         } catch {
             try auditStore.append(MessageForwardingAuditRecord(
                 timestamp: now(),
-                outcome: outcome(for: error)
+                outcome: MessageForwardingAuditOutcome.classify(error)
             ))
             throw error
-        }
-    }
-
-    private func outcome(for error: Error) -> MessageForwardingAuditOutcome {
-        switch error {
-        case MessageForwardingRuntimeBlock.paused: return .paused
-        case MessageForwardingRuntimeBlock.outsideSchedule: return .outsideSchedule
-        case MessageForwardingPipelineError.rateLimited: return .rateLimited
-        case TelegramBotConnectorError.rateLimited: return .rateLimited
-        default: return .failed
         }
     }
 }
