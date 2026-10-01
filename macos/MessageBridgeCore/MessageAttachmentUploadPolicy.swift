@@ -118,6 +118,12 @@ public struct MessageAttachmentUploadPolicy: Equatable, Sendable {
         _ byteCount: Int,
         for attachment: ValidatedMessageAttachment
     ) throws {
+        guard isEnabled else {
+            throw MessageAttachmentValidationError.uploadsDisabled
+        }
+        guard allowedMIMETypes.contains(attachment.mimeType.lowercased()) else {
+            throw MessageAttachmentValidationError.unsupportedMIMEType
+        }
         guard byteCount == attachment.byteCount else {
             throw MessageAttachmentValidationError.fileChanged
         }

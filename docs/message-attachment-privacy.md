@@ -1,7 +1,7 @@
 # Messages Attachment Privacy And Size Limits
 
-Status: policy and local path validation implemented; binary attachment upload
-is not implemented.
+Status: policy, local path validation, and isolated multipart transport
+implemented; binary attachment forwarding remains disconnected and unavailable.
 
 ## Current Product Contract
 
@@ -41,7 +41,19 @@ below is implemented and tested:
 `MessageAttachmentUploadPolicy` now implements the default-off gate, canonical
 root containment, symbolic-link rejection, regular-file checks, JPEG/PNG
 allowlisting, per-file and aggregate limits, and post-read size verification.
-It is intentionally not connected to the Messages reader or Telegram connector.
+The pre-transport check revalidates that uploads are still enabled and the MIME
+type remains allowed.
+
+`TelegramBotMediaUploader` implements an in-memory multipart request limited to
+Telegram's fixed HTTPS host and `sendPhoto` method. It uses only generic
+`sharesync.jpg` or `sharesync.png` filenames, inherits redirect rejection and
+timeouts from the Telegram transport, and maps Telegram rate-limit responses.
+It never receives an original filename as request metadata and creates no
+temporary media copy.
+
+Both components are intentionally disconnected from the Messages reader,
+forwarding pipeline, settings UI, and automatic Telegram delivery. Their
+presence does not make binary attachment forwarding available in the product.
 
 ## Acceptance Gate
 

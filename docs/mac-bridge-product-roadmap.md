@@ -180,7 +180,11 @@ interruption without requiring a new pairing.
 - A default-off attachment upload policy now validates canonical Messages-root
   containment, rejects symbolic links and non-files, allowlists JPEG/PNG, applies
   per-file/count/batch limits, and requires post-read size consistency. It is
-  not connected to the Messages reader or Telegram transport.
+  not connected to the Messages reader or forwarding pipeline.
+- An isolated Telegram media transport now builds in-memory multipart requests
+  only for the fixed Telegram HTTPS host, replaces original filenames with a
+  generic name, rechecks policy immediately before delivery, and maps API rate
+  limits. It remains unavailable to the product flow.
 
 ### Remaining
 
@@ -188,9 +192,9 @@ interruption without requiring a new pairing.
 - Verify text, Unicode, group, reply, edit, retract, reaction, attachment
   metadata, sleep catch-up, and deduplication behavior on supported macOS
   versions.
-- Implement attachment upload only after the approved privacy gate has a
-  dedicated multipart transport and retry integration; keep the policy disabled
-  until its end-to-end synthetic security gate passes.
+- Integrate attachment selection, bounded file reads, delivery retry semantics,
+  and cursor behavior only after the end-to-end synthetic security gate passes;
+  keep the policy disabled until then.
 - Validate login-item enable, disable, approval, sleep catch-up, and network
   recovery behavior in a signed installed build.
 - Validate Telegram reply routing and Messages Automation permission on a
