@@ -1,7 +1,8 @@
 # Messages Attachment Privacy And Size Limits
 
-Status: policy, local path validation, and isolated multipart transport
-implemented; binary attachment forwarding remains disconnected and unavailable.
+Status: policy, local path validation, bounded content loading, and isolated
+multipart transport implemented; binary attachment forwarding remains
+disconnected and unavailable.
 
 ## Current Product Contract
 
@@ -51,9 +52,19 @@ timeouts from the Telegram transport, and maps Telegram rate-limit responses.
 It never receives an original filename as request metadata and creates no
 temporary media copy.
 
+`MessageAttachmentAccessCoordinator` evaluates the existing sender,
+conversation, direction, service, associated-event, and sensitive-content rules
+before asking an attachment provider for any path. The content loader then
+revalidates the whole candidate batch immediately before opening files, reads in
+bounded chunks, and reads at most one byte beyond the validated size to detect
+growth. A disabled policy, changed size, missing file, or failed read returns no
+payload.
+
 Both components are intentionally disconnected from the Messages reader,
 forwarding pipeline, settings UI, and automatic Telegram delivery. Their
 presence does not make binary attachment forwarding available in the product.
+No production attachment-path provider exists yet, so the current Messages
+reader continues to expose only aggregate count and MIME metadata.
 
 ## Acceptance Gate
 

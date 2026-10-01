@@ -185,6 +185,10 @@ interruption without requiring a new pairing.
   only for the fixed Telegram HTTPS host, replaces original filenames with a
   generic name, rechecks policy immediately before delivery, and maps API rate
   limits. It remains unavailable to the product flow.
+- A bounded attachment loader now evaluates forwarding policy before requesting
+  candidate paths, revalidates the batch before opening files, and rejects size
+  changes without returning partial payloads. No production database path
+  provider or pipeline connection exists yet.
 
 ### Remaining
 
@@ -192,9 +196,9 @@ interruption without requiring a new pairing.
 - Verify text, Unicode, group, reply, edit, retract, reaction, attachment
   metadata, sleep catch-up, and deduplication behavior on supported macOS
   versions.
-- Integrate attachment selection, bounded file reads, delivery retry semantics,
-  and cursor behavior only after the end-to-end synthetic security gate passes;
-  keep the policy disabled until then.
+- Implement the read-only attachment-path provider, then integrate delivery
+  retry semantics and cursor behavior only after the end-to-end synthetic
+  security gate passes; keep the policy disabled until then.
 - Validate login-item enable, disable, approval, sleep catch-up, and network
   recovery behavior in a signed installed build.
 - Validate Telegram reply routing and Messages Automation permission on a
