@@ -1,17 +1,16 @@
 # Messages Attachment Privacy And Size Limits
 
-Status: policy, local path validation, bounded content loading, and isolated
-multipart transport implemented; binary attachment forwarding remains
-disconnected and unavailable.
+Status: explicit opt-in product integration implemented for JPEG and PNG
+forwarding; physical-Mac and live Telegram validation remain release gates.
 
 ## Current Product Contract
 
-ShareSync reads only the attachment count and MIME type columns exposed by the
-Messages database. It does not read attachment filenames, paths, byte sizes, or
-file contents. Telegram receives no attachment count or type metadata by
-default. When the user explicitly enables attachment summaries, Telegram
-receives only the count and MIME types. Attachment-only messages still produce
-a generic notice so the user knows that content remained on the Mac.
+By default, ShareSync reads only the attachment count and MIME type columns
+exposed by the Messages database. It does not read attachment filenames, paths,
+byte sizes, or file contents. Telegram receives no attachment count or type
+metadata by default. When the user explicitly enables attachment summaries,
+Telegram receives only the count and MIME types. Attachment-only messages still
+produce a generic notice so the user knows that content remained on the Mac.
 
 The summary preference is local to the Mac, is disabled by default, and is
 deleted with the Telegram configuration. It does not change Messages database
@@ -19,8 +18,8 @@ access or grant media-upload permission.
 
 ## Future Upload Gate
 
-Binary attachment forwarding must remain unavailable until every condition
-below is implemented and tested:
+Binary attachment forwarding is available only after every condition below is
+implemented and the user separately opts in:
 
 - A separate opt-in explains that media bytes will leave the Mac for Telegram.
 - Sender and optional conversation allowlists are evaluated before file access.
@@ -72,13 +71,11 @@ content-free delivery ledger. A failed attachment keeps the message cursor in
 place, while later retries skip parts that already returned a confirmed success.
 An attachment event with no candidate rows fails closed.
 
-Both components are intentionally disconnected from the Messages reader,
-forwarding pipeline, settings UI, and automatic Telegram delivery. Their
-presence does not make binary attachment forwarding available in the product.
-The production-capable path provider and optional attachment delivery
-coordinator are not instantiated by either app target, so the current Messages
-reader and product flow continue to expose only aggregate count and MIME
-metadata.
+The unified Mac app now instantiates these components only when the stored
+`MessageAttachmentConsent` is enabled and matches the current consent version.
+The independent summary preference does not grant file access. Disabling media
+upload removes the consent version and returns the next forwarding pass to the
+path-blind metadata flow; Telegram reset removes both preferences.
 
 ## Acceptance Gate
 

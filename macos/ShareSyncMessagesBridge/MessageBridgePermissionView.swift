@@ -25,6 +25,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
     @Published var telegramAllowedConversationDraft = ""
     @Published private(set) var telegramAllowedConversations: [String] = []
     @Published private(set) var isTelegramAttachmentSummaryEnabled = false
+    @Published private(set) var isTelegramAttachmentUploadEnabled = false
     @Published private(set) var telegramState: TelegramState = .unconfigured
     @Published private(set) var telegramResult: MessageForwardingRunResult?
     @Published private(set) var isTelegramAutoForwarding = false
@@ -102,6 +103,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         telegramAllowedSenders = settings.allowedSenderIdentifiers
         telegramAllowedConversations = settings.allowedConversationIdentifiers
         isTelegramAttachmentSummaryEnabled = settings.includeAttachmentSummary
+        isTelegramAttachmentUploadEnabled = settings.attachmentUploadConsent.allowsUploads
         isTelegramForwardingPaused = settings.forwardingPaused
         isTelegramScheduleEnabled = settings.scheduleEnabled
         telegramScheduleStartMinute = settings.scheduleStartMinute
@@ -384,6 +386,19 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         recoverTelegramAutomation()
     }
 
+    func setTelegramAttachmentUploadEnabled(_ enabled: Bool) {
+        let consent = enabled
+            ? MessageAttachmentConsent.currentAcceptance
+            : MessageAttachmentConsent()
+        isTelegramAttachmentUploadEnabled = consent.allowsUploads
+        telegramSettingsStore.saveAttachmentUploadConsent(consent)
+        if enabled, !isTelegramAttachmentSummaryEnabled {
+            setTelegramAttachmentSummaryEnabled(true)
+        } else {
+            recoverTelegramAutomation()
+        }
+    }
+
     func setTelegramForwardingPaused(_ paused: Bool) {
         isTelegramForwardingPaused = paused
         persistTelegramRuntimeControls()
@@ -460,16 +475,42 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             let replyRouteStore = telegramReplyRouteStore()
             let rateLimiter = telegramRateLimiter
             let includeAttachmentSummary = isTelegramAttachmentSummaryEnabled
+            let attachmentUploadsEnabled = isTelegramAttachmentUploadEnabled
             telegramState = .forwarding
             do {
                 let result = try await Task.detached(priority: .utility) {
+                    let forwardingPolicy = MessageForwardingPolicy(
+                        allowedSenderIdentifiers: senders,
+                        allowedConversationIdentifiers: conversations.isEmpty ? nil : conversations
+                    )
+                    let attachmentDeliveryCoordinator: MessageAttachmentDeliveryCoordinator?
+                    if attachmentUploadsEnabled {
+                        let uploadPolicy = MessageAttachmentUploadPolicy(isEnabled: true)
+                        let home = FileManager.default.homeDirectoryForCurrentUser
+                        attachmentDeliveryCoordinator = MessageAttachmentDeliveryCoordinator(
+                            accessCoordinator: MessageAttachmentAccessCoordinator(
+                                forwardingPolicy: forwardingPolicy,
+                                candidateProvider: SQLiteMessageAttachmentCandidateProvider(
+                                    databaseURL: home.appendingPathComponent("Library/Messages/chat.db")
+                                ),
+                                uploadPolicy: uploadPolicy,
+                                attachmentRoot: home.appendingPathComponent(
+                                    "Library/Messages/Attachments",
+                                    isDirectory: true
+                                )
+                            ),
+                            connector: TelegramBotMediaUploader(
+                                configuration: configuration,
+                                policy: uploadPolicy
+                            )
+                        )
+                    } else {
+                        attachmentDeliveryCoordinator = nil
+                    }
                     let pipeline = MessageForwardingPipeline(
                         reader: reader,
                         cursorStore: cursorStore,
-                        policy: MessageForwardingPolicy(
-                            allowedSenderIdentifiers: senders,
-                            allowedConversationIdentifiers: conversations.isEmpty ? nil : conversations
-                        ),
+                        policy: forwardingPolicy,
                         connector: TelegramBotConnector(
                             configuration: configuration,
                             replyRouteStore: replyRouteStore
@@ -480,7 +521,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                         envelopeBuilder: MessageConnectorEnvelopeBuilder(
                             senderLabels: senderLabels,
                             includeAttachmentSummary: includeAttachmentSummary
-                        )
+                        ),
+                        attachmentDeliveryCoordinator: attachmentDeliveryCoordinator
                     )
                     return try AuditedMessageForwardingRunner(
                         pipeline: pipeline,
@@ -676,6 +718,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             telegramAllowedConversationDraft = ""
             telegramAllowedConversations = []
             isTelegramAttachmentSummaryEnabled = false
+            isTelegramAttachmentUploadEnabled = false
             isTelegramForwardingPaused = false
             isTelegramScheduleEnabled = false
             telegramScheduleStartMinute = 8 * 60
@@ -775,6 +818,9 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         settings.allowedSenderIdentifiers = telegramAllowedSenders
         settings.allowedConversationIdentifiers = telegramAllowedConversations
         settings.includeAttachmentSummary = isTelegramAttachmentSummaryEnabled
+        settings.attachmentUploadConsent = isTelegramAttachmentUploadEnabled
+            ? .currentAcceptance
+            : MessageAttachmentConsent()
         telegramSettingsStore.saveSettings(settings)
         telegramChatID = chatID
     }
@@ -1259,6 +1305,18 @@ struct MessageBridgePermissionView: View {
                         )
                     )
                     Text("bridge.telegram.attachment.detail")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Divider()
+                    Toggle(
+                        "bridge.telegram.attachment.upload",
+                        isOn: Binding(
+                            get: { model.isTelegramAttachmentUploadEnabled },
+                            set: { model.setTelegramAttachmentUploadEnabled($0) }
+                        )
+                    )
+                    Text("bridge.telegram.attachment.upload_detail")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)

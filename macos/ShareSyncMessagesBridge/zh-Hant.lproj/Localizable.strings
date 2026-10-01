@@ -80,7 +80,9 @@
 "bridge.telegram.conversation.unrestricted" = "目前未限制對話；允許的寄件者可從任何對話符合條件。";
 "bridge.telegram.attachment.title" = "附件隱私";
 "bridge.telegram.attachment.summary" = "包含附件數量與媒體類型";
-"bridge.telegram.attachment.detail" = "預設關閉。ShareSync 不會讀取或上傳 Messages 附件檔案；關閉時只傳送通用附件提示，啟用後才加上數量與 MIME 類型。";
+"bridge.telegram.attachment.detail" = "預設關閉。關閉時只傳送通用附件提示；啟用後只增加數量與 MIME 類型，不會讀取檔案內容。";
+"bridge.telegram.attachment.upload" = "傳送 JPEG 與 PNG 圖片內容";
+"bridge.telegram.attachment.upload_detail" = "獨立選擇加入。符合白名單的圖片會從這台 Mac 讀取，並上傳至你設定的 Telegram Chat ID。每則最多 4 張、每張 10 MiB、合計 20 MiB；關閉後停止新的檔案存取。";
 "bridge.telegram.action.test" = "儲存並傳送測試";
 "bridge.telegram.action.baseline" = "建立基準點";
 "bridge.telegram.action.forward" = "立即轉發";

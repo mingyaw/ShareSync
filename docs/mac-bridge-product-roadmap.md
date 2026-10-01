@@ -184,14 +184,13 @@ interruption without requiring a new pairing.
 - An isolated Telegram media transport now builds in-memory multipart requests
   only for the fixed Telegram HTTPS host, replaces original filenames with a
   generic name, rechecks policy immediately before delivery, and maps API rate
-  limits. It remains unavailable to the product flow.
+  limits.
 - A bounded attachment loader now evaluates forwarding policy before requesting
   candidate paths, revalidates the batch before opening files, and rejects size
   changes without returning partial payloads.
 - A dedicated read-only SQLite provider can select attachment paths only by an
   already-approved message row ID. It rejects unsupported schemas, missing
-  values, and relative paths; the general event reader remains path-blind. The
-  provider is not instantiated by either app target.
+  values, and relative paths; the general event reader remains path-blind.
 - The core forwarding pipeline now supports optional media delivery with opaque
   text and per-attachment ledger keys. Confirmed parts are skipped on retry and
   the message cursor advances only after every part succeeds. No app target
@@ -200,6 +199,10 @@ interruption without requiring a new pairing.
   links, unsupported types, and size-limit failures produce no Telegram request.
   It also verifies fixed-host delivery, generic filenames, rate-limit retry,
   confirmed-part skipping, and cursor preservation.
+- The unified Mac UI now separates metadata summaries from binary image upload.
+  JPEG/PNG forwarding is default-off, requires a versioned explicit consent,
+  documents destination and size limits in both languages, and is composed into
+  the pipeline only while that consent remains current.
 
 ### Remaining
 
@@ -207,8 +210,8 @@ interruption without requiring a new pairing.
 - Verify text, Unicode, group, reply, edit, retract, reaction, attachment
   metadata, sleep catch-up, and deduplication behavior on supported macOS
   versions.
-- Add the separate attachment consent UI and app composition; keep the policy
-  disabled until explicit consent and physical-Mac validation are complete.
+- Validate explicit attachment consent, revocation, supported images, failure
+  recovery, and Telegram media delivery on a physical Mac before release.
 - Validate login-item enable, disable, approval, sleep catch-up, and network
   recovery behavior in a signed installed build.
 - Validate Telegram reply routing and Messages Automation permission on a

@@ -203,7 +203,9 @@
 "bridge.telegram.conversation.unrestricted" = "No conversation limit. Allowed senders can match in any conversation.";
 "bridge.telegram.attachment.title" = "Attachment privacy";
 "bridge.telegram.attachment.summary" = "Include attachment count and media types";
-"bridge.telegram.attachment.detail" = "Off by default. ShareSync never reads or uploads Messages attachment files. Disabled summaries send only a generic attachment notice; enabling this adds the count and MIME types.";
+"bridge.telegram.attachment.detail" = "Off by default. Disabled summaries send only a generic attachment notice; enabling this adds the count and MIME types without reading file contents.";
+"bridge.telegram.attachment.upload" = "Send JPEG and PNG image contents";
+"bridge.telegram.attachment.upload_detail" = "Separate opt-in. Eligible images from allowed senders are read from this Mac and uploaded to your configured Telegram Chat ID. Up to 4 images, 10 MiB each, and 20 MiB per message. Turning this off stops new file access.";
 "bridge.telegram.action.test" = "Save & Send Test";
 "bridge.telegram.action.baseline" = "Establish Baseline";
 "bridge.telegram.action.forward" = "Forward Now";

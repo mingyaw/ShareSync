@@ -64,6 +64,7 @@
 		B1000000000000000000001E /* MessageAttachmentContentLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000025 /* MessageAttachmentContentLoader.swift */; };
 		B1000000000000000000001F /* SQLiteMessageAttachmentCandidateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000026 /* SQLiteMessageAttachmentCandidateProvider.swift */; };
 		B10000000000000000000020 /* MessageAttachmentDelivery.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000027 /* MessageAttachmentDelivery.swift */; };
+		B10000000000000000000021 /* MessageAttachmentConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000028 /* MessageAttachmentConsent.swift */; };
 		C10000000000000000000001 /* MessageBridgePermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* MessageBridgePermissionView.swift */; };
 		C10000000000000000000002 /* MessageBridgeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000010 /* MessageBridgeError.swift */; };
 		C10000000000000000000003 /* MessageCursorStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000011 /* MessageCursorStore.swift */; };
@@ -92,6 +93,7 @@
 		C1000000000000000000001A /* MessageAttachmentContentLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000025 /* MessageAttachmentContentLoader.swift */; };
 		C1000000000000000000001B /* SQLiteMessageAttachmentCandidateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000026 /* SQLiteMessageAttachmentCandidateProvider.swift */; };
 		C1000000000000000000001C /* MessageAttachmentDelivery.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000027 /* MessageAttachmentDelivery.swift */; };
+		C1000000000000000000001D /* MessageAttachmentConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000028 /* MessageAttachmentConsent.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -160,6 +162,7 @@
 		B20000000000000000000025 /* MessageAttachmentContentLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageAttachmentContentLoader.swift; sourceTree = "<group>"; };
 		B20000000000000000000026 /* SQLiteMessageAttachmentCandidateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SQLiteMessageAttachmentCandidateProvider.swift; sourceTree = "<group>"; };
 		B20000000000000000000027 /* MessageAttachmentDelivery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageAttachmentDelivery.swift; sourceTree = "<group>"; };
+		B20000000000000000000028 /* MessageAttachmentConsent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageAttachmentConsent.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -284,6 +287,7 @@
 				B20000000000000000000025 /* MessageAttachmentContentLoader.swift */,
 				B20000000000000000000026 /* SQLiteMessageAttachmentCandidateProvider.swift */,
 				B20000000000000000000027 /* MessageAttachmentDelivery.swift */,
+				B20000000000000000000028 /* MessageAttachmentConsent.swift */,
 			);
 			path = MessageBridgeCore;
 			sourceTree = "<group>";
@@ -435,6 +439,7 @@
 				C1000000000000000000001A /* MessageAttachmentContentLoader.swift in Sources */,
 				C1000000000000000000001B /* SQLiteMessageAttachmentCandidateProvider.swift in Sources */,
 				C1000000000000000000001C /* MessageAttachmentDelivery.swift in Sources */,
+				C1000000000000000000001D /* MessageAttachmentConsent.swift in Sources */,
 				C10000000000000000000011 /* TelegramBotConnector.swift in Sources */,
 				C10000000000000000000012 /* TelegramBotSettingsStore.swift in Sources */,
 				C10000000000000000000013 /* MessageConnectorCredentialVault.swift in Sources */,
@@ -477,6 +482,7 @@
 				B1000000000000000000001E /* MessageAttachmentContentLoader.swift in Sources */,
 				B1000000000000000000001F /* SQLiteMessageAttachmentCandidateProvider.swift in Sources */,
 				B10000000000000000000020 /* MessageAttachmentDelivery.swift in Sources */,
+				B10000000000000000000021 /* MessageAttachmentConsent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
