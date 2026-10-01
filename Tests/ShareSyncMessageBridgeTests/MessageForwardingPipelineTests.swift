@@ -196,6 +196,9 @@ final class MessageForwardingPipelineTests: XCTestCase {
 
         let retry = try pipeline.run()
         XCTAssertEqual(retry.deliveredCount, 1)
+        XCTAssertEqual(retry.deliveredAttachmentCount, 0)
+        XCTAssertEqual(retry.duplicateAttachmentCount, 0)
+        XCTAssertEqual(retry.confirmedAttachmentCount, 0)
         XCTAssertEqual(retry.duplicateCount, 1)
         XCTAssertEqual(connector.deliveredGUIDs, ["first", "second"])
         XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 2))
@@ -259,6 +262,9 @@ final class MessageForwardingPipelineTests: XCTestCase {
         let retry = try pipeline.run()
 
         XCTAssertEqual(retry.deliveredCount, 1)
+        XCTAssertEqual(retry.deliveredAttachmentCount, 1)
+        XCTAssertEqual(retry.duplicateAttachmentCount, 0)
+        XCTAssertEqual(retry.confirmedAttachmentCount, 1)
         XCTAssertEqual(textConnector.deliveries.count, 1)
         XCTAssertEqual(mediaConnector.attemptCount, 2)
         XCTAssertEqual(mediaConnector.deliveredData, [Data("image-data".utf8)])

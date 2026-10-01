@@ -217,6 +217,7 @@
 "bridge.telegram.schedule.to" = "to";
 "bridge.telegram.schedule.detail" = "Runs every day in the Mac's current time zone. Matching start and end times allow the full day.";
 "bridge.telegram.metric.sent" = "Sent";
+"bridge.telegram.metric.attachments" = "Images confirmed";
 "bridge.telegram.metric.loop_prevented" = "Loops stopped";
 "bridge.telegram.loop_prevention.detail" = "Outgoing Messages events were kept on this Mac and were not forwarded back to Telegram.";
 "bridge.reset.telegram.title" = "Remove Telegram settings? The Keychain token, baseline, and local delivery history will be deleted.";

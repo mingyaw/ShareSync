@@ -71,6 +71,11 @@ content-free delivery ledger. A failed attachment keeps the message cursor in
 place, while later retries skip parts that already returned a confirmed success.
 An attachment event with no candidate rows fails closed.
 
+Run results and the bounded audit retain only aggregate delivered and
+already-confirmed attachment counts. They never retain filenames, paths, media
+bytes, source row IDs, or Telegram message IDs. Legacy audit records decode
+missing attachment counters as zero.
+
 The unified Mac app now instantiates these components only when the stored
 `MessageAttachmentConsent` is enabled and matches the current consent version.
 The independent summary preference does not grant file access. Disabling media

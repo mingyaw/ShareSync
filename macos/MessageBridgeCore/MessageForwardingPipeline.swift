@@ -101,8 +101,34 @@ public struct MessageForwardingRunResult: Equatable, Sendable {
     public let eligibleCount: Int
     public let deliveredCount: Int
     public let duplicateCount: Int
+    public let deliveredAttachmentCount: Int
+    public let duplicateAttachmentCount: Int
     public let deniedCounts: [MessageForwardingDenialReason: Int]
     public let nextCursor: MessageCursor
+
+    public var confirmedAttachmentCount: Int {
+        deliveredAttachmentCount + duplicateAttachmentCount
+    }
+
+    public init(
+        inspectedCount: Int,
+        eligibleCount: Int,
+        deliveredCount: Int,
+        duplicateCount: Int,
+        deliveredAttachmentCount: Int = 0,
+        duplicateAttachmentCount: Int = 0,
+        deniedCounts: [MessageForwardingDenialReason: Int],
+        nextCursor: MessageCursor
+    ) {
+        self.inspectedCount = inspectedCount
+        self.eligibleCount = eligibleCount
+        self.deliveredCount = deliveredCount
+        self.duplicateCount = duplicateCount
+        self.deliveredAttachmentCount = deliveredAttachmentCount
+        self.duplicateAttachmentCount = duplicateAttachmentCount
+        self.deniedCounts = deniedCounts
+        self.nextCursor = nextCursor
+    }
 
     public var preventedLoopCount: Int {
         deniedCounts[.outgoingMessage, default: 0]
@@ -162,6 +188,8 @@ public struct MessageForwardingPipeline {
         var eligibleCount = 0
         var deliveredCount = 0
         var duplicateCount = 0
+        var deliveredAttachmentCount = 0
+        var duplicateAttachmentCount = 0
         var deniedCounts: [MessageForwardingDenialReason: Int] = [:]
 
         for sourceEvent in batch.events {
@@ -193,11 +221,13 @@ public struct MessageForwardingPipeline {
                     _ = try connector.deliver(envelope)
                     try deliveryLedger.markDelivered(deliveryKey: textPartKey, at: now())
                 }
-                _ = try attachmentDeliveryCoordinator.deliverAttachments(
+                let attachmentResult = try attachmentDeliveryCoordinator.deliverAttachments(
                     for: event,
                     ledger: deliveryLedger,
                     at: now()
                 )
+                deliveredAttachmentCount += attachmentResult.deliveredCount
+                duplicateAttachmentCount += attachmentResult.duplicateCount
                 deliveredCount += 1
                 try deliveryLedger.markDelivered(deliveryKey: event.deliveryKey, at: now())
                 continue
@@ -219,6 +249,8 @@ public struct MessageForwardingPipeline {
             eligibleCount: eligibleCount,
             deliveredCount: deliveredCount,
             duplicateCount: duplicateCount,
+            deliveredAttachmentCount: deliveredAttachmentCount,
+            duplicateAttachmentCount: duplicateAttachmentCount,
             deniedCounts: deniedCounts,
             nextCursor: batch.nextCursor
         )

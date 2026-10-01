@@ -1325,9 +1325,17 @@ struct MessageBridgePermissionView: View {
             }
 
             if let result = model.telegramResult {
-                HStack(spacing: 18) {
+                LazyVGrid(
+                    columns: [GridItem(.adaptive(minimum: 92), spacing: 12)],
+                    alignment: .leading,
+                    spacing: 10
+                ) {
                     validationMetric("bridge.preview.metric.inspected", value: result.inspectedCount)
                     validationMetric("bridge.telegram.metric.sent", value: result.deliveredCount)
+                    validationMetric(
+                        "bridge.telegram.metric.attachments",
+                        value: result.confirmedAttachmentCount
+                    )
                     validationMetric("bridge.preview.metric.blocked", value: result.deniedCounts.values.reduce(0, +))
                     validationMetric("bridge.telegram.metric.loop_prevented", value: result.preventedLoopCount)
                 }

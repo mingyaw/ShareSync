@@ -65,6 +65,28 @@ final class MessageForwardingAuditTests: XCTestCase {
         XCTAssertEqual(record.preventedLoopCount, 2)
     }
 
+    func testLegacyAuditRecordDecodesMissingAttachmentCountsAsZero() throws {
+        let data = Data(#"""
+        {
+            "id":"00000000-0000-0000-0000-000000000001",
+            "timestamp":1000,
+            "outcome":"completed",
+            "inspectedCount":1,
+            "eligibleCount":1,
+            "deliveredCount":1,
+            "duplicateCount":0,
+            "deniedCounts":{}
+        }
+        """#.utf8)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .millisecondsSince1970
+
+        let record = try decoder.decode(MessageForwardingAuditRecord.self, from: data)
+
+        XCTAssertEqual(record.deliveredAttachmentCount, 0)
+        XCTAssertEqual(record.duplicateAttachmentCount, 0)
+    }
+
     func testAuditedRunnerRecordsPauseWithoutConsumingCursor() throws {
         let fixture = try MessageBridgeFixture()
         let cursorStore = try makeCursorStore()

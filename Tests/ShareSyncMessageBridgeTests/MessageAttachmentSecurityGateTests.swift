@@ -121,6 +121,7 @@ final class MessageAttachmentSecurityGateTests: XCTestCase {
         let result = try harness.pipeline.run()
 
         XCTAssertEqual(result.deliveredCount, 1)
+        XCTAssertEqual(result.confirmedAttachmentCount, 1)
         XCTAssertEqual(try harness.cursor.load(), MessageCursor(rowID: 1))
         XCTAssertEqual(harness.textConnector.deliveries.count, 1)
         XCTAssertEqual(transport.requests.count, 2)

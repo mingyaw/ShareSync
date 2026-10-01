@@ -16,6 +16,8 @@ public struct MessageForwardingAuditRecord: Codable, Equatable, Sendable {
     public let eligibleCount: Int
     public let deliveredCount: Int
     public let duplicateCount: Int
+    public let deliveredAttachmentCount: Int
+    public let duplicateAttachmentCount: Int
     public let deniedCounts: [String: Int]
 
     public var preventedLoopCount: Int {
@@ -30,6 +32,8 @@ public struct MessageForwardingAuditRecord: Codable, Equatable, Sendable {
         eligibleCount: Int = 0,
         deliveredCount: Int = 0,
         duplicateCount: Int = 0,
+        deliveredAttachmentCount: Int = 0,
+        duplicateAttachmentCount: Int = 0,
         deniedCounts: [String: Int] = [:]
     ) {
         self.id = id
@@ -39,7 +43,34 @@ public struct MessageForwardingAuditRecord: Codable, Equatable, Sendable {
         self.eligibleCount = eligibleCount
         self.deliveredCount = deliveredCount
         self.duplicateCount = duplicateCount
+        self.deliveredAttachmentCount = deliveredAttachmentCount
+        self.duplicateAttachmentCount = duplicateAttachmentCount
         self.deniedCounts = deniedCounts
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, timestamp, outcome, inspectedCount, eligibleCount, deliveredCount
+        case duplicateCount, deliveredAttachmentCount, duplicateAttachmentCount, deniedCounts
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        timestamp = try container.decode(Date.self, forKey: .timestamp)
+        outcome = try container.decode(MessageForwardingAuditOutcome.self, forKey: .outcome)
+        inspectedCount = try container.decode(Int.self, forKey: .inspectedCount)
+        eligibleCount = try container.decode(Int.self, forKey: .eligibleCount)
+        deliveredCount = try container.decode(Int.self, forKey: .deliveredCount)
+        duplicateCount = try container.decode(Int.self, forKey: .duplicateCount)
+        deliveredAttachmentCount = try container.decodeIfPresent(
+            Int.self,
+            forKey: .deliveredAttachmentCount
+        ) ?? 0
+        duplicateAttachmentCount = try container.decodeIfPresent(
+            Int.self,
+            forKey: .duplicateAttachmentCount
+        ) ?? 0
+        deniedCounts = try container.decode([String: Int].self, forKey: .deniedCounts)
     }
 }
 
@@ -141,6 +172,8 @@ public struct AuditedMessageForwardingRunner {
                 eligibleCount: result.eligibleCount,
                 deliveredCount: result.deliveredCount,
                 duplicateCount: result.duplicateCount,
+                deliveredAttachmentCount: result.deliveredAttachmentCount,
+                duplicateAttachmentCount: result.duplicateAttachmentCount,
                 deniedCounts: Dictionary(uniqueKeysWithValues: result.deniedCounts.map {
                     ($0.key.rawValue, $0.value)
                 })
