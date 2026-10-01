@@ -62,6 +62,8 @@
 "bridge.telegram.baseline_required" = "Establish a baseline before forwarding. Existing message history will be excluded.";
 "bridge.telegram.forwarding" = "Checking for eligible messages and forwarding them to Telegram...";
 "bridge.telegram.forwarded" = "Forwarding pass completed. Delivery state and aggregate audit data were saved locally.";
+"bridge.telegram.paused" = "Forwarding is paused. New messages remain queued locally until you resume.";
+"bridge.telegram.outside_schedule" = "Outside the forwarding schedule. New messages remain queued for the next allowed time.";
 "bridge.telegram.invalid" = "Check the Bot token, numeric Chat ID, and allowed sender list.";
 "bridge.telegram.failed" = "Telegram delivery failed. The message cursor was not advanced, so it can be retried safely.";
 "bridge.telegram.token.placeholder" = "Bot token (leave blank to keep saved token)";
@@ -75,6 +77,11 @@
 "bridge.telegram.action.forward" = "Forward Now";
 "bridge.telegram.auto" = "Automatic";
 "bridge.telegram.auto.detail" = "Checks every 10 seconds while ShareSync is running";
+"bridge.telegram.pause" = "Pause message forwarding";
+"bridge.telegram.schedule" = "Only forward during these hours";
+"bridge.telegram.schedule.from" = "From";
+"bridge.telegram.schedule.to" = "to";
+"bridge.telegram.schedule.detail" = "Runs every day in the Mac's current time zone. Matching start and end times allow the full day.";
 "bridge.telegram.metric.sent" = "Sent";
 "bridge.reset.telegram.title" = "Remove Telegram settings? The Keychain token, baseline, and local delivery history will be deleted.";
 "bridge.telegram.reply.title" = "Reply to iMessage from Telegram";

@@ -162,6 +162,8 @@ interruption without requiring a new pairing.
 - Telegram forwarding accepts a persisted multi-sender allowlist. Existing
   single-sender settings migrate automatically and removing the final sender
   disables automatic forwarding.
+- Manual pause and an optional daily local-time schedule stop before reading
+  queued rows, preserve the cursor, and resume without dropping messages.
 
 ### Remaining
 
@@ -169,7 +171,7 @@ interruption without requiring a new pairing.
 - Verify text, Unicode, group, reply, edit, retract, reaction, attachment
   metadata, sleep catch-up, and deduplication behavior on supported macOS
   versions.
-- Add optional conversation rules, schedules, pause controls, and loop prevention.
+- Add optional conversation rules and explicit loop-prevention diagnostics.
 - Add attachment upload only after explicit media privacy and size-limit design.
 - Validate login-item enable, disable, approval, sleep catch-up, and network
   recovery behavior in a signed installed build.

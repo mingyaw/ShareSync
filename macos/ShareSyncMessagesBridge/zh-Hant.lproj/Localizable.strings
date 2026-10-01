@@ -62,6 +62,8 @@
 "bridge.telegram.baseline_required" = "轉發前請先建立基準點；既有訊息歷史不會被轉發。";
 "bridge.telegram.forwarding" = "正在檢查符合條件的新訊息並轉發至 Telegram...";
 "bridge.telegram.forwarded" = "本次轉發已完成；交付狀態與彙總稽核資料已保存在本機。";
+"bridge.telegram.paused" = "訊息轉發已暫停；新訊息會留在本機佇列，恢復後再處理。";
+"bridge.telegram.outside_schedule" = "目前不在允許轉發時段；新訊息會保留到下一個允許時段。";
 "bridge.telegram.invalid" = "請檢查 Bot Token、數字 Chat ID 與寄件者白名單。";
 "bridge.telegram.failed" = "Telegram 傳送失敗；訊息游標未前移，可安全重試。";
 "bridge.telegram.token.placeholder" = "Bot Token（留空會沿用已保存的 Token）";
@@ -75,6 +77,11 @@
 "bridge.telegram.action.forward" = "立即轉發";
 "bridge.telegram.auto" = "自動";
 "bridge.telegram.auto.detail" = "ShareSync 執行期間每 10 秒檢查一次";
+"bridge.telegram.pause" = "暫停訊息轉發";
+"bridge.telegram.schedule" = "只在指定時段轉發";
+"bridge.telegram.schedule.from" = "從";
+"bridge.telegram.schedule.to" = "到";
+"bridge.telegram.schedule.detail" = "每日依 Mac 當前時區執行；開始與結束時間相同代表全天允許。";
 "bridge.telegram.metric.sent" = "已傳送";
 "bridge.reset.telegram.title" = "要移除 Telegram 設定嗎？鑰匙圈 Token、基準點與本機交付紀錄將被刪除。";
 "bridge.telegram.reply.title" = "從 Telegram 回覆 iMessage";

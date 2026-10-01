@@ -28,6 +28,10 @@ final class MessageBridgePermissionViewModel: ObservableObject {
     @Published private(set) var telegramReplyState: TelegramReplyState = .disabled
     @Published private(set) var telegramReplyResult: TelegramReplyRunResult?
     @Published private(set) var isTelegramReplyEnabled = false
+    @Published private(set) var isTelegramForwardingPaused = false
+    @Published private(set) var isTelegramScheduleEnabled = false
+    @Published private(set) var telegramScheduleStartMinute = 8 * 60
+    @Published private(set) var telegramScheduleEndMinute = 22 * 60
 
     private let telegramSettingsStore = TelegramBotSettingsStore()
     private let telegramRateLimiter = MessageDeliveryRateLimiter(
@@ -69,6 +73,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         case baselineRequired
         case forwarding
         case forwarded
+        case paused
+        case outsideSchedule
         case invalidConfiguration
         case failed
     }
@@ -90,6 +96,10 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         let settings = telegramSettingsStore.loadSettings()
         telegramChatID = settings.chatID
         telegramAllowedSenders = settings.allowedSenderIdentifiers
+        isTelegramForwardingPaused = settings.forwardingPaused
+        isTelegramScheduleEnabled = settings.scheduleEnabled
+        telegramScheduleStartMinute = settings.scheduleStartMinute
+        telegramScheduleEndMinute = settings.scheduleEndMinute
         if (try? telegramSettingsStore.loadToken()) != nil, !settings.chatID.isEmpty {
             telegramState = .saved
         }
@@ -301,7 +311,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                     try await Task.detached(priority: .userInitiated) {
                         try TelegramBotConnector(configuration: configuration).verifyDelivery()
                     }.value
-                    telegramState = .ready
+                    telegramState = telegramRestingState()
                 } catch {
                     telegramState = .failed
                 }
@@ -320,7 +330,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                 cursorStore: telegramCursorStore()
             ).activate()
             telegramResult = nil
-            telegramState = .ready
+            telegramState = telegramRestingState()
         } catch {
             telegramState = .invalidConfiguration
         }
@@ -344,8 +354,58 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         }
     }
 
+    func setTelegramForwardingPaused(_ paused: Bool) {
+        isTelegramForwardingPaused = paused
+        persistTelegramRuntimeControls()
+        if paused {
+            telegramState = .paused
+        } else {
+            telegramState = telegramRestingState()
+            recoverTelegramAutomation()
+        }
+    }
+
+    func setTelegramScheduleEnabled(_ enabled: Bool) {
+        isTelegramScheduleEnabled = enabled
+        persistTelegramRuntimeControls()
+        telegramState = telegramRestingState()
+        recoverTelegramAutomation()
+    }
+
+    func setTelegramScheduleStart(_ date: Date) {
+        telegramScheduleStartMinute = minuteOfDay(from: date)
+        persistTelegramRuntimeControls()
+        telegramState = telegramRestingState()
+        recoverTelegramAutomation()
+    }
+
+    func setTelegramScheduleEnd(_ date: Date) {
+        telegramScheduleEndMinute = minuteOfDay(from: date)
+        persistTelegramRuntimeControls()
+        telegramState = telegramRestingState()
+        recoverTelegramAutomation()
+    }
+
+    func telegramScheduleDate(minute: Int) -> Date {
+        let startOfDay = Calendar.current.startOfDay(for: Date())
+        return Calendar.current.date(byAdding: .minute, value: minute, to: startOfDay) ?? startOfDay
+    }
+
     func forwardTelegramNow() {
         guard case .available = state, telegramState != .forwarding else { return }
+        let runtimeGate = telegramRuntimeGate()
+        do {
+            try runtimeGate.validate(at: Date())
+        } catch MessageForwardingRuntimeBlock.paused {
+            telegramState = .paused
+            return
+        } catch MessageForwardingRuntimeBlock.outsideSchedule {
+            telegramState = .outsideSchedule
+            return
+        } catch {
+            telegramState = .failed
+            return
+        }
         do {
             try persistTelegramConfiguration()
             let configuration = try telegramConfiguration()
@@ -373,6 +433,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                                 configuration: configuration,
                                 replyRouteStore: replyRouteStore
                             ),
+                            runtimeGate: runtimeGate,
                             deliveryLedger: deliveryLedger,
                             rateLimiter: rateLimiter,
                             envelopeBuilder: MessageConnectorEnvelopeBuilder(
@@ -389,6 +450,10 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                 } catch MessageValidationSessionError.baselineRequired {
                     telegramState = .baselineRequired
                     setTelegramAutoForwarding(false)
+                } catch MessageForwardingRuntimeBlock.paused {
+                    telegramState = .paused
+                } catch MessageForwardingRuntimeBlock.outsideSchedule {
+                    telegramState = .outsideSchedule
                 } catch {
                     telegramState = .failed
                 }
@@ -525,6 +590,10 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             telegramChatID = ""
             telegramAllowedSenderDraft = ""
             telegramAllowedSenders = []
+            isTelegramForwardingPaused = false
+            isTelegramScheduleEnabled = false
+            telegramScheduleStartMinute = 8 * 60
+            telegramScheduleEndMinute = 22 * 60
             telegramResult = nil
             telegramReplyResult = nil
             isTelegramReplyEnabled = false
@@ -627,6 +696,43 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             throw TelegramBotConnectorError.invalidToken
         }
         return try TelegramBotConfiguration(token: token, chatID: chatID ?? telegramChatID)
+    }
+
+    private func telegramRuntimeGate() -> MessageForwardingRuntimeGate {
+        MessageForwardingRuntimeGate(
+            isPaused: isTelegramForwardingPaused,
+            schedule: telegramSchedule()
+        )
+    }
+
+    private func telegramSchedule() -> MessageForwardingSchedule? {
+        guard isTelegramScheduleEnabled else { return nil }
+        return MessageForwardingSchedule(
+            weekdays: Set(1...7),
+            startMinute: telegramScheduleStartMinute,
+            endMinute: telegramScheduleEndMinute,
+            timeZoneIdentifier: TimeZone.current.identifier
+        )
+    }
+
+    private func telegramRestingState(at date: Date = Date()) -> TelegramState {
+        if isTelegramForwardingPaused { return .paused }
+        if let schedule = telegramSchedule(), !schedule.contains(date) { return .outsideSchedule }
+        return .ready
+    }
+
+    private func persistTelegramRuntimeControls() {
+        var settings = telegramSettingsStore.loadSettings()
+        settings.forwardingPaused = isTelegramForwardingPaused
+        settings.scheduleEnabled = isTelegramScheduleEnabled
+        settings.scheduleStartMinute = telegramScheduleStartMinute
+        settings.scheduleEndMinute = telegramScheduleEndMinute
+        telegramSettingsStore.saveRuntimeControls(settings)
+    }
+
+    private func minuteOfDay(from date: Date) -> Int {
+        let components = Calendar.current.dateComponents([.hour, .minute], from: date)
+        return (components.hour ?? 0) * 60 + (components.minute ?? 0)
     }
 
     private func telegramCursorStore() -> FileMessageCursorStore {
@@ -1038,6 +1144,56 @@ struct MessageBridgePermissionView: View {
                 }
             }
 
+            VStack(alignment: .leading, spacing: 10) {
+                Toggle(
+                    "bridge.telegram.pause",
+                    isOn: Binding(
+                        get: { model.isTelegramForwardingPaused },
+                        set: { model.setTelegramForwardingPaused($0) }
+                    )
+                )
+
+                Toggle(
+                    "bridge.telegram.schedule",
+                    isOn: Binding(
+                        get: { model.isTelegramScheduleEnabled },
+                        set: { model.setTelegramScheduleEnabled($0) }
+                    )
+                )
+
+                if model.isTelegramScheduleEnabled {
+                    HStack {
+                        Text("bridge.telegram.schedule.from")
+                        DatePicker(
+                            "",
+                            selection: Binding(
+                                get: { model.telegramScheduleDate(minute: model.telegramScheduleStartMinute) },
+                                set: { model.setTelegramScheduleStart($0) }
+                            ),
+                            displayedComponents: .hourAndMinute
+                        )
+                        .labelsHidden()
+                        Text("bridge.telegram.schedule.to")
+                        DatePicker(
+                            "",
+                            selection: Binding(
+                                get: { model.telegramScheduleDate(minute: model.telegramScheduleEndMinute) },
+                                set: { model.setTelegramScheduleEnd($0) }
+                            ),
+                            displayedComponents: .hourAndMinute
+                        )
+                        .labelsHidden()
+                        Spacer()
+                        Text(TimeZone.current.localizedName(for: .shortStandard, locale: .current) ?? TimeZone.current.identifier)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Text("bridge.telegram.schedule.detail")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
             Divider()
 
             HStack(alignment: .top, spacing: 10) {
@@ -1101,6 +1257,8 @@ struct MessageBridgePermissionView: View {
         case .baselineRequired: return "bridge.telegram.baseline_required"
         case .forwarding: return "bridge.telegram.forwarding"
         case .forwarded: return "bridge.telegram.forwarded"
+        case .paused: return "bridge.telegram.paused"
+        case .outsideSchedule: return "bridge.telegram.outside_schedule"
         case .invalidConfiguration: return "bridge.telegram.invalid"
         case .failed: return "bridge.telegram.failed"
         }

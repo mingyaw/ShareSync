@@ -5,6 +5,10 @@ struct TelegramBotSettings: Equatable {
     var allowedSenderIdentifiers: [String]
     var automaticForwardingEnabled: Bool
     var repliesEnabled: Bool
+    var forwardingPaused: Bool
+    var scheduleEnabled: Bool
+    var scheduleStartMinute: Int
+    var scheduleEndMinute: Int
 }
 
 final class TelegramBotSettingsStore {
@@ -14,6 +18,10 @@ final class TelegramBotSettingsStore {
         static let allowedSenders = "messages.telegram.allowed-senders"
         static let automaticForwarding = "messages.telegram.automatic-forwarding"
         static let repliesEnabled = "messages.telegram.replies-enabled"
+        static let forwardingPaused = "messages.telegram.forwarding-paused"
+        static let scheduleEnabled = "messages.telegram.schedule-enabled"
+        static let scheduleStartMinute = "messages.telegram.schedule-start-minute"
+        static let scheduleEndMinute = "messages.telegram.schedule-end-minute"
         static let credentialID = "telegram-bot-token"
     }
 
@@ -39,11 +47,21 @@ final class TelegramBotSettingsStore {
         if storedSenders == nil, !allowedSenders.isEmpty {
             defaults.set(allowedSenders, forKey: Key.allowedSenders)
         }
+        let startMinute = defaults.object(forKey: Key.scheduleStartMinute) == nil
+            ? 8 * 60
+            : defaults.integer(forKey: Key.scheduleStartMinute)
+        let endMinute = defaults.object(forKey: Key.scheduleEndMinute) == nil
+            ? 22 * 60
+            : defaults.integer(forKey: Key.scheduleEndMinute)
         return TelegramBotSettings(
             chatID: defaults.string(forKey: Key.chatID) ?? "",
             allowedSenderIdentifiers: allowedSenders,
             automaticForwardingEnabled: defaults.bool(forKey: Key.automaticForwarding),
-            repliesEnabled: defaults.bool(forKey: Key.repliesEnabled)
+            repliesEnabled: defaults.bool(forKey: Key.repliesEnabled),
+            forwardingPaused: defaults.bool(forKey: Key.forwardingPaused),
+            scheduleEnabled: defaults.bool(forKey: Key.scheduleEnabled),
+            scheduleStartMinute: clampedMinute(startMinute),
+            scheduleEndMinute: clampedMinute(endMinute)
         )
     }
 
@@ -54,6 +72,7 @@ final class TelegramBotSettingsStore {
         defaults.set(senders.first ?? "", forKey: Key.allowedSender)
         defaults.set(settings.automaticForwardingEnabled, forKey: Key.automaticForwarding)
         defaults.set(settings.repliesEnabled, forKey: Key.repliesEnabled)
+        saveRuntimeControls(settings)
     }
 
     func setAutomaticForwardingEnabled(_ enabled: Bool) {
@@ -68,6 +87,13 @@ final class TelegramBotSettingsStore {
         let senders = normalizedSenders(identifiers)
         defaults.set(senders, forKey: Key.allowedSenders)
         defaults.set(senders.first ?? "", forKey: Key.allowedSender)
+    }
+
+    func saveRuntimeControls(_ settings: TelegramBotSettings) {
+        defaults.set(settings.forwardingPaused, forKey: Key.forwardingPaused)
+        defaults.set(settings.scheduleEnabled, forKey: Key.scheduleEnabled)
+        defaults.set(clampedMinute(settings.scheduleStartMinute), forKey: Key.scheduleStartMinute)
+        defaults.set(clampedMinute(settings.scheduleEndMinute), forKey: Key.scheduleEndMinute)
     }
 
     func loadToken() throws -> String? {
@@ -85,6 +111,10 @@ final class TelegramBotSettingsStore {
         defaults.removeObject(forKey: Key.allowedSenders)
         defaults.removeObject(forKey: Key.automaticForwarding)
         defaults.removeObject(forKey: Key.repliesEnabled)
+        defaults.removeObject(forKey: Key.forwardingPaused)
+        defaults.removeObject(forKey: Key.scheduleEnabled)
+        defaults.removeObject(forKey: Key.scheduleStartMinute)
+        defaults.removeObject(forKey: Key.scheduleEndMinute)
         try vault.removeCredential(for: Key.credentialID)
     }
 
@@ -95,5 +125,9 @@ final class TelegramBotSettingsStore {
             guard !trimmed.isEmpty, seen.insert(trimmed).inserted else { return nil }
             return trimmed
         }
+    }
+
+    private func clampedMinute(_ minute: Int) -> Int {
+        min(max(minute, 0), 1_439)
     }
 }

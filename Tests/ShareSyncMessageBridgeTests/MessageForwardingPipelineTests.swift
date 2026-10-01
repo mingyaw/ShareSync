@@ -88,6 +88,36 @@ final class MessageForwardingPipelineTests: XCTestCase {
         XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 0))
     }
 
+    func testOutsideScheduleKeepsCursorAndMessagesQueued() throws {
+        let fixture = try MessageBridgeFixture()
+        try fixture.insertHandle(identifier: "allowed")
+        let store = try makeStore()
+        try store.store.save(MessageCursor(rowID: 0))
+        try fixture.insertMessage(guid: "queued", body: "one")
+        let schedule = MessageForwardingSchedule(
+            weekdays: [2],
+            startMinute: 9 * 60,
+            endMinute: 17 * 60,
+            timeZoneIdentifier: "Asia/Taipei"
+        )
+        let outsideWindow = try XCTUnwrap(
+            ISO8601DateFormatter().date(from: "2026-09-28T18:00:00+08:00")
+        )
+        let pipeline = MessageForwardingPipeline(
+            reader: MessageEventReader(databaseURL: fixture.databaseURL),
+            cursorStore: store.store,
+            policy: MessageForwardingPolicy(allowedSenderIdentifiers: ["allowed"]),
+            connector: InMemoryMessageForwardingConnector(),
+            runtimeGate: MessageForwardingRuntimeGate(schedule: schedule),
+            now: { outsideWindow }
+        )
+
+        XCTAssertThrowsError(try pipeline.run()) { error in
+            XCTAssertEqual(error as? MessageForwardingRuntimeBlock, .outsideSchedule)
+        }
+        XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 0))
+    }
+
     func testRateLimitKeepsBatchCursorForLaterRetry() throws {
         let fixture = try MessageBridgeFixture()
         try fixture.insertHandle(identifier: "allowed")
