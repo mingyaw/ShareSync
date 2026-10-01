@@ -59,6 +59,7 @@
 		B10000000000000000000019 /* TelegramBotSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000C /* TelegramBotSettingsStore.swift */; };
 		B1000000000000000000001A /* TelegramReplyBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000022 /* TelegramReplyBridge.swift */; };
 		B1000000000000000000001B /* MessagesAutomationSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000D /* MessagesAutomationSender.swift */; };
+		B1000000000000000000001C /* MessageAttachmentUploadPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000023 /* MessageAttachmentUploadPolicy.swift */; };
 		C10000000000000000000001 /* MessageBridgePermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* MessageBridgePermissionView.swift */; };
 		C10000000000000000000002 /* MessageBridgeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000010 /* MessageBridgeError.swift */; };
 		C10000000000000000000003 /* MessageCursorStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000011 /* MessageCursorStore.swift */; };
@@ -82,6 +83,7 @@
 		C10000000000000000000015 /* TelegramReplyBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000022 /* TelegramReplyBridge.swift */; };
 		C10000000000000000000016 /* MessagesAutomationSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000D /* MessagesAutomationSender.swift */; };
 		C10000000000000000000017 /* MessagePollingPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001E /* MessagePollingPlanner.swift */; };
+		C10000000000000000000018 /* MessageAttachmentUploadPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000023 /* MessageAttachmentUploadPolicy.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -145,6 +147,7 @@
 		B20000000000000000000020 /* MessageConnectorEndpointPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageConnectorEndpointPolicy.swift; sourceTree = "<group>"; };
 		B20000000000000000000021 /* TelegramBotConnector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelegramBotConnector.swift; sourceTree = "<group>"; };
 		B20000000000000000000022 /* TelegramReplyBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelegramReplyBridge.swift; sourceTree = "<group>"; };
+		B20000000000000000000023 /* MessageAttachmentUploadPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageAttachmentUploadPolicy.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -264,6 +267,7 @@
 				B20000000000000000000020 /* MessageConnectorEndpointPolicy.swift */,
 				B20000000000000000000021 /* TelegramBotConnector.swift */,
 				B20000000000000000000022 /* TelegramReplyBridge.swift */,
+				B20000000000000000000023 /* MessageAttachmentUploadPolicy.swift */,
 			);
 			path = MessageBridgeCore;
 			sourceTree = "<group>";
@@ -410,6 +414,7 @@
 				C1000000000000000000000E /* MessageAttributedBodyDecoder.swift in Sources */,
 				C1000000000000000000000F /* MessageConnectorEnvelope.swift in Sources */,
 				C10000000000000000000017 /* MessagePollingPlanner.swift in Sources */,
+				C10000000000000000000018 /* MessageAttachmentUploadPolicy.swift in Sources */,
 				C10000000000000000000011 /* TelegramBotConnector.swift in Sources */,
 				C10000000000000000000012 /* TelegramBotSettingsStore.swift in Sources */,
 				C10000000000000000000013 /* MessageConnectorCredentialVault.swift in Sources */,
@@ -447,6 +452,7 @@
 				B10000000000000000000019 /* TelegramBotSettingsStore.swift in Sources */,
 				B1000000000000000000001A /* TelegramReplyBridge.swift in Sources */,
 				B1000000000000000000001B /* MessagesAutomationSender.swift in Sources */,
+				B1000000000000000000001C /* MessageAttachmentUploadPolicy.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

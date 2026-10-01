@@ -177,6 +177,10 @@ interruption without requiring a new pairing.
   Disabled summaries emit only a generic attachment notice; no attachment file,
   path, filename, size, or MIME type leaves the Mac. A separate design record
   defines the hard gate and size limits for any future binary media upload.
+- A default-off attachment upload policy now validates canonical Messages-root
+  containment, rejects symbolic links and non-files, allowlists JPEG/PNG, applies
+  per-file/count/batch limits, and requires post-read size consistency. It is
+  not connected to the Messages reader or Telegram transport.
 
 ### Remaining
 
@@ -184,8 +188,9 @@ interruption without requiring a new pairing.
 - Verify text, Unicode, group, reply, edit, retract, reaction, attachment
   metadata, sleep catch-up, and deduplication behavior on supported macOS
   versions.
-- Implement attachment upload only after the approved privacy gate has dedicated
-  path validation, multipart transport, retry, and synthetic security tests.
+- Implement attachment upload only after the approved privacy gate has a
+  dedicated multipart transport and retry integration; keep the policy disabled
+  until its end-to-end synthetic security gate passes.
 - Validate login-item enable, disable, approval, sleep catch-up, and network
   recovery behavior in a signed installed build.
 - Validate Telegram reply routing and Messages Automation permission on a

@@ -1,6 +1,7 @@
 # Messages Attachment Privacy And Size Limits
 
-Status: approved design boundary; binary attachment upload is not implemented.
+Status: policy and local path validation implemented; binary attachment upload
+is not implemented.
 
 ## Current Product Contract
 
@@ -36,6 +37,11 @@ below is implemented and tested:
   state keeps only an opaque key and aggregate outcome.
 - Logs, audit history, and UI diagnostics never contain filenames, paths,
   message IDs, sender identifiers, or media bytes.
+
+`MessageAttachmentUploadPolicy` now implements the default-off gate, canonical
+root containment, symbolic-link rejection, regular-file checks, JPEG/PNG
+allowlisting, per-file and aggregate limits, and post-read size verification.
+It is intentionally not connected to the Messages reader or Telegram connector.
 
 ## Acceptance Gate
 
