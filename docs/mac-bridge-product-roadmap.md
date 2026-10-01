@@ -196,6 +196,10 @@ interruption without requiring a new pairing.
   text and per-attachment ledger keys. Confirmed parts are skipped on retry and
   the message cursor advances only after every part succeeds. No app target
   instantiates this optional path yet.
+- The synthetic media security gate now verifies that root escape, symbolic
+  links, unsupported types, and size-limit failures produce no Telegram request.
+  It also verifies fixed-host delivery, generic filenames, rate-limit retry,
+  confirmed-part skipping, and cursor preservation.
 
 ### Remaining
 
@@ -203,8 +207,8 @@ interruption without requiring a new pairing.
 - Verify text, Unicode, group, reply, edit, retract, reaction, attachment
   metadata, sleep catch-up, and deduplication behavior on supported macOS
   versions.
-- Add the separate attachment consent UI and app composition only after the
-  remaining synthetic security cases pass; keep the policy disabled until then.
+- Add the separate attachment consent UI and app composition; keep the policy
+  disabled until explicit consent and physical-Mac validation are complete.
 - Validate login-item enable, disable, approval, sleep catch-up, and network
   recovery behavior in a signed installed build.
 - Validate Telegram reply routing and Messages Automation permission on a

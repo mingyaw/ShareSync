@@ -87,3 +87,9 @@ unsupported MIME type, an oversized file, and a batch over the aggregate limit
 must all fail closed before network delivery. An allowed image may be read only
 after policy approval, delivered to the fixed Telegram host, and retried without
 adding sensitive data to the local ledger or audit history.
+
+The synthetic end-to-end gate now covers root escape, symbolic links,
+unsupported MIME types, per-file limits, aggregate limits, fixed-host multipart
+delivery, generic filenames, Telegram rate limiting, confirmed-part retry, and
+cursor preservation. Physical Messages permission and live Telegram media
+delivery remain separate release checks.
