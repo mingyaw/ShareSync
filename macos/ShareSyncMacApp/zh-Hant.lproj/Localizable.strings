@@ -90,6 +90,10 @@
 "mac.settings.next_sync" = "下次檢查";
 "mac.settings.keep_running" = "關閉視窗後讓 ShareSync 繼續執行";
 "mac.settings.keep_running_detail" = "自動同步只會在 ShareSync 仍在執行且 Mac 清醒時運作。";
+"mac.settings.launch_at_login" = "登入時開啟 ShareSync";
+"mac.settings.launch_at_login_detail" = "登入 Mac 後啟動 ShareSync，讓照片同步與訊息自動化恢復運作。";
+"mac.settings.launch_at_login_status" = "需要核准";
+"mac.settings.open_login_items" = "開啟登入項目";
 "mac.settings.host" = "Android 位址";
 "mac.settings.port" = "連接埠";
 "mac.settings.storage" = "照片儲存";

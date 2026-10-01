@@ -1,6 +1,6 @@
 # ShareSync Mac Bridge Product Roadmap
 
-Status: Product requirements and branch plan as of 2026-09-29.
+Status: Product requirements and branch plan as of 2026-10-01.
 
 ## Product Background
 
@@ -59,7 +59,7 @@ center, activity history, login-item behavior, and release packaging.
 
 ### Remaining
 
-- Launch-at-login support using supported macOS APIs.
+- Validate launch-at-login registration and approval in a signed installed build.
 - Sleep/wake and network-change recovery.
 - Long-running reliability and large-library physical-device validation.
 - QR-pinned HTTPS physical-device signoff and certificate lifecycle validation.
@@ -155,6 +155,10 @@ interruption without requiring a new pairing.
 - The unified app now owns Messages polling for the process lifetime. Explicit
   automatic-forwarding and reply opt-ins resume after launch and continue when
   the window closes while ShareSync remains in the menu bar.
+- The unified app can register itself as a supported macOS login item and links
+  directly to Login Items when system approval is required.
+- Message automation immediately checks for pending work after the Mac wakes or
+  network connectivity returns instead of waiting for the next polling interval.
 
 ### Remaining
 
@@ -165,8 +169,8 @@ interruption without requiring a new pairing.
 - Expand the current single-sender allowlist UI to multiple senders and optional
   conversation rules, schedules, pause controls, and loop prevention.
 - Add attachment upload only after explicit media privacy and size-limit design.
-- Add launch-at-login and explicit sleep/network recovery using the existing
-  polling planner. Window-close/menu-bar continuity is complete.
+- Validate login-item enable, disable, approval, sleep catch-up, and network
+  recovery behavior in a signed installed build.
 - Validate Telegram reply routing and Messages Automation permission on a
   physical Mac, including denied/revoked permission and an unavailable iMessage
   participant.

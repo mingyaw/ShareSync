@@ -1,4 +1,5 @@
 import SwiftUI
+import ServiceManagement
 
 enum MacPreferenceKeys {
     static let keepRunning = "mac.keepRunning"
@@ -15,11 +16,51 @@ final class ShareSyncMacAppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
+@MainActor
+final class LaunchAtLoginController: ObservableObject {
+    @Published private(set) var isEnabled = false
+    @Published private(set) var requiresApproval = false
+    @Published private(set) var errorMessage: String?
+
+    private let service = SMAppService.mainApp
+
+    init() {
+        refresh()
+    }
+
+    func refresh() {
+        let status = service.status
+        isEnabled = status == .enabled || status == .requiresApproval
+        requiresApproval = status == .requiresApproval
+    }
+
+    func setEnabled(_ enabled: Bool) {
+        errorMessage = nil
+        do {
+            if enabled {
+                if service.status != .enabled && service.status != .requiresApproval {
+                    try service.register()
+                }
+            } else if service.status != .notRegistered {
+                try service.unregister()
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        refresh()
+    }
+
+    func openLoginItemsSettings() {
+        SMAppService.openSystemSettingsLoginItems()
+    }
+}
+
 @main
 struct ShareSyncMacApp: App {
     @NSApplicationDelegateAdaptor(ShareSyncMacAppDelegate.self) private var appDelegate
     @StateObject private var syncModel = MacPhotoSyncViewModel()
     @StateObject private var messageModel = MessageBridgePermissionViewModel()
+    @StateObject private var launchAtLoginController = LaunchAtLoginController()
 
     var body: some Scene {
         Window("ShareSync", id: "main") {
@@ -28,6 +69,7 @@ struct ShareSyncMacApp: App {
                 .environmentObject(messageModel)
                 .frame(minWidth: 820, minHeight: 560)
                 .task {
+                    messageModel.startRuntimeObservation()
                     messageModel.checkAccess()
                 }
         }
@@ -36,6 +78,7 @@ struct ShareSyncMacApp: App {
         Settings {
             MacSettingsView()
                 .environmentObject(syncModel)
+                .environmentObject(launchAtLoginController)
                 .frame(width: 540, height: 520)
         }
 

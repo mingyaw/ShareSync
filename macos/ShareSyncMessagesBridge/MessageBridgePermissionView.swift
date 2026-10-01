@@ -1,4 +1,5 @@
 import AppKit
+import Network
 import SwiftUI
 
 @MainActor
@@ -33,6 +34,11 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         interval: 60
     )
     private var telegramPollingTask: Task<Void, Never>?
+    private var wakeObserver: NSObjectProtocol?
+    private var isMonitoringNetwork = false
+    private var wasNetworkSatisfied: Bool?
+    private let networkMonitor = NWPathMonitor()
+    private let networkMonitorQueue = DispatchQueue(label: "com.sharesync.message-recovery")
 
     enum ValidationState: Equatable {
         case inactive
@@ -86,6 +92,35 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         if (try? telegramSettingsStore.loadToken()) != nil, !settings.chatID.isEmpty {
             telegramState = .saved
         }
+    }
+
+    func startRuntimeObservation() {
+        if wakeObserver == nil {
+            wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(
+                forName: NSWorkspace.didWakeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    self?.recoverTelegramAutomation()
+                }
+            }
+        }
+
+        guard !isMonitoringNetwork else { return }
+        isMonitoringNetwork = true
+        networkMonitor.pathUpdateHandler = { [weak self] path in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                let isSatisfied = path.status == .satisfied
+                let shouldRecover = self.wasNetworkSatisfied == false && isSatisfied
+                self.wasNetworkSatisfied = isSatisfied
+                if shouldRecover {
+                    self.recoverTelegramAutomation()
+                }
+            }
+        }
+        networkMonitor.start(queue: networkMonitorQueue)
     }
 
     var titleKey: LocalizedStringKey {
@@ -622,6 +657,14 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         }
         if settings.automaticForwardingEnabled, !isTelegramAutoForwarding {
             setTelegramAutoForwarding(true)
+        }
+    }
+
+    private func recoverTelegramAutomation() {
+        guard case .available = state, isTelegramAutoForwarding else { return }
+        forwardTelegramNow()
+        if isTelegramReplyEnabled {
+            checkTelegramReplies()
         }
     }
 

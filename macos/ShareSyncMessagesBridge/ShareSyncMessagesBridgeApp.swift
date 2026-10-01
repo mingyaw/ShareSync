@@ -11,6 +11,10 @@ struct ShareSyncMessagesBridgeApp: App {
                     .environmentObject(model)
             }
             .frame(minHeight: 640)
+            .task {
+                model.startRuntimeObservation()
+                model.checkAccess()
+            }
         }
         .defaultSize(width: 576, height: 760)
     }

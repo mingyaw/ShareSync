@@ -619,6 +619,7 @@ private struct PairingSheet: View {
 
 struct MacSettingsView: View {
     @EnvironmentObject private var model: MacPhotoSyncViewModel
+    @EnvironmentObject private var launchAtLogin: LaunchAtLoginController
     @State private var confirmForget = false
     @State private var confirmReset = false
 
@@ -653,6 +654,31 @@ struct MacSettingsView: View {
                 Text("mac.settings.keep_running_detail")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+
+                Toggle(
+                    "mac.settings.launch_at_login",
+                    isOn: Binding(
+                        get: { launchAtLogin.isEnabled },
+                        set: { launchAtLogin.setEnabled($0) }
+                    )
+                )
+                Text("mac.settings.launch_at_login_detail")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                if launchAtLogin.requiresApproval {
+                    LabeledContent("mac.settings.launch_at_login_status") {
+                        Button("mac.settings.open_login_items") {
+                            launchAtLogin.openLoginItemsSettings()
+                        }
+                    }
+                }
+
+                if let errorMessage = launchAtLogin.errorMessage {
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
             }
 
             Section("mac.settings.connection") {
@@ -677,6 +703,10 @@ struct MacSettingsView: View {
         }
         .formStyle(.grouped)
         .padding()
+        .onAppear { launchAtLogin.refresh() }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            launchAtLogin.refresh()
+        }
         .confirmationDialog("mac.settings.forget_confirm", isPresented: $confirmForget) {
             Button("mac.settings.forget", role: .destructive) { model.forgetDevice() }
         }

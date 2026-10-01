@@ -90,6 +90,10 @@
 "mac.settings.next_sync" = "Next check";
 "mac.settings.keep_running" = "Keep ShareSync running after closing its window";
 "mac.settings.keep_running_detail" = "Automatic sync works only while ShareSync is running and the Mac is awake.";
+"mac.settings.launch_at_login" = "Open ShareSync at login";
+"mac.settings.launch_at_login_detail" = "Starts ShareSync after you sign in so photo sync and message automation can resume.";
+"mac.settings.launch_at_login_status" = "Approval required";
+"mac.settings.open_login_items" = "Open Login Items";
 "mac.settings.host" = "Android host";
 "mac.settings.port" = "Port";
 "mac.settings.storage" = "Photo storage";
