@@ -26,6 +26,15 @@ final class MessageForwardingPipelineTests: XCTestCase {
         XCTAssertFalse(policy.permits(normalizer.normalize(makeEvent(sender: "allowed", associatedType: 2000))))
     }
 
+    func testPolicyAllowsEachConfiguredSenderAndRejectsOthers() {
+        let policy = MessageForwardingPolicy(allowedSenderIdentifiers: ["first", "second"])
+        let normalizer = MessageEventNormalizer()
+
+        XCTAssertTrue(policy.permits(normalizer.normalize(makeEvent(sender: "first"))))
+        XCTAssertTrue(policy.permits(normalizer.normalize(makeEvent(sender: "second"))))
+        XCTAssertFalse(policy.permits(normalizer.normalize(makeEvent(sender: "third"))))
+    }
+
     func testPolicyCanRestrictAnAllowedSenderToSpecificConversation() {
         let normalizer = MessageEventNormalizer()
         let policy = MessageForwardingPolicy(

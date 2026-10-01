@@ -2,7 +2,7 @@ import Foundation
 
 struct TelegramBotSettings: Equatable {
     var chatID: String
-    var allowedSenderIdentifier: String
+    var allowedSenderIdentifiers: [String]
     var automaticForwardingEnabled: Bool
     var repliesEnabled: Bool
 }
@@ -11,6 +11,7 @@ final class TelegramBotSettingsStore {
     private enum Key {
         static let chatID = "messages.telegram.chat-id"
         static let allowedSender = "messages.telegram.allowed-sender"
+        static let allowedSenders = "messages.telegram.allowed-senders"
         static let automaticForwarding = "messages.telegram.automatic-forwarding"
         static let repliesEnabled = "messages.telegram.replies-enabled"
         static let credentialID = "telegram-bot-token"
@@ -30,9 +31,17 @@ final class TelegramBotSettingsStore {
     }
 
     func loadSettings() -> TelegramBotSettings {
-        TelegramBotSettings(
+        let storedSenders = defaults.stringArray(forKey: Key.allowedSenders)
+        let legacySender = defaults.string(forKey: Key.allowedSender) ?? ""
+        let allowedSenders = normalizedSenders(
+            storedSenders ?? (legacySender.isEmpty ? [] : [legacySender])
+        )
+        if storedSenders == nil, !allowedSenders.isEmpty {
+            defaults.set(allowedSenders, forKey: Key.allowedSenders)
+        }
+        return TelegramBotSettings(
             chatID: defaults.string(forKey: Key.chatID) ?? "",
-            allowedSenderIdentifier: defaults.string(forKey: Key.allowedSender) ?? "",
+            allowedSenderIdentifiers: allowedSenders,
             automaticForwardingEnabled: defaults.bool(forKey: Key.automaticForwarding),
             repliesEnabled: defaults.bool(forKey: Key.repliesEnabled)
         )
@@ -40,7 +49,9 @@ final class TelegramBotSettingsStore {
 
     func saveSettings(_ settings: TelegramBotSettings) {
         defaults.set(settings.chatID, forKey: Key.chatID)
-        defaults.set(settings.allowedSenderIdentifier, forKey: Key.allowedSender)
+        let senders = normalizedSenders(settings.allowedSenderIdentifiers)
+        defaults.set(senders, forKey: Key.allowedSenders)
+        defaults.set(senders.first ?? "", forKey: Key.allowedSender)
         defaults.set(settings.automaticForwardingEnabled, forKey: Key.automaticForwarding)
         defaults.set(settings.repliesEnabled, forKey: Key.repliesEnabled)
     }
@@ -51,6 +62,12 @@ final class TelegramBotSettingsStore {
 
     func setRepliesEnabled(_ enabled: Bool) {
         defaults.set(enabled, forKey: Key.repliesEnabled)
+    }
+
+    func setAllowedSenderIdentifiers(_ identifiers: [String]) {
+        let senders = normalizedSenders(identifiers)
+        defaults.set(senders, forKey: Key.allowedSenders)
+        defaults.set(senders.first ?? "", forKey: Key.allowedSender)
     }
 
     func loadToken() throws -> String? {
@@ -65,8 +82,18 @@ final class TelegramBotSettingsStore {
     func clear() throws {
         defaults.removeObject(forKey: Key.chatID)
         defaults.removeObject(forKey: Key.allowedSender)
+        defaults.removeObject(forKey: Key.allowedSenders)
         defaults.removeObject(forKey: Key.automaticForwarding)
         defaults.removeObject(forKey: Key.repliesEnabled)
         try vault.removeCredential(for: Key.credentialID)
+    }
+
+    private func normalizedSenders(_ identifiers: [String]) -> [String] {
+        var seen: Set<String> = []
+        return identifiers.compactMap { identifier in
+            let trimmed = identifier.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty, seen.insert(trimmed).inserted else { return nil }
+            return trimmed
+        }
     }
 }

@@ -20,7 +20,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
     @Published private(set) var previewState: PreviewState = .inactive
     @Published var telegramTokenDraft = ""
     @Published var telegramChatID = ""
-    @Published var telegramAllowedSender = ""
+    @Published var telegramAllowedSenderDraft = ""
+    @Published private(set) var telegramAllowedSenders: [String] = []
     @Published private(set) var telegramState: TelegramState = .unconfigured
     @Published private(set) var telegramResult: MessageForwardingRunResult?
     @Published private(set) var isTelegramAutoForwarding = false
@@ -88,7 +89,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
     init() {
         let settings = telegramSettingsStore.loadSettings()
         telegramChatID = settings.chatID
-        telegramAllowedSender = settings.allowedSenderIdentifier
+        telegramAllowedSenders = settings.allowedSenderIdentifiers
         if (try? telegramSettingsStore.loadToken()) != nil, !settings.chatID.isEmpty {
             telegramState = .saved
         }
@@ -325,16 +326,35 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         }
     }
 
+    func addTelegramAllowedSender() {
+        let sender = telegramAllowedSenderDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !sender.isEmpty else { return }
+        if !telegramAllowedSenders.contains(sender) {
+            telegramAllowedSenders.append(sender)
+            telegramSettingsStore.setAllowedSenderIdentifiers(telegramAllowedSenders)
+        }
+        telegramAllowedSenderDraft = ""
+    }
+
+    func removeTelegramAllowedSender(_ sender: String) {
+        telegramAllowedSenders.removeAll { $0 == sender }
+        telegramSettingsStore.setAllowedSenderIdentifiers(telegramAllowedSenders)
+        if telegramAllowedSenders.isEmpty {
+            setTelegramAutoForwarding(false)
+        }
+    }
+
     func forwardTelegramNow() {
         guard case .available = state, telegramState != .forwarding else { return }
         do {
             try persistTelegramConfiguration()
             let configuration = try telegramConfiguration()
-            let sender = telegramAllowedSender.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !sender.isEmpty else {
+            let senders = Set(telegramAllowedSenders)
+            guard !senders.isEmpty else {
                 telegramState = .invalidConfiguration
                 return
             }
+            let senderLabels = Dictionary(uniqueKeysWithValues: senders.map { ($0, $0) })
             let reader = messageReader()
             let cursorStore = telegramCursorStore()
             let deliveryLedger = telegramDeliveryLedger()
@@ -348,7 +368,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                         let pipeline = MessageForwardingPipeline(
                             reader: reader,
                             cursorStore: cursorStore,
-                            policy: MessageForwardingPolicy(allowedSenderIdentifiers: [sender]),
+                            policy: MessageForwardingPolicy(allowedSenderIdentifiers: senders),
                             connector: TelegramBotConnector(
                                 configuration: configuration,
                                 replyRouteStore: replyRouteStore
@@ -356,7 +376,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                             deliveryLedger: deliveryLedger,
                             rateLimiter: rateLimiter,
                             envelopeBuilder: MessageConnectorEnvelopeBuilder(
-                                senderLabels: [sender: sender]
+                                senderLabels: senderLabels
                             )
                         )
                         return try AuditedMessageForwardingRunner(
@@ -389,7 +409,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         }
         do {
             try persistTelegramConfiguration()
-            guard !telegramAllowedSender.isEmpty else {
+            guard !telegramAllowedSenders.isEmpty else {
                 telegramState = .invalidConfiguration
                 return
             }
@@ -503,7 +523,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             try telegramUpdateCursorStore().clear()
             telegramTokenDraft = ""
             telegramChatID = ""
-            telegramAllowedSender = ""
+            telegramAllowedSenderDraft = ""
+            telegramAllowedSenders = []
             telegramResult = nil
             telegramReplyResult = nil
             isTelegramReplyEnabled = false
@@ -584,7 +605,10 @@ final class MessageBridgePermissionViewModel: ObservableObject {
 
     private func persistTelegramConfiguration() throws {
         let chatID = telegramChatID.trimmingCharacters(in: .whitespacesAndNewlines)
-        let sender = telegramAllowedSender.trimmingCharacters(in: .whitespacesAndNewlines)
+        addTelegramAllowedSender()
+        guard !telegramAllowedSenders.isEmpty else {
+            throw TelegramBotConnectorError.invalidChatID
+        }
         if !telegramTokenDraft.isEmpty {
             _ = try TelegramBotConfiguration(token: telegramTokenDraft, chatID: chatID)
             try telegramSettingsStore.saveToken(telegramTokenDraft)
@@ -593,10 +617,9 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         _ = try telegramConfiguration(chatID: chatID)
         var settings = telegramSettingsStore.loadSettings()
         settings.chatID = chatID
-        settings.allowedSenderIdentifier = sender
+        settings.allowedSenderIdentifiers = telegramAllowedSenders
         telegramSettingsStore.saveSettings(settings)
         telegramChatID = chatID
-        telegramAllowedSender = sender
     }
 
     private func telegramConfiguration(chatID: String? = nil) throws -> TelegramBotConfiguration {
@@ -922,8 +945,51 @@ struct MessageBridgePermissionView: View {
                 .textFieldStyle(.roundedBorder)
             TextField("bridge.telegram.chat_id.placeholder", text: $model.telegramChatID)
                 .textFieldStyle(.roundedBorder)
-            TextField("bridge.telegram.sender.placeholder", text: $model.telegramAllowedSender)
-                .textFieldStyle(.roundedBorder)
+            HStack(spacing: 8) {
+                TextField("bridge.telegram.sender.placeholder", text: $model.telegramAllowedSenderDraft)
+                    .textFieldStyle(.roundedBorder)
+                    .onSubmit { model.addTelegramAllowedSender() }
+                Button {
+                    model.addTelegramAllowedSender()
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .buttonStyle(.bordered)
+                .help("bridge.telegram.sender.add")
+                .disabled(model.telegramAllowedSenderDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+
+            if model.telegramAllowedSenders.isEmpty {
+                Text("bridge.telegram.sender.empty")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(model.telegramAllowedSenders, id: \.self) { sender in
+                        HStack(spacing: 10) {
+                            Image(systemName: "person.crop.circle")
+                                .foregroundStyle(.secondary)
+                            Text(sender)
+                                .lineLimit(1)
+                                .textSelection(.enabled)
+                            Spacer()
+                            Button {
+                                model.removeTelegramAllowedSender(sender)
+                            } label: {
+                                Image(systemName: "trash")
+                            }
+                            .buttonStyle(.borderless)
+                            .help("bridge.telegram.sender.remove")
+                        }
+                        .padding(.vertical, 7)
+                        if sender != model.telegramAllowedSenders.last {
+                            Divider()
+                        }
+                    }
+                }
+                .padding(.horizontal, 10)
+                .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 6))
+            }
 
             if let result = model.telegramResult {
                 HStack(spacing: 18) {

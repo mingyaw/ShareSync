@@ -159,6 +159,9 @@ interruption without requiring a new pairing.
   directly to Login Items when system approval is required.
 - Message automation immediately checks for pending work after the Mac wakes or
   network connectivity returns instead of waiting for the next polling interval.
+- Telegram forwarding accepts a persisted multi-sender allowlist. Existing
+  single-sender settings migrate automatically and removing the final sender
+  disables automatic forwarding.
 
 ### Remaining
 
@@ -166,8 +169,7 @@ interruption without requiring a new pairing.
 - Verify text, Unicode, group, reply, edit, retract, reaction, attachment
   metadata, sleep catch-up, and deduplication behavior on supported macOS
   versions.
-- Expand the current single-sender allowlist UI to multiple senders and optional
-  conversation rules, schedules, pause controls, and loop prevention.
+- Add optional conversation rules, schedules, pause controls, and loop prevention.
 - Add attachment upload only after explicit media privacy and size-limit design.
 - Validate login-item enable, disable, approval, sleep catch-up, and network
   recovery behavior in a signed installed build.
