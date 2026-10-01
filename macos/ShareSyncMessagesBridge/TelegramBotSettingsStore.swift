@@ -34,6 +34,7 @@ final class TelegramBotSettingsStore {
 
     private let defaults: UserDefaults
     private let vault: KeychainMessageConnectorCredentialVault
+    private let attachmentConsentStore: UserDefaultsMessageAttachmentConsentStore
 
     init(
         defaults: UserDefaults = .standard,
@@ -43,6 +44,11 @@ final class TelegramBotSettingsStore {
     ) {
         self.defaults = defaults
         self.vault = vault
+        attachmentConsentStore = UserDefaultsMessageAttachmentConsentStore(
+            defaults: defaults,
+            enabledKey: Key.attachmentUploadsEnabled,
+            versionKey: Key.attachmentConsentVersion
+        )
     }
 
     func loadSettings() -> TelegramBotSettings {
@@ -67,10 +73,7 @@ final class TelegramBotSettingsStore {
                 defaults.stringArray(forKey: Key.allowedConversations) ?? []
             ),
             includeAttachmentSummary: defaults.bool(forKey: Key.includeAttachmentSummary),
-            attachmentUploadConsent: MessageAttachmentConsent(
-                isEnabled: defaults.bool(forKey: Key.attachmentUploadsEnabled),
-                acceptedVersion: defaults.object(forKey: Key.attachmentConsentVersion) as? Int
-            ),
+            attachmentUploadConsent: attachmentConsentStore.load(),
             automaticForwardingEnabled: defaults.bool(forKey: Key.automaticForwarding),
             repliesEnabled: defaults.bool(forKey: Key.repliesEnabled),
             forwardingPaused: defaults.bool(forKey: Key.forwardingPaused),
@@ -119,12 +122,7 @@ final class TelegramBotSettingsStore {
     }
 
     func saveAttachmentUploadConsent(_ consent: MessageAttachmentConsent) {
-        defaults.set(consent.allowsUploads, forKey: Key.attachmentUploadsEnabled)
-        if consent.allowsUploads, let acceptedVersion = consent.acceptedVersion {
-            defaults.set(acceptedVersion, forKey: Key.attachmentConsentVersion)
-        } else {
-            defaults.removeObject(forKey: Key.attachmentConsentVersion)
-        }
+        attachmentConsentStore.save(consent)
     }
 
     func saveRuntimeControls(_ settings: TelegramBotSettings) {
@@ -149,8 +147,7 @@ final class TelegramBotSettingsStore {
         defaults.removeObject(forKey: Key.allowedSenders)
         defaults.removeObject(forKey: Key.allowedConversations)
         defaults.removeObject(forKey: Key.includeAttachmentSummary)
-        defaults.removeObject(forKey: Key.attachmentUploadsEnabled)
-        defaults.removeObject(forKey: Key.attachmentConsentVersion)
+        attachmentConsentStore.clear()
         defaults.removeObject(forKey: Key.automaticForwarding)
         defaults.removeObject(forKey: Key.repliesEnabled)
         defaults.removeObject(forKey: Key.forwardingPaused)
