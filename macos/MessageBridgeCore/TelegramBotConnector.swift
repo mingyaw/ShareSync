@@ -240,6 +240,9 @@ public struct TelegramBotMessageFormatter: Equatable, Sendable {
             let suffix = types.isEmpty ? "" : " (\(types))"
             lines.append("")
             lines.append("Attachments: \(envelope.attachmentCount)\(suffix)")
+        } else if envelope.hasAttachments {
+            lines.append("")
+            lines.append("Attachment not forwarded by ShareSync privacy settings")
         }
         return truncate(lines.joined(separator: "\n"))
     }

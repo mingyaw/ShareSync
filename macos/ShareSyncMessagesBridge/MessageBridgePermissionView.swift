@@ -24,6 +24,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
     @Published private(set) var telegramAllowedSenders: [String] = []
     @Published var telegramAllowedConversationDraft = ""
     @Published private(set) var telegramAllowedConversations: [String] = []
+    @Published private(set) var isTelegramAttachmentSummaryEnabled = false
     @Published private(set) var telegramState: TelegramState = .unconfigured
     @Published private(set) var telegramResult: MessageForwardingRunResult?
     @Published private(set) var isTelegramAutoForwarding = false
@@ -100,6 +101,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         telegramChatID = settings.chatID
         telegramAllowedSenders = settings.allowedSenderIdentifiers
         telegramAllowedConversations = settings.allowedConversationIdentifiers
+        isTelegramAttachmentSummaryEnabled = settings.includeAttachmentSummary
         isTelegramForwardingPaused = settings.forwardingPaused
         isTelegramScheduleEnabled = settings.scheduleEnabled
         telegramScheduleStartMinute = settings.scheduleStartMinute
@@ -376,6 +378,12 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         recoverTelegramAutomation()
     }
 
+    func setTelegramAttachmentSummaryEnabled(_ enabled: Bool) {
+        isTelegramAttachmentSummaryEnabled = enabled
+        telegramSettingsStore.setIncludeAttachmentSummary(enabled)
+        recoverTelegramAutomation()
+    }
+
     func setTelegramForwardingPaused(_ paused: Bool) {
         isTelegramForwardingPaused = paused
         persistTelegramRuntimeControls()
@@ -451,6 +459,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             let auditStore = telegramAuditStore()
             let replyRouteStore = telegramReplyRouteStore()
             let rateLimiter = telegramRateLimiter
+            let includeAttachmentSummary = isTelegramAttachmentSummaryEnabled
             telegramState = .forwarding
             do {
                 let result = try await Task.detached(priority: .utility) {
@@ -469,7 +478,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                         deliveryLedger: deliveryLedger,
                         rateLimiter: rateLimiter,
                         envelopeBuilder: MessageConnectorEnvelopeBuilder(
-                            senderLabels: senderLabels
+                            senderLabels: senderLabels,
+                            includeAttachmentSummary: includeAttachmentSummary
                         )
                     )
                     return try AuditedMessageForwardingRunner(
@@ -665,6 +675,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             telegramAllowedSenders = []
             telegramAllowedConversationDraft = ""
             telegramAllowedConversations = []
+            isTelegramAttachmentSummaryEnabled = false
             isTelegramForwardingPaused = false
             isTelegramScheduleEnabled = false
             telegramScheduleStartMinute = 8 * 60
@@ -763,6 +774,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         settings.chatID = chatID
         settings.allowedSenderIdentifiers = telegramAllowedSenders
         settings.allowedConversationIdentifiers = telegramAllowedConversations
+        settings.includeAttachmentSummary = isTelegramAttachmentSummaryEnabled
         telegramSettingsStore.saveSettings(settings)
         telegramChatID = chatID
     }
@@ -1233,6 +1245,23 @@ struct MessageBridgePermissionView: View {
                         .padding(.horizontal, 10)
                         .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 6))
                     }
+                }
+                .padding(.top, 8)
+            }
+
+            DisclosureGroup("bridge.telegram.attachment.title") {
+                VStack(alignment: .leading, spacing: 8) {
+                    Toggle(
+                        "bridge.telegram.attachment.summary",
+                        isOn: Binding(
+                            get: { model.isTelegramAttachmentSummaryEnabled },
+                            set: { model.setTelegramAttachmentSummaryEnabled($0) }
+                        )
+                    )
+                    Text("bridge.telegram.attachment.detail")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.top, 8)
             }

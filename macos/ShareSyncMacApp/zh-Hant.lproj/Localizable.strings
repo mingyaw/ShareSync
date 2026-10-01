@@ -201,6 +201,9 @@
 "bridge.telegram.conversation.add" = "新增允許的對話";
 "bridge.telegram.conversation.remove" = "移除允許的對話";
 "bridge.telegram.conversation.unrestricted" = "目前未限制對話；允許的寄件者可從任何對話符合條件。";
+"bridge.telegram.attachment.title" = "附件隱私";
+"bridge.telegram.attachment.summary" = "包含附件數量與媒體類型";
+"bridge.telegram.attachment.detail" = "預設關閉。ShareSync 不會讀取或上傳 Messages 附件檔案；關閉時只傳送通用附件提示，啟用後才加上數量與 MIME 類型。";
 "bridge.telegram.action.test" = "儲存並傳送測試";
 "bridge.telegram.action.baseline" = "建立基準點";
 "bridge.telegram.action.forward" = "立即轉發";

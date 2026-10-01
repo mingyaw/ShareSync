@@ -66,3 +66,6 @@ release and any later connector must satisfy all of the following:
   deleted by Telegram reset;
 - AppleScript source must remain fixed, with recipient and body passed as
   arguments rather than interpolated into executable script text.
+- Attachment metadata is opt-in and limited to count and MIME types. Binary
+  attachment upload remains disabled and is governed by
+  `message-attachment-privacy.md` before any future implementation.

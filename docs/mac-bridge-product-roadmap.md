@@ -173,6 +173,10 @@ interruption without requiring a new pairing.
 - Outgoing Messages events are classified before sender checks, counted as
   prevented forwarding loops in the redacted audit, and surfaced in the latest
   Telegram forwarding result without exposing message identity or content.
+- Attachment summaries are now an explicit, default-off privacy preference.
+  Disabled summaries emit only a generic attachment notice; no attachment file,
+  path, filename, size, or MIME type leaves the Mac. A separate design record
+  defines the hard gate and size limits for any future binary media upload.
 
 ### Remaining
 
@@ -180,7 +184,8 @@ interruption without requiring a new pairing.
 - Verify text, Unicode, group, reply, edit, retract, reaction, attachment
   metadata, sleep catch-up, and deduplication behavior on supported macOS
   versions.
-- Add attachment upload only after explicit media privacy and size-limit design.
+- Implement attachment upload only after the approved privacy gate has dedicated
+  path validation, multipart transport, retry, and synthetic security tests.
 - Validate login-item enable, disable, approval, sleep catch-up, and network
   recovery behavior in a signed installed build.
 - Validate Telegram reply routing and Messages Automation permission on a

@@ -201,6 +201,9 @@
 "bridge.telegram.conversation.add" = "Add allowed conversation";
 "bridge.telegram.conversation.remove" = "Remove allowed conversation";
 "bridge.telegram.conversation.unrestricted" = "No conversation limit. Allowed senders can match in any conversation.";
+"bridge.telegram.attachment.title" = "Attachment privacy";
+"bridge.telegram.attachment.summary" = "Include attachment count and media types";
+"bridge.telegram.attachment.detail" = "Off by default. ShareSync never reads or uploads Messages attachment files. Disabled summaries send only a generic attachment notice; enabling this adds the count and MIME types.";
 "bridge.telegram.action.test" = "Save & Send Test";
 "bridge.telegram.action.baseline" = "Establish Baseline";
 "bridge.telegram.action.forward" = "Forward Now";

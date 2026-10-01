@@ -25,6 +25,7 @@ final class MessageConnectorEnvelopeTests: XCTestCase {
         ).build(from: source)
 
         XCTAssertNil(envelope.senderLabel)
+        XCTAssertTrue(envelope.hasAttachments)
         XCTAssertEqual(envelope.attachmentCount, 0)
         XCTAssertTrue(envelope.attachmentMIMETypes.isEmpty)
     }

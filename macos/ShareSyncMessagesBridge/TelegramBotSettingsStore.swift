@@ -4,6 +4,7 @@ struct TelegramBotSettings: Equatable {
     var chatID: String
     var allowedSenderIdentifiers: [String]
     var allowedConversationIdentifiers: [String]
+    var includeAttachmentSummary: Bool
     var automaticForwardingEnabled: Bool
     var repliesEnabled: Bool
     var forwardingPaused: Bool
@@ -18,6 +19,7 @@ final class TelegramBotSettingsStore {
         static let allowedSender = "messages.telegram.allowed-sender"
         static let allowedSenders = "messages.telegram.allowed-senders"
         static let allowedConversations = "messages.telegram.allowed-conversations"
+        static let includeAttachmentSummary = "messages.telegram.include-attachment-summary"
         static let automaticForwarding = "messages.telegram.automatic-forwarding"
         static let repliesEnabled = "messages.telegram.replies-enabled"
         static let forwardingPaused = "messages.telegram.forwarding-paused"
@@ -61,6 +63,7 @@ final class TelegramBotSettingsStore {
             allowedConversationIdentifiers: normalizedIdentifiers(
                 defaults.stringArray(forKey: Key.allowedConversations) ?? []
             ),
+            includeAttachmentSummary: defaults.bool(forKey: Key.includeAttachmentSummary),
             automaticForwardingEnabled: defaults.bool(forKey: Key.automaticForwarding),
             repliesEnabled: defaults.bool(forKey: Key.repliesEnabled),
             forwardingPaused: defaults.bool(forKey: Key.forwardingPaused),
@@ -79,6 +82,7 @@ final class TelegramBotSettingsStore {
             normalizedIdentifiers(settings.allowedConversationIdentifiers),
             forKey: Key.allowedConversations
         )
+        defaults.set(settings.includeAttachmentSummary, forKey: Key.includeAttachmentSummary)
         defaults.set(settings.automaticForwardingEnabled, forKey: Key.automaticForwarding)
         defaults.set(settings.repliesEnabled, forKey: Key.repliesEnabled)
         saveRuntimeControls(settings)
@@ -102,6 +106,10 @@ final class TelegramBotSettingsStore {
         defaults.set(normalizedIdentifiers(identifiers), forKey: Key.allowedConversations)
     }
 
+    func setIncludeAttachmentSummary(_ enabled: Bool) {
+        defaults.set(enabled, forKey: Key.includeAttachmentSummary)
+    }
+
     func saveRuntimeControls(_ settings: TelegramBotSettings) {
         defaults.set(settings.forwardingPaused, forKey: Key.forwardingPaused)
         defaults.set(settings.scheduleEnabled, forKey: Key.scheduleEnabled)
@@ -123,6 +131,7 @@ final class TelegramBotSettingsStore {
         defaults.removeObject(forKey: Key.allowedSender)
         defaults.removeObject(forKey: Key.allowedSenders)
         defaults.removeObject(forKey: Key.allowedConversations)
+        defaults.removeObject(forKey: Key.includeAttachmentSummary)
         defaults.removeObject(forKey: Key.automaticForwarding)
         defaults.removeObject(forKey: Key.repliesEnabled)
         defaults.removeObject(forKey: Key.forwardingPaused)

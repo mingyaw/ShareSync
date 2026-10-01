@@ -19,6 +19,7 @@ final class TelegramBotConnectorTests: XCTestCase {
             body: "hello",
             timestamp: Date(timeIntervalSince1970: 1_000),
             senderLabel: "Work",
+            hasAttachments: false,
             attachmentCount: 0,
             attachmentMIMETypes: [],
             containsRichText: false
@@ -82,6 +83,7 @@ final class TelegramBotConnectorTests: XCTestCase {
             body: "hello",
             timestamp: Date(timeIntervalSince1970: 1_000),
             senderLabel: "+886912345678",
+            hasAttachments: false,
             attachmentCount: 0,
             attachmentMIMETypes: [],
             containsRichText: false
@@ -101,6 +103,7 @@ final class TelegramBotConnectorTests: XCTestCase {
             body: String(repeating: "a", count: 500),
             timestamp: Date(timeIntervalSince1970: 1_000),
             senderLabel: "Work",
+            hasAttachments: true,
             attachmentCount: 2,
             attachmentMIMETypes: ["image/jpeg"],
             containsRichText: true
@@ -118,6 +121,7 @@ final class TelegramBotConnectorTests: XCTestCase {
             body: "hello",
             timestamp: Date(timeIntervalSince1970: 1_000),
             senderLabel: "Work",
+            hasAttachments: false,
             attachmentCount: 0,
             attachmentMIMETypes: [],
             containsRichText: true
@@ -127,6 +131,25 @@ final class TelegramBotConnectorTests: XCTestCase {
 
         XCTAssertFalse(output.contains("Rich text was converted"))
         XCTAssertTrue(output.contains("hello"))
+    }
+
+    func testFormatterReportsAttachmentWithoutLeakingDisabledSummaryMetadata() {
+        let envelope = MessageConnectorEnvelope(
+            deliveryKey: "key",
+            body: nil,
+            timestamp: Date(timeIntervalSince1970: 1_000),
+            senderLabel: "Work",
+            hasAttachments: true,
+            attachmentCount: 0,
+            attachmentMIMETypes: [],
+            containsRichText: false
+        )
+
+        let output = TelegramBotMessageFormatter().message(for: envelope)
+
+        XCTAssertTrue(output.contains("Attachment not forwarded"))
+        XCTAssertFalse(output.contains("image/"))
+        XCTAssertFalse(output.contains("Attachments:"))
     }
 
     private func successResponse() -> TelegramBotHTTPResponse {
