@@ -26,6 +26,13 @@ final class MessageForwardingPipelineTests: XCTestCase {
         XCTAssertFalse(policy.permits(normalizer.normalize(makeEvent(sender: "allowed", associatedType: 2000))))
     }
 
+    func testOutgoingMessageIsClassifiedAsLoopPreventionBeforeSenderChecks() {
+        let policy = MessageForwardingPolicy(allowedSenderIdentifiers: ["allowed"])
+        let event = MessageEventNormalizer().normalize(makeEvent(sender: nil, isFromMe: true))
+
+        XCTAssertEqual(policy.evaluate(event), .deny(.outgoingMessage))
+    }
+
     func testPolicyAllowsEachConfiguredSenderAndRejectsOthers() {
         let policy = MessageForwardingPolicy(allowedSenderIdentifiers: ["first", "second"])
         let normalizer = MessageEventNormalizer()
@@ -164,6 +171,7 @@ final class MessageForwardingPipelineTests: XCTestCase {
         XCTAssertEqual(result.eligibleCount, 1)
         XCTAssertEqual(result.deliveredCount, 1)
         XCTAssertEqual(result.deniedCounts, [.outgoingMessage: 1])
+        XCTAssertEqual(result.preventedLoopCount, 1)
         XCTAssertEqual(connector.deliveries.map(\.body), ["one"])
         XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 2))
     }

@@ -32,11 +32,11 @@ public struct MessageForwardingPolicy: Equatable, Sendable {
     }
 
     public func evaluate(_ event: NormalizedMessageEvent) -> MessageForwardingDecision {
+        if incomingOnly && event.direction != .incoming { return .deny(.outgoingMessage) }
         guard let sender = event.senderIdentifier,
               allowedSenderIdentifiers.contains(sender) else { return .deny(.senderNotAllowed) }
         guard let service = event.service,
               allowedServices.contains(service) else { return .deny(.serviceNotAllowed) }
-        if incomingOnly && event.direction != .incoming { return .deny(.outgoingMessage) }
         if let allowedConversationIdentifiers,
            event.conversationIdentifiers.isDisjoint(with: allowedConversationIdentifiers) {
             return .deny(.conversationNotAllowed)
@@ -103,6 +103,10 @@ public struct MessageForwardingRunResult: Equatable, Sendable {
     public let duplicateCount: Int
     public let deniedCounts: [MessageForwardingDenialReason: Int]
     public let nextCursor: MessageCursor
+
+    public var preventedLoopCount: Int {
+        deniedCounts[.outgoingMessage, default: 0]
+    }
 }
 
 public enum MessageForwardingPipelineError: Error, Equatable, Sendable {

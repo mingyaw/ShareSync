@@ -18,6 +18,10 @@ public struct MessageForwardingAuditRecord: Codable, Equatable, Sendable {
     public let duplicateCount: Int
     public let deniedCounts: [String: Int]
 
+    public var preventedLoopCount: Int {
+        deniedCounts[MessageForwardingDenialReason.outgoingMessage.rawValue, default: 0]
+    }
+
     public init(
         id: UUID = UUID(),
         timestamp: Date,

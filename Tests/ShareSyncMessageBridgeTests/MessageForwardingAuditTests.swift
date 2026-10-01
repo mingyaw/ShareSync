@@ -52,6 +52,19 @@ final class MessageForwardingAuditTests: XCTestCase {
         XCTAssertEqual(record.deliveredCount, 0)
     }
 
+    func testAuditExposesOnlyAggregateLoopPreventionCount() {
+        let record = MessageForwardingAuditRecord(
+            timestamp: Date(timeIntervalSince1970: 10),
+            outcome: .completed,
+            deniedCounts: [
+                MessageForwardingDenialReason.outgoingMessage.rawValue: 2,
+                MessageForwardingDenialReason.senderNotAllowed.rawValue: 3,
+            ]
+        )
+
+        XCTAssertEqual(record.preventedLoopCount, 2)
+    }
+
     func testAuditedRunnerRecordsPauseWithoutConsumingCursor() throws {
         let fixture = try MessageBridgeFixture()
         let cursorStore = try makeCursorStore()

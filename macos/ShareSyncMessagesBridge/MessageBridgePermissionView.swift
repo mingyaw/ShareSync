@@ -1242,6 +1242,16 @@ struct MessageBridgePermissionView: View {
                     validationMetric("bridge.preview.metric.inspected", value: result.inspectedCount)
                     validationMetric("bridge.telegram.metric.sent", value: result.deliveredCount)
                     validationMetric("bridge.preview.metric.blocked", value: result.deniedCounts.values.reduce(0, +))
+                    validationMetric("bridge.telegram.metric.loop_prevented", value: result.preventedLoopCount)
+                }
+
+                if result.preventedLoopCount > 0 {
+                    Label(
+                        "bridge.telegram.loop_prevention.detail",
+                        systemImage: "arrow.triangle.2.circlepath"
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 }
             }
 

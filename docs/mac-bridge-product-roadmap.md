@@ -170,6 +170,9 @@ interruption without requiring a new pairing.
 - Telegram forwarding can optionally persist an exact conversation allowlist.
   When configured, both sender and conversation must match; events without
   conversation context fail closed and the aggregate audit records the denial.
+- Outgoing Messages events are classified before sender checks, counted as
+  prevented forwarding loops in the redacted audit, and surfaced in the latest
+  Telegram forwarding result without exposing message identity or content.
 
 ### Remaining
 
@@ -177,7 +180,6 @@ interruption without requiring a new pairing.
 - Verify text, Unicode, group, reply, edit, retract, reaction, attachment
   metadata, sleep catch-up, and deduplication behavior on supported macOS
   versions.
-- Add explicit loop-prevention diagnostics.
 - Add attachment upload only after explicit media privacy and size-limit design.
 - Validate login-item enable, disable, approval, sleep catch-up, and network
   recovery behavior in a signed installed build.
