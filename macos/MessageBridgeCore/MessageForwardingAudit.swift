@@ -6,6 +6,7 @@ public enum MessageForwardingAuditOutcome: String, Codable, Equatable, Sendable 
     case outsideSchedule
     case rateLimited
     case attachmentRejected
+    case attachmentDeliveryUnconfirmed
     case failed
 }
 
@@ -20,6 +21,8 @@ extension MessageForwardingAuditOutcome {
              is MessageAttachmentAccessError,
              is MessageAttachmentCandidateProviderError:
             return .attachmentRejected
+        case MessageAttachmentDeliveryError.deliveryUnconfirmed:
+            return .attachmentDeliveryUnconfirmed
         default: return .failed
         }
     }
@@ -35,6 +38,7 @@ public struct MessageForwardingAuditRecord: Codable, Equatable, Sendable {
     public let duplicateCount: Int
     public let deliveredAttachmentCount: Int
     public let duplicateAttachmentCount: Int
+    public let unconfirmedAttachmentCount: Int
     public let deniedCounts: [String: Int]
 
     public var preventedLoopCount: Int {
@@ -51,6 +55,7 @@ public struct MessageForwardingAuditRecord: Codable, Equatable, Sendable {
         duplicateCount: Int = 0,
         deliveredAttachmentCount: Int = 0,
         duplicateAttachmentCount: Int = 0,
+        unconfirmedAttachmentCount: Int = 0,
         deniedCounts: [String: Int] = [:]
     ) {
         self.id = id
@@ -62,12 +67,14 @@ public struct MessageForwardingAuditRecord: Codable, Equatable, Sendable {
         self.duplicateCount = duplicateCount
         self.deliveredAttachmentCount = deliveredAttachmentCount
         self.duplicateAttachmentCount = duplicateAttachmentCount
+        self.unconfirmedAttachmentCount = unconfirmedAttachmentCount
         self.deniedCounts = deniedCounts
     }
 
     private enum CodingKeys: String, CodingKey {
         case id, timestamp, outcome, inspectedCount, eligibleCount, deliveredCount
-        case duplicateCount, deliveredAttachmentCount, duplicateAttachmentCount, deniedCounts
+        case duplicateCount, deliveredAttachmentCount, duplicateAttachmentCount
+        case unconfirmedAttachmentCount, deniedCounts
     }
 
     public init(from decoder: any Decoder) throws {
@@ -86,6 +93,10 @@ public struct MessageForwardingAuditRecord: Codable, Equatable, Sendable {
         duplicateAttachmentCount = try container.decodeIfPresent(
             Int.self,
             forKey: .duplicateAttachmentCount
+        ) ?? 0
+        unconfirmedAttachmentCount = try container.decodeIfPresent(
+            Int.self,
+            forKey: .unconfirmedAttachmentCount
         ) ?? 0
         deniedCounts = try container.decode([String: Int].self, forKey: .deniedCounts)
     }
@@ -191,6 +202,7 @@ public struct AuditedMessageForwardingRunner {
                 duplicateCount: result.duplicateCount,
                 deliveredAttachmentCount: result.deliveredAttachmentCount,
                 duplicateAttachmentCount: result.duplicateAttachmentCount,
+                unconfirmedAttachmentCount: result.unconfirmedAttachmentCount,
                 deniedCounts: Dictionary(uniqueKeysWithValues: result.deniedCounts.map {
                     ($0.key.rawValue, $0.value)
                 })

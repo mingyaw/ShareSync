@@ -103,6 +103,7 @@ public struct MessageForwardingRunResult: Equatable, Sendable {
     public let duplicateCount: Int
     public let deliveredAttachmentCount: Int
     public let duplicateAttachmentCount: Int
+    public let unconfirmedAttachmentCount: Int
     public let deniedCounts: [MessageForwardingDenialReason: Int]
     public let nextCursor: MessageCursor
 
@@ -117,6 +118,7 @@ public struct MessageForwardingRunResult: Equatable, Sendable {
         duplicateCount: Int,
         deliveredAttachmentCount: Int = 0,
         duplicateAttachmentCount: Int = 0,
+        unconfirmedAttachmentCount: Int = 0,
         deniedCounts: [MessageForwardingDenialReason: Int],
         nextCursor: MessageCursor
     ) {
@@ -126,6 +128,7 @@ public struct MessageForwardingRunResult: Equatable, Sendable {
         self.duplicateCount = duplicateCount
         self.deliveredAttachmentCount = deliveredAttachmentCount
         self.duplicateAttachmentCount = duplicateAttachmentCount
+        self.unconfirmedAttachmentCount = unconfirmedAttachmentCount
         self.deniedCounts = deniedCounts
         self.nextCursor = nextCursor
     }
@@ -190,6 +193,7 @@ public struct MessageForwardingPipeline {
         var duplicateCount = 0
         var deliveredAttachmentCount = 0
         var duplicateAttachmentCount = 0
+        var unconfirmedAttachmentCount = 0
         var deniedCounts: [MessageForwardingDenialReason: Int] = [:]
 
         for sourceEvent in batch.events {
@@ -228,6 +232,7 @@ public struct MessageForwardingPipeline {
                 )
                 deliveredAttachmentCount += attachmentResult.deliveredCount
                 duplicateAttachmentCount += attachmentResult.duplicateCount
+                unconfirmedAttachmentCount += attachmentResult.unconfirmedCount
                 deliveredCount += 1
                 try deliveryLedger.markDelivered(deliveryKey: event.deliveryKey, at: now())
                 continue
@@ -251,6 +256,7 @@ public struct MessageForwardingPipeline {
             duplicateCount: duplicateCount,
             deliveredAttachmentCount: deliveredAttachmentCount,
             duplicateAttachmentCount: duplicateAttachmentCount,
+            unconfirmedAttachmentCount: unconfirmedAttachmentCount,
             deniedCounts: deniedCounts,
             nextCursor: batch.nextCursor
         )

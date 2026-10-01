@@ -122,6 +122,7 @@ final class MessageAttachmentSecurityGateTests: XCTestCase {
 
         XCTAssertEqual(result.deliveredCount, 1)
         XCTAssertEqual(result.confirmedAttachmentCount, 1)
+        XCTAssertEqual(result.unconfirmedAttachmentCount, 0)
         XCTAssertEqual(try harness.cursor.load(), MessageCursor(rowID: 1))
         XCTAssertEqual(harness.textConnector.deliveries.count, 1)
         XCTAssertEqual(transport.requests.count, 2)

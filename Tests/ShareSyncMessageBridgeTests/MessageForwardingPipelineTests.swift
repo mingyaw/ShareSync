@@ -204,7 +204,7 @@ final class MessageForwardingPipelineTests: XCTestCase {
         XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 2))
     }
 
-    func testAttachmentFailureRetriesMediaWithoutResendingConfirmedText() throws {
+    func testAmbiguousAttachmentFailureIsNotResentAndAdvancesOnNextPass() throws {
         let fixture = try MessageBridgeFixture()
         try fixture.insertHandle(identifier: "allowed")
         try fixture.insertMessage(
@@ -254,7 +254,12 @@ final class MessageForwardingPipelineTests: XCTestCase {
             now: { Date(timeIntervalSince1970: 1_000) }
         )
 
-        XCTAssertThrowsError(try pipeline.run())
+        XCTAssertThrowsError(try pipeline.run()) { error in
+            XCTAssertEqual(
+                error as? MessageAttachmentDeliveryError,
+                .deliveryUnconfirmed
+            )
+        }
         XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 0))
         XCTAssertEqual(textConnector.deliveries.count, 1)
         XCTAssertEqual(mediaConnector.attemptCount, 1)
@@ -262,12 +267,13 @@ final class MessageForwardingPipelineTests: XCTestCase {
         let retry = try pipeline.run()
 
         XCTAssertEqual(retry.deliveredCount, 1)
-        XCTAssertEqual(retry.deliveredAttachmentCount, 1)
+        XCTAssertEqual(retry.deliveredAttachmentCount, 0)
         XCTAssertEqual(retry.duplicateAttachmentCount, 0)
-        XCTAssertEqual(retry.confirmedAttachmentCount, 1)
+        XCTAssertEqual(retry.unconfirmedAttachmentCount, 1)
+        XCTAssertEqual(retry.confirmedAttachmentCount, 0)
         XCTAssertEqual(textConnector.deliveries.count, 1)
-        XCTAssertEqual(mediaConnector.attemptCount, 2)
-        XCTAssertEqual(mediaConnector.deliveredData, [Data("image-data".utf8)])
+        XCTAssertEqual(mediaConnector.attemptCount, 1)
+        XCTAssertTrue(mediaConnector.deliveredData.isEmpty)
         XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 1))
         XCTAssertTrue(ledger.records.keys.allSatisfy { $0.count == 64 })
         XCTAssertFalse(ledger.records.keys.contains { $0.contains("photo") })

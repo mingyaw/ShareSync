@@ -190,6 +190,7 @@
 "bridge.telegram.invalid" = "Check the Bot token, numeric Chat ID, and allowed sender list.";
 "bridge.telegram.failed" = "Telegram delivery failed. The message cursor was not advanced, so it can be retried safely.";
 "bridge.telegram.attachment_rejected" = "An attachment was blocked by the local safety policy. Check Messages file access, image format, and size. The message cursor was not advanced.";
+"bridge.telegram.attachment_unconfirmed" = "Telegram did not confirm an image upload. ShareSync will not resend that image automatically, preventing a possible duplicate.";
 "bridge.telegram.token.placeholder" = "Bot token (leave blank to keep saved token)";
 "bridge.telegram.chat_id.placeholder" = "Destination Chat ID, for example -1001234567890";
 "bridge.telegram.sender.placeholder" = "Allowed iMessage sender address or phone number";
@@ -219,6 +220,7 @@
 "bridge.telegram.schedule.detail" = "Runs every day in the Mac's current time zone. Matching start and end times allow the full day.";
 "bridge.telegram.metric.sent" = "Sent";
 "bridge.telegram.metric.attachments" = "Images confirmed";
+"bridge.telegram.metric.attachments_unconfirmed" = "Images unconfirmed";
 "bridge.telegram.metric.loop_prevented" = "Loops stopped";
 "bridge.telegram.loop_prevention.detail" = "Outgoing Messages events were kept on this Mac and were not forwarded back to Telegram.";
 "bridge.reset.telegram.title" = "Remove Telegram settings? The Keychain token, baseline, and local delivery history will be deleted.";

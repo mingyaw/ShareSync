@@ -71,6 +71,13 @@ content-free delivery ledger. A failed attachment keeps the message cursor in
 place, while later retries skip parts that already returned a confirmed success.
 An attachment event with no candidate rows fails closed.
 
+Uploads use an at-most-once recovery rule. A definite Telegram rejection such
+as rate limiting clears the pending part so it may be retried. A timeout,
+transport failure, malformed response, or unknown connector error remains
+pending because Telegram may already have accepted the bytes. The next pass
+does not resend that part; it advances with an aggregate unconfirmed count so a
+private image is not duplicated silently.
+
 Run results and the bounded audit retain only aggregate delivered and
 already-confirmed attachment counts. They never retain filenames, paths, media
 bytes, source row IDs, or Telegram message IDs. Legacy audit records decode

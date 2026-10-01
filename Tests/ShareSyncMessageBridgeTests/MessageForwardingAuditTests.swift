@@ -85,6 +85,7 @@ final class MessageForwardingAuditTests: XCTestCase {
 
         XCTAssertEqual(record.deliveredAttachmentCount, 0)
         XCTAssertEqual(record.duplicateAttachmentCount, 0)
+        XCTAssertEqual(record.unconfirmedAttachmentCount, 0)
     }
 
     func testAuditedRunnerRecordsPauseWithoutConsumingCursor() throws {
@@ -119,6 +120,15 @@ final class MessageForwardingAuditTests: XCTestCase {
                 .attachmentRejected
             )
         }
+    }
+
+    func testUnconfirmedAttachmentHasDedicatedAuditOutcome() {
+        XCTAssertEqual(
+            MessageForwardingAuditOutcome.classify(
+                MessageAttachmentDeliveryError.deliveryUnconfirmed
+            ),
+            .attachmentDeliveryUnconfirmed
+        )
     }
 
     private func makeCursorStore() throws -> (store: FileMessageCursorStore, directory: URL) {

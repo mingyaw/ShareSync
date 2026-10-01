@@ -81,6 +81,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         case paused
         case outsideSchedule
         case attachmentRejected
+        case attachmentDeliveryUnconfirmed
         case invalidConfiguration
         case failed
     }
@@ -551,6 +552,9 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                 return .failed
             } catch is MessageAttachmentCandidateProviderError {
                 telegramState = .attachmentRejected
+                return .failed
+            } catch MessageAttachmentDeliveryError.deliveryUnconfirmed {
+                telegramState = .attachmentDeliveryUnconfirmed
                 return .failed
             } catch {
                 telegramState = .failed
@@ -1346,6 +1350,12 @@ struct MessageBridgePermissionView: View {
                         "bridge.telegram.metric.attachments",
                         value: result.confirmedAttachmentCount
                     )
+                    if result.unconfirmedAttachmentCount > 0 {
+                        validationMetric(
+                            "bridge.telegram.metric.attachments_unconfirmed",
+                            value: result.unconfirmedAttachmentCount
+                        )
+                    }
                     validationMetric("bridge.preview.metric.blocked", value: result.deniedCounts.values.reduce(0, +))
                     validationMetric("bridge.telegram.metric.loop_prevented", value: result.preventedLoopCount)
                 }
@@ -1515,6 +1525,7 @@ struct MessageBridgePermissionView: View {
         case .paused: return "bridge.telegram.paused"
         case .outsideSchedule: return "bridge.telegram.outside_schedule"
         case .attachmentRejected: return "bridge.telegram.attachment_rejected"
+        case .attachmentDeliveryUnconfirmed: return "bridge.telegram.attachment_unconfirmed"
         case .invalidConfiguration: return "bridge.telegram.invalid"
         case .failed: return "bridge.telegram.failed"
         }

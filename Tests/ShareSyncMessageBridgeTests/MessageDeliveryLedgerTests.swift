@@ -56,4 +56,15 @@ final class MessageDeliveryLedgerTests: XCTestCase {
 
         XCTAssertNil(try store.record(for: "key"))
     }
+
+    func testRemoveClearsOnlyRequestedDeliveryState() throws {
+        let store = InMemoryMessageDeliveryLedgerStore()
+        try store.markPending(deliveryKey: "retryable", at: Date())
+        try store.markDelivered(deliveryKey: "confirmed", at: Date())
+
+        try store.remove(deliveryKey: "retryable")
+
+        XCTAssertNil(try store.record(for: "retryable"))
+        XCTAssertEqual(try store.record(for: "confirmed")?.state, .delivered)
+    }
 }

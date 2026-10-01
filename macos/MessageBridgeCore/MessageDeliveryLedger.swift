@@ -14,6 +14,7 @@ public protocol MessageDeliveryLedgerStore: AnyObject {
     func record(for deliveryKey: String) throws -> MessageDeliveryRecord?
     func markPending(deliveryKey: String, at date: Date) throws
     func markDelivered(deliveryKey: String, at date: Date) throws
+    func remove(deliveryKey: String) throws
     func pruneDelivered(before date: Date) throws
     func clear() throws
 }
@@ -33,6 +34,10 @@ public final class InMemoryMessageDeliveryLedgerStore: MessageDeliveryLedgerStor
 
     public func markDelivered(deliveryKey: String, at date: Date) throws {
         records[deliveryKey] = MessageDeliveryRecord(state: .delivered, updatedAt: date)
+    }
+
+    public func remove(deliveryKey: String) throws {
+        records.removeValue(forKey: deliveryKey)
     }
 
     public func pruneDelivered(before date: Date) throws {
@@ -79,6 +84,12 @@ public final class FileMessageDeliveryLedgerStore: MessageDeliveryLedgerStore {
     public func markDelivered(deliveryKey: String, at date: Date) throws {
         var envelope = try load()
         envelope.records[deliveryKey] = MessageDeliveryRecord(state: .delivered, updatedAt: date)
+        try save(envelope)
+    }
+
+    public func remove(deliveryKey: String) throws {
+        var envelope = try load()
+        guard envelope.records.removeValue(forKey: deliveryKey) != nil else { return }
         try save(envelope)
     }
 
