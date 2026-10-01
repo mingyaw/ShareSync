@@ -137,6 +137,40 @@ final class MessageAttachmentSecurityGateTests: XCTestCase {
         XCTAssertFalse(bodyText.contains(image.path))
     }
 
+    func testUnconfirmedUploadIsNotResentWithPersistedLedger() throws {
+        let fixture = try MessageBridgeFixture()
+        let root = try makeDirectory(in: fixture.directoryURL, name: "Attachments")
+        let image = root.appendingPathComponent("private-photo.jpg")
+        try Data("synthetic-image".utf8).write(to: image)
+        let transport = QueuedAttachmentTelegramTransport(responses: [])
+        let ledger = FileMessageDeliveryLedgerStore(
+            fileURL: fixture.directoryURL.appendingPathComponent("delivery-ledger.json")
+        )
+        let harness = try makeHarness(
+            fixture: fixture,
+            attachmentRoot: root,
+            attachments: [(image, "image/jpeg")],
+            transport: transport,
+            deliveryLedger: ledger
+        )
+
+        XCTAssertThrowsError(try harness.pipeline.run()) { error in
+            XCTAssertEqual(
+                error as? MessageAttachmentDeliveryError,
+                .deliveryUnconfirmed
+            )
+        }
+        XCTAssertEqual(transport.requests.count, 1)
+        XCTAssertEqual(try harness.cursor.load(), MessageCursor(rowID: 0))
+
+        let retry = try harness.pipeline.run()
+
+        XCTAssertEqual(retry.unconfirmedAttachmentCount, 1)
+        XCTAssertEqual(retry.confirmedAttachmentCount, 0)
+        XCTAssertEqual(transport.requests.count, 1)
+        XCTAssertEqual(try harness.cursor.load(), MessageCursor(rowID: 1))
+    }
+
     private func makeHarness(
         fixture: MessageBridgeFixture,
         attachmentRoot: URL,
@@ -144,7 +178,8 @@ final class MessageAttachmentSecurityGateTests: XCTestCase {
         uploadPolicy: MessageAttachmentUploadPolicy = MessageAttachmentUploadPolicy(
             isEnabled: true
         ),
-        transport: QueuedAttachmentTelegramTransport? = nil
+        transport: QueuedAttachmentTelegramTransport? = nil,
+        deliveryLedger: any MessageDeliveryLedgerStore = InMemoryMessageDeliveryLedgerStore()
     ) throws -> Harness {
         try fixture.insertHandle(identifier: "allowed-sender")
         try fixture.insertMessage(
@@ -199,7 +234,7 @@ final class MessageAttachmentSecurityGateTests: XCTestCase {
                 cursorStore: cursor,
                 policy: policy,
                 connector: textConnector,
-                deliveryLedger: InMemoryMessageDeliveryLedgerStore(),
+                deliveryLedger: deliveryLedger,
                 attachmentDeliveryCoordinator: attachmentDelivery,
                 now: { Date(timeIntervalSince1970: 1_000) }
             ),

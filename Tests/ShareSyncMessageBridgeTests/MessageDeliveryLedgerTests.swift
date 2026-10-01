@@ -67,4 +67,17 @@ final class MessageDeliveryLedgerTests: XCTestCase {
         XCTAssertNil(try store.record(for: "retryable"))
         XCTAssertEqual(try store.record(for: "confirmed")?.state, .delivered)
     }
+
+    func testFileRemovePersistsAcrossStoreRestart() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let fileURL = directory.appendingPathComponent("ledger.json")
+        let store = FileMessageDeliveryLedgerStore(fileURL: fileURL)
+        try store.markPending(deliveryKey: "retryable", at: Date())
+
+        try store.remove(deliveryKey: "retryable")
+
+        XCTAssertNil(try FileMessageDeliveryLedgerStore(fileURL: fileURL).record(for: "retryable"))
+    }
 }

@@ -70,3 +70,6 @@ release and any later connector must satisfy all of the following:
   upload is limited to JPEG/PNG, requires the current versioned consent, and is
   governed by `message-attachment-privacy.md`; it remains a physical-validation
   release gate.
+- Image delivery is at-most-once across app restarts: definite Telegram
+  rejections may retry, while an unconfirmed network result is persisted and
+  skipped on the next pass to avoid silently duplicating private media.
