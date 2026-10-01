@@ -155,6 +155,31 @@ final class SQLiteReadOnlyDatabase {
         }
     }
 
+    func attachmentRows(messageRowID: Int64) throws -> [StoredMessageAttachmentRecord] {
+        let sql = """
+        SELECT attachment.filename, attachment.mime_type
+        FROM message_attachment_join
+        JOIN attachment ON attachment.ROWID = message_attachment_join.attachment_id
+        WHERE message_attachment_join.message_id = ?
+        ORDER BY attachment.ROWID ASC
+        """
+        var statement: OpaquePointer?
+        try prepare(sql: sql, statement: &statement)
+        defer { sqlite3_finalize(statement) }
+
+        sqlite3_bind_int64(statement, 1, messageRowID)
+        var rows: [StoredMessageAttachmentRecord] = []
+        while true {
+            let result = sqlite3_step(statement)
+            if result == SQLITE_DONE { return rows }
+            guard result == SQLITE_ROW else { throw queryError(code: result) }
+            rows.append(StoredMessageAttachmentRecord(
+                filename: string(statement, column: 0),
+                mimeType: string(statement, column: 1)
+            ))
+        }
+    }
+
     private func prepare(sql: String, statement: inout OpaquePointer?) throws {
         let result = sqlite3_prepare_v2(connection, sql, -1, &statement, nil)
         guard result == SQLITE_OK else { throw queryError(code: result) }
@@ -185,4 +210,9 @@ final class SQLiteReadOnlyDatabase {
         let message = connection.map { String(cString: sqlite3_errmsg($0)) } ?? "Unknown SQLite error"
         return .queryFailed(code: code, message: message)
     }
+}
+
+struct StoredMessageAttachmentRecord: Equatable {
+    let filename: String?
+    let mimeType: String?
 }

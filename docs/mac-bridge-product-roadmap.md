@@ -187,8 +187,11 @@ interruption without requiring a new pairing.
   limits. It remains unavailable to the product flow.
 - A bounded attachment loader now evaluates forwarding policy before requesting
   candidate paths, revalidates the batch before opening files, and rejects size
-  changes without returning partial payloads. No production database path
-  provider or pipeline connection exists yet.
+  changes without returning partial payloads.
+- A dedicated read-only SQLite provider can select attachment paths only by an
+  already-approved message row ID. It rejects unsupported schemas, missing
+  values, and relative paths; the general event reader remains path-blind. The
+  provider is not instantiated by the app or forwarding pipeline.
 
 ### Remaining
 
@@ -196,9 +199,9 @@ interruption without requiring a new pairing.
 - Verify text, Unicode, group, reply, edit, retract, reaction, attachment
   metadata, sleep catch-up, and deduplication behavior on supported macOS
   versions.
-- Implement the read-only attachment-path provider, then integrate delivery
-  retry semantics and cursor behavior only after the end-to-end synthetic
-  security gate passes; keep the policy disabled until then.
+- Integrate media delivery retry semantics and cursor behavior only after the
+  end-to-end synthetic security gate passes; keep the policy disabled until
+  then.
 - Validate login-item enable, disable, approval, sleep catch-up, and network
   recovery behavior in a signed installed build.
 - Validate Telegram reply routing and Messages Automation permission on a

@@ -60,11 +60,18 @@ bounded chunks, and reads at most one byte beyond the validated size to detect
 growth. A disabled policy, changed size, missing file, or failed read returns no
 payload.
 
+`SQLiteMessageAttachmentCandidateProvider` is the only component that reads
+`attachment.filename`. It opens the Messages database read-only, queries rows
+only for an already-approved message `ROWID`, and accepts only absolute or
+leading-home-marker paths. Missing schema, MIME type, filename, or a relative
+path fails the whole request. The general event reader remains path-blind.
+
 Both components are intentionally disconnected from the Messages reader,
 forwarding pipeline, settings UI, and automatic Telegram delivery. Their
 presence does not make binary attachment forwarding available in the product.
-No production attachment-path provider exists yet, so the current Messages
-reader continues to expose only aggregate count and MIME metadata.
+The production-capable path provider is not instantiated by either app target,
+so the current Messages reader and product flow continue to expose only
+aggregate count and MIME metadata.
 
 ## Acceptance Gate
 

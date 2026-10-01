@@ -28,6 +28,28 @@ public struct MessageDatabaseSchema: Equatable, Sendable {
             && joinColumns.isSuperset(of: ["attachment_id", "message_id"])
     }
 
+    public var supportsAttachmentPaths: Bool {
+        missingAttachmentPathRequirements.isEmpty
+    }
+
+    public var missingAttachmentPathRequirements: [String] {
+        var missing: [String] = []
+        let attachmentColumns = columnsByTable["attachment"] ?? []
+        let joinColumns = columnsByTable["message_attachment_join"] ?? []
+
+        if !tables.contains("attachment") { missing.append("table:attachment") }
+        if !tables.contains("message_attachment_join") {
+            missing.append("table:message_attachment_join")
+        }
+        for column in ["filename", "mime_type"] where !attachmentColumns.contains(column) {
+            missing.append("attachment.\(column)")
+        }
+        for column in ["attachment_id", "message_id"] where !joinColumns.contains(column) {
+            missing.append("message_attachment_join.\(column)")
+        }
+        return missing.sorted()
+    }
+
     public var missingIncrementalTextRequirements: [String] {
         var missing: [String] = []
         let messageColumns = columnsByTable["message"] ?? []
