@@ -1,8 +1,8 @@
 # ShareSync Notes Model / ShareSync 記事模型
 
-Status: Android local-data milestone, schema version 1.
+Status: Android and macOS local-data milestone, schema version 1.
 
-狀態：Android 本機資料里程碑，schema version 1。
+狀態：Android 與 macOS 本機資料里程碑，schema version 1。
 
 ## Product boundary / 產品邊界
 
@@ -62,11 +62,22 @@ Revision stamp 為 `(sequence, deviceId)`。本機修改會遞增 sequence，並
 ## Local persistence / 本機持久化
 
 Android stores a versioned JSON envelope in
-`filesDir/ShareSync/notes-v1.json`. Writes use a temporary file and an atomic
-replace where supported. Decode errors are surfaced instead of silently
-discarding the user's notes. UI, search, Mac persistence, and signed local
-transport are intentionally later milestones built on this contract.
+`filesDir/ShareSync/notes-v1.json`. macOS stores the same envelope at
+`Application Support/ShareSync/notes-v1.json`. Both use an atomic replacement
+write and surface decode errors instead of silently discarding the user's
+notes. The `ShareSyncNotes` Swift Package target owns the Mac model, codec,
+repository, persistence, and merge policy. Both Kotlin and Swift tests decode
+`shared/fixtures/sample-note-store.json`; the Swift round trip also verifies
+that required nullable fields remain explicit JSON `null` values.
 
-Android 將版本化 JSON envelope 儲存在 `filesDir/ShareSync/notes-v1.json`。寫入先使用
-暫存檔，平台支援時再以 atomic replace 取代正式檔。解碼錯誤會明確回報，不會靜默丟棄
-使用者記事。UI、搜尋、Mac 持久化與簽章區網傳輸將在後續里程碑沿用此契約。
+Android 將版本化 JSON envelope 儲存在 `filesDir/ShareSync/notes-v1.json`，macOS 則使用
+`Application Support/ShareSync/notes-v1.json`。兩端皆以 atomic replace 寫入；解碼錯誤
+會明確回報，不會靜默丟棄使用者記事。`ShareSyncNotes` Swift Package target 包含 Mac 的
+model、codec、repository、持久化與 merge policy。Kotlin 與 Swift 測試都會解碼
+`shared/fixtures/sample-note-store.json`，Swift round trip 另驗證必要的 nullable 欄位仍以
+明確 JSON `null` 保存。UI、搜尋與簽章區網傳輸將在後續里程碑沿用此契約。
+
+macOS 的本機 revision 使用 `MacNoteDeviceIdentity` 所提供、持久化於 `UserDefaults` 的
+`mac-<uuid>` device ID。衝突副本 ID 精確沿用 Android 的 Java UUID v3 算法：對
+`sharesync-note-conflict|<note-id>|<sorted-revision-pair>` 的 UTF-8 bytes 計算 MD5 並設定
+RFC 4122 version/variant bits，因此兩端不論合併順序都會產生相同 ID。

@@ -13,6 +13,10 @@ let package = Package(
             name: "ShareSync",
             targets: ["ShareSync"]
         ),
+        .library(
+            name: "ShareSyncNotes",
+            targets: ["ShareSyncNotes"]
+        ),
     ],
     targets: [
         .target(
@@ -23,6 +27,15 @@ let package = Package(
             name: "ShareSyncTests",
             dependencies: ["ShareSync"],
             path: "Tests/ShareSyncTests"
+        ),
+        .target(
+            name: "ShareSyncNotes",
+            path: "macos/ShareSyncNotes"
+        ),
+        .testTarget(
+            name: "ShareSyncNotesTests",
+            dependencies: ["ShareSyncNotes"],
+            path: "Tests/ShareSyncNotesTests"
         ),
     ]
 )

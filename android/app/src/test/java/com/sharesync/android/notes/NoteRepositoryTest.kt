@@ -11,6 +11,21 @@ import java.io.File
 
 class NoteRepositoryTest {
     @Test
+    fun sharedFixtureUsesTheSameKotlinAndSwiftJsonContract() {
+        val fixture = sharedFixture("sample-note-store.json")
+        val codec = NoteJsonCodec()
+
+        val notes = codec.decode(fixture.readText())
+        val roundTripped = codec.decode(codec.encode(notes))
+
+        assertEquals(1, notes.size)
+        assertEquals("3c348be6-01af-4d16-93cf-ddb1d27de133", notes.single().id)
+        assertEquals(NoteRevision(2, "android-primary"), notes.single().revision)
+        assertEquals(NoteRevision(1, "android-primary"), notes.single().parentRevision)
+        assertEquals(notes, roundTripped)
+    }
+
+    @Test
     fun localMutationsCreateRevisionLineageAndTombstone() {
         val store = InMemoryNoteStore()
         var timestamp = 1_000L
@@ -120,6 +135,7 @@ class NoteRepositoryTest {
         assertEquals(mac, first.primary)
         assertEquals(first.primary, reversed.primary)
         assertEquals(first.conflictCopy, reversed.conflictCopy)
+        assertEquals("5fb363eb-e718-3aef-9c23-9ab0e9c3b6e0", first.conflictCopy?.id)
         assertEquals("note-001", first.conflictCopy?.conflictOfNoteId)
         assertTrue(first.conflictCopy?.title?.startsWith("[Conflict - android-primary]") == true)
         assertFalse(first.conflictCopy?.isDeleted ?: true)
@@ -209,5 +225,13 @@ class NoteRepositoryTest {
             deletedAtEpochMillis = deletedAt,
             conflictOfNoteId = conflictOf,
         )
+    }
+
+    private fun sharedFixture(name: String): File {
+        val workingDirectory = File(".").canonicalFile
+        return generateSequence(workingDirectory) { it.parentFile }
+            .map { File(it, "shared/fixtures/$name") }
+            .firstOrNull(File::isFile)
+            ?: error("Shared fixture not found: $name (working directory ${File(".").absolutePath})")
     }
 }
