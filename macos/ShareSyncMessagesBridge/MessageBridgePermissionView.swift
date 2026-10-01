@@ -146,6 +146,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             state = .available(fingerprint)
             refreshValidationState()
             refreshPreviewState()
+            resumeTelegramAutomationIfNeeded()
         case .permissionRequired:
             state = .permissionRequired
             validationState = .inactive
@@ -348,6 +349,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         telegramPollingTask = nil
         guard enabled else {
             isTelegramAutoForwarding = false
+            telegramSettingsStore.setAutomaticForwardingEnabled(false)
             return
         }
         do {
@@ -365,6 +367,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             return
         }
         isTelegramAutoForwarding = true
+        telegramSettingsStore.setAutomaticForwardingEnabled(true)
         telegramPollingTask = Task { [weak self] in
             while !Task.isCancelled {
                 self?.forwardTelegramNow()
@@ -400,6 +403,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                         }.value
                     }
                     isTelegramReplyEnabled = true
+                    telegramSettingsStore.setRepliesEnabled(true)
                     telegramReplyState = .ready
                 } catch {
                     isTelegramReplyEnabled = false
@@ -448,6 +452,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
 
     func disableTelegramReplies() {
         isTelegramReplyEnabled = false
+        telegramSettingsStore.setRepliesEnabled(false)
         telegramReplyResult = nil
         telegramReplyState = .disabled
     }
@@ -551,9 +556,10 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             telegramTokenDraft = ""
         }
         _ = try telegramConfiguration(chatID: chatID)
-        telegramSettingsStore.saveSettings(
-            TelegramBotSettings(chatID: chatID, allowedSenderIdentifier: sender)
-        )
+        var settings = telegramSettingsStore.loadSettings()
+        settings.chatID = chatID
+        settings.allowedSenderIdentifier = sender
+        telegramSettingsStore.saveSettings(settings)
         telegramChatID = chatID
         telegramAllowedSender = sender
     }
@@ -607,6 +613,16 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             sender: MessagesAutomationSender(),
             authorizedPrivateChatID: authorizedPrivateChatID
         )
+    }
+
+    private func resumeTelegramAutomationIfNeeded() {
+        let settings = telegramSettingsStore.loadSettings()
+        if settings.repliesEnabled, !isTelegramReplyEnabled {
+            enableTelegramReplies()
+        }
+        if settings.automaticForwardingEnabled, !isTelegramAutoForwarding {
+            setTelegramAutoForwarding(true)
+        }
     }
 
     private func bridgeSupportDirectory() -> URL {

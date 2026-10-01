@@ -152,6 +152,9 @@ interruption without requiring a new pairing.
   account and private Chat ID match and the user replies to a ShareSync-forwarded
   message with a locally stored route. First use requires explicit Messages
   Automation approval.
+- The unified app now owns Messages polling for the process lifetime. Explicit
+  automatic-forwarding and reply opt-ins resume after launch and continue when
+  the window closes while ShareSync remains in the menu bar.
 
 ### Remaining
 
@@ -162,8 +165,8 @@ interruption without requiring a new pairing.
 - Expand the current single-sender allowlist UI to multiple senders and optional
   conversation rules, schedules, pause controls, and loop prevention.
 - Add attachment upload only after explicit media privacy and size-limit design.
-- Add launch-at-login/background-agent lifecycle and sleep/network recovery using
-  the existing polling planner.
+- Add launch-at-login and explicit sleep/network recovery using the existing
+  polling planner. Window-close/menu-bar continuity is complete.
 - Validate Telegram reply routing and Messages Automation permission on a
   physical Mac, including denied/revoked permission and an unavailable iMessage
   participant.

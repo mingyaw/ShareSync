@@ -17,7 +17,7 @@ and one exact iMessage sender allowlist entry. The token is stored in the macOS
 Keychain; the Chat ID and sender setting remain in local preferences.
 
 Forwarding is opt-in and starts from an explicit baseline, so existing Messages
-history is not sent. Manual forwarding and a 10-second in-app polling mode share
+history is not sent. Manual forwarding and a 10-second app-lifetime polling mode share
 the same cursor, opaque delivery ledger, sensitive-content policy, rate limiter,
 and aggregate audit store. The connector accepts only Telegram's fixed HTTPS
 host and rejects HTTP redirects. Attachments are summarized by count and MIME
@@ -37,6 +37,12 @@ cursor and at most 1,000 reply routes persist locally so the app can resume afte
 a restart. Reset removes both stores. Reply polling runs only while ShareSync is
 running and automatic Telegram polling is enabled, or when the user checks
 manually.
+
+The unified Mac app owns the Messages model for its full process lifetime, not
+the main window lifetime. Explicit automatic-forwarding and secure-reply choices
+are stored locally and restored after the Messages permission check succeeds.
+With Keep Running enabled, closing the main window leaves polling active through
+the menu bar; quitting ShareSync stops it.
 
 ## Goal
 

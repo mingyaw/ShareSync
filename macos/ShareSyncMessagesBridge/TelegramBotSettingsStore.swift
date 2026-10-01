@@ -3,12 +3,16 @@ import Foundation
 struct TelegramBotSettings: Equatable {
     var chatID: String
     var allowedSenderIdentifier: String
+    var automaticForwardingEnabled: Bool
+    var repliesEnabled: Bool
 }
 
 final class TelegramBotSettingsStore {
     private enum Key {
         static let chatID = "messages.telegram.chat-id"
         static let allowedSender = "messages.telegram.allowed-sender"
+        static let automaticForwarding = "messages.telegram.automatic-forwarding"
+        static let repliesEnabled = "messages.telegram.replies-enabled"
         static let credentialID = "telegram-bot-token"
     }
 
@@ -28,13 +32,25 @@ final class TelegramBotSettingsStore {
     func loadSettings() -> TelegramBotSettings {
         TelegramBotSettings(
             chatID: defaults.string(forKey: Key.chatID) ?? "",
-            allowedSenderIdentifier: defaults.string(forKey: Key.allowedSender) ?? ""
+            allowedSenderIdentifier: defaults.string(forKey: Key.allowedSender) ?? "",
+            automaticForwardingEnabled: defaults.bool(forKey: Key.automaticForwarding),
+            repliesEnabled: defaults.bool(forKey: Key.repliesEnabled)
         )
     }
 
     func saveSettings(_ settings: TelegramBotSettings) {
         defaults.set(settings.chatID, forKey: Key.chatID)
         defaults.set(settings.allowedSenderIdentifier, forKey: Key.allowedSender)
+        defaults.set(settings.automaticForwardingEnabled, forKey: Key.automaticForwarding)
+        defaults.set(settings.repliesEnabled, forKey: Key.repliesEnabled)
+    }
+
+    func setAutomaticForwardingEnabled(_ enabled: Bool) {
+        defaults.set(enabled, forKey: Key.automaticForwarding)
+    }
+
+    func setRepliesEnabled(_ enabled: Bool) {
+        defaults.set(enabled, forKey: Key.repliesEnabled)
     }
 
     func loadToken() throws -> String? {
@@ -49,6 +65,8 @@ final class TelegramBotSettingsStore {
     func clear() throws {
         defaults.removeObject(forKey: Key.chatID)
         defaults.removeObject(forKey: Key.allowedSender)
+        defaults.removeObject(forKey: Key.automaticForwarding)
+        defaults.removeObject(forKey: Key.repliesEnabled)
         try vault.removeCredential(for: Key.credentialID)
     }
 }

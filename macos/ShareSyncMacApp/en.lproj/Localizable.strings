@@ -190,7 +190,7 @@
 "bridge.telegram.action.baseline" = "Establish Baseline";
 "bridge.telegram.action.forward" = "Forward Now";
 "bridge.telegram.auto" = "Automatic";
-"bridge.telegram.auto.detail" = "Checks every 10 seconds while ShareSync Mac is running";
+"bridge.telegram.auto.detail" = "Checks every 10 seconds, including while the window is closed and ShareSync remains in the menu bar";
 "bridge.telegram.metric.sent" = "Sent";
 "bridge.reset.telegram.title" = "Remove Telegram settings? The Keychain token, baseline, and local delivery history will be deleted.";
 "bridge.telegram.reply.title" = "Reply to iMessage from Telegram";

@@ -7,7 +7,7 @@ struct MacContentView: View {
     }
 
     @EnvironmentObject private var model: MacPhotoSyncViewModel
-    @StateObject private var messageModel = MessageBridgePermissionViewModel()
+    @EnvironmentObject private var messageModel: MessageBridgePermissionViewModel
     @State private var showingPairing = false
     @State private var confirmUnpair = false
     @State private var isSidebarVisible = true

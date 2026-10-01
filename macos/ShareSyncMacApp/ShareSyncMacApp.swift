@@ -19,12 +19,17 @@ final class ShareSyncMacAppDelegate: NSObject, NSApplicationDelegate {
 struct ShareSyncMacApp: App {
     @NSApplicationDelegateAdaptor(ShareSyncMacAppDelegate.self) private var appDelegate
     @StateObject private var syncModel = MacPhotoSyncViewModel()
+    @StateObject private var messageModel = MessageBridgePermissionViewModel()
 
     var body: some Scene {
         Window("ShareSync", id: "main") {
             MacContentView()
                 .environmentObject(syncModel)
+                .environmentObject(messageModel)
                 .frame(minWidth: 820, minHeight: 560)
+                .task {
+                    messageModel.checkAccess()
+                }
         }
         .defaultSize(width: 960, height: 650)
 

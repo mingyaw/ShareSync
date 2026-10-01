@@ -71,7 +71,7 @@
 "bridge.telegram.action.baseline" = "建立基準點";
 "bridge.telegram.action.forward" = "立即轉發";
 "bridge.telegram.auto" = "自動";
-"bridge.telegram.auto.detail" = "ShareSync Mac 執行期間每 10 秒檢查一次";
+"bridge.telegram.auto.detail" = "ShareSync 執行期間每 10 秒檢查一次";
 "bridge.telegram.metric.sent" = "已傳送";
 "bridge.reset.telegram.title" = "要移除 Telegram 設定嗎？鑰匙圈 Token、基準點與本機交付紀錄將被刪除。";
 "bridge.telegram.reply.title" = "從 Telegram 回覆 iMessage";
