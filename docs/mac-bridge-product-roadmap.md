@@ -164,6 +164,9 @@ interruption without requiring a new pairing.
   disables automatic forwarding.
 - Manual pause and an optional daily local-time schedule stop before reading
   queued rows, preserve the cursor, and resume without dropping messages.
+- Automatic forwarding now uses the polling planner for immediate batch
+  continuation, bounded failure backoff, Telegram rate-limit delays, and reset
+  on wake or network recovery. Reply polling remains independent.
 
 ### Remaining
 

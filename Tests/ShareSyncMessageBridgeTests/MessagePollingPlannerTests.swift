@@ -67,5 +67,9 @@ final class MessagePollingPlannerTests: XCTestCase {
             mapper.outcome(error: MessageForwardingPipelineError.rateLimited(retryAfter: 9)),
             .rateLimited(retryAfter: 9)
         )
+        XCTAssertEqual(
+            mapper.outcome(error: TelegramBotConnectorError.rateLimited(retryAfter: 14)),
+            .rateLimited(retryAfter: 14)
+        )
     }
 }

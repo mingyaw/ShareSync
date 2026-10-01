@@ -156,6 +156,7 @@ public struct AuditedMessageForwardingRunner {
         case MessageForwardingRuntimeBlock.paused: return .paused
         case MessageForwardingRuntimeBlock.outsideSchedule: return .outsideSchedule
         case MessageForwardingPipelineError.rateLimited: return .rateLimited
+        case TelegramBotConnectorError.rateLimited: return .rateLimited
         default: return .failed
         }
     }

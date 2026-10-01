@@ -81,6 +81,7 @@
 		C10000000000000000000014 /* KeychainMessageConnectorCredentialVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000B /* KeychainMessageConnectorCredentialVault.swift */; };
 		C10000000000000000000015 /* TelegramReplyBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000022 /* TelegramReplyBridge.swift */; };
 		C10000000000000000000016 /* MessagesAutomationSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000D /* MessagesAutomationSender.swift */; };
+		C10000000000000000000017 /* MessagePollingPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001E /* MessagePollingPlanner.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -408,6 +409,7 @@
 				C1000000000000000000000D /* MessageForwardingAudit.swift in Sources */,
 				C1000000000000000000000E /* MessageAttributedBodyDecoder.swift in Sources */,
 				C1000000000000000000000F /* MessageConnectorEnvelope.swift in Sources */,
+				C10000000000000000000017 /* MessagePollingPlanner.swift in Sources */,
 				C10000000000000000000011 /* TelegramBotConnector.swift in Sources */,
 				C10000000000000000000012 /* TelegramBotSettingsStore.swift in Sources */,
 				C10000000000000000000013 /* MessageConnectorCredentialVault.swift in Sources */,

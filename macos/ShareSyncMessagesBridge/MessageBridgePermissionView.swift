@@ -39,6 +39,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         interval: 60
     )
     private var telegramPollingTask: Task<Void, Never>?
+    private var telegramReplyPollingTask: Task<Void, Never>?
     private var wakeObserver: NSObjectProtocol?
     private var isMonitoringNetwork = false
     private var wasNetworkSatisfied: Bool?
@@ -393,18 +394,25 @@ final class MessageBridgePermissionViewModel: ObservableObject {
 
     func forwardTelegramNow() {
         guard case .available = state, telegramState != .forwarding else { return }
+        Task { [weak self] in
+            _ = await self?.runTelegramForwardingPass()
+        }
+    }
+
+    private func runTelegramForwardingPass() async -> MessagePollingOutcome {
+        guard case .available = state, telegramState != .forwarding else { return .idle }
         let runtimeGate = telegramRuntimeGate()
         do {
             try runtimeGate.validate(at: Date())
         } catch MessageForwardingRuntimeBlock.paused {
             telegramState = .paused
-            return
+            return .idle
         } catch MessageForwardingRuntimeBlock.outsideSchedule {
             telegramState = .outsideSchedule
-            return
+            return .idle
         } catch {
             telegramState = .failed
-            return
+            return .failed
         }
         do {
             try persistTelegramConfiguration()
@@ -412,7 +420,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             let senders = Set(telegramAllowedSenders)
             guard !senders.isEmpty else {
                 telegramState = .invalidConfiguration
-                return
+                return .failed
             }
             let senderLabels = Dictionary(uniqueKeysWithValues: senders.map { ($0, $0) })
             let reader = messageReader()
@@ -422,44 +430,86 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             let replyRouteStore = telegramReplyRouteStore()
             let rateLimiter = telegramRateLimiter
             telegramState = .forwarding
-            Task {
-                do {
-                    let result = try await Task.detached(priority: .utility) {
-                        let pipeline = MessageForwardingPipeline(
-                            reader: reader,
-                            cursorStore: cursorStore,
-                            policy: MessageForwardingPolicy(allowedSenderIdentifiers: senders),
-                            connector: TelegramBotConnector(
-                                configuration: configuration,
-                                replyRouteStore: replyRouteStore
-                            ),
-                            runtimeGate: runtimeGate,
-                            deliveryLedger: deliveryLedger,
-                            rateLimiter: rateLimiter,
-                            envelopeBuilder: MessageConnectorEnvelopeBuilder(
-                                senderLabels: senderLabels
-                            )
+            do {
+                let result = try await Task.detached(priority: .utility) {
+                    let pipeline = MessageForwardingPipeline(
+                        reader: reader,
+                        cursorStore: cursorStore,
+                        policy: MessageForwardingPolicy(allowedSenderIdentifiers: senders),
+                        connector: TelegramBotConnector(
+                            configuration: configuration,
+                            replyRouteStore: replyRouteStore
+                        ),
+                        runtimeGate: runtimeGate,
+                        deliveryLedger: deliveryLedger,
+                        rateLimiter: rateLimiter,
+                        envelopeBuilder: MessageConnectorEnvelopeBuilder(
+                            senderLabels: senderLabels
                         )
-                        return try AuditedMessageForwardingRunner(
-                            pipeline: pipeline,
-                            auditStore: auditStore
-                        ).run(limit: 50)
-                    }.value
-                    telegramResult = result
-                    telegramState = .forwarded
-                } catch MessageValidationSessionError.baselineRequired {
-                    telegramState = .baselineRequired
-                    setTelegramAutoForwarding(false)
-                } catch MessageForwardingRuntimeBlock.paused {
-                    telegramState = .paused
-                } catch MessageForwardingRuntimeBlock.outsideSchedule {
-                    telegramState = .outsideSchedule
-                } catch {
-                    telegramState = .failed
-                }
+                    )
+                    return try AuditedMessageForwardingRunner(
+                        pipeline: pipeline,
+                        auditStore: auditStore
+                    ).run(limit: 50)
+                }.value
+                telegramResult = result
+                telegramState = .forwarded
+                return MessagePollingOutcomeMapper(batchLimit: 50).outcome(result: result)
+            } catch MessageValidationSessionError.baselineRequired {
+                telegramState = .baselineRequired
+                setTelegramAutoForwarding(false)
+                return .failed
+            } catch MessageForwardingRuntimeBlock.paused {
+                telegramState = .paused
+                return .idle
+            } catch MessageForwardingRuntimeBlock.outsideSchedule {
+                telegramState = .outsideSchedule
+                return .idle
+            } catch {
+                telegramState = .failed
+                return MessagePollingOutcomeMapper(batchLimit: 50).outcome(error: error)
             }
         } catch {
             telegramState = .invalidConfiguration
+            return .failed
+        }
+    }
+
+    private func startTelegramForwardingPolling() {
+        telegramPollingTask?.cancel()
+        telegramPollingTask = Task { [weak self] in
+            var planner = MessagePollingPlanner(configuration: MessagePollingConfiguration(
+                idleInterval: 10,
+                initialFailureDelay: 2,
+                maximumFailureDelay: 300
+            ))
+            while !Task.isCancelled {
+                guard let self else { return }
+                let outcome = await self.runTelegramForwardingPass()
+                let delay = planner.nextDelay(after: outcome)
+                guard delay > 0 else { continue }
+                do {
+                    try await Task.sleep(for: .seconds(delay))
+                } catch {
+                    return
+                }
+            }
+        }
+    }
+
+    private func startTelegramReplyPollingIfNeeded() {
+        telegramReplyPollingTask?.cancel()
+        telegramReplyPollingTask = nil
+        guard isTelegramAutoForwarding, isTelegramReplyEnabled else { return }
+        telegramReplyPollingTask = Task { [weak self] in
+            while !Task.isCancelled {
+                self?.checkTelegramReplies()
+                do {
+                    try await Task.sleep(for: .seconds(10))
+                } catch {
+                    return
+                }
+            }
         }
     }
 
@@ -467,6 +517,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         guard enabled != isTelegramAutoForwarding else { return }
         telegramPollingTask?.cancel()
         telegramPollingTask = nil
+        telegramReplyPollingTask?.cancel()
+        telegramReplyPollingTask = nil
         guard enabled else {
             isTelegramAutoForwarding = false
             telegramSettingsStore.setAutomaticForwardingEnabled(false)
@@ -488,15 +540,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         }
         isTelegramAutoForwarding = true
         telegramSettingsStore.setAutomaticForwardingEnabled(true)
-        telegramPollingTask = Task { [weak self] in
-            while !Task.isCancelled {
-                self?.forwardTelegramNow()
-                if self?.isTelegramReplyEnabled == true {
-                    self?.checkTelegramReplies()
-                }
-                try? await Task.sleep(for: .seconds(10))
-            }
-        }
+        startTelegramForwardingPolling()
+        startTelegramReplyPollingIfNeeded()
     }
 
     func enableTelegramReplies() {
@@ -525,6 +570,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                     isTelegramReplyEnabled = true
                     telegramSettingsStore.setRepliesEnabled(true)
                     telegramReplyState = .ready
+                    startTelegramReplyPollingIfNeeded()
                 } catch {
                     isTelegramReplyEnabled = false
                     telegramReplyState = .failed
@@ -572,6 +618,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
 
     func disableTelegramReplies() {
         isTelegramReplyEnabled = false
+        telegramReplyPollingTask?.cancel()
+        telegramReplyPollingTask = nil
         telegramSettingsStore.setRepliesEnabled(false)
         telegramReplyResult = nil
         telegramReplyState = .disabled
@@ -791,10 +839,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
 
     private func recoverTelegramAutomation() {
         guard case .available = state, isTelegramAutoForwarding else { return }
-        forwardTelegramNow()
-        if isTelegramReplyEnabled {
-            checkTelegramReplies()
-        }
+        startTelegramForwardingPolling()
+        startTelegramReplyPollingIfNeeded()
     }
 
     private func bridgeSupportDirectory() -> URL {

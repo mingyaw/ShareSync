@@ -70,6 +70,9 @@ public struct MessagePollingOutcomeMapper {
         if case MessageForwardingPipelineError.rateLimited(let retryAfter) = error {
             return .rateLimited(retryAfter: retryAfter)
         }
+        if case TelegramBotConnectorError.rateLimited(let retryAfter) = error {
+            return .rateLimited(retryAfter: retryAfter)
+        }
         return .failed
     }
 }
