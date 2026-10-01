@@ -201,6 +201,72 @@ final class MessageForwardingPipelineTests: XCTestCase {
         XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 2))
     }
 
+    func testAttachmentFailureRetriesMediaWithoutResendingConfirmedText() throws {
+        let fixture = try MessageBridgeFixture()
+        try fixture.insertHandle(identifier: "allowed")
+        try fixture.insertMessage(
+            guid: "attachment-message",
+            body: "photo attached",
+            hasAttachments: true
+        )
+        let attachmentRoot = fixture.directoryURL.appendingPathComponent(
+            "Attachments",
+            isDirectory: true
+        )
+        try FileManager.default.createDirectory(
+            at: attachmentRoot,
+            withIntermediateDirectories: true
+        )
+        let attachmentURL = attachmentRoot.appendingPathComponent("photo.jpg")
+        try Data("image-data".utf8).write(to: attachmentURL)
+        try fixture.insertAttachment(
+            filename: attachmentURL.path,
+            mimeType: "image/jpeg"
+        )
+        try fixture.linkAttachment(rowID: 1, toMessage: 1)
+        let store = try makeStore()
+        try store.store.save(MessageCursor(rowID: 0))
+        let policy = MessageForwardingPolicy(allowedSenderIdentifiers: ["allowed"])
+        let mediaConnector = FailOnceAttachmentConnector()
+        let ledger = InMemoryMessageDeliveryLedgerStore()
+        let textConnector = InMemoryMessageForwardingConnector()
+        let attachmentDelivery = MessageAttachmentDeliveryCoordinator(
+            accessCoordinator: MessageAttachmentAccessCoordinator(
+                forwardingPolicy: policy,
+                candidateProvider: SQLiteMessageAttachmentCandidateProvider(
+                    databaseURL: fixture.databaseURL
+                ),
+                uploadPolicy: MessageAttachmentUploadPolicy(isEnabled: true),
+                attachmentRoot: attachmentRoot
+            ),
+            connector: mediaConnector
+        )
+        let pipeline = MessageForwardingPipeline(
+            reader: MessageEventReader(databaseURL: fixture.databaseURL),
+            cursorStore: store.store,
+            policy: policy,
+            connector: textConnector,
+            deliveryLedger: ledger,
+            attachmentDeliveryCoordinator: attachmentDelivery,
+            now: { Date(timeIntervalSince1970: 1_000) }
+        )
+
+        XCTAssertThrowsError(try pipeline.run())
+        XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 0))
+        XCTAssertEqual(textConnector.deliveries.count, 1)
+        XCTAssertEqual(mediaConnector.attemptCount, 1)
+
+        let retry = try pipeline.run()
+
+        XCTAssertEqual(retry.deliveredCount, 1)
+        XCTAssertEqual(textConnector.deliveries.count, 1)
+        XCTAssertEqual(mediaConnector.attemptCount, 2)
+        XCTAssertEqual(mediaConnector.deliveredData, [Data("image-data".utf8)])
+        XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 1))
+        XCTAssertTrue(ledger.records.keys.allSatisfy { $0.count == 64 })
+        XCTAssertFalse(ledger.records.keys.contains { $0.contains("photo") })
+    }
+
     func testPipelineRequiresBaseline() throws {
         let fixture = try MessageBridgeFixture()
         let store = try makeStore()
@@ -273,6 +339,21 @@ private final class FailOnceConnector: MessageForwardingConnector {
         guard deliveredKeys.insert(envelope.deliveryKey).inserted else { return .duplicate }
         deliveredGUIDs.append(syntheticGUID)
         return .delivered
+    }
+
+    private enum TestError: Error {
+        case failed
+    }
+}
+
+private final class FailOnceAttachmentConnector: MessageAttachmentForwardingConnector {
+    private(set) var attemptCount = 0
+    private(set) var deliveredData: [Data] = []
+
+    func deliver(_ attachment: LoadedMessageAttachment) throws {
+        attemptCount += 1
+        if attemptCount == 1 { throw TestError.failed }
+        deliveredData.append(attachment.data)
     }
 
     private enum TestError: Error {

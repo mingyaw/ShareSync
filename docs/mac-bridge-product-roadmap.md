@@ -191,7 +191,11 @@ interruption without requiring a new pairing.
 - A dedicated read-only SQLite provider can select attachment paths only by an
   already-approved message row ID. It rejects unsupported schemas, missing
   values, and relative paths; the general event reader remains path-blind. The
-  provider is not instantiated by the app or forwarding pipeline.
+  provider is not instantiated by either app target.
+- The core forwarding pipeline now supports optional media delivery with opaque
+  text and per-attachment ledger keys. Confirmed parts are skipped on retry and
+  the message cursor advances only after every part succeeds. No app target
+  instantiates this optional path yet.
 
 ### Remaining
 
@@ -199,9 +203,8 @@ interruption without requiring a new pairing.
 - Verify text, Unicode, group, reply, edit, retract, reaction, attachment
   metadata, sleep catch-up, and deduplication behavior on supported macOS
   versions.
-- Integrate media delivery retry semantics and cursor behavior only after the
-  end-to-end synthetic security gate passes; keep the policy disabled until
-  then.
+- Add the separate attachment consent UI and app composition only after the
+  remaining synthetic security cases pass; keep the policy disabled until then.
 - Validate login-item enable, disable, approval, sleep catch-up, and network
   recovery behavior in a signed installed build.
 - Validate Telegram reply routing and Messages Automation permission on a

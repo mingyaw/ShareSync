@@ -123,6 +123,7 @@ public struct MessageForwardingPipeline {
     private let deliveryLedger: any MessageDeliveryLedgerStore
     private let rateLimiter: MessageDeliveryRateLimiter?
     private let envelopeBuilder: MessageConnectorEnvelopeBuilder
+    private let attachmentDeliveryCoordinator: MessageAttachmentDeliveryCoordinator?
     private let now: () -> Date
 
     public init(
@@ -135,6 +136,7 @@ public struct MessageForwardingPipeline {
         deliveryLedger: any MessageDeliveryLedgerStore = InMemoryMessageDeliveryLedgerStore(),
         rateLimiter: MessageDeliveryRateLimiter? = nil,
         envelopeBuilder: MessageConnectorEnvelopeBuilder = MessageConnectorEnvelopeBuilder(),
+        attachmentDeliveryCoordinator: MessageAttachmentDeliveryCoordinator? = nil,
         now: @escaping () -> Date = Date.init
     ) {
         self.reader = reader
@@ -146,6 +148,7 @@ public struct MessageForwardingPipeline {
         self.deliveryLedger = deliveryLedger
         self.rateLimiter = rateLimiter
         self.envelopeBuilder = envelopeBuilder
+        self.attachmentDeliveryCoordinator = attachmentDeliveryCoordinator
         self.now = now
     }
 
@@ -182,6 +185,23 @@ public struct MessageForwardingPipeline {
             }
             try deliveryLedger.markPending(deliveryKey: event.deliveryKey, at: deliveryDate)
             let envelope = envelopeBuilder.build(from: event)
+            if let attachmentDeliveryCoordinator,
+               event.contentKinds.contains(.attachment) {
+                let textPartKey = MessageDeliveryPartKey.text(messageKey: event.deliveryKey)
+                if try deliveryLedger.record(for: textPartKey)?.state != .delivered {
+                    try deliveryLedger.markPending(deliveryKey: textPartKey, at: deliveryDate)
+                    _ = try connector.deliver(envelope)
+                    try deliveryLedger.markDelivered(deliveryKey: textPartKey, at: now())
+                }
+                _ = try attachmentDeliveryCoordinator.deliverAttachments(
+                    for: event,
+                    ledger: deliveryLedger,
+                    at: now()
+                )
+                deliveredCount += 1
+                try deliveryLedger.markDelivered(deliveryKey: event.deliveryKey, at: now())
+                continue
+            }
             switch try connector.deliver(envelope) {
             case .delivered:
                 deliveredCount += 1

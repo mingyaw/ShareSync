@@ -66,12 +66,19 @@ only for an already-approved message `ROWID`, and accepts only absolute or
 leading-home-marker paths. Missing schema, MIME type, filename, or a relative
 path fails the whole request. The general event reader remains path-blind.
 
+The forwarding pipeline can now accept an optional attachment delivery
+coordinator. Text and each attachment use separate opaque part keys in the
+content-free delivery ledger. A failed attachment keeps the message cursor in
+place, while later retries skip parts that already returned a confirmed success.
+An attachment event with no candidate rows fails closed.
+
 Both components are intentionally disconnected from the Messages reader,
 forwarding pipeline, settings UI, and automatic Telegram delivery. Their
 presence does not make binary attachment forwarding available in the product.
-The production-capable path provider is not instantiated by either app target,
-so the current Messages reader and product flow continue to expose only
-aggregate count and MIME metadata.
+The production-capable path provider and optional attachment delivery
+coordinator are not instantiated by either app target, so the current Messages
+reader and product flow continue to expose only aggregate count and MIME
+metadata.
 
 ## Acceptance Gate
 

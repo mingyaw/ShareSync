@@ -129,6 +129,12 @@ public final class TelegramBotMediaUploader {
     }
 }
 
+extension TelegramBotMediaUploader: MessageAttachmentForwardingConnector {
+    public func deliver(_ attachment: LoadedMessageAttachment) throws {
+        try uploadPhoto(attachment.attachment, data: attachment.data)
+    }
+}
+
 private extension Data {
     mutating func appendUTF8(_ value: String) {
         append(contentsOf: value.utf8)

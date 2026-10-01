@@ -97,6 +97,24 @@ final class MessageAttachmentContentLoaderTests: XCTestCase {
         XCTAssertEqual(loaded.map(\.data), [Data("image".utf8)])
     }
 
+    func testAttachmentEventWithoutCandidatesFailsClosed() throws {
+        let provider = RecordingAttachmentCandidateProvider(candidates: [])
+        let coordinator = MessageAttachmentAccessCoordinator(
+            forwardingPolicy: MessageForwardingPolicy(
+                allowedSenderIdentifiers: ["allowed-sender"]
+            ),
+            candidateProvider: provider,
+            uploadPolicy: MessageAttachmentUploadPolicy(isEnabled: true),
+            attachmentRoot: FileManager.default.temporaryDirectory
+        )
+
+        XCTAssertThrowsError(
+            try coordinator.loadAttachments(for: event(sender: "allowed-sender"))
+        ) { error in
+            XCTAssertEqual(error as? MessageAttachmentAccessError, .noAttachmentCandidates)
+        }
+    }
+
     private func event(
         sender: String,
         conversation: String = "allowed-chat"

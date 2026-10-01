@@ -16,6 +16,7 @@ public protocol MessageAttachmentCandidateProviding: AnyObject {
 
 public enum MessageAttachmentAccessError: Error, Equatable, Sendable {
     case eventNotAllowed
+    case noAttachmentCandidates
 }
 
 public struct MessageAttachmentContentLoader: Sendable {
@@ -112,6 +113,9 @@ public struct MessageAttachmentAccessCoordinator {
             throw MessageAttachmentAccessError.eventNotAllowed
         }
         let candidates = try candidateProvider.candidates(forMessageRowID: event.sourceRowID)
+        guard !candidates.isEmpty else {
+            throw MessageAttachmentAccessError.noAttachmentCandidates
+        }
         let attachments = try uploadPolicy.validate(
             candidates,
             attachmentRoot: attachmentRoot
