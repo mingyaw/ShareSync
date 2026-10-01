@@ -1,0 +1,72 @@
+# ShareSync Notes Model / ShareSync 記事模型
+
+Status: Android local-data milestone, schema version 1.
+
+狀態：Android 本機資料里程碑，schema version 1。
+
+## Product boundary / 產品邊界
+
+ShareSync notes are owned by ShareSync. Android remains the primary phone and
+the Mac is the local bridge and peer. The model does not read Apple Notes,
+Google Keep, or another vendor database, and no ShareSync cloud relay is
+introduced.
+
+ShareSync 記事由 ShareSync 管理。Android 仍是主要手機，Mac 是本地橋接與同步端。
+此模型不讀取 Apple Notes、Google Keep 或其他廠商的私有資料庫，也不引入
+ShareSync 雲端中繼。
+
+## Version contract / 版本契約
+
+Every note contains a schema version, stable UUID, title, Markdown body,
+creation and update times, normalized tags, a revision stamp, an optional
+parent revision, an optional deletion time, and an optional original-note ID
+for conflict copies.
+
+每則記事包含 schema 版本、穩定 UUID、標題、Markdown 本文、建立與更新時間、
+正規化標籤、revision stamp、可選的 parent revision、可選的刪除時間，以及衝突副本
+所使用的原始記事 ID。
+
+A revision stamp is `(sequence, deviceId)`. A local edit increments the
+sequence and stores the previous stamp as its parent. The device ID is the
+durable identity already owned by the pairing layer. This explicit parent is
+what distinguishes a fast-forward from two offline edits based on the same
+revision.
+
+Revision stamp 為 `(sequence, deviceId)`。本機修改會遞增 sequence，並把上一個 stamp
+存為 parent。device ID 沿用配對層的耐久裝置識別；明確的 parent 可分辨正常快轉與
+兩台裝置從同一版本離線修改的情形。
+
+## Merge and deletion / 合併與刪除
+
+- An identical revision is idempotent.
+- A direct child replaces its parent; receiving a parent after its child keeps
+  the child.
+- Divergent revisions are concurrent. A deterministic winner is selected by
+  revision ordering, while the losing live content is stored under a stable
+  conflict-copy ID and marked with `conflictOfNoteId`.
+- A tombstone wins over a concurrent live edit to prevent resurrection. The
+  live edit remains available as a conflict copy.
+- Concurrent tombstones converge without making an empty conflict copy.
+- Tombstones clear title, body, and tags. Their retention and compaction window
+  must be decided before transport deletion acknowledgements ship.
+
+- 完全相同的 revision 可安全重試，不產生額外變更。
+- 直接子版本取代父版本；先收到子版本後再收到父版本時保留子版本。
+- 分歧版本視為同時修改：以 revision 排序選出一致的主版本，另一份仍有內容的版本
+  會用穩定 ID 儲存為衝突副本，並以 `conflictOfNoteId` 標記。
+- tombstone 與同時發生的編輯衝突時，tombstone 優先以避免記事復活，編輯內容則保留
+  為衝突副本。
+- 兩個同時產生的 tombstone 直接收斂，不建立空白衝突副本。
+- tombstone 會清空標題、本文與標籤；在傳輸層啟用刪除確認前，仍須決定保留與壓縮週期。
+
+## Local persistence / 本機持久化
+
+Android stores a versioned JSON envelope in
+`filesDir/ShareSync/notes-v1.json`. Writes use a temporary file and an atomic
+replace where supported. Decode errors are surfaced instead of silently
+discarding the user's notes. UI, search, Mac persistence, and signed local
+transport are intentionally later milestones built on this contract.
+
+Android 將版本化 JSON envelope 儲存在 `filesDir/ShareSync/notes-v1.json`。寫入先使用
+暫存檔，平台支援時再以 atomic replace 取代正式檔。解碼錯誤會明確回報，不會靜默丟棄
+使用者記事。UI、搜尋、Mac 持久化與簽章區網傳輸將在後續里程碑沿用此契約。

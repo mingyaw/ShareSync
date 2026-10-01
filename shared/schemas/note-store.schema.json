@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sharesync.local/schemas/note-store.schema.json",
+  "title": "ShareSync Note Store",
+  "type": "object",
+  "required": ["schemaVersion", "notes"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "notes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/note" }
+    }
+  },
+  "$defs": {
+    "revision": {
+      "type": "object",
+      "required": ["sequence", "deviceId"],
+      "properties": {
+        "sequence": { "type": "integer", "minimum": 1 },
+        "deviceId": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "note": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "id",
+        "title",
+        "markdownBody",
+        "createdAtEpochMillis",
+        "updatedAtEpochMillis",
+        "tags",
+        "revision",
+        "parentRevision",
+        "deletedAtEpochMillis",
+        "conflictOfNoteId"
+      ],
+      "properties": {
+        "schemaVersion": { "type": "integer", "const": 1 },
+        "id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string" },
+        "markdownBody": { "type": "string" },
+        "createdAtEpochMillis": { "type": "integer", "minimum": 0 },
+        "updatedAtEpochMillis": { "type": "integer", "minimum": 0 },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "revision": { "$ref": "#/$defs/revision" },
+        "parentRevision": {
+          "type": ["object", "null"],
+          "required": ["sequence", "deviceId"],
+          "properties": {
+            "sequence": { "type": "integer", "minimum": 1 },
+            "deviceId": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        },
+        "deletedAtEpochMillis": { "type": ["integer", "null"], "minimum": 0 },
+        "conflictOfNoteId": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

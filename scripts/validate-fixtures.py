@@ -215,6 +215,37 @@ def validate_sync_result():
     print("ok fixture: shared/fixtures/sample-sync-result.json")
 
 
+def validate_note_store():
+    store = load_json(FIXTURES / "sample-note-store.json")
+    require_keys("sample-note-store", store, ["schemaVersion", "notes"])
+    assert store["schemaVersion"] == 1
+    assert isinstance(store["notes"], list)
+    for index, note in enumerate(store["notes"]):
+        require_keys(
+            f"sample-note-store.notes[{index}]",
+            note,
+            [
+                "schemaVersion",
+                "id",
+                "title",
+                "markdownBody",
+                "createdAtEpochMillis",
+                "updatedAtEpochMillis",
+                "tags",
+                "revision",
+                "parentRevision",
+                "deletedAtEpochMillis",
+                "conflictOfNoteId",
+            ],
+        )
+        assert note["schemaVersion"] == 1
+        assert note["updatedAtEpochMillis"] >= note["createdAtEpochMillis"]
+        assert note["revision"]["sequence"] >= 1
+
+    validate_fixture_against_schema("sample-note-store.json", "note-store.schema.json")
+    print("ok fixture: shared/fixtures/sample-note-store.json")
+
+
 def validate_support_snapshot(fixture_name: str, expected_platform: str):
     snapshot = load_json(FIXTURES / fixture_name)
     require_keys(
@@ -256,6 +287,7 @@ def main():
     validate_pairing_payload()
     validate_manifest()
     validate_sync_result()
+    validate_note_store()
     validate_support_snapshot("sample-support-snapshot-android.json", "android")
     validate_support_snapshot("sample-support-snapshot-ios.json", "ios")
 
