@@ -167,6 +167,9 @@ interruption without requiring a new pairing.
 - Automatic forwarding now uses the polling planner for immediate batch
   continuation, bounded failure backoff, Telegram rate-limit delays, and reset
   on wake or network recovery. Reply polling remains independent.
+- Telegram forwarding can optionally persist an exact conversation allowlist.
+  When configured, both sender and conversation must match; events without
+  conversation context fail closed and the aggregate audit records the denial.
 
 ### Remaining
 
@@ -174,7 +177,7 @@ interruption without requiring a new pairing.
 - Verify text, Unicode, group, reply, edit, retract, reaction, attachment
   metadata, sleep catch-up, and deduplication behavior on supported macOS
   versions.
-- Add optional conversation rules and explicit loop-prevention diagnostics.
+- Add explicit loop-prevention diagnostics.
 - Add attachment upload only after explicit media privacy and size-limit design.
 - Validate login-item enable, disable, approval, sleep catch-up, and network
   recovery behavior in a signed installed build.

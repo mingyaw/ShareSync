@@ -72,6 +72,12 @@
 "bridge.telegram.sender.add" = "Add allowed sender";
 "bridge.telegram.sender.remove" = "Remove allowed sender";
 "bridge.telegram.sender.empty" = "Add each person whose new iMessages may be forwarded.";
+"bridge.telegram.conversation.title" = "Limit to specific conversations";
+"bridge.telegram.conversation.detail" = "Optional. When any identifiers are listed, a message must match both an allowed sender and one of these exact Messages conversation identifiers. Messages without conversation context are blocked.";
+"bridge.telegram.conversation.placeholder" = "Exact Messages conversation identifier";
+"bridge.telegram.conversation.add" = "Add allowed conversation";
+"bridge.telegram.conversation.remove" = "Remove allowed conversation";
+"bridge.telegram.conversation.unrestricted" = "No conversation limit. Allowed senders can match in any conversation.";
 "bridge.telegram.action.test" = "Save & Send Test";
 "bridge.telegram.action.baseline" = "Establish Baseline";
 "bridge.telegram.action.forward" = "Forward Now";

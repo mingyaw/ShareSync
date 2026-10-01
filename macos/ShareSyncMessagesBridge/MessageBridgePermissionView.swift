@@ -22,6 +22,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
     @Published var telegramChatID = ""
     @Published var telegramAllowedSenderDraft = ""
     @Published private(set) var telegramAllowedSenders: [String] = []
+    @Published var telegramAllowedConversationDraft = ""
+    @Published private(set) var telegramAllowedConversations: [String] = []
     @Published private(set) var telegramState: TelegramState = .unconfigured
     @Published private(set) var telegramResult: MessageForwardingRunResult?
     @Published private(set) var isTelegramAutoForwarding = false
@@ -97,6 +99,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         let settings = telegramSettingsStore.loadSettings()
         telegramChatID = settings.chatID
         telegramAllowedSenders = settings.allowedSenderIdentifiers
+        telegramAllowedConversations = settings.allowedConversationIdentifiers
         isTelegramForwardingPaused = settings.forwardingPaused
         isTelegramScheduleEnabled = settings.scheduleEnabled
         telegramScheduleStartMinute = settings.scheduleStartMinute
@@ -355,6 +358,24 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         }
     }
 
+    func addTelegramAllowedConversation() {
+        let conversation = telegramAllowedConversationDraft
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !conversation.isEmpty else { return }
+        if !telegramAllowedConversations.contains(conversation) {
+            telegramAllowedConversations.append(conversation)
+            telegramSettingsStore.setAllowedConversationIdentifiers(telegramAllowedConversations)
+            recoverTelegramAutomation()
+        }
+        telegramAllowedConversationDraft = ""
+    }
+
+    func removeTelegramAllowedConversation(_ conversation: String) {
+        telegramAllowedConversations.removeAll { $0 == conversation }
+        telegramSettingsStore.setAllowedConversationIdentifiers(telegramAllowedConversations)
+        recoverTelegramAutomation()
+    }
+
     func setTelegramForwardingPaused(_ paused: Bool) {
         isTelegramForwardingPaused = paused
         persistTelegramRuntimeControls()
@@ -418,6 +439,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             try persistTelegramConfiguration()
             let configuration = try telegramConfiguration()
             let senders = Set(telegramAllowedSenders)
+            let conversations = Set(telegramAllowedConversations)
             guard !senders.isEmpty else {
                 telegramState = .invalidConfiguration
                 return .failed
@@ -435,7 +457,10 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                     let pipeline = MessageForwardingPipeline(
                         reader: reader,
                         cursorStore: cursorStore,
-                        policy: MessageForwardingPolicy(allowedSenderIdentifiers: senders),
+                        policy: MessageForwardingPolicy(
+                            allowedSenderIdentifiers: senders,
+                            allowedConversationIdentifiers: conversations.isEmpty ? nil : conversations
+                        ),
                         connector: TelegramBotConnector(
                             configuration: configuration,
                             replyRouteStore: replyRouteStore
@@ -638,6 +663,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             telegramChatID = ""
             telegramAllowedSenderDraft = ""
             telegramAllowedSenders = []
+            telegramAllowedConversationDraft = ""
+            telegramAllowedConversations = []
             isTelegramForwardingPaused = false
             isTelegramScheduleEnabled = false
             telegramScheduleStartMinute = 8 * 60
@@ -735,6 +762,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         var settings = telegramSettingsStore.loadSettings()
         settings.chatID = chatID
         settings.allowedSenderIdentifiers = telegramAllowedSenders
+        settings.allowedConversationIdentifiers = telegramAllowedConversations
         telegramSettingsStore.saveSettings(settings)
         telegramChatID = chatID
     }
@@ -1141,6 +1169,72 @@ struct MessageBridgePermissionView: View {
                 }
                 .padding(.horizontal, 10)
                 .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 6))
+            }
+
+            DisclosureGroup("bridge.telegram.conversation.title") {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("bridge.telegram.conversation.detail")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    HStack(spacing: 8) {
+                        TextField(
+                            "bridge.telegram.conversation.placeholder",
+                            text: $model.telegramAllowedConversationDraft
+                        )
+                        .textFieldStyle(.roundedBorder)
+                        .onSubmit { model.addTelegramAllowedConversation() }
+                        Button {
+                            model.addTelegramAllowedConversation()
+                        } label: {
+                            Image(systemName: "plus")
+                        }
+                        .buttonStyle(.bordered)
+                        .help("bridge.telegram.conversation.add")
+                        .disabled(
+                            model.telegramAllowedConversationDraft
+                                .trimmingCharacters(in: .whitespacesAndNewlines)
+                                .isEmpty
+                        )
+                    }
+
+                    if model.telegramAllowedConversations.isEmpty {
+                        Label(
+                            "bridge.telegram.conversation.unrestricted",
+                            systemImage: "person.2"
+                        )
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    } else {
+                        VStack(spacing: 0) {
+                            ForEach(model.telegramAllowedConversations, id: \.self) { conversation in
+                                HStack(spacing: 10) {
+                                    Image(systemName: "bubble.left.and.bubble.right")
+                                        .foregroundStyle(.secondary)
+                                    Text(conversation)
+                                        .lineLimit(1)
+                                        .textSelection(.enabled)
+                                    Spacer()
+                                    Button {
+                                        model.removeTelegramAllowedConversation(conversation)
+                                    } label: {
+                                        Image(systemName: "trash")
+                                    }
+                                    .buttonStyle(.borderless)
+                                    .help("bridge.telegram.conversation.remove")
+                                }
+                                .padding(.vertical, 7)
+                                if conversation != model.telegramAllowedConversations.last {
+                                    Divider()
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 10)
+                        .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 6))
+                    }
+                }
+                .padding(.top, 8)
             }
 
             if let result = model.telegramResult {

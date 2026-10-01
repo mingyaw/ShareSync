@@ -72,6 +72,12 @@
 "bridge.telegram.sender.add" = "新增允許的寄件者";
 "bridge.telegram.sender.remove" = "移除允許的寄件者";
 "bridge.telegram.sender.empty" = "逐一加入允許轉發新 iMessage 的聯絡人。";
+"bridge.telegram.conversation.title" = "限制特定對話";
+"bridge.telegram.conversation.detail" = "選用。加入識別碼後，訊息必須同時符合允許的寄件者與其中一個 Messages 對話識別碼；缺少對話資訊時也會封鎖。";
+"bridge.telegram.conversation.placeholder" = "完整的 Messages 對話識別碼";
+"bridge.telegram.conversation.add" = "新增允許的對話";
+"bridge.telegram.conversation.remove" = "移除允許的對話";
+"bridge.telegram.conversation.unrestricted" = "目前未限制對話；允許的寄件者可從任何對話符合條件。";
 "bridge.telegram.action.test" = "儲存並傳送測試";
 "bridge.telegram.action.baseline" = "建立基準點";
 "bridge.telegram.action.forward" = "立即轉發";
