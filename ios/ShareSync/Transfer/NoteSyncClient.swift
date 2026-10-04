@@ -21,6 +21,7 @@ struct NoteMergeAcknowledgement: Decodable, Equatable {
 }
 
 struct NoteSyncCycleResult: Equatable {
+    let peerDeviceID: String
     let pulledBatchID: String
     let pushedBatchID: String
     let pullMerge: NoteMergeBatchResult
@@ -149,6 +150,7 @@ final class NoteSyncClient {
             transportSecurity: transportSecurity
         )
         return NoteSyncCycleResult(
+            peerDeviceID: remoteBatch.sourceDeviceId,
             pulledBatchID: remoteBatch.batchId,
             pushedBatchID: localBatch.batchId,
             pullMerge: pullMerge,

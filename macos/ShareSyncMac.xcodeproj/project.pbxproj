@@ -38,6 +38,7 @@
 		A10000000000000000000025 /* NoteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000025 /* NoteStore.swift */; };
 		A10000000000000000000026 /* NoteSyncBatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000026 /* NoteSyncBatch.swift */; };
 		A10000000000000000000027 /* NoteSyncClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000027 /* NoteSyncClient.swift */; };
+		A10000000000000000000028 /* NoteSyncReceiptStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000028 /* NoteSyncReceiptStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -76,6 +77,7 @@
 		A20000000000000000000025 /* NoteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NoteStore.swift; path = ShareSyncNotes/NoteStore.swift; sourceTree = SOURCE_ROOT; };
 		A20000000000000000000026 /* NoteSyncBatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NoteSyncBatch.swift; path = ShareSyncNotes/NoteSyncBatch.swift; sourceTree = SOURCE_ROOT; };
 		A20000000000000000000027 /* NoteSyncClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NoteSyncClient.swift; path = ../ios/ShareSync/Transfer/NoteSyncClient.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000028 /* NoteSyncReceiptStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NoteSyncReceiptStore.swift; path = ShareSyncNotes/NoteSyncReceiptStore.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -141,6 +143,7 @@
 				A20000000000000000000025 /* NoteStore.swift */,
 				A20000000000000000000026 /* NoteSyncBatch.swift */,
 				A20000000000000000000027 /* NoteSyncClient.swift */,
+				A20000000000000000000028 /* NoteSyncReceiptStore.swift */,
 			);
 			name = SharedCore;
 			sourceTree = "<group>";
@@ -253,6 +256,7 @@
 				A10000000000000000000025 /* NoteStore.swift in Sources */,
 				A10000000000000000000026 /* NoteSyncBatch.swift in Sources */,
 				A10000000000000000000027 /* NoteSyncClient.swift in Sources */,
+				A10000000000000000000028 /* NoteSyncReceiptStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

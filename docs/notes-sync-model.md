@@ -121,7 +121,10 @@ store, so the next sync can propagate the deletion. Removing a paired phone does
 not remove these notes or tombstones. Automatic photo checks can include notes;
 the menu-bar Sync Now flow also runs note sync after photos. A note cycle retries
 one transient network or server failure, and repeating the full pull/merge/push
-sequence remains idempotent.
+sequence remains idempotent. After a successful cycle, macOS atomically stores a
+versioned receipt containing the peer device, batch IDs, completion time, and
+merge counts. The latest success state is restored after relaunch; malformed or
+unsupported receipts are ignored by the UI without modifying the note store.
 
 Android now has a first-class Notes destination using the same repository as
 the signed local server. It supports the same create, edit, tag, and tombstone
@@ -145,7 +148,9 @@ Mac 產品介面亦可新增、編輯、加標籤與刪除記事。刪除後會�
 從資料庫消失，所以下次同步能將刪除狀態傳到另一端；解除手機配對也不會清除記事或
 tombstone。自動照片檢查可選擇一併同步記事，選單列的「立即同步」也會在照片後執行
 記事同步。遇到暫時性網路或伺服器錯誤時會重試一次，重跑完整 pull/merge/push 仍保持
-冪等。
+冪等。成功後 macOS 會原子寫入版本化同步收據，記錄對端裝置、雙方 batch ID、完成時間
+與合併統計；重新啟動後會還原最近成功狀態。格式損壞或不支援版本的收據只會被 UI
+忽略，不會修改記事資料庫。
 
 Android 現在也有正式的「記事」分頁，與簽章本機伺服器共用同一個 Repository，可新增、
 編輯、加標籤及 tombstone 刪除；分頁顯示期間會定期刷新，Mac 完成合併後不必重開 App。

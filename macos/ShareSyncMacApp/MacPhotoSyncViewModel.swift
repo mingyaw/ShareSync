@@ -88,6 +88,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
     private let syncEventStore: SyncEventStore
     private let noteSyncClient: NoteSyncClient
     private let noteRepository: NoteRepository
+    private let noteSyncReceiptStore: NoteSyncReceiptStore
     private let discovery: LocalPeerDiscovery
     private let nearbyDiscovery: NearbyPeerDiscovery
     private let endpointResolver: PairedEndpointResolver
@@ -115,6 +116,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
         syncEventStore: SyncEventStore = FileSyncEventStore(),
         noteSyncClient: NoteSyncClient = NoteSyncClient(),
         noteRepository: NoteRepository? = nil,
+        noteSyncReceiptStore: NoteSyncReceiptStore = FileNoteSyncReceiptStore(),
         discovery: LocalPeerDiscovery? = nil,
         nearbyDiscovery: NearbyPeerDiscovery? = nil,
         endpointResolver: PairedEndpointResolver = PairedEndpointResolver(),
@@ -146,10 +148,12 @@ final class MacPhotoSyncViewModel: ObservableObject {
         self.endpointResolver = endpointResolver
         self.targetDeviceId = targetDeviceId
         self.noteRepository = noteRepository ?? Self.makeNoteRepository(deviceID: targetDeviceId)
+        self.noteSyncReceiptStore = noteSyncReceiptStore
         self.pairingListener = pairingListener
         restorePairing()
         restoreSyncHistory()
         refreshNoteCount()
+        restoreNoteSyncReceipt()
         restartScheduledSync()
     }
 
@@ -473,8 +477,19 @@ final class MacPhotoSyncViewModel: ObservableObject {
             persist(endpoint: endpoint)
             refreshNoteCount()
             let changed = result.pullMerge.acceptedRemoteCount + result.pullMerge.conflictCount
+            let completedAt = Date()
+            if let receipt = try? NoteSyncReceipt(
+                    completedAtEpochMillis: Int64(completedAt.timeIntervalSince1970 * 1_000),
+                    peerDeviceId: result.peerDeviceID,
+                    pulledBatchId: result.pulledBatchID,
+                    pushedBatchId: result.pushedBatchID,
+                    changedCount: changed,
+                    conflictCount: result.pullMerge.conflictCount
+            ) {
+                try? noteSyncReceiptStore.save(receipt)
+            }
             noteSyncState = .completed(
-                Date(),
+                completedAt,
                 changedCount: changed,
                 conflictCount: result.pullMerge.conflictCount
             )
@@ -924,6 +939,15 @@ final class MacPhotoSyncViewModel: ObservableObject {
             return $0.id < $1.id
         }
         noteCount = notes.count
+    }
+
+    private func restoreNoteSyncReceipt() {
+        guard let receipt = try? noteSyncReceiptStore.load() else { return }
+        noteSyncState = .completed(
+            Date(timeIntervalSince1970: Double(receipt.completedAtEpochMillis) / 1_000),
+            changedCount: receipt.changedCount,
+            conflictCount: receipt.conflictCount
+        )
     }
 
     private static func makeNoteRepository(deviceID: String) -> NoteRepository {
