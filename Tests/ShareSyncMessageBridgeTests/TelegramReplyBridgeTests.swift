@@ -90,15 +90,57 @@ final class TelegramReplyBridgeTests: XCTestCase {
                 replyToMessageID: 7
             ),
         ])
+        let ledger = InMemoryMessageDeliveryLedgerStore()
+        let update = fetcher.updates[0]
 
         XCTAssertThrowsError(try TelegramReplyProcessor(
             updates: fetcher,
             cursorStore: cursor,
             routeStore: routeStore,
             sender: sender,
-            authorizedPrivateChatID: "42"
+            authorizedPrivateChatID: "42",
+            deliveryLedger: ledger
         ).run())
         XCTAssertEqual(try cursor.load(), 0)
+        XCTAssertNil(try ledger.record(for: TelegramReplyProcessor.deliveryKey(for: update)))
+    }
+
+    func testPendingReplyLedgerPreventsAmbiguousResendAndAdvancesCursor() throws {
+        let routeStore = MemoryRouteStore()
+        try routeStore.save(TelegramReplyRoute(
+            telegramChatID: "42",
+            telegramMessageID: 7,
+            recipientHandle: "person@example.com"
+        ))
+        let update = TelegramBotUpdate(
+            updateID: 5,
+            messageID: 8,
+            chatID: "42",
+            senderUserID: "42",
+            text: "do not resend",
+            replyToMessageID: 7
+        )
+        let ledger = InMemoryMessageDeliveryLedgerStore()
+        try ledger.markPending(
+            deliveryKey: TelegramReplyProcessor.deliveryKey(for: update),
+            at: Date(timeIntervalSince1970: 1)
+        )
+        let cursor = MemoryUpdateCursor()
+        let sender = RecordingReplySender()
+
+        let result = try TelegramReplyProcessor(
+            updates: FixedUpdateFetcher(updates: [update]),
+            cursorStore: cursor,
+            routeStore: routeStore,
+            sender: sender,
+            authorizedPrivateChatID: "42",
+            deliveryLedger: ledger
+        ).run()
+
+        XCTAssertTrue(sender.messages.isEmpty)
+        XCTAssertEqual(result.sentCount, 0)
+        XCTAssertEqual(result.ignoredCount, 1)
+        XCTAssertEqual(try cursor.load(), 6)
     }
 
     func testBaselineConsumesPendingUpdatesWithoutSending() throws {

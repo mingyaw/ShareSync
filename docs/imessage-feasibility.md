@@ -34,7 +34,11 @@ for Messages Automation permission on first use.
 
 On first enablement, pending bot updates are baselined and ignored. The update
 cursor and at most 1,000 reply routes persist locally so the app can resume after
-a restart. Reset removes both stores. Reply polling runs only while ShareSync is
+a restart. A separate durable reply-delivery ledger is written before invoking
+Messages Automation. If cursor persistence fails after a successful send, the
+pending ledger entry prevents an ambiguous retry from sending the same iMessage
+twice; a known Automation send failure removes the entry so the update can be
+retried. Reset removes all three stores. Reply polling runs only while ShareSync is
 running and automatic Telegram polling is enabled, or when the user checks
 manually.
 

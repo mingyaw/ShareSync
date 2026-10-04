@@ -257,20 +257,26 @@ public struct TelegramReplyProcessor {
     private let cursorStore: any TelegramUpdateCursorStoring
     private let routeStore: any TelegramReplyRouteStoring
     private let sender: any IMessageReplySending
+    private let deliveryLedger: any MessageDeliveryLedgerStore
     private let authorizedPrivateChatID: String
+    private let now: () -> Date
 
     public init(
         updates: any TelegramBotUpdateFetching,
         cursorStore: any TelegramUpdateCursorStoring,
         routeStore: any TelegramReplyRouteStoring,
         sender: any IMessageReplySending,
-        authorizedPrivateChatID: String
+        authorizedPrivateChatID: String,
+        deliveryLedger: any MessageDeliveryLedgerStore = InMemoryMessageDeliveryLedgerStore(),
+        now: @escaping () -> Date = Date.init
     ) {
         self.updates = updates
         self.cursorStore = cursorStore
         self.routeStore = routeStore
         self.sender = sender
+        self.deliveryLedger = deliveryLedger
         self.authorizedPrivateChatID = authorizedPrivateChatID
+        self.now = now
     }
 
     public func establishBaseline() throws {
@@ -296,7 +302,20 @@ public struct TelegramReplyProcessor {
                 try cursorStore.save(nextOffset)
                 continue
             }
-            try sender.send(text: text, to: route.recipientHandle)
+            let deliveryKey = Self.deliveryKey(for: update)
+            if try deliveryLedger.record(for: deliveryKey) != nil {
+                ignored += 1
+                try cursorStore.save(nextOffset)
+                continue
+            }
+            try deliveryLedger.markPending(deliveryKey: deliveryKey, at: now())
+            do {
+                try sender.send(text: text, to: route.recipientHandle)
+            } catch {
+                try? deliveryLedger.remove(deliveryKey: deliveryKey)
+                throw error
+            }
+            try deliveryLedger.markDelivered(deliveryKey: deliveryKey, at: now())
             sent += 1
             try cursorStore.save(nextOffset)
         }
@@ -309,6 +328,10 @@ public struct TelegramReplyProcessor {
             sentCount: sent,
             ignoredCount: ignored
         )
+    }
+
+    static func deliveryKey(for update: TelegramBotUpdate) -> String {
+        "telegram-reply:\(update.chatID):\(update.updateID)"
     }
 }
 

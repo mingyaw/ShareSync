@@ -725,6 +725,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             try telegramAuditStore().clear()
             try telegramReplyRouteStore().clear()
             try telegramUpdateCursorStore().clear()
+            try telegramReplyDeliveryLedger().clear()
             telegramTokenDraft = ""
             telegramChatID = ""
             telegramAllowedSenderDraft = ""
@@ -913,6 +914,12 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         )
     }
 
+    private func telegramReplyDeliveryLedger() -> FileMessageDeliveryLedgerStore {
+        FileMessageDeliveryLedgerStore(
+            fileURL: bridgeSupportDirectory().appendingPathComponent("telegram-reply-delivery-ledger.json")
+        )
+    }
+
     private func telegramReplyProcessor(
         configuration: TelegramBotConfiguration,
         authorizedPrivateChatID: String,
@@ -923,7 +930,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             cursorStore: cursorStore,
             routeStore: telegramReplyRouteStore(),
             sender: MessagesAutomationSender(),
-            authorizedPrivateChatID: authorizedPrivateChatID
+            authorizedPrivateChatID: authorizedPrivateChatID,
+            deliveryLedger: telegramReplyDeliveryLedger()
         )
     }
 
