@@ -291,7 +291,7 @@ class MainActivity : ComponentActivity() {
 
     private fun refreshNotesBlocking() {
         currentNotes = SuspendBridge.runBlocking { noteRepository.allNotes() }
-            .sortedWith(compareByDescending<VersionedNote> { it.updatedAtEpochMillis }.thenBy { it.id })
+            .sortedWith(noteDisplayOrder())
         currentNoteSyncReceipt = runCatching { noteSyncReceiptStore.load() }.getOrNull()
     }
 
@@ -301,7 +301,7 @@ class MainActivity : ComponentActivity() {
         Thread {
             val notes = runCatching {
                 SuspendBridge.runBlocking { noteRepository.allNotes() }
-                    .sortedWith(compareByDescending<VersionedNote> { it.updatedAtEpochMillis }.thenBy { it.id })
+                    .sortedWith(noteDisplayOrder())
             }.getOrNull()
             val receipt = runCatching { noteSyncReceiptStore.load() }.getOrNull()
             runOnUiThread {
@@ -340,6 +340,11 @@ class MainActivity : ComponentActivity() {
             }
         }.start()
     }
+
+    private fun noteDisplayOrder(): Comparator<VersionedNote> =
+        compareByDescending<VersionedNote> { it.conflictOfNoteId != null }
+            .thenByDescending { it.updatedAtEpochMillis }
+            .thenBy { it.id }
 
     private fun deleteNote(note: VersionedNote) {
         Thread {

@@ -134,7 +134,9 @@ mutex serialize UI mutations with incoming network batches; a concurrent-write
 test verifies that no note is lost. A successful inbound Mac batch also writes
 an atomic, versioned Android receipt with the peer, batch, completion time, and
 merge counts. The Notes destination restores and displays that receipt after an
-app restart; invalid receipts never replace or erase the note database.
+app restart; invalid receipts never replace or erase the note database. Conflict
+copies are sorted first and carry an explicit badge and resolution guidance on
+both Android and macOS; resolving remains an intentional edit-and-delete action.
 
 Android 已透過需簽章的 `GET /v1/notes` 與 `POST /v1/notes` 提供此契約。`GET` 會以新
 batch ID 建立完整 repository 快照；`POST` 會驗證簽章裝置 ID 與批次來源相同，合併並
@@ -160,4 +162,5 @@ Android 現在也有正式的「記事」分頁，與簽章本機伺服器共用
 程序內 Repository provider 與 coroutine mutex 會序列化 UI 操作及網路批次，並以併發
 寫入測試確認記事不會遺失。成功接收 Mac 批次後，Android 也會原子寫入版本化收據，
 保存對端、batch、完成時間與合併統計；App 重啟後記事頁會還原並顯示此狀態。無效收據
-不會取代或清除記事資料庫。
+不會取代或清除記事資料庫。Android 與 macOS 都會將衝突副本排在前面，顯示明確徽章與
+處理說明；使用者確認內容後，以編輯及刪除多餘副本完成解決。

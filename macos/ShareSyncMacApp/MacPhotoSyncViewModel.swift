@@ -933,6 +933,9 @@ final class MacPhotoSyncViewModel: ObservableObject {
 
     private func refreshNoteCount() {
         notes = ((try? noteRepository.allNotes()) ?? []).sorted {
+            if ($0.conflictOfNoteId != nil) != ($1.conflictOfNoteId != nil) {
+                return $0.conflictOfNoteId != nil
+            }
             if $0.updatedAtEpochMillis != $1.updatedAtEpochMillis {
                 return $0.updatedAtEpochMillis > $1.updatedAtEpochMillis
             }

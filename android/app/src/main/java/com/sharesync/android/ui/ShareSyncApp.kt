@@ -326,11 +326,30 @@ private fun NotesPage(
                                 modifier = Modifier.weight(1f),
                                 verticalArrangement = Arrangement.spacedBy(3.dp),
                             ) {
-                                Text(
-                                    note.title.ifBlank { stringResource(R.string.notes_untitled) },
-                                    fontWeight = FontWeight.SemiBold,
-                                    maxLines = 1,
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    Text(
+                                        note.title.ifBlank { stringResource(R.string.notes_untitled) },
+                                        modifier = Modifier.weight(1f, fill = false),
+                                        fontWeight = FontWeight.SemiBold,
+                                        maxLines = 1,
+                                    )
+                                    if (note.conflictOfNoteId != null) {
+                                        Surface(
+                                            shape = RoundedCornerShape(4.dp),
+                                            color = MaterialTheme.colorScheme.errorContainer,
+                                        ) {
+                                            Text(
+                                                stringResource(R.string.notes_conflict_badge),
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                            )
+                                        }
+                                    }
+                                }
                                 Text(
                                     note.markdownBody.ifBlank { stringResource(R.string.notes_no_body) },
                                     style = MaterialTheme.typography.bodySmall,
@@ -374,6 +393,13 @@ private fun NotesPage(
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    if (editingNote?.conflictOfNoteId != null) {
+                        Text(
+                            stringResource(R.string.notes_conflict_help),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
                     OutlinedTextField(
                         value = draftTitle,
                         onValueChange = { draftTitle = it },

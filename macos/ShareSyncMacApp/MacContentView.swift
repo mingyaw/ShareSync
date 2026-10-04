@@ -316,9 +316,19 @@ struct MacContentView: View {
                 showingNoteEditor = true
             } label: {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(note.title.isEmpty ? String(localized: "mac.notes.untitled") : note.title)
-                        .fontWeight(.medium)
-                        .lineLimit(1)
+                    HStack(spacing: 7) {
+                        Text(note.title.isEmpty ? String(localized: "mac.notes.untitled") : note.title)
+                            .fontWeight(.medium)
+                            .lineLimit(1)
+                        if note.conflictOfNoteId != nil {
+                            Text("mac.notes.conflict_badge")
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(MacBrand.handoff)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(MacBrand.handoff.opacity(0.12), in: RoundedRectangle(cornerRadius: 4))
+                        }
+                    }
                     Text(note.markdownBody.isEmpty ? String(localized: "mac.notes.no_body") : note.markdownBody)
                         .font(.callout)
                         .foregroundStyle(.secondary)
@@ -742,6 +752,11 @@ private struct NoteEditorSheet: View {
                     Text("mac.notes.editor.subtitle")
                         .font(.callout)
                         .foregroundStyle(.secondary)
+                    if note?.conflictOfNoteId != nil {
+                        Label("mac.notes.conflict_help", systemImage: "exclamationmark.triangle.fill")
+                            .font(.callout)
+                            .foregroundStyle(MacBrand.handoff)
+                    }
                 }
                 Spacer()
                 Image(systemName: "note.text")
