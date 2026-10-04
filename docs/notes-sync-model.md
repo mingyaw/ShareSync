@@ -104,10 +104,24 @@ Android now exposes the contract through signed `GET /v1/notes` and
 batch ID; `POST` verifies that the signed device ID matches the batch source,
 merges all revisions, persists the result, and returns aggregate merge counts.
 The production composition stores notes atomically in
-`filesDir/ShareSync/notes-v1.json`. Mac transport and product UI remain the next
-milestones.
+`filesDir/ShareSync/notes-v1.json`.
+
+`ShareSyncMac` now compiles the shared note model directly and provides a
+manual bidirectional sync action. One cycle resolves the paired Android
+endpoint, downloads and merges its signed snapshot, then uploads the complete
+merged Mac snapshot with the same device-scoped credential. The app keeps note
+status separate from photo transfer status, persists notes under Application
+Support, and retains them when the Android pairing is removed. The Android HTTP
+reader consumes request bodies by UTF-8 byte length, so CJK note content matches
+the signed bytes and is not truncated.
 
 Android 已透過需簽章的 `GET /v1/notes` 與 `POST /v1/notes` 提供此契約。`GET` 會以新
 batch ID 建立完整 repository 快照；`POST` 會驗證簽章裝置 ID 與批次來源相同，合併並
 持久化所有 revision，再回傳彙總結果。正式組裝使用
-`filesDir/ShareSync/notes-v1.json` 原子寫入；Mac 傳輸與產品 UI 是下一階段。
+`filesDir/ShareSync/notes-v1.json` 原子寫入。
+
+`ShareSyncMac` 現已直接編譯共用記事模型，並提供手動雙向同步。每次同步會解析已綁定
+Android 端點、下載並合併簽章快照，再以相同裝置憑證回推 Mac 合併後的完整快照。記事
+狀態與照片傳輸狀態彼此獨立，資料保存在 Application Support，解除 Android 配對時也
+不會刪除。Android HTTP 讀取器依 UTF-8 位元組長度接收 body，因此繁中記事不會被截斷，
+簽章內容也能保持一致。

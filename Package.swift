@@ -21,11 +21,12 @@ let package = Package(
     targets: [
         .target(
             name: "ShareSync",
+            dependencies: ["ShareSyncNotes"],
             path: "ios/ShareSync"
         ),
         .testTarget(
             name: "ShareSyncTests",
-            dependencies: ["ShareSync"],
+            dependencies: ["ShareSync", "ShareSyncNotes"],
             path: "Tests/ShareSyncTests"
         ),
         .target(

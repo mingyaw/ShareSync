@@ -22,6 +22,15 @@
 "mac.photos.available" = "可用";
 "mac.photos.saved" = "已存入此 Mac";
 "mac.photos.remaining" = "尚未同步";
+"mac.notes.title" = "共享記事";
+"mac.notes.local" = "此 Mac 上的記事";
+"mac.notes.items" = "則有效記事";
+"mac.notes.sync" = "同步記事";
+"mac.notes.detail" = "雙向合併 Android 與 Mac 記事，資料不經過雲端中繼。";
+"mac.notes.syncing" = "正在合併 Android 與 Mac 記事...";
+"mac.notes.updated" = "本次更新";
+"mac.notes.conflicts" = "已保留衝突";
+"mac.notes.error" = "無法同步記事，請保持 Android 的 ShareSync 開啟後再試一次。";
 "mac.action.refresh" = "重新整理照片";
 "mac.action.stop" = "停止傳輸";
 "mac.action.pair" = "配對";

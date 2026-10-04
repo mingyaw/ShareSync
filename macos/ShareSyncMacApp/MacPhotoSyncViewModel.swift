@@ -27,6 +27,13 @@ final class MacPhotoSyncViewModel: ObservableObject {
         case failed(String)
     }
 
+    enum NoteSyncState: Equatable {
+        case idle
+        case syncing
+        case completed(Date, changedCount: Int, conflictCount: Int)
+        case failed(String)
+    }
+
     @Published var pairingPayload = ""
     @Published var host = ""
     @Published var port = "48291"
@@ -42,6 +49,8 @@ final class MacPhotoSyncViewModel: ObservableObject {
     @Published private(set) var batchProgress: BatchProgress?
     @Published private(set) var completionReturnState: CompletionReturnState = .none
     @Published private(set) var recentSyncHistory: [SyncHistorySummary] = []
+    @Published private(set) var noteSyncState: NoteSyncState = .idle
+    @Published private(set) var noteCount = 0
     @Published var keepRunning: Bool {
         didSet { defaults.set(keepRunning, forKey: MacPreferenceKeys.keepRunning) }
     }
@@ -72,6 +81,8 @@ final class MacPhotoSyncViewModel: ObservableObject {
     private let resultClient: SyncResultClient
     private let deviceUnregistrationClient: DeviceUnregistrationClient
     private let syncEventStore: SyncEventStore
+    private let noteSyncClient: NoteSyncClient
+    private let noteRepository: NoteRepository
     private let discovery: LocalPeerDiscovery
     private let nearbyDiscovery: NearbyPeerDiscovery
     private let endpointResolver: PairedEndpointResolver
@@ -81,6 +92,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
     private let planner = M0PhotoTransferPlanner()
     private var pairingToken: String?
     private var syncTask: Task<Void, Never>?
+    private var noteSyncTask: Task<Void, Never>?
     private var scheduledSyncTask: Task<Void, Never>?
     private var nearbyDiscoveryTask: Task<Void, Never>?
     private var pairingSetupTask: Task<Void, Never>?
@@ -96,6 +108,8 @@ final class MacPhotoSyncViewModel: ObservableObject {
         resultClient: SyncResultClient = SyncResultClient(),
         deviceUnregistrationClient: DeviceUnregistrationClient = DeviceUnregistrationClient(),
         syncEventStore: SyncEventStore = FileSyncEventStore(),
+        noteSyncClient: NoteSyncClient = NoteSyncClient(),
+        noteRepository: NoteRepository? = nil,
         discovery: LocalPeerDiscovery? = nil,
         nearbyDiscovery: NearbyPeerDiscovery? = nil,
         endpointResolver: PairedEndpointResolver = PairedEndpointResolver(),
@@ -120,17 +134,21 @@ final class MacPhotoSyncViewModel: ObservableObject {
         self.resultClient = resultClient
         self.deviceUnregistrationClient = deviceUnregistrationClient
         self.syncEventStore = syncEventStore
+        self.noteSyncClient = noteSyncClient
         self.discovery = discovery ?? BonjourLocalPeerDiscovery()
         self.nearbyDiscovery = nearbyDiscovery ?? BonjourNearbyPeerDiscovery()
         self.endpointResolver = endpointResolver
         self.targetDeviceId = targetDeviceId
+        self.noteRepository = noteRepository ?? Self.makeNoteRepository(deviceID: targetDeviceId)
         self.pairingListener = pairingListener
         restorePairing()
         restoreSyncHistory()
+        refreshNoteCount()
         restartScheduledSync()
     }
 
     var isPaired: Bool { pairedDevice != nil }
+    var isNoteSyncing: Bool { noteSyncState == .syncing }
     var isBusy: Bool {
         switch phase {
         case .connecting, .loadingPhotos, .downloading, .importing:
@@ -346,6 +364,46 @@ final class MacPhotoSyncViewModel: ObservableObject {
         startFreshSync(limit: Int.max)
     }
 
+    func syncNotes() {
+        guard isPaired, !isNoteSyncing else { return }
+        noteSyncState = .syncing
+        noteSyncTask?.cancel()
+        noteSyncTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let endpoint = try await self.resolvedEndpoint()
+                guard let signingContext = self.signingContext else {
+                    throw NoteSyncClientError.unacceptableStatusCode(401)
+                }
+                let result = try await self.noteSyncClient.synchronize(
+                    repository: self.noteRepository,
+                    host: endpoint.host,
+                    port: endpoint.port,
+                    signingContext: RequestSigningContext(
+                        deviceId: signingContext.deviceId,
+                        sessionId: "mac-notes-v1",
+                        secret: signingContext.secret
+                    ),
+                    transportSecurity: self.pairedDevice?.transportSecurity
+                )
+                guard !Task.isCancelled else { return }
+                self.persist(endpoint: endpoint)
+                self.refreshNoteCount()
+                let changed = result.pullMerge.acceptedRemoteCount + result.pullMerge.conflictCount
+                self.noteSyncState = .completed(
+                    Date(),
+                    changedCount: changed,
+                    conflictCount: result.pullMerge.conflictCount
+                )
+            } catch is CancellationError {
+                self.noteSyncState = .idle
+            } catch {
+                self.noteSyncState = .failed(self.text("mac.notes.error"))
+            }
+            self.noteSyncTask = nil
+        }
+    }
+
     private func syncScheduledBatch() {
         let limit = scheduledBatchLimit == 0 ? Int.max : scheduledBatchLimit
         startFreshSync(limit: limit)
@@ -396,6 +454,9 @@ final class MacPhotoSyncViewModel: ObservableObject {
         lastSyncedFileName = nil
         batchProgress = nil
         phase = .ready
+        noteSyncTask?.cancel()
+        noteSyncTask = nil
+        noteSyncState = .idle
     }
 
     private func acceptAndroidPairing(_ data: Data) {
@@ -786,6 +847,20 @@ final class MacPhotoSyncViewModel: ObservableObject {
             sessionId: "mac-photo-mvp",
             secret: pairingToken
         )
+    }
+
+    private func refreshNoteCount() {
+        noteCount = ((try? noteRepository.createSyncBatch(batchID: "local-count").notes) ?? [])
+            .filter { !$0.isDeleted }
+            .count
+    }
+
+    private static func makeNoteRepository(deviceID: String) -> NoteRepository {
+        do {
+            return try NoteRepository(store: FileNoteStore(), deviceID: deviceID)
+        } catch {
+            preconditionFailure("Mac device identity must be valid: \(error)")
+        }
     }
 
     private func text(_ key: String) -> String {

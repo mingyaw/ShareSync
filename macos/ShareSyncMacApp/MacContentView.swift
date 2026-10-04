@@ -151,6 +151,7 @@ struct MacContentView: View {
             VStack(alignment: .leading, spacing: 30) {
                 statusHeader
                 photoOverview
+                notesOverview
                 transferProgress
                 primaryAction
                 completionReturnStatus
@@ -204,6 +205,90 @@ struct MacContentView: View {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(.separator.opacity(0.7), lineWidth: 1)
             }
+        }
+    }
+
+    private var notesOverview: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("mac.notes.title")
+                .font(.headline)
+
+            HStack(spacing: 14) {
+                Image(systemName: "note.text")
+                    .font(.title3)
+                    .foregroundStyle(MacBrand.vault)
+                    .frame(width: 38, height: 38)
+                    .background(MacBrand.vault.opacity(0.1), in: RoundedRectangle(cornerRadius: 7))
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("mac.notes.local")
+                        .fontWeight(.medium)
+                    HStack(spacing: 5) {
+                        Text(model.noteCount.formatted())
+                            .monospacedDigit()
+                        Text("mac.notes.items")
+                    }
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                if model.isNoteSyncing {
+                    ProgressView()
+                        .controlSize(.small)
+                } else {
+                    Button {
+                        model.syncNotes()
+                    } label: {
+                        Label("mac.notes.sync", systemImage: "arrow.triangle.2.circlepath")
+                    }
+                    .disabled(!model.isPaired)
+                }
+            }
+            .padding(16)
+            .background(.background, in: RoundedRectangle(cornerRadius: 8))
+            .overlay {
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(.separator.opacity(0.7), lineWidth: 1)
+            }
+
+            noteSyncStatus
+        }
+    }
+
+    @ViewBuilder
+    private var noteSyncStatus: some View {
+        switch model.noteSyncState {
+        case .idle:
+            Text("mac.notes.detail")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        case .syncing:
+            Text("mac.notes.syncing")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        case .completed(let date, let changedCount, let conflictCount):
+            HStack(spacing: 6) {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(MacBrand.vault)
+                Text("mac.notes.updated")
+                Text(changedCount.formatted())
+                    .monospacedDigit()
+                if conflictCount > 0 {
+                    Text("mac.notes.conflicts")
+                    Text(conflictCount.formatted())
+                        .monospacedDigit()
+                }
+                Spacer()
+                Text(date, style: .relative)
+                    .foregroundStyle(.secondary)
+            }
+            .font(.callout)
+        case .failed(let message):
+            Label(message, systemImage: "exclamationmark.triangle.fill")
+                .font(.callout)
+                .foregroundStyle(MacBrand.handoff)
         }
     }
 

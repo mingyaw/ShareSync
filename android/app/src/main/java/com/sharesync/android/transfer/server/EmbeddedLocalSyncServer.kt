@@ -1,9 +1,8 @@
 package com.sharesync.android.transfer.server
 
 import com.sharesync.android.scanner.media.MediaStreamProvider
-import java.io.BufferedReader
+import java.io.ByteArrayOutputStream
 import java.io.InputStream
-import java.io.InputStreamReader
 import java.io.OutputStream
 import java.net.ServerSocket
 import java.net.Socket
@@ -65,9 +64,8 @@ class EmbeddedLocalSyncServer(
     }
 
     private fun handleClient(socket: Socket) {
-        val reader = BufferedReader(InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8))
-        val requestLine = reader.readLine() ?: return writeNotFound(socket.getOutputStream())
-        val request = HttpRequest.parse(requestLine, reader) ?: return writeNotFound(socket.getOutputStream())
+        val request = HttpRequest.parse(socket.getInputStream())
+            ?: return writeNotFound(socket.getOutputStream())
 
         when {
             request.method == "GET" && request.path == "/v1/health" -> {
@@ -290,7 +288,7 @@ class EmbeddedLocalSyncServer(
         }
     }
 
-    private data class HttpRequest(
+    internal data class HttpRequest(
         val method: String,
         val path: String,
         val queryParameters: Map<String, String>,
@@ -298,14 +296,42 @@ class EmbeddedLocalSyncServer(
         val body: String,
     ) {
         companion object {
-            fun parse(requestLine: String, reader: BufferedReader): HttpRequest? {
+            private const val MAX_HEADER_BYTES = 64 * 1024
+            private const val MAX_BODY_BYTES = 8 * 1024 * 1024
+
+            fun parse(input: InputStream): HttpRequest? {
+                val headerBytes = ByteArrayOutputStream()
+                var delimiterProgress = 0
+                while (headerBytes.size() < MAX_HEADER_BYTES) {
+                    val byte = input.read()
+                    if (byte < 0) return null
+                    headerBytes.write(byte)
+                    delimiterProgress = when {
+                        delimiterProgress == 0 && byte == '\r'.code -> 1
+                        delimiterProgress == 1 && byte == '\n'.code -> 2
+                        delimiterProgress == 2 && byte == '\r'.code -> 3
+                        delimiterProgress == 3 && byte == '\n'.code -> 4
+                        byte == '\r'.code -> 1
+                        else -> 0
+                    }
+                    if (delimiterProgress == 4) break
+                }
+                if (delimiterProgress != 4) return null
+
+                val headerBlock = headerBytes.toByteArray()
+                val headerText = String(
+                    headerBlock,
+                    0,
+                    headerBlock.size - 4,
+                    StandardCharsets.ISO_8859_1,
+                )
+                val lines = headerText.split("\r\n")
+                val requestLine = lines.firstOrNull() ?: return null
                 val parts = requestLine.split(" ")
                 if (parts.size < 2) return null
 
                 val headers = mutableMapOf<String, String>()
-                while (true) {
-                    val line = reader.readLine() ?: break
-                    if (line.isEmpty()) break
+                lines.drop(1).forEach { line ->
                     val name = line.substringBefore(":", missingDelimiterValue = "").trim()
                     val value = line.substringAfter(":", missingDelimiterValue = "").trim()
                     if (name.isNotEmpty()) {
@@ -327,16 +353,17 @@ class EmbeddedLocalSyncServer(
                         name to value
                     }
                     .toMap()
-                val contentLength = headers["content-length"]?.toIntOrNull()?.coerceAtLeast(0) ?: 0
+                val contentLength = headers["content-length"]?.toIntOrNull() ?: 0
+                if (contentLength !in 0..MAX_BODY_BYTES) return null
                 val body = if (contentLength > 0) {
-                    val chars = CharArray(contentLength)
+                    val bytes = ByteArray(contentLength)
                     var offset = 0
                     while (offset < contentLength) {
-                        val read = reader.read(chars, offset, contentLength - offset)
-                        if (read < 0) break
+                        val read = input.read(bytes, offset, contentLength - offset)
+                        if (read < 0) return null
                         offset += read
                     }
-                    String(chars, 0, offset)
+                    String(bytes, StandardCharsets.UTF_8)
                 } else {
                     ""
                 }

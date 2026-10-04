@@ -32,6 +32,12 @@
 		A1000000000000000000001F /* ManifestClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001F /* ManifestClient.swift */; };
 		A10000000000000000000020 /* MediaDownloadState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000020 /* MediaDownloadState.swift */; };
 		A10000000000000000000021 /* MediaDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000021 /* MediaDownloader.swift */; };
+		A10000000000000000000022 /* NoteModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000022 /* NoteModels.swift */; };
+		A10000000000000000000023 /* NoteJSONCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000023 /* NoteJSONCodec.swift */; };
+		A10000000000000000000024 /* NoteMergePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000024 /* NoteMergePolicy.swift */; };
+		A10000000000000000000025 /* NoteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000025 /* NoteStore.swift */; };
+		A10000000000000000000026 /* NoteSyncBatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000026 /* NoteSyncBatch.swift */; };
+		A10000000000000000000027 /* NoteSyncClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000027 /* NoteSyncClient.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -64,6 +70,12 @@
 		A2000000000000000000001F /* ManifestClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ManifestClient.swift; path = ../ios/ShareSync/Transfer/ManifestClient.swift; sourceTree = SOURCE_ROOT; };
 		A20000000000000000000020 /* MediaDownloadState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MediaDownloadState.swift; path = ../ios/ShareSync/Transfer/MediaDownloadState.swift; sourceTree = SOURCE_ROOT; };
 		A20000000000000000000021 /* MediaDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MediaDownloader.swift; path = ../ios/ShareSync/Transfer/MediaDownloader.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000022 /* NoteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NoteModels.swift; path = ShareSyncNotes/NoteModels.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000023 /* NoteJSONCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NoteJSONCodec.swift; path = ShareSyncNotes/NoteJSONCodec.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000024 /* NoteMergePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NoteMergePolicy.swift; path = ShareSyncNotes/NoteMergePolicy.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000025 /* NoteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NoteStore.swift; path = ShareSyncNotes/NoteStore.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000026 /* NoteSyncBatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NoteSyncBatch.swift; path = ShareSyncNotes/NoteSyncBatch.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000027 /* NoteSyncClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NoteSyncClient.swift; path = ../ios/ShareSync/Transfer/NoteSyncClient.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -123,6 +135,12 @@
 				A2000000000000000000001F /* ManifestClient.swift */,
 				A20000000000000000000020 /* MediaDownloadState.swift */,
 				A20000000000000000000021 /* MediaDownloader.swift */,
+				A20000000000000000000022 /* NoteModels.swift */,
+				A20000000000000000000023 /* NoteJSONCodec.swift */,
+				A20000000000000000000024 /* NoteMergePolicy.swift */,
+				A20000000000000000000025 /* NoteStore.swift */,
+				A20000000000000000000026 /* NoteSyncBatch.swift */,
+				A20000000000000000000027 /* NoteSyncClient.swift */,
 			);
 			name = SharedCore;
 			sourceTree = "<group>";
@@ -229,6 +247,12 @@
 				A1000000000000000000001F /* ManifestClient.swift in Sources */,
 				A10000000000000000000020 /* MediaDownloadState.swift in Sources */,
 				A10000000000000000000021 /* MediaDownloader.swift in Sources */,
+				A10000000000000000000022 /* NoteModels.swift in Sources */,
+				A10000000000000000000023 /* NoteJSONCodec.swift in Sources */,
+				A10000000000000000000024 /* NoteMergePolicy.swift in Sources */,
+				A10000000000000000000025 /* NoteStore.swift in Sources */,
+				A10000000000000000000026 /* NoteSyncBatch.swift in Sources */,
+				A10000000000000000000027 /* NoteSyncClient.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

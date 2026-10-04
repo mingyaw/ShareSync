@@ -22,6 +22,15 @@
 "mac.photos.available" = "Available";
 "mac.photos.saved" = "Saved on this Mac";
 "mac.photos.remaining" = "Remaining";
+"mac.notes.title" = "Shared notes";
+"mac.notes.local" = "Notes on this Mac";
+"mac.notes.items" = "active notes";
+"mac.notes.sync" = "Sync notes";
+"mac.notes.detail" = "Merge notes in both directions without sending them through a cloud relay.";
+"mac.notes.syncing" = "Merging Android and Mac notes...";
+"mac.notes.updated" = "Updated";
+"mac.notes.conflicts" = "Conflicts preserved";
+"mac.notes.error" = "Notes could not be synchronized. Keep ShareSync open on Android and try again.";
 "mac.action.refresh" = "Refresh photos";
 "mac.action.stop" = "Stop transfer";
 "mac.action.pair" = "Pair";

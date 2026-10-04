@@ -229,6 +229,18 @@ public final class NoteRepository {
         )
     }
 
+    public func createSyncBatch(
+        batchID: String,
+        generatedAtEpochMillis: Int64? = nil
+    ) throws -> NoteSyncBatch {
+        try NoteSyncBatch(
+            batchId: batchID,
+            sourceDeviceId: deviceID,
+            generatedAtEpochMillis: generatedAtEpochMillis ?? now(),
+            notes: store.all()
+        )
+    }
+
     private func requireCurrent(id: String, expectedRevision: NoteRevision) throws -> VersionedNote {
         guard let current = try store.note(id: id) else { throw NoteStoreError.noteNotFound(id) }
         guard current.revision == expectedRevision else { throw NoteStoreError.staleRevision }
