@@ -140,6 +140,8 @@ both Android and macOS; resolving remains an intentional edit-and-delete action.
 Note snapshots are capped at 8 MiB in both directions. macOS rejects an
 oversized snapshot before upload or immediately after download, while Android
 returns `413 SS-NOTES-413` before reading an oversized request body.
+Both product surfaces search active notes locally across title, body, and tags;
+searching does not alter sync payloads or tombstone retention.
 
 Android 已透過需簽章的 `GET /v1/notes` 與 `POST /v1/notes` 提供此契約。`GET` 會以新
 batch ID 建立完整 repository 快照；`POST` 會驗證簽章裝置 ID 與批次來源相同，合併並
@@ -169,3 +171,5 @@ Android 現在也有正式的「記事」分頁，與簽章本機伺服器共用
 處理說明；使用者確認內容後，以編輯及刪除多餘副本完成解決。雙向記事快照上限為
 8 MiB；macOS 會在上傳前或下載後拒絕超限資料，Android 則在讀取超限 request body 前
 回傳 `413 SS-NOTES-413`。
+兩端產品介面皆可在本機依標題、內容與標籤搜尋有效記事；搜尋不會修改同步快照或
+tombstone 保留規則。

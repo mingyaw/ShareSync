@@ -193,6 +193,9 @@
     <string name="notes_sync_summary">上次同步 %1$s · %2$d 筆變更 · %3$d 筆衝突</string>
     <string name="notes_conflict_badge">衝突副本</string>
     <string name="notes_conflict_help">此副本保留同時編輯的內容。請與原記事比較、整理要保留的內容，再刪除多餘副本。</string>
+    <string name="notes_search">搜尋記事</string>
+    <string name="notes_search_clear">清除搜尋</string>
+    <string name="notes_search_empty">找不到符合的記事。</string>
     <string name="notes_saved">記事已儲存</string>
     <string name="notes_deleted">記事已刪除</string>
     <string name="notes_save_failed">此記事在儲存前已變更，請重新開啟後再試一次。</string>

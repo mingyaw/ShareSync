@@ -8,6 +8,7 @@ struct MacContentView: View {
     @State private var showingNoteEditor = false
     @State private var editingNote: VersionedNote?
     @State private var notePendingDeletion: VersionedNote?
+    @State private var noteSearchQuery = ""
 
     var body: some View {
         HStack(spacing: 0) {
@@ -286,8 +287,20 @@ struct MacContentView: View {
             }
 
             if !model.notes.isEmpty {
+                TextField("mac.notes.search", text: $noteSearchQuery)
+                    .textFieldStyle(.roundedBorder)
+
+                if filteredNotes.isEmpty {
+                    Text("mac.notes.search_empty")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+
+            if !filteredNotes.isEmpty {
                 VStack(spacing: 0) {
-                    ForEach(Array(model.notes.prefix(4).enumerated()), id: \.element.id) { index, note in
+                    ForEach(Array(filteredNotes.prefix(4).enumerated()), id: \.element.id) { index, note in
                         if index > 0 { Divider() }
                         noteRow(note)
                     }
@@ -305,6 +318,16 @@ struct MacContentView: View {
                     .font(.callout)
                     .foregroundStyle(MacBrand.handoff)
             }
+        }
+    }
+
+    private var filteredNotes: [VersionedNote] {
+        let query = noteSearchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return model.notes }
+        return model.notes.filter { note in
+            note.title.localizedStandardContains(query) ||
+                note.markdownBody.localizedStandardContains(query) ||
+                note.tags.contains { $0.localizedStandardContains(query) }
         }
     }
 

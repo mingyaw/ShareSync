@@ -32,6 +32,8 @@
 "mac.notes.conflicts" = "Conflicts preserved";
 "mac.notes.conflict_badge" = "Conflict copy";
 "mac.notes.conflict_help" = "Compare this preserved edit with the original note, keep the content you need, then delete the extra copy.";
+"mac.notes.search" = "Search titles, text, and tags";
+"mac.notes.search_empty" = "No notes match this search.";
 "mac.notes.error" = "Notes could not be synchronized. Keep ShareSync open on Android and try again.";
 "mac.notes.new" = "New note";
 "mac.notes.delete" = "Delete note";

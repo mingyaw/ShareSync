@@ -230,6 +230,19 @@ private fun NotesPage(
     var draftTitle by remember { mutableStateOf("") }
     var draftBody by remember { mutableStateOf("") }
     var draftTags by remember { mutableStateOf("") }
+    var searchQuery by remember { mutableStateOf("") }
+    val visibleNotes = remember(notes, searchQuery) {
+        val query = searchQuery.trim()
+        if (query.isEmpty()) {
+            notes
+        } else {
+            notes.filter { note ->
+                note.title.contains(query, ignoreCase = true) ||
+                    note.markdownBody.contains(query, ignoreCase = true) ||
+                    note.tags.any { it.contains(query, ignoreCase = true) }
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -298,11 +311,36 @@ private fun NotesPage(
             }
         }
 
+        if (notes.isNotEmpty()) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.notes_search)) },
+                singleLine = true,
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(
+                                painterResource(R.drawable.ic_action_close),
+                                contentDescription = stringResource(R.string.notes_search_clear),
+                            )
+                        }
+                    }
+                },
+            )
+        }
+
         if (notes.isEmpty()) {
             HorizontalDivider()
             SectionHeading(stringResource(R.string.notes_empty_title))
             Text(
                 stringResource(R.string.notes_empty_body),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else if (visibleNotes.isEmpty()) {
+            Text(
+                stringResource(R.string.notes_search_empty),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         } else {
@@ -313,7 +351,7 @@ private fun NotesPage(
                 tonalElevation = 1.dp,
             ) {
                 Column {
-                    notes.forEachIndexed { index, note ->
+                    visibleNotes.forEachIndexed { index, note ->
                         if (index > 0) HorizontalDivider(modifier = Modifier.padding(start = 20.dp))
                         Row(
                             modifier = Modifier

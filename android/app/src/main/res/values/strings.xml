@@ -193,6 +193,9 @@
     <string name="notes_sync_summary">Last synced %1$s · %2$d changed · %3$d conflicts</string>
     <string name="notes_conflict_badge">Conflict copy</string>
     <string name="notes_conflict_help">This copy preserves a simultaneous edit. Compare it with the original note, keep the content you need, then delete the extra copy.</string>
+    <string name="notes_search">Search notes</string>
+    <string name="notes_search_clear">Clear search</string>
+    <string name="notes_search_empty">No notes match this search.</string>
     <string name="notes_saved">Note saved</string>
     <string name="notes_deleted">Note deleted</string>
     <string name="notes_save_failed">The note changed before it could be saved. Open it again and retry.</string>
