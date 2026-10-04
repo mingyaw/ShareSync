@@ -97,11 +97,14 @@
     <string name="privacy_storage">本機資料：這支手機會儲存裝置識別、配對狀態與照片完成紀錄。清除紀錄不會刪除照片。</string>
     <string name="ui_nav_sync">同步</string>
     <string name="ui_nav_activity">紀錄</string>
+    <string name="ui_nav_notes">記事</string>
     <string name="ui_nav_settings">設定</string>
     <string name="ui_sync_title">照片同步</string>
     <string name="ui_sync_subtitle">iPhone 接收 Android 照片時，請保持此畫面準備就緒。</string>
     <string name="ui_activity_title">同步紀錄</string>
     <string name="ui_activity_subtitle">查看已完成傳輸，以及可能需要處理的照片。</string>
+    <string name="ui_notes_title">共享記事</string>
+    <string name="ui_notes_subtitle">在 Android 記錄，並透過區域網路與 Mac 合併變更。</string>
     <string name="ui_settings_title">設定</string>
     <string name="ui_settings_subtitle">管理本機連線、隱私與支援工具。</string>
     <string name="ui_recent_activity">最近照片同步</string>
@@ -170,4 +173,21 @@
     <string name="settings_privacy">隱私與資料</string>
     <string name="settings_private_transfer">私密本機傳輸</string>
     <string name="settings_local_data">儲存在這支手機的資料</string>
+    <string name="notes_empty_title">共享記事從這裡開始</string>
+    <string name="notes_empty_body">先在 Android 建立記事，再從 Mac 的 ShareSync 執行同步。</string>
+    <string name="notes_new">新增記事</string>
+    <string name="notes_edit">編輯記事</string>
+    <string name="notes_delete">刪除記事</string>
+    <string name="notes_delete_confirm">刪除此記事，並在下次同步時將刪除狀態傳到 Mac？</string>
+    <string name="notes_title_hint">標題</string>
+    <string name="notes_body_hint">記事內容</string>
+    <string name="notes_tags_hint">標籤，以逗號分隔</string>
+    <string name="notes_save">儲存</string>
+    <string name="notes_cancel">取消</string>
+    <string name="notes_untitled">未命名</string>
+    <string name="notes_no_body">沒有其他內容</string>
+    <string name="notes_local_only">變更會保存在此手機，直到 Mac 執行記事同步。</string>
+    <string name="notes_saved">記事已儲存</string>
+    <string name="notes_deleted">記事已刪除</string>
+    <string name="notes_save_failed">此記事在儲存前已變更，請重新開啟後再試一次。</string>
 </resources>

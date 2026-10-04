@@ -20,6 +20,12 @@ enum class MainDestination(
         R.string.ui_nav_activity,
         R.drawable.ic_nav_activity,
     ),
+    NOTES(
+        R.string.ui_notes_title,
+        R.string.ui_notes_subtitle,
+        R.string.ui_nav_notes,
+        R.drawable.ic_nav_notes,
+    ),
     SETTINGS(
         R.string.ui_settings_title,
         R.string.ui_settings_subtitle,

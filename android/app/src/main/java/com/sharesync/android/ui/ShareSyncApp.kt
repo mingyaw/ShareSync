@@ -11,11 +11,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -25,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -34,8 +37,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.painterResource
@@ -43,6 +49,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sharesync.android.R
+import com.sharesync.android.notes.VersionedNote
+import kotlinx.coroutines.delay
 
 data class HistoryUiItem(val date: String, val completed: Int, val failed: Int)
 
@@ -73,6 +81,7 @@ fun ShareSyncApp(
     home: PhotoSyncHomeUiState,
     activity: ActivityUiState,
     settings: SettingsUiState,
+    notes: List<VersionedNote>,
     feedbackMessage: String?,
     onFeedbackShown: () -> Unit,
     onDestinationChange: (MainDestination) -> Unit,
@@ -91,6 +100,9 @@ fun ShareSyncApp(
     onSelectGateway: (String) -> Unit,
     onRemoveGateway: (String) -> Unit,
     onToggleAdvanced: () -> Unit,
+    onSaveNote: (VersionedNote?, String, String, List<String>) -> Unit,
+    onDeleteNote: (VersionedNote) -> Unit,
+    onRefreshNotes: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(feedbackMessage) {
@@ -171,6 +183,12 @@ fun ShareSyncApp(
                             state = activity,
                             onOpenSync = { onDestinationChange(MainDestination.SYNC) },
                         )
+                        MainDestination.NOTES -> NotesPage(
+                            notes = notes,
+                            onSaveNote = onSaveNote,
+                            onDeleteNote = onDeleteNote,
+                            onRefreshNotes = onRefreshNotes,
+                        )
                         MainDestination.SETTINGS -> SettingsPage(
                             state = settings,
                             onStart = onStart,
@@ -190,6 +208,196 @@ fun ShareSyncApp(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun NotesPage(
+    notes: List<VersionedNote>,
+    onSaveNote: (VersionedNote?, String, String, List<String>) -> Unit,
+    onDeleteNote: (VersionedNote) -> Unit,
+    onRefreshNotes: () -> Unit,
+) {
+    var editingNote by remember { mutableStateOf<VersionedNote?>(null) }
+    var showEditor by remember { mutableStateOf(false) }
+    var pendingDeletion by remember { mutableStateOf<VersionedNote?>(null) }
+    var draftTitle by remember { mutableStateOf("") }
+    var draftBody by remember { mutableStateOf("") }
+    var draftTags by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            onRefreshNotes()
+            delay(2_000)
+        }
+    }
+
+    fun openEditor(note: VersionedNote?) {
+        editingNote = note
+        draftTitle = note?.title.orEmpty()
+        draftBody = note?.markdownBody.orEmpty()
+        draftTags = note?.tags?.joinToString(", ").orEmpty()
+        showEditor = true
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                stringResource(R.string.ui_notes_subtitle),
+                modifier = Modifier.weight(1f),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.size(12.dp))
+            Button(onClick = { openEditor(null) }) {
+                Text(stringResource(R.string.notes_new))
+            }
+        }
+
+        if (notes.isEmpty()) {
+            HorizontalDivider()
+            SectionHeading(stringResource(R.string.notes_empty_title))
+            Text(
+                stringResource(R.string.notes_empty_body),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 1.dp,
+            ) {
+                Column {
+                    notes.forEachIndexed { index, note ->
+                        if (index > 0) HorizontalDivider(modifier = Modifier.padding(start = 20.dp))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { openEditor(note) }
+                                .padding(start = 20.dp, top = 14.dp, bottom = 14.dp, end = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(3.dp),
+                            ) {
+                                Text(
+                                    note.title.ifBlank { stringResource(R.string.notes_untitled) },
+                                    fontWeight = FontWeight.SemiBold,
+                                    maxLines = 1,
+                                )
+                                Text(
+                                    note.markdownBody.ifBlank { stringResource(R.string.notes_no_body) },
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 2,
+                                )
+                                if (note.tags.isNotEmpty()) {
+                                    Text(
+                                        note.tags.joinToString(" · "),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        maxLines = 1,
+                                    )
+                                }
+                            }
+                            IconButton(onClick = { pendingDeletion = note }) {
+                                Icon(
+                                    painterResource(R.drawable.ic_action_delete),
+                                    contentDescription = stringResource(R.string.notes_delete),
+                                    tint = MaterialTheme.colorScheme.error,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Text(
+            stringResource(R.string.notes_local_only),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+
+    if (showEditor) {
+        AlertDialog(
+            onDismissRequest = { showEditor = false },
+            title = {
+                Text(stringResource(if (editingNote == null) R.string.notes_new else R.string.notes_edit))
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedTextField(
+                        value = draftTitle,
+                        onValueChange = { draftTitle = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(stringResource(R.string.notes_title_hint)) },
+                        singleLine = true,
+                    )
+                    OutlinedTextField(
+                        value = draftBody,
+                        onValueChange = { draftBody = it },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 140.dp),
+                        label = { Text(stringResource(R.string.notes_body_hint)) },
+                        minLines = 5,
+                        maxLines = 10,
+                    )
+                    OutlinedTextField(
+                        value = draftTags,
+                        onValueChange = { draftTags = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(stringResource(R.string.notes_tags_hint)) },
+                        singleLine = true,
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = draftTitle.isNotBlank() || draftBody.isNotBlank(),
+                    onClick = {
+                        onSaveNote(
+                            editingNote,
+                            draftTitle,
+                            draftBody,
+                            draftTags.split(",").map(String::trim).filter(String::isNotEmpty),
+                        )
+                        showEditor = false
+                    },
+                ) { Text(stringResource(R.string.notes_save)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditor = false }) {
+                    Text(stringResource(R.string.notes_cancel))
+                }
+            },
+        )
+    }
+
+    pendingDeletion?.let { note ->
+        AlertDialog(
+            onDismissRequest = { pendingDeletion = null },
+            title = { Text(stringResource(R.string.notes_delete)) },
+            text = { Text(stringResource(R.string.notes_delete_confirm)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDeleteNote(note)
+                        pendingDeletion = null
+                    },
+                ) { Text(stringResource(R.string.notes_delete), color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDeletion = null }) {
+                    Text(stringResource(R.string.notes_cancel))
+                }
+            },
+        )
     }
 }
 

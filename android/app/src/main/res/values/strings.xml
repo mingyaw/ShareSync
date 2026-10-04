@@ -97,11 +97,14 @@
     <string name="privacy_storage">Local data: this phone stores device identity, pairing state, and photo completion history. Clearing history does not delete photos.</string>
     <string name="ui_nav_sync">Sync</string>
     <string name="ui_nav_activity">Activity</string>
+    <string name="ui_nav_notes">Notes</string>
     <string name="ui_nav_settings">Settings</string>
     <string name="ui_sync_title">Photo sync</string>
     <string name="ui_sync_subtitle">Keep this screen ready while your iPhone receives Android photos.</string>
     <string name="ui_activity_title">Activity</string>
     <string name="ui_activity_subtitle">Review completed transfers and items that may need attention.</string>
+    <string name="ui_notes_title">Shared notes</string>
+    <string name="ui_notes_subtitle">Write on Android and merge changes with your Mac over the local network.</string>
     <string name="ui_settings_title">Settings</string>
     <string name="ui_settings_subtitle">Manage local connection, privacy, and support tools.</string>
     <string name="ui_recent_activity">Recent photo syncs</string>
@@ -170,4 +173,21 @@
     <string name="settings_privacy">Privacy &amp; data</string>
     <string name="settings_private_transfer">Private local transfer</string>
     <string name="settings_local_data">Data stored on this phone</string>
+    <string name="notes_empty_title">Your shared notes start here</string>
+    <string name="notes_empty_body">Create a note on Android, then sync from ShareSync on your Mac.</string>
+    <string name="notes_new">New note</string>
+    <string name="notes_edit">Edit note</string>
+    <string name="notes_delete">Delete note</string>
+    <string name="notes_delete_confirm">Delete this note and send the deletion to Mac on the next sync?</string>
+    <string name="notes_title_hint">Title</string>
+    <string name="notes_body_hint">Note</string>
+    <string name="notes_tags_hint">Tags, separated by commas</string>
+    <string name="notes_save">Save</string>
+    <string name="notes_cancel">Cancel</string>
+    <string name="notes_untitled">Untitled</string>
+    <string name="notes_no_body">No additional text</string>
+    <string name="notes_local_only">Changes remain on this phone until Mac runs note sync.</string>
+    <string name="notes_saved">Note saved</string>
+    <string name="notes_deleted">Note deleted</string>
+    <string name="notes_save_failed">The note changed before it could be saved. Open it again and retry.</string>
 </resources>

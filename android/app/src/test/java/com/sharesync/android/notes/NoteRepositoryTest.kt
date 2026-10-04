@@ -8,8 +8,54 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import java.util.concurrent.CountDownLatch
 
 class NoteRepositoryTest {
+    @Test
+    fun sharedRepositorySerializesConcurrentUiAndTransportWrites() {
+        val directory = File(System.getProperty("java.io.tmpdir"), "ShareSyncNoteProvider-${System.nanoTime()}")
+        val repository = NoteRepositoryProvider.get(directory, "android-primary")
+        val sameRepository = NoteRepositoryProvider.get(directory, "android-primary")
+        val start = CountDownLatch(1)
+        val threads = (1..20).map { index ->
+            Thread {
+                start.await()
+                SuspendBridge.runBlocking { repository.create("Note $index", "Body $index") }
+            }.apply(Thread::start)
+        }
+
+        try {
+            start.countDown()
+            threads.forEach(Thread::join)
+
+            assertTrue(repository === sameRepository)
+            assertEquals(20, SuspendBridge.runBlocking { repository.allNotes() }.size)
+        } finally {
+            FileNoteStore.defaultFile(directory).delete()
+            File(directory, "ShareSync").delete()
+            directory.delete()
+        }
+    }
+
+    @Test
+    fun allNotesHidesTombstonesByDefault() {
+        val store = InMemoryNoteStore()
+        val repository = NoteRepository(
+            store = store,
+            deviceId = "android-primary",
+            now = { 1_000L },
+            newId = { "note-001" },
+        )
+        val note = SuspendBridge.runBlocking { repository.create("Private", "Body") }
+        SuspendBridge.runBlocking { repository.delete(note.id, note.revision) }
+
+        assertTrue(SuspendBridge.runBlocking { repository.allNotes() }.isEmpty())
+        assertEquals(
+            listOf("note-001"),
+            SuspendBridge.runBlocking { repository.allNotes(includeDeleted = true) }.map(VersionedNote::id),
+        )
+    }
+
     @Test
     fun sharedFixtureUsesTheSameKotlinAndSwiftJsonContract() {
         val fixture = sharedFixture("sample-note-store.json")

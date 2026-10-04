@@ -4,8 +4,7 @@ import android.content.Context
 import com.sharesync.android.scanner.media.MediaStoreMediaScanner
 import com.sharesync.android.scanner.media.MediaStreamProvider
 import com.sharesync.android.pairing.PairingRegistrationWindow
-import com.sharesync.android.notes.FileNoteStore
-import com.sharesync.android.notes.NoteRepository
+import com.sharesync.android.notes.NoteRepositoryProvider
 import com.sharesync.android.security.SharedPreferencesDeviceCredentialStore
 import com.sharesync.android.sync.FileSyncEventStore
 import com.sharesync.android.sync.FileSyncResultStore
@@ -73,8 +72,8 @@ class PhotoSyncComponents private constructor(
                 )
             }
             val requestActivityTracker = LocalRequestActivityTracker()
-            val noteRepository = NoteRepository(
-                store = FileNoteStore(FileNoteStore.defaultFile(context.applicationContext.filesDir)),
+            val noteRepository = NoteRepositoryProvider.get(
+                filesDir = context.applicationContext.filesDir,
                 deviceId = deviceId,
             )
 

@@ -22,6 +22,9 @@ import com.sharesync.android.pairing.MacPairingCallbackClient
 import com.sharesync.android.pairing.MacPairingOffer
 import com.sharesync.android.pairing.MacPairingOfferParser
 import com.sharesync.android.pairing.PairingPayloadPersonalizer
+import com.sharesync.android.notes.NoteRepository
+import com.sharesync.android.notes.NoteRepositoryProvider
+import com.sharesync.android.notes.VersionedNote
 import com.sharesync.android.runtime.PhotoSharingCoordinator
 import com.sharesync.android.runtime.PhotoSharingCoordinatorEvent
 import com.sharesync.android.runtime.PhotoSharingSnapshot
@@ -52,6 +55,7 @@ import java.time.format.FormatStyle
 class MainActivity : ComponentActivity() {
     private lateinit var sharingCoordinator: PhotoSharingCoordinator
     private lateinit var deviceCredentialStore: SharedPreferencesDeviceCredentialStore
+    private lateinit var noteRepository: NoteRepository
     private var isServerRunning = false
     private var isServerStarting = false
     private var currentServerPort: Int? = null
@@ -71,6 +75,8 @@ class MainActivity : ComponentActivity() {
     private var activityUiState by mutableStateOf(ActivityUiState())
     private var settingsUiState by mutableStateOf(SettingsUiState())
     private var feedbackMessage by mutableStateOf<String?>(null)
+    private var currentNotes by mutableStateOf<List<VersionedNote>>(emptyList())
+    @Volatile private var notesRefreshInFlight = false
     private var startSharingAfterPermission = false
     private var pendingMacPairingOffer: MacPairingOffer? = null
     private var macPairingCallbackInFlight = false
@@ -113,9 +119,13 @@ class MainActivity : ComponentActivity() {
             ?.getBoolean(STATE_ADVANCED_SUPPORT_EXPANDED)
             ?: false
         deviceCredentialStore = SharedPreferencesDeviceCredentialStore(applicationContext)
+        val deviceIdentityStore = SharedPreferencesDeviceIdentityStore(this)
+        val identity = SuspendBridge.runBlocking { deviceIdentityStore.getOrCreate() }
+        noteRepository = NoteRepositoryProvider.get(filesDir = filesDir, deviceId = identity.deviceId)
+        refreshNotesBlocking()
         sharingCoordinator = PhotoSharingCoordinator(
             context = applicationContext,
-            deviceIdentityStore = SharedPreferencesDeviceIdentityStore(this),
+            deviceIdentityStore = deviceIdentityStore,
             appVersion = BuildConfig.VERSION_NAME,
             onUpdate = { snapshot, event ->
                 window.decorView.post { handleCoordinatorUpdate(snapshot, event) }
@@ -155,9 +165,13 @@ class MainActivity : ComponentActivity() {
                         home = syncHomeState,
                         activity = activityUiState,
                         settings = settingsUiState,
+                        notes = currentNotes,
                         feedbackMessage = feedbackMessage,
                         onFeedbackShown = { feedbackMessage = null },
-                        onDestinationChange = { currentSection = it },
+                        onDestinationChange = {
+                            currentSection = it
+                            if (it == MainDestination.NOTES) refreshNotesAsync()
+                        },
                         onContinue = {
                             completeOnboarding()
                             requestPhotoPermissions()
@@ -179,6 +193,9 @@ class MainActivity : ComponentActivity() {
                             isAdvancedSupportExpanded = !isAdvancedSupportExpanded
                             refreshUi()
                         },
+                        onSaveNote = ::saveNote,
+                        onDeleteNote = ::deleteNote,
+                        onRefreshNotes = ::refreshNotesAsync,
                     )
                 }
             }
@@ -263,6 +280,67 @@ class MainActivity : ComponentActivity() {
         )
 
         updateKeepScreenAwake()
+    }
+
+    private fun refreshNotesBlocking() {
+        currentNotes = SuspendBridge.runBlocking { noteRepository.allNotes() }
+            .sortedWith(compareByDescending<VersionedNote> { it.updatedAtEpochMillis }.thenBy { it.id })
+    }
+
+    private fun refreshNotesAsync() {
+        if (notesRefreshInFlight) return
+        notesRefreshInFlight = true
+        Thread {
+            val notes = runCatching {
+                SuspendBridge.runBlocking { noteRepository.allNotes() }
+                    .sortedWith(compareByDescending<VersionedNote> { it.updatedAtEpochMillis }.thenBy { it.id })
+            }.getOrNull()
+            runOnUiThread {
+                if (notes != null) currentNotes = notes
+                notesRefreshInFlight = false
+            }
+        }.start()
+    }
+
+    private fun saveNote(
+        existing: VersionedNote?,
+        title: String,
+        markdownBody: String,
+        tags: List<String>,
+    ) {
+        Thread {
+            val result = runCatching {
+                SuspendBridge.runBlocking {
+                    if (existing == null) {
+                        noteRepository.create(title.trim(), markdownBody, tags)
+                    } else {
+                        noteRepository.update(
+                            id = existing.id,
+                            expectedRevision = existing.revision,
+                            title = title.trim(),
+                            markdownBody = markdownBody,
+                            tags = tags,
+                        )
+                    }
+                }
+            }
+            runOnUiThread {
+                refreshNotesAsync()
+                refreshUi(getString(if (result.isSuccess) R.string.notes_saved else R.string.notes_save_failed))
+            }
+        }.start()
+    }
+
+    private fun deleteNote(note: VersionedNote) {
+        Thread {
+            val result = runCatching {
+                SuspendBridge.runBlocking { noteRepository.delete(note.id, note.revision) }
+            }
+            runOnUiThread {
+                refreshNotesAsync()
+                refreshUi(getString(if (result.isSuccess) R.string.notes_deleted else R.string.notes_save_failed))
+            }
+        }.start()
     }
 
     private fun requestPhotoPermissions() {

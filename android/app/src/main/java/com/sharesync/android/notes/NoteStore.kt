@@ -1,9 +1,12 @@
 package com.sharesync.android.notes
 
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 interface NoteStore {
     suspend fun all(): List<VersionedNote>
@@ -27,7 +30,7 @@ class FileNoteStore(
     private val file: File,
     private val codec: NoteJsonCodec = NoteJsonCodec(),
 ) : NoteStore {
-    private val lock = Any()
+    private val lock = fileLocks.computeIfAbsent(file.absoluteFile.normalize().path) { Any() }
 
     override suspend fun all(): List<VersionedNote> = synchronized(lock) { readNotes() }
 
@@ -59,6 +62,8 @@ class FileNoteStore(
     }
 
     companion object {
+        private val fileLocks = ConcurrentHashMap<String, Any>()
+
         fun defaultFile(filesDir: File): File = File(File(filesDir, "ShareSync"), "notes-v1.json")
     }
 }
@@ -70,26 +75,29 @@ class NoteRepository(
     private val newId: () -> String = { UUID.randomUUID().toString() },
     private val mergePolicy: NoteMergePolicy = NoteMergePolicy(),
 ) {
+    private val operationMutex = Mutex()
+
     init {
         require(deviceId.isNotBlank()) { "Device ID must not be blank" }
     }
 
-    suspend fun create(title: String, markdownBody: String, tags: List<String> = emptyList()): VersionedNote {
-        val timestamp = now()
-        val note = VersionedNote(
-            id = newId(),
-            title = title,
-            markdownBody = markdownBody,
-            createdAtEpochMillis = timestamp,
-            updatedAtEpochMillis = timestamp,
-            tags = tags.normalizedNoteTags(),
-            revision = NoteRevision(1, deviceId),
-            parentRevision = null,
-            deletedAtEpochMillis = null,
-        )
-        put(note)
-        return note
-    }
+    suspend fun create(title: String, markdownBody: String, tags: List<String> = emptyList()): VersionedNote =
+        operationMutex.withLock {
+            val timestamp = now()
+            val note = VersionedNote(
+                id = newId(),
+                title = title,
+                markdownBody = markdownBody,
+                createdAtEpochMillis = timestamp,
+                updatedAtEpochMillis = timestamp,
+                tags = tags.normalizedNoteTags(),
+                revision = NoteRevision(1, deviceId),
+                parentRevision = null,
+                deletedAtEpochMillis = null,
+            )
+            put(note)
+            note
+        }
 
     suspend fun update(
         id: String,
@@ -97,7 +105,7 @@ class NoteRepository(
         title: String,
         markdownBody: String,
         tags: List<String>,
-    ): VersionedNote {
+    ): VersionedNote = operationMutex.withLock {
         val current = requireCurrent(id, expectedRevision)
         require(!current.isDeleted) { "Deleted notes cannot be edited" }
         val updated = current.copy(
@@ -112,7 +120,7 @@ class NoteRepository(
         return updated
     }
 
-    suspend fun delete(id: String, expectedRevision: NoteRevision): VersionedNote {
+    suspend fun delete(id: String, expectedRevision: NoteRevision): VersionedNote = operationMutex.withLock {
         val current = requireCurrent(id, expectedRevision)
         if (current.isDeleted) return current
         val timestamp = now().coerceAtLeast(current.updatedAtEpochMillis)
@@ -129,7 +137,11 @@ class NoteRepository(
         return tombstone
     }
 
-    suspend fun mergeRemote(remote: VersionedNote): NoteMergeResult {
+    suspend fun mergeRemote(remote: VersionedNote): NoteMergeResult = operationMutex.withLock {
+        mergeRemoteUnlocked(remote)
+    }
+
+    private suspend fun mergeRemoteUnlocked(remote: VersionedNote): NoteMergeResult {
         val local = store.get(remote.id)
         if (local == null) {
             put(remote)
@@ -143,14 +155,14 @@ class NoteRepository(
         return result
     }
 
-    suspend fun mergeRemoteBatch(batch: NoteSyncBatch): NoteMergeBatchResult {
+    suspend fun mergeRemoteBatch(batch: NoteSyncBatch): NoteMergeBatchResult = operationMutex.withLock {
         var acceptedRemoteCount = 0
         var keptLocalCount = 0
         var unchangedCount = 0
         var conflictCount = 0
         var conflictCopyCount = 0
         batch.notes.sortedWith(compareBy(VersionedNote::id, VersionedNote::revision)).forEach { note ->
-            val result = mergeRemote(note)
+            val result = mergeRemoteUnlocked(note)
             when (result.status) {
                 NoteMergeStatus.acceptedRemote -> acceptedRemoteCount++
                 NoteMergeStatus.keptLocal -> keptLocalCount++
@@ -168,11 +180,16 @@ class NoteRepository(
         )
     }
 
+    suspend fun allNotes(includeDeleted: Boolean = false): List<VersionedNote> = operationMutex.withLock {
+        val notes = store.all()
+        if (includeDeleted) notes else notes.filterNot(VersionedNote::isDeleted)
+    }
+
     suspend fun createSyncBatch(
         batchId: String,
         generatedAtEpochMillis: Long = now(),
-    ): NoteSyncBatch {
-        return NoteSyncBatch(
+    ): NoteSyncBatch = operationMutex.withLock {
+        NoteSyncBatch(
             batchId = batchId,
             sourceDeviceId = deviceId,
             generatedAtEpochMillis = generatedAtEpochMillis,
@@ -190,5 +207,17 @@ class NoteRepository(
         val notes = store.all().associateBy(VersionedNote::id).toMutableMap()
         notes[note.id] = note
         store.replace(notes.values.toList())
+    }
+}
+
+object NoteRepositoryProvider {
+    private val repositories = ConcurrentHashMap<String, NoteRepository>()
+
+    fun get(filesDir: File, deviceId: String): NoteRepository {
+        val file = FileNoteStore.defaultFile(filesDir).absoluteFile.normalize()
+        val key = "${file.path}|$deviceId"
+        return repositories.computeIfAbsent(key) {
+            NoteRepository(store = FileNoteStore(file), deviceId = deviceId)
+        }
     }
 }
