@@ -26,6 +26,31 @@ class NoteRepositoryTest {
     }
 
     @Test
+    fun sharedSyncBatchFixtureUsesTheSameKotlinAndSwiftContract() {
+        val fixture = sharedFixture("sample-note-sync-batch.json")
+        val codec = NoteSyncBatchCodec()
+
+        val batch = codec.decode(fixture.readText())
+        val roundTripped = codec.decode(codec.encode(batch))
+
+        assertEquals("notes-20261004-001", batch.batchId)
+        assertEquals("android-primary", batch.sourceDeviceId)
+        assertEquals(1, batch.notes.size)
+        assertEquals(batch, roundTripped)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun syncBatchRejectsDuplicateNoteIds() {
+        val note = note(revision = NoteRevision(1, "android-primary"))
+        NoteSyncBatch(
+            batchId = "duplicate",
+            sourceDeviceId = "android-primary",
+            generatedAtEpochMillis = 1,
+            notes = listOf(note, note),
+        )
+    }
+
+    @Test
     fun localMutationsCreateRevisionLineageAndTombstone() {
         val store = InMemoryNoteStore()
         var timestamp = 1_000L
@@ -205,6 +230,34 @@ class NoteRepositoryTest {
         assertEquals(NoteMergeStatus.acceptedRemote, result.status)
         assertEquals(remote, SuspendBridge.runBlocking { store.get(remote.id) })
         assertNull(result.conflictCopy)
+    }
+
+    @Test
+    fun batchMergeReportsDeterministicAggregateResult() {
+        val base = note(revision = NoteRevision(1, "android-primary"))
+        val descendant = base.copy(
+            title = "Mac update",
+            revision = NoteRevision(2, "mac-studio"),
+            parentRevision = base.revision,
+        )
+        val newNote = base.copy(id = "note-002")
+        val store = InMemoryNoteStore(listOf(base))
+        val repository = NoteRepository(store, "android-primary")
+        val batch = NoteSyncBatch(
+            batchId = "batch-001",
+            sourceDeviceId = "mac-studio",
+            generatedAtEpochMillis = 2_000,
+            notes = listOf(newNote, descendant),
+        )
+
+        val result = SuspendBridge.runBlocking { repository.mergeRemoteBatch(batch) }
+
+        assertEquals(2, result.acceptedRemoteCount)
+        assertEquals(0, result.keptLocalCount)
+        assertEquals(0, result.unchangedCount)
+        assertEquals(0, result.conflictCount)
+        assertEquals(0, result.conflictCopyCount)
+        assertEquals(listOf("note-001", "note-002"), SuspendBridge.runBlocking { store.all() }.map { it.id })
     }
 
     private fun note(

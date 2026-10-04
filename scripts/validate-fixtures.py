@@ -246,6 +246,27 @@ def validate_note_store():
     print("ok fixture: shared/fixtures/sample-note-store.json")
 
 
+def validate_note_sync_batch():
+    batch = load_json(FIXTURES / "sample-note-sync-batch.json")
+    require_keys(
+        "sample-note-sync-batch",
+        batch,
+        ["schemaVersion", "batchId", "sourceDeviceId", "generatedAtEpochMillis", "notes"],
+    )
+    assert batch["schemaVersion"] == 1
+    assert batch["batchId"]
+    assert batch["sourceDeviceId"]
+    assert batch["generatedAtEpochMillis"] >= 0
+    assert isinstance(batch["notes"], list)
+    note_ids = [note["id"] for note in batch["notes"]]
+    assert len(note_ids) == len(set(note_ids))
+    validate_fixture_against_schema(
+        "sample-note-sync-batch.json",
+        "note-sync-batch.schema.json",
+    )
+    print("ok fixture: shared/fixtures/sample-note-sync-batch.json")
+
+
 def validate_support_snapshot(fixture_name: str, expected_platform: str):
     snapshot = load_json(FIXTURES / fixture_name)
     require_keys(
@@ -288,6 +309,7 @@ def main():
     validate_manifest()
     validate_sync_result()
     validate_note_store()
+    validate_note_sync_batch()
     validate_support_snapshot("sample-support-snapshot-android.json", "android")
     validate_support_snapshot("sample-support-snapshot-ios.json", "ios")
 

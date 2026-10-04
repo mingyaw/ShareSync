@@ -143,6 +143,31 @@ class NoteRepository(
         return result
     }
 
+    suspend fun mergeRemoteBatch(batch: NoteSyncBatch): NoteMergeBatchResult {
+        var acceptedRemoteCount = 0
+        var keptLocalCount = 0
+        var unchangedCount = 0
+        var conflictCount = 0
+        var conflictCopyCount = 0
+        batch.notes.sortedWith(compareBy(VersionedNote::id, VersionedNote::revision)).forEach { note ->
+            val result = mergeRemote(note)
+            when (result.status) {
+                NoteMergeStatus.acceptedRemote -> acceptedRemoteCount++
+                NoteMergeStatus.keptLocal -> keptLocalCount++
+                NoteMergeStatus.unchanged -> unchangedCount++
+                NoteMergeStatus.conflict -> conflictCount++
+            }
+            if (result.conflictCopy != null) conflictCopyCount++
+        }
+        return NoteMergeBatchResult(
+            acceptedRemoteCount = acceptedRemoteCount,
+            keptLocalCount = keptLocalCount,
+            unchangedCount = unchangedCount,
+            conflictCount = conflictCount,
+            conflictCopyCount = conflictCopyCount,
+        )
+    }
+
     private suspend fun requireCurrent(id: String, expectedRevision: NoteRevision): VersionedNote {
         val current = requireNotNull(store.get(id)) { "Note not found: $id" }
         require(current.revision == expectedRevision) { "The note changed since it was loaded" }

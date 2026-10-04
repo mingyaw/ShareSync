@@ -40,6 +40,40 @@ final class NoteCompatibilityTests: XCTestCase {
         }
     }
 
+    func testSharedSyncBatchFixtureRoundTripsWithoutChangingContract() throws {
+        let fixture = try fixtureData("sample-note-sync-batch", extension: "json")
+        let codec = NoteSyncBatchCodec()
+
+        let batch = try codec.decode(fixture)
+        let encoded = try codec.encode(batch)
+
+        XCTAssertEqual(batch.batchId, "notes-20261004-001")
+        XCTAssertEqual(batch.sourceDeviceId, "android-primary")
+        XCTAssertEqual(batch.notes.count, 1)
+        XCTAssertEqual(
+            try JSONSerialization.jsonObject(with: encoded) as? NSDictionary,
+            try JSONSerialization.jsonObject(with: fixture) as? NSDictionary
+        )
+    }
+
+    func testSyncBatchRejectsDuplicateNoteIDs() throws {
+        let note = try NoteSyncBatchCodec()
+            .decode(fixtureData("sample-note-sync-batch", extension: "json"))
+            .notes[0]
+
+        XCTAssertThrowsError(try NoteSyncBatch(
+            batchId: "duplicate",
+            sourceDeviceId: "android-primary",
+            generatedAtEpochMillis: 1,
+            notes: [note, note]
+        )) {
+            XCTAssertEqual(
+                $0 as? NoteSyncBatchError,
+                .duplicateNoteID("3c348be6-01af-4d16-93cf-ddb1d27de133")
+            )
+        }
+    }
+
     private func fixtureData(_ name: String, extension fileExtension: String) throws -> Data {
         let root = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()

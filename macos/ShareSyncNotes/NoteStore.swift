@@ -210,6 +210,25 @@ public final class NoteRepository {
         return result
     }
 
+    public func mergeRemoteBatch(_ batch: NoteSyncBatch) throws -> NoteMergeBatchResult {
+        var counts: [NoteMergeStatus: Int] = [:]
+        var conflictCopyCount = 0
+        for note in batch.notes.sorted(by: {
+            $0.id == $1.id ? $0.revision < $1.revision : $0.id < $1.id
+        }) {
+            let result = try mergeRemote(note)
+            counts[result.status, default: 0] += 1
+            if result.conflictCopy != nil { conflictCopyCount += 1 }
+        }
+        return NoteMergeBatchResult(
+            acceptedRemoteCount: counts[.acceptedRemote, default: 0],
+            keptLocalCount: counts[.keptLocal, default: 0],
+            unchangedCount: counts[.unchanged, default: 0],
+            conflictCount: counts[.conflict, default: 0],
+            conflictCopyCount: conflictCopyCount
+        )
+    }
+
     private func requireCurrent(id: String, expectedRevision: NoteRevision) throws -> VersionedNote {
         guard let current = try store.note(id: id) else { throw NoteStoreError.noteNotFound(id) }
         guard current.revision == expectedRevision else { throw NoteStoreError.staleRevision }

@@ -81,3 +81,27 @@ macOS 的本機 revision 使用 `MacNoteDeviceIdentity` 所提供、持久化於
 `mac-<uuid>` device ID。衝突副本 ID 精確沿用 Android 的 Java UUID v3 算法：對
 `sharesync-note-conflict|<note-id>|<sorted-revision-pair>` 的 UTF-8 bytes 計算 MD5 並設定
 RFC 4122 version/variant bits，因此兩端不論合併順序都會產生相同 ID。
+
+## Snapshot exchange / 快照交換
+
+The first transport contract is `NoteSyncBatch` schema version 1. It carries a
+non-empty batch ID, source device ID, generation time, and a unique set of full
+note revisions including tombstones. Encoders sort notes by stable ID, and
+decoders reject duplicate IDs before merging. Repositories merge the batch in a
+deterministic order and return aggregate accepted, kept, unchanged, conflict,
+and conflict-copy counts. The contract is validated by
+`shared/fixtures/sample-note-sync-batch.json` on Kotlin, Swift, and the shared
+fixture gate.
+
+第一版傳輸契約為 `NoteSyncBatch` schema version 1，包含非空白 batch ID、來源裝置 ID、
+產生時間，以及 ID 唯一的完整記事 revision（包含 tombstone）。編碼時依穩定 ID 排序，
+解碼時會在合併前拒絕重複 ID。Repository 以固定順序合併整批資料，並回報接受、保留、
+未變更、衝突與衝突副本數量。Kotlin、Swift 與共用 fixture gate 都使用
+`shared/fixtures/sample-note-sync-batch.json` 驗證此契約。
+
+This milestone defines payload semantics only. Network endpoints must reuse the
+existing paired-device authentication and signed local transport before any
+note body is exposed over the LAN.
+
+此里程碑只定義 payload 語意；任何區網 endpoint 在提供記事本文前，必須沿用既有裝置
+綁定驗證與簽章本機傳輸。

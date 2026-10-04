@@ -16,6 +16,14 @@ data class NoteMergeResult(
     val conflictCopy: VersionedNote? = null,
 )
 
+data class NoteMergeBatchResult(
+    val acceptedRemoteCount: Int,
+    val keptLocalCount: Int,
+    val unchangedCount: Int,
+    val conflictCount: Int,
+    val conflictCopyCount: Int,
+)
+
 class NoteMergePolicy {
     fun merge(local: VersionedNote, remote: VersionedNote): NoteMergeResult {
         require(local.id == remote.id) { "Only revisions of the same note can be merged" }

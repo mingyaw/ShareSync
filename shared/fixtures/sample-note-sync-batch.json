@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "batchId": "notes-20261004-001",
+  "sourceDeviceId": "android-primary",
+  "generatedAtEpochMillis": 1791072000000,
+  "notes": [
+    {
+      "schemaVersion": 1,
+      "id": "3c348be6-01af-4d16-93cf-ddb1d27de133",
+      "title": "Mac bridge plan",
+      "markdownBody": "# Next\n\nConnect over the local network.",
+      "createdAtEpochMillis": 1790841600000,
+      "updatedAtEpochMillis": 1790841660000,
+      "tags": ["planning", "sharesync"],
+      "revision": {
+        "sequence": 2,
+        "deviceId": "android-primary"
+      },
+      "parentRevision": {
+        "sequence": 1,
+        "deviceId": "android-primary"
+      },
+      "deletedAtEpochMillis": null,
+      "conflictOfNoteId": null
+    }
+  ]
+}

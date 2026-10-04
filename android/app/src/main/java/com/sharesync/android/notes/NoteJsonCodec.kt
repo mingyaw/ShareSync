@@ -4,6 +4,10 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 class NoteJsonCodec {
+    internal fun encodeNote(note: VersionedNote): JSONObject = note.toJson()
+
+    internal fun decodeNote(json: JSONObject): VersionedNote = json.toNote()
+
     fun encode(notes: List<VersionedNote>): String {
         return JSONObject()
             .put("schemaVersion", STORE_SCHEMA_VERSION)

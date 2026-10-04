@@ -1,7 +1,7 @@
 import CryptoKit
 import Foundation
 
-public enum NoteMergeStatus: Equatable, Sendable {
+public enum NoteMergeStatus: Hashable, Sendable {
     case unchanged
     case acceptedRemote
     case keptLocal
@@ -18,6 +18,14 @@ public struct NoteMergeResult: Equatable, Sendable {
         self.primary = primary
         self.conflictCopy = conflictCopy
     }
+}
+
+public struct NoteMergeBatchResult: Equatable, Sendable {
+    public let acceptedRemoteCount: Int
+    public let keptLocalCount: Int
+    public let unchangedCount: Int
+    public let conflictCount: Int
+    public let conflictCopyCount: Int
 }
 
 public enum NoteMergeError: Error, Equatable {

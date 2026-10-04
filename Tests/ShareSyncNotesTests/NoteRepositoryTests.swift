@@ -188,6 +188,36 @@ final class NoteRepositoryTests: XCTestCase {
         XCTAssertTrue(first.hasPrefix("mac-"))
     }
 
+    func testBatchMergeReportsDeterministicAggregateResult() throws {
+        let base = try makeNote(revision: NoteRevision(sequence: 1, deviceId: "android-primary"))
+        let descendant = try base.replacing(
+            title: "Mac update",
+            revision: NoteRevision(sequence: 2, deviceId: "mac-studio"),
+            parentRevision: .some(base.revision)
+        )
+        let newNote = try base.replacing(
+            id: "note-002",
+            revision: NoteRevision(sequence: 1, deviceId: "android-primary")
+        )
+        let store = InMemoryNoteStore(initialNotes: [base])
+        let repository = try NoteRepository(store: store, deviceID: "mac-studio")
+        let batch = try NoteSyncBatch(
+            batchId: "batch-001",
+            sourceDeviceId: "android-primary",
+            generatedAtEpochMillis: 2_000,
+            notes: [newNote, descendant]
+        )
+
+        let result = try repository.mergeRemoteBatch(batch)
+
+        XCTAssertEqual(result.acceptedRemoteCount, 2)
+        XCTAssertEqual(result.keptLocalCount, 0)
+        XCTAssertEqual(result.unchangedCount, 0)
+        XCTAssertEqual(result.conflictCount, 0)
+        XCTAssertEqual(result.conflictCopyCount, 0)
+        XCTAssertEqual(store.all().map(\.id), ["note-001", "note-002"])
+    }
+
     private func makeNote(
         revision: NoteRevision,
         parent: NoteRevision? = nil,
