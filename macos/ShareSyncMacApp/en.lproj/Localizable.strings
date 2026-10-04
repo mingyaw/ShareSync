@@ -99,6 +99,7 @@
 "mac.settings.connection" = "Connection fallback";
 "mac.settings.automation" = "Automatic sync";
 "mac.settings.automatic_sync" = "Check for new photos automatically";
+"mac.settings.automatic_notes" = "Include shared notes";
 "mac.settings.interval" = "Check interval";
 "mac.settings.interval.5" = "Every 5 minutes";
 "mac.settings.interval.15" = "Every 15 minutes";

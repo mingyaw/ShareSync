@@ -99,6 +99,7 @@
 "mac.settings.connection" = "連線備援";
 "mac.settings.automation" = "自動同步";
 "mac.settings.automatic_sync" = "自動檢查新照片";
+"mac.settings.automatic_notes" = "一併同步共享記事";
 "mac.settings.interval" = "檢查頻率";
 "mac.settings.interval.5" = "每 5 分鐘";
 "mac.settings.interval.15" = "每 15 分鐘";

@@ -71,6 +71,9 @@ final class MacPhotoSyncViewModel: ObservableObject {
     @Published var scheduledBatchLimit: Int {
         didSet { defaults.set(scheduledBatchLimit, forKey: MacPreferenceKeys.batchLimit) }
     }
+    @Published var automaticNoteSyncEnabled: Bool {
+        didSet { defaults.set(automaticNoteSyncEnabled, forKey: MacPreferenceKeys.automaticNoteSync) }
+    }
     @Published private(set) var nextScheduledSyncAt: Date?
 
     private let manifestClient: ManifestClient
@@ -126,6 +129,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
         self.scheduledSyncIntervalMinutes = [5, 15, 30, 60].contains(storedInterval) ? storedInterval : 15
         let storedBatchLimit = defaults.object(forKey: MacPreferenceKeys.batchLimit) as? Int ?? 50
         self.scheduledBatchLimit = [0, 25, 50, 100].contains(storedBatchLimit) ? storedBatchLimit : 50
+        self.automaticNoteSyncEnabled = defaults.object(forKey: MacPreferenceKeys.automaticNoteSync) as? Bool ?? true
         self.manifestClient = manifestClient
         self.healthClient = healthClient
         self.downloader = downloader
@@ -368,40 +372,10 @@ final class MacPhotoSyncViewModel: ObservableObject {
 
     func syncNotes() {
         guard isPaired, !isNoteSyncing else { return }
-        noteSyncState = .syncing
         noteSyncTask?.cancel()
         noteSyncTask = Task { [weak self] in
             guard let self else { return }
-            do {
-                let endpoint = try await self.resolvedEndpoint()
-                guard let signingContext = self.signingContext else {
-                    throw NoteSyncClientError.unacceptableStatusCode(401)
-                }
-                let result = try await self.noteSyncClient.synchronize(
-                    repository: self.noteRepository,
-                    host: endpoint.host,
-                    port: endpoint.port,
-                    signingContext: RequestSigningContext(
-                        deviceId: signingContext.deviceId,
-                        sessionId: "mac-notes-v1",
-                        secret: signingContext.secret
-                    ),
-                    transportSecurity: self.pairedDevice?.transportSecurity
-                )
-                guard !Task.isCancelled else { return }
-                self.persist(endpoint: endpoint)
-                self.refreshNoteCount()
-                let changed = result.pullMerge.acceptedRemoteCount + result.pullMerge.conflictCount
-                self.noteSyncState = .completed(
-                    Date(),
-                    changedCount: changed,
-                    conflictCount: result.pullMerge.conflictCount
-                )
-            } catch is CancellationError {
-                self.noteSyncState = .idle
-            } catch {
-                self.noteSyncState = .failed(self.text("mac.notes.error"))
-            }
+            await self.performNoteSync()
             self.noteSyncTask = nil
         }
     }
@@ -467,8 +441,47 @@ final class MacPhotoSyncViewModel: ObservableObject {
         guard !isBusy, isPaired else { return }
         batchProgress = nil
         syncTask = Task {
-            guard await loadManifest() else { return }
-            await transferPhotos(limit: limit)
+            if await loadManifest() {
+                await transferPhotos(limit: limit)
+            }
+            if automaticNoteSyncEnabled && !Task.isCancelled {
+                await performNoteSync()
+            }
+        }
+    }
+
+    private func performNoteSync() async {
+        guard isPaired, !isNoteSyncing else { return }
+        noteSyncState = .syncing
+        do {
+            let endpoint = try await resolvedEndpoint()
+            guard let signingContext else {
+                throw NoteSyncClientError.unacceptableStatusCode(401)
+            }
+            let result = try await noteSyncClient.synchronize(
+                repository: noteRepository,
+                host: endpoint.host,
+                port: endpoint.port,
+                signingContext: RequestSigningContext(
+                    deviceId: signingContext.deviceId,
+                    sessionId: "mac-notes-v1",
+                    secret: signingContext.secret
+                ),
+                transportSecurity: pairedDevice?.transportSecurity
+            )
+            guard !Task.isCancelled else { return }
+            persist(endpoint: endpoint)
+            refreshNoteCount()
+            let changed = result.pullMerge.acceptedRemoteCount + result.pullMerge.conflictCount
+            noteSyncState = .completed(
+                Date(),
+                changedCount: changed,
+                conflictCount: result.pullMerge.conflictCount
+            )
+        } catch is CancellationError {
+            noteSyncState = .idle
+        } catch {
+            noteSyncState = .failed(text("mac.notes.error"))
         }
     }
 

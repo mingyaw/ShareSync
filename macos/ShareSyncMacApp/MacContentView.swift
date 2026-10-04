@@ -818,6 +818,9 @@ struct MacSettingsView: View {
             Section("mac.settings.automation") {
                 Toggle("mac.settings.automatic_sync", isOn: $model.automaticSyncEnabled)
 
+                Toggle("mac.settings.automatic_notes", isOn: $model.automaticNoteSyncEnabled)
+                    .disabled(!model.automaticSyncEnabled)
+
                 Picker("mac.settings.interval", selection: $model.scheduledSyncIntervalMinutes) {
                     Text("mac.settings.interval.5").tag(5)
                     Text("mac.settings.interval.15").tag(15)

@@ -5,6 +5,7 @@ enum MacPreferenceKeys {
     static let automaticSync = "mac.automaticSync"
     static let syncIntervalMinutes = "mac.syncIntervalMinutes"
     static let batchLimit = "mac.batchLimit"
+    static let automaticNoteSync = "mac.automaticNoteSync"
 }
 
 final class ShareSyncMacAppDelegate: NSObject, NSApplicationDelegate {

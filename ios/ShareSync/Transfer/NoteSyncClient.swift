@@ -33,6 +33,7 @@ final class NoteSyncClient {
     private let codec: NoteSyncBatchCodec
     private let batchIDProvider: () -> String
     private let clock: () -> Int64
+    private let retryDelayNanoseconds: UInt64
 
     init(
         session: ManifestFetchingSession? = nil,
@@ -41,20 +42,22 @@ final class NoteSyncClient {
         batchIDProvider: @escaping () -> String = { UUID().uuidString.lowercased() },
         clock: @escaping () -> Int64 = {
             Int64((Date().timeIntervalSince1970 * 1_000).rounded(.down))
-        }
+        },
+        retryDelayNanoseconds: UInt64 = 500_000_000
     ) {
         self.session = session
         self.requestSigner = requestSigner
         self.codec = codec
         self.batchIDProvider = batchIDProvider
         self.clock = clock
+        self.retryDelayNanoseconds = retryDelayNanoseconds
     }
 
     func fetchSnapshot(
         host: String,
         port: Int,
         signingContext: RequestSigningContext,
-        transportSecurity: PairingTransportSecurity? = nil
+        transportSecurity: PairingTransportSecurity? = nil,
     ) async throws -> NoteSyncBatch {
         var request = try makeRequest(
             host: host,
@@ -99,7 +102,33 @@ final class NoteSyncClient {
         host: String,
         port: Int,
         signingContext: RequestSigningContext,
-        transportSecurity: PairingTransportSecurity? = nil
+        transportSecurity: PairingTransportSecurity? = nil,
+        maximumAttempts: Int = 2
+    ) async throws -> NoteSyncCycleResult {
+        let attempts = max(1, maximumAttempts)
+        for attempt in 1...attempts {
+            do {
+                return try await synchronizeOnce(
+                    repository: repository,
+                    host: host,
+                    port: port,
+                    signingContext: signingContext,
+                    transportSecurity: transportSecurity
+                )
+            } catch {
+                guard attempt < attempts, Self.isRetryable(error) else { throw error }
+                try await Task.sleep(nanoseconds: retryDelayNanoseconds)
+            }
+        }
+        preconditionFailure("A note sync cycle must either return or throw")
+    }
+
+    private func synchronizeOnce(
+        repository: NoteRepository,
+        host: String,
+        port: Int,
+        signingContext: RequestSigningContext,
+        transportSecurity: PairingTransportSecurity?
     ) async throws -> NoteSyncCycleResult {
         let remoteBatch = try await fetchSnapshot(
             host: host,
@@ -125,6 +154,14 @@ final class NoteSyncClient {
             pullMerge: pullMerge,
             pushAcknowledgement: acknowledgement
         )
+    }
+
+    private static func isRetryable(_ error: Error) -> Bool {
+        if error is URLError { return true }
+        if case .unacceptableStatusCode(let statusCode)? = error as? NoteSyncClientError {
+            return (500...599).contains(statusCode)
+        }
+        return false
     }
 
     private func makeRequest(

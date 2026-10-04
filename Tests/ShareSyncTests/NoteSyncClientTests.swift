@@ -4,6 +4,48 @@ import XCTest
 @testable import ShareSync
 
 final class NoteSyncClientTests: XCTestCase {
+    func testSynchronizeRetriesTransientPostWithoutDuplicatingNotes() async throws {
+        let codec = NoteSyncBatchCodec()
+        let remoteBatch = try NoteSyncBatch(
+            batchId: "android-batch-001",
+            sourceDeviceId: "android-device-001",
+            generatedAtEpochMillis: 2_000,
+            notes: [try note(id: "android-note", deviceID: "android-device-001")]
+        )
+        let acknowledgement = Data(
+            #"{"status":"accepted","batchId":"mac-batch-001","acceptedRemoteCount":0,"keptLocalCount":0,"unchangedCount":1,"conflictCount":0,"conflictCopyCount":0}"#.utf8
+        )
+        let session = StubNoteSyncSession(
+            responses: [
+                (try codec.encode(remoteBatch), 200),
+                (Data(), 503),
+                (try codec.encode(remoteBatch), 200),
+                (acknowledgement, 202),
+            ]
+        )
+        let repository = try NoteRepository(store: InMemoryNoteStore(), deviceID: "mac-device-001")
+        let client = NoteSyncClient(
+            session: session,
+            batchIDProvider: { "mac-batch-001" },
+            retryDelayNanoseconds: 0
+        )
+
+        let result = try await client.synchronize(
+            repository: repository,
+            host: "192.168.1.10",
+            port: 48291,
+            signingContext: RequestSigningContext(
+                deviceId: "mac-device-001",
+                sessionId: "mac-notes-v1",
+                secret: "device-secret"
+            )
+        )
+
+        XCTAssertEqual(result.pushedBatchID, "mac-batch-001")
+        XCTAssertEqual(session.requests.map(\.httpMethod), ["GET", "POST", "GET", "POST"])
+        XCTAssertEqual(try repository.allNotes().map(\.id), ["android-note"])
+    }
+
     func testSynchronizePullsMergesAndPushesSignedSnapshot() async throws {
         let codec = NoteSyncBatchCodec()
         let remoteBatch = try NoteSyncBatch(
