@@ -1,6 +1,12 @@
 package com.sharesync.android.transfer.server
 
 import com.sharesync.android.SuspendBridge
+import com.sharesync.android.notes.InMemoryNoteStore
+import com.sharesync.android.notes.NoteRepository
+import com.sharesync.android.notes.NoteRevision
+import com.sharesync.android.notes.NoteSyncBatch
+import com.sharesync.android.notes.NoteSyncBatchCodec
+import com.sharesync.android.notes.VersionedNote
 import com.sharesync.android.pairing.PairingRegistrationWindow
 import com.sharesync.android.security.DeviceCredentialStore
 import com.sharesync.android.security.InMemoryDeviceCredentialStore
@@ -15,6 +21,102 @@ import org.junit.Test
 import java.time.Instant
 
 class LocalSyncRouterTest {
+    @Test
+    fun notesSnapshotRejectsMissingAuthorization() {
+        val response = SuspendBridge.runBlocking {
+            router(noteRepository = noteRepository()).noteSnapshot()
+        }
+
+        assertEquals(401, response.statusCode)
+        assertEquals("""{"errorCode":"SS-AUTH-001"}""", response.body)
+    }
+
+    @Test
+    fun notesSnapshotReturnsDeterministicRepositoryBatch() {
+        val store = InMemoryNoteStore(listOf(note()))
+        val response = SuspendBridge.runBlocking {
+            router(
+                noteRepository = noteRepository(store),
+                noteBatchIdProvider = { "notes-batch-001" },
+                clock = { 2_000L },
+                authorizationPolicy = AuthorizationPolicy.SignedRequestsWithPairingTokenFallback,
+            ).noteSnapshot(headers = pairingHeaders())
+        }
+        val batch = NoteSyncBatchCodec().decode(response.body)
+
+        assertEquals(200, response.statusCode)
+        assertEquals("notes-batch-001", batch.batchId)
+        assertEquals("android-device-001", batch.sourceDeviceId)
+        assertEquals(2_000L, batch.generatedAtEpochMillis)
+        assertEquals(listOf("note-001"), batch.notes.map(VersionedNote::id))
+    }
+
+    @Test
+    fun notesPostMergesRemoteBatchAndReportsAggregateResult() {
+        val store = InMemoryNoteStore()
+        val batch = NoteSyncBatch(
+            batchId = "mac-notes-001",
+            sourceDeviceId = "mac-device-001",
+            generatedAtEpochMillis = 2_000L,
+            notes = listOf(note(deviceId = "mac-device-001")),
+        )
+        val body = NoteSyncBatchCodec().encode(batch)
+        val response = SuspendBridge.runBlocking {
+            router(
+                noteRepository = noteRepository(store),
+                authorizationPolicy = AuthorizationPolicy.SignedRequestsWithPairingTokenFallback,
+            ).mergeNotes(body = body, headers = pairingHeaders())
+        }
+
+        assertEquals(202, response.statusCode)
+        assertEquals("accepted", org.json.JSONObject(response.body).getString("status"))
+        assertEquals(1, org.json.JSONObject(response.body).getInt("acceptedRemoteCount"))
+        assertEquals(note(deviceId = "mac-device-001"), SuspendBridge.runBlocking { store.get("note-001") })
+    }
+
+    @Test
+    fun notesPostRejectsBatchFromDifferentSignedDevice() {
+        val batch = NoteSyncBatch(
+            batchId = "mac-notes-001",
+            sourceDeviceId = "different-device",
+            generatedAtEpochMillis = 2_000L,
+            notes = listOf(note(deviceId = "different-device")),
+        )
+        val body = NoteSyncBatchCodec().encode(batch)
+        val timestamp = "1800000000000"
+        val nonce = "notes-source-mismatch"
+        val response = SuspendBridge.runBlocking {
+            router(
+                noteRepository = noteRepository(),
+                signatureValidator = RequestSignatureValidator(
+                    secretProvider = { PAIRING_TOKEN },
+                    clock = { 1_800_000_000_000L },
+                ),
+            ).mergeNotes(
+                body = body,
+                headers = signedHeaders(
+                    deviceId = "mac-device-001",
+                    nonce = nonce,
+                    timestamp = timestamp,
+                    signature = RequestSignatureValidator.sign(
+                        secret = PAIRING_TOKEN,
+                        version = "2",
+                        deviceId = "mac-device-001",
+                        sessionId = "ios-photo-mvp",
+                        method = "POST",
+                        path = "/v1/notes",
+                        timestamp = timestamp,
+                        nonce = nonce,
+                        body = body,
+                    ),
+                ),
+            )
+        }
+
+        assertEquals(400, response.statusCode)
+        assertEquals("""{"errorCode":"SS-REQ-001"}""", response.body)
+    }
+
     @Test
     fun pairedDeviceCanRevokeItsCredentialAndGatewayRegistration() {
         val credentialStore = InMemoryDeviceCredentialStore { "ios-device-secret" }
@@ -762,6 +864,9 @@ class LocalSyncRouterTest {
         },
         signatureValidator: RequestSignatureValidator = RequestSignatureValidator(secretProvider = { PAIRING_TOKEN }),
         authorizationPolicy: AuthorizationPolicy = AuthorizationPolicy.SignedRequestsOnly,
+        noteRepository: NoteRepository? = null,
+        noteBatchIdProvider: () -> String = { "notes-batch-test" },
+        clock: () -> Long = { 1_000L },
     ): LocalSyncRouter {
         return LocalSyncRouter(
             deviceId = "android-device-001",
@@ -779,6 +884,9 @@ class LocalSyncRouterTest {
             deviceCredentialStore = deviceCredentialStore,
             pairingRegistrationWindow = pairingRegistrationWindow,
             requestActivityTracker = requestActivityTracker,
+            noteRepository = noteRepository,
+            noteBatchIdProvider = noteBatchIdProvider,
+            clock = clock,
             signatureValidator = signatureValidator,
             authorizationPolicy = authorizationPolicy,
         )
@@ -830,6 +938,24 @@ class LocalSyncRouterTest {
             fileName = "$assetId.jpg",
             mimeType = "image/jpeg",
             size = 1024,
+        )
+    }
+
+    private fun noteRepository(store: InMemoryNoteStore = InMemoryNoteStore()): NoteRepository {
+        return NoteRepository(store = store, deviceId = "android-device-001", now = { 1_000L })
+    }
+
+    private fun note(deviceId: String = "android-device-001"): VersionedNote {
+        return VersionedNote(
+            id = "note-001",
+            title = "Shared note",
+            markdownBody = "A note synchronized over the local network.",
+            createdAtEpochMillis = 1_000L,
+            updatedAtEpochMillis = 1_000L,
+            tags = listOf("shared"),
+            revision = NoteRevision(sequence = 1, deviceId = deviceId),
+            parentRevision = null,
+            deletedAtEpochMillis = null,
         )
     }
 

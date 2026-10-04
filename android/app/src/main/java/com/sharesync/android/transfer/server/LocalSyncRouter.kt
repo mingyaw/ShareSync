@@ -1,6 +1,8 @@
 package com.sharesync.android.transfer.server
 
 import com.sharesync.android.pairing.PairingRegistrationWindow
+import com.sharesync.android.notes.NoteRepository
+import com.sharesync.android.notes.NoteSyncBatchCodec
 import com.sharesync.android.security.DeviceCredentialStore
 import com.sharesync.android.sync.ManifestJsonEncoder
 import com.sharesync.android.sync.MediaAsset
@@ -14,6 +16,7 @@ import com.sharesync.android.sync.SyncResultJsonCodec
 import com.sharesync.android.sync.SyncResultStore
 import org.json.JSONException
 import org.json.JSONObject
+import java.util.UUID
 
 class LocalSyncRouter(
     private val deviceId: String,
@@ -29,6 +32,10 @@ class LocalSyncRouter(
     private val manifestJsonEncoder: ManifestJsonEncoder = ManifestJsonEncoder(),
     private val syncResultJsonCodec: SyncResultJsonCodec = SyncResultJsonCodec(),
     private val requestActivityTracker: LocalRequestActivityTracker? = null,
+    private val noteRepository: NoteRepository? = null,
+    private val noteSyncBatchCodec: NoteSyncBatchCodec = NoteSyncBatchCodec(),
+    private val noteBatchIdProvider: () -> String = { UUID.randomUUID().toString() },
+    private val clock: () -> Long = System::currentTimeMillis,
     private val signatureValidator: RequestSignatureValidator = RequestSignatureValidator(
         secretProvider = { pairingToken },
         deviceSecretsProvider = { requestingDeviceId ->
@@ -163,6 +170,80 @@ class LocalSyncRouter(
         } catch (_: IllegalArgumentException) {
             val response = LocalApiResponse.jsonError(statusCode = 400, errorCode = "SS-REQ-001")
             requestActivityTracker?.record("sync-result", response.statusCode)
+            response
+        }
+    }
+
+    suspend fun noteSnapshot(
+        headers: Map<String, String> = emptyMap(),
+        path: String = "/v1/notes",
+    ): LocalApiResponse {
+        if (!isAuthorized(method = "GET", path = path, body = "", headers = headers)) {
+            val response = LocalApiResponse.jsonError(statusCode = 401, errorCode = "SS-AUTH-001")
+            requestActivityTracker?.record("notes-get", response.statusCode)
+            return response
+        }
+        val repository = noteRepository
+        if (repository == null) {
+            val response = LocalApiResponse.jsonError(statusCode = 503, errorCode = "SS-NOTES-503")
+            requestActivityTracker?.record("notes-get", response.statusCode)
+            return response
+        }
+        val response = LocalApiResponse.json(
+            body = noteSyncBatchCodec.encode(
+                repository.createSyncBatch(
+                    batchId = noteBatchIdProvider(),
+                    generatedAtEpochMillis = clock(),
+                ),
+            ),
+        )
+        requestActivityTracker?.record("notes-get", response.statusCode)
+        return response
+    }
+
+    suspend fun mergeNotes(
+        body: String,
+        headers: Map<String, String> = emptyMap(),
+        path: String = "/v1/notes",
+    ): LocalApiResponse {
+        if (!isAuthorized(method = "POST", path = path, body = body, headers = headers)) {
+            val response = LocalApiResponse.jsonError(statusCode = 401, errorCode = "SS-AUTH-001")
+            requestActivityTracker?.record("notes-post", response.statusCode)
+            return response
+        }
+        val repository = noteRepository
+        if (repository == null) {
+            val response = LocalApiResponse.jsonError(statusCode = 503, errorCode = "SS-NOTES-503")
+            requestActivityTracker?.record("notes-post", response.statusCode)
+            return response
+        }
+        return try {
+            val batch = noteSyncBatchCodec.decode(body)
+            headers.valueFor(RequestSignatureValidator.DEVICE_ID_HEADER)?.let { requestingDeviceId ->
+                require(requestingDeviceId == batch.sourceDeviceId)
+            }
+            val result = repository.mergeRemoteBatch(batch)
+            val response = LocalApiResponse.json(
+                statusCode = 202,
+                body = JSONObject()
+                    .put("status", "accepted")
+                    .put("batchId", batch.batchId)
+                    .put("acceptedRemoteCount", result.acceptedRemoteCount)
+                    .put("keptLocalCount", result.keptLocalCount)
+                    .put("unchangedCount", result.unchangedCount)
+                    .put("conflictCount", result.conflictCount)
+                    .put("conflictCopyCount", result.conflictCopyCount)
+                    .toString(),
+            )
+            requestActivityTracker?.record("notes-post", response.statusCode)
+            response
+        } catch (_: JSONException) {
+            val response = LocalApiResponse.jsonError(statusCode = 400, errorCode = "SS-REQ-001")
+            requestActivityTracker?.record("notes-post", response.statusCode)
+            response
+        } catch (_: IllegalArgumentException) {
+            val response = LocalApiResponse.jsonError(statusCode = 400, errorCode = "SS-REQ-001")
+            requestActivityTracker?.record("notes-post", response.statusCode)
             response
         }
     }

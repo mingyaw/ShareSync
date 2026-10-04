@@ -174,6 +174,26 @@ Content-Type: application/json
 
 Target device reports item-level import results back to source device.
 
+### Note Snapshot Exchange
+
+```http
+GET /v1/notes
+POST /v1/notes
+Content-Type: application/json
+```
+
+Both operations require the same paired-device request signature as the photo
+endpoints. `GET` returns a schema-versioned `NoteSyncBatch` containing Android's
+complete current note snapshot, including tombstones. `POST` accepts the same
+batch from Mac, merges every revision deterministically, and returns HTTP `202`
+with aggregate `acceptedRemoteCount`, `keptLocalCount`, `unchangedCount`,
+`conflictCount`, and `conflictCopyCount` values.
+
+For a signed `POST`, `X-Device-Id` must equal the payload's `sourceDeviceId`.
+Malformed batches or a source mismatch return `SS-REQ-001`. A build without a
+configured note repository returns `SS-NOTES-503`; it never exposes an empty
+placeholder snapshot.
+
 ## M0 Scope
 
 M0 implements only:

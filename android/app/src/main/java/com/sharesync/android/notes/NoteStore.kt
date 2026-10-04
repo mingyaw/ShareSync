@@ -168,6 +168,18 @@ class NoteRepository(
         )
     }
 
+    suspend fun createSyncBatch(
+        batchId: String,
+        generatedAtEpochMillis: Long = now(),
+    ): NoteSyncBatch {
+        return NoteSyncBatch(
+            batchId = batchId,
+            sourceDeviceId = deviceId,
+            generatedAtEpochMillis = generatedAtEpochMillis,
+            notes = store.all(),
+        )
+    }
+
     private suspend fun requireCurrent(id: String, expectedRevision: NoteRevision): VersionedNote {
         val current = requireNotNull(store.get(id)) { "Note not found: $id" }
         require(current.revision == expectedRevision) { "The note changed since it was loaded" }

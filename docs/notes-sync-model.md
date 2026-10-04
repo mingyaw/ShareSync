@@ -99,9 +99,15 @@ fixture gate.
 未變更、衝突與衝突副本數量。Kotlin、Swift 與共用 fixture gate 都使用
 `shared/fixtures/sample-note-sync-batch.json` 驗證此契約。
 
-This milestone defines payload semantics only. Network endpoints must reuse the
-existing paired-device authentication and signed local transport before any
-note body is exposed over the LAN.
+Android now exposes the contract through signed `GET /v1/notes` and
+`POST /v1/notes` endpoints. `GET` creates a full repository snapshot with a new
+batch ID; `POST` verifies that the signed device ID matches the batch source,
+merges all revisions, persists the result, and returns aggregate merge counts.
+The production composition stores notes atomically in
+`filesDir/ShareSync/notes-v1.json`. Mac transport and product UI remain the next
+milestones.
 
-此里程碑只定義 payload 語意；任何區網 endpoint 在提供記事本文前，必須沿用既有裝置
-綁定驗證與簽章本機傳輸。
+Android 已透過需簽章的 `GET /v1/notes` 與 `POST /v1/notes` 提供此契約。`GET` 會以新
+batch ID 建立完整 repository 快照；`POST` 會驗證簽章裝置 ID 與批次來源相同，合併並
+持久化所有 revision，再回傳彙總結果。正式組裝使用
+`filesDir/ShareSync/notes-v1.json` 原子寫入；Mac 傳輸與產品 UI 是下一階段。

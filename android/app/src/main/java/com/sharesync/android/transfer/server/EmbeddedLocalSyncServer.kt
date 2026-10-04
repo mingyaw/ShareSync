@@ -101,6 +101,26 @@ class EmbeddedLocalSyncServer(
                     },
                 )
             }
+            request.method == "GET" && request.path == "/v1/notes" -> {
+                writeApiResponse(
+                    socket.getOutputStream(),
+                    runBlocking {
+                        router.noteSnapshot(headers = request.headers, path = request.path)
+                    },
+                )
+            }
+            request.method == "POST" && request.path == "/v1/notes" -> {
+                writeApiResponse(
+                    socket.getOutputStream(),
+                    runBlocking {
+                        router.mergeNotes(
+                            body = request.body,
+                            headers = request.headers,
+                            path = request.path,
+                        )
+                    },
+                )
+            }
             request.method == "POST" && request.path == "/v1/pairing/register" -> {
                 writeApiResponse(
                     socket.getOutputStream(),

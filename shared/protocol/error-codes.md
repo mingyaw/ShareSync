@@ -24,6 +24,7 @@ SS-{DOMAIN}-{CODE}
 | SS-MEDIA-404 | Media item not found | Refresh the manifest and retry |
 | SS-MEDIA-URI | Media URI unavailable | Refresh the manifest and retry |
 | SS-MEDIA-STREAM | Media stream unavailable | Refresh the manifest and retry |
+| SS-NOTES-503 | Note repository unavailable | Restart ShareSync on Android and retry |
 | SS-CONTACT-001 | Contacts permission denied | Allow contacts access |
 | SS-FILE-001 | iCloud container unavailable | Enable iCloud Drive |
 | SS-PERM-001 | Photos permission denied | Allow photos access |
