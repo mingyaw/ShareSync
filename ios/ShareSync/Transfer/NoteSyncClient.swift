@@ -8,6 +8,7 @@ enum NoteSyncClientError: Error, Equatable {
     case nonHTTPResponse
     case unacceptableStatusCode(Int)
     case mismatchedBatchID
+    case payloadTooLarge(Int)
 }
 
 struct NoteMergeAcknowledgement: Decodable, Equatable {
@@ -35,6 +36,7 @@ final class NoteSyncClient {
     private let batchIDProvider: () -> String
     private let clock: () -> Int64
     private let retryDelayNanoseconds: UInt64
+    private let maximumSnapshotBytes: Int
 
     init(
         session: ManifestFetchingSession? = nil,
@@ -44,14 +46,17 @@ final class NoteSyncClient {
         clock: @escaping () -> Int64 = {
             Int64((Date().timeIntervalSince1970 * 1_000).rounded(.down))
         },
-        retryDelayNanoseconds: UInt64 = 500_000_000
+        retryDelayNanoseconds: UInt64 = 500_000_000,
+        maximumSnapshotBytes: Int = 8 * 1_024 * 1_024
     ) {
+        precondition(maximumSnapshotBytes > 0)
         self.session = session
         self.requestSigner = requestSigner
         self.codec = codec
         self.batchIDProvider = batchIDProvider
         self.clock = clock
         self.retryDelayNanoseconds = retryDelayNanoseconds
+        self.maximumSnapshotBytes = maximumSnapshotBytes
     }
 
     func fetchSnapshot(
@@ -69,6 +74,9 @@ final class NoteSyncClient {
         requestSigner.sign(request: &request, context: signingContext)
         let (data, response) = try await activeSession(transportSecurity).data(for: request)
         try requireStatus(response, expected: 200)
+        guard data.count <= maximumSnapshotBytes else {
+            throw NoteSyncClientError.payloadTooLarge(data.count)
+        }
         return try codec.decode(data)
     }
 
@@ -80,6 +88,9 @@ final class NoteSyncClient {
         transportSecurity: PairingTransportSecurity? = nil
     ) async throws -> NoteMergeAcknowledgement {
         let body = try codec.encode(batch)
+        guard body.count <= maximumSnapshotBytes else {
+            throw NoteSyncClientError.payloadTooLarge(body.count)
+        }
         var request = try makeRequest(
             host: host,
             port: port,

@@ -64,8 +64,11 @@ class EmbeddedLocalSyncServer(
     }
 
     private fun handleClient(socket: Socket) {
-        val request = HttpRequest.parse(socket.getInputStream())
-            ?: return writeNotFound(socket.getOutputStream())
+        val request = try {
+            HttpRequest.parse(socket.getInputStream())
+        } catch (_: PayloadTooLargeException) {
+            return writeJsonError(socket.getOutputStream(), 413, "SS-NOTES-413")
+        } ?: return writeNotFound(socket.getOutputStream())
 
         when {
             request.method == "GET" && request.path == "/v1/health" -> {
@@ -283,6 +286,7 @@ class EmbeddedLocalSyncServer(
             206 -> "Partial Content"
             404 -> "Not Found"
             405 -> "Method Not Allowed"
+            413 -> "Content Too Large"
             416 -> "Range Not Satisfiable"
             else -> "Error"
         }
@@ -354,7 +358,8 @@ class EmbeddedLocalSyncServer(
                     }
                     .toMap()
                 val contentLength = headers["content-length"]?.toIntOrNull() ?: 0
-                if (contentLength !in 0..MAX_BODY_BYTES) return null
+                if (contentLength > MAX_BODY_BYTES) throw PayloadTooLargeException()
+                if (contentLength < 0) return null
                 val body = if (contentLength > 0) {
                     val bytes = ByteArray(contentLength)
                     var offset = 0
@@ -378,6 +383,8 @@ class EmbeddedLocalSyncServer(
             }
         }
     }
+
+    internal class PayloadTooLargeException : IllegalArgumentException()
 
     private fun String.urlDecode(): String {
         return URLDecoder.decode(this, StandardCharsets.UTF_8.name())

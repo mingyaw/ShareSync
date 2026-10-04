@@ -165,6 +165,57 @@ final class NoteSyncClientTests: XCTestCase {
         }
     }
 
+    func testPushRejectsOversizedSnapshotBeforeNetworkRequest() async throws {
+        let session = StubNoteSyncSession(responses: [])
+        let client = NoteSyncClient(session: session, maximumSnapshotBytes: 32)
+        let batch = try NoteSyncBatch(
+            batchId: "mac-batch-001",
+            sourceDeviceId: "mac-device-001",
+            generatedAtEpochMillis: 1,
+            notes: []
+        )
+
+        do {
+            _ = try await client.pushSnapshot(
+                batch,
+                host: "192.168.1.10",
+                port: 48291,
+                signingContext: RequestSigningContext(
+                    deviceId: "mac-device-001",
+                    sessionId: "mac-notes-v1",
+                    secret: "device-secret"
+                )
+            )
+            XCTFail("Expected pushSnapshot to reject the payload")
+        } catch {
+            guard case .payloadTooLarge(let byteCount)? = error as? NoteSyncClientError else {
+                return XCTFail("Unexpected error: \(error)")
+            }
+            XCTAssertGreaterThan(byteCount, 32)
+            XCTAssertTrue(session.requests.isEmpty)
+        }
+    }
+
+    func testFetchRejectsOversizedSnapshotResponse() async {
+        let session = StubNoteSyncSession(responses: [(Data(repeating: 0x61, count: 33), 200)])
+        let client = NoteSyncClient(session: session, maximumSnapshotBytes: 32)
+
+        do {
+            _ = try await client.fetchSnapshot(
+                host: "192.168.1.10",
+                port: 48291,
+                signingContext: RequestSigningContext(
+                    deviceId: "mac-device-001",
+                    sessionId: "mac-notes-v1",
+                    secret: "device-secret"
+                )
+            )
+            XCTFail("Expected fetchSnapshot to reject the payload")
+        } catch {
+            XCTAssertEqual(error as? NoteSyncClientError, .payloadTooLarge(33))
+        }
+    }
+
     private func note(id: String, deviceID: String) throws -> VersionedNote {
         try VersionedNote(
             id: id,

@@ -2,6 +2,7 @@ package com.sharesync.android.transfer.server
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Test
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
@@ -28,6 +29,15 @@ class EmbeddedLocalSyncServerTest {
         val request = EmbeddedLocalSyncServer.HttpRequest.parse(ByteArrayInputStream(requestBytes))
 
         assertNull(request)
+    }
+
+    @Test
+    fun requestParserReportsPayloadLargerThanNoteLimit() {
+        val requestBytes = buildRequest(ByteArray(0), declaredLength = 8 * 1024 * 1024 + 1)
+
+        assertThrows(EmbeddedLocalSyncServer.PayloadTooLargeException::class.java) {
+            EmbeddedLocalSyncServer.HttpRequest.parse(ByteArrayInputStream(requestBytes))
+        }
     }
 
     private fun buildRequest(body: ByteArray, declaredLength: Int = body.size): ByteArray {
