@@ -2,6 +2,7 @@ package com.sharesync.android.transfer.server
 
 import com.sharesync.android.SuspendBridge
 import com.sharesync.android.notes.InMemoryNoteStore
+import com.sharesync.android.notes.InMemoryNoteSyncReceiptStore
 import com.sharesync.android.notes.NoteRepository
 import com.sharesync.android.notes.NoteRevision
 import com.sharesync.android.notes.NoteSyncBatch
@@ -54,6 +55,7 @@ class LocalSyncRouterTest {
     @Test
     fun notesPostMergesRemoteBatchAndReportsAggregateResult() {
         val store = InMemoryNoteStore()
+        val receiptStore = InMemoryNoteSyncReceiptStore()
         val batch = NoteSyncBatch(
             batchId = "mac-notes-001",
             sourceDeviceId = "mac-device-001",
@@ -64,6 +66,8 @@ class LocalSyncRouterTest {
         val response = SuspendBridge.runBlocking {
             router(
                 noteRepository = noteRepository(store),
+                noteSyncReceiptStore = receiptStore,
+                clock = { 3_000L },
                 authorizationPolicy = AuthorizationPolicy.SignedRequestsWithPairingTokenFallback,
             ).mergeNotes(body = body, headers = pairingHeaders())
         }
@@ -72,6 +76,10 @@ class LocalSyncRouterTest {
         assertEquals("accepted", org.json.JSONObject(response.body).getString("status"))
         assertEquals(1, org.json.JSONObject(response.body).getInt("acceptedRemoteCount"))
         assertEquals(note(deviceId = "mac-device-001"), SuspendBridge.runBlocking { store.get("note-001") })
+        assertEquals("mac-device-001", receiptStore.load()?.peerDeviceId)
+        assertEquals("mac-notes-001", receiptStore.load()?.receivedBatchId)
+        assertEquals(3_000L, receiptStore.load()?.completedAtEpochMillis)
+        assertEquals(1, receiptStore.load()?.changedCount)
     }
 
     @Test
@@ -865,6 +873,7 @@ class LocalSyncRouterTest {
         signatureValidator: RequestSignatureValidator = RequestSignatureValidator(secretProvider = { PAIRING_TOKEN }),
         authorizationPolicy: AuthorizationPolicy = AuthorizationPolicy.SignedRequestsOnly,
         noteRepository: NoteRepository? = null,
+        noteSyncReceiptStore: com.sharesync.android.notes.NoteSyncReceiptStore? = null,
         noteBatchIdProvider: () -> String = { "notes-batch-test" },
         clock: () -> Long = { 1_000L },
     ): LocalSyncRouter {
@@ -885,6 +894,7 @@ class LocalSyncRouterTest {
             pairingRegistrationWindow = pairingRegistrationWindow,
             requestActivityTracker = requestActivityTracker,
             noteRepository = noteRepository,
+            noteSyncReceiptStore = noteSyncReceiptStore,
             noteBatchIdProvider = noteBatchIdProvider,
             clock = clock,
             signatureValidator = signatureValidator,

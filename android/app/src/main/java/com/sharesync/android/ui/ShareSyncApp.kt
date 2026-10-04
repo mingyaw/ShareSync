@@ -50,6 +50,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sharesync.android.R
 import com.sharesync.android.notes.VersionedNote
+import com.sharesync.android.notes.NoteSyncReceipt
+import java.text.DateFormat
+import java.util.Date
 import kotlinx.coroutines.delay
 
 data class HistoryUiItem(val date: String, val completed: Int, val failed: Int)
@@ -82,6 +85,7 @@ fun ShareSyncApp(
     activity: ActivityUiState,
     settings: SettingsUiState,
     notes: List<VersionedNote>,
+    noteSyncReceipt: NoteSyncReceipt?,
     feedbackMessage: String?,
     onFeedbackShown: () -> Unit,
     onDestinationChange: (MainDestination) -> Unit,
@@ -185,6 +189,7 @@ fun ShareSyncApp(
                         )
                         MainDestination.NOTES -> NotesPage(
                             notes = notes,
+                            syncReceipt = noteSyncReceipt,
                             onSaveNote = onSaveNote,
                             onDeleteNote = onDeleteNote,
                             onRefreshNotes = onRefreshNotes,
@@ -214,6 +219,7 @@ fun ShareSyncApp(
 @Composable
 private fun NotesPage(
     notes: List<VersionedNote>,
+    syncReceipt: NoteSyncReceipt?,
     onSaveNote: (VersionedNote?, String, String, List<String>) -> Unit,
     onDeleteNote: (VersionedNote) -> Unit,
     onRefreshNotes: () -> Unit,
@@ -254,6 +260,41 @@ private fun NotesPage(
             Spacer(modifier = Modifier.size(12.dp))
             Button(onClick = { openEditor(null) }) {
                 Text(stringResource(R.string.notes_new))
+            }
+        }
+
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp),
+            color = MaterialTheme.colorScheme.secondaryContainer,
+        ) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    stringResource(
+                        if (syncReceipt == null) R.string.notes_sync_waiting
+                        else R.string.notes_sync_complete,
+                    ),
+                    fontWeight = FontWeight.SemiBold,
+                )
+                if (syncReceipt == null) {
+                    Text(
+                        stringResource(R.string.notes_sync_waiting_body),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    )
+                } else {
+                    Text(
+                        stringResource(
+                            R.string.notes_sync_summary,
+                            DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
+                                .format(Date(syncReceipt.completedAtEpochMillis)),
+                            syncReceipt.changedCount,
+                            syncReceipt.conflictCount,
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    )
+                }
             }
         }
 

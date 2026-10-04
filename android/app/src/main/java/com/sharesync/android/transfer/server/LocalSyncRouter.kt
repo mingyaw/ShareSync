@@ -2,6 +2,8 @@ package com.sharesync.android.transfer.server
 
 import com.sharesync.android.pairing.PairingRegistrationWindow
 import com.sharesync.android.notes.NoteRepository
+import com.sharesync.android.notes.NoteSyncReceipt
+import com.sharesync.android.notes.NoteSyncReceiptStore
 import com.sharesync.android.notes.NoteSyncBatchCodec
 import com.sharesync.android.security.DeviceCredentialStore
 import com.sharesync.android.sync.ManifestJsonEncoder
@@ -33,6 +35,7 @@ class LocalSyncRouter(
     private val syncResultJsonCodec: SyncResultJsonCodec = SyncResultJsonCodec(),
     private val requestActivityTracker: LocalRequestActivityTracker? = null,
     private val noteRepository: NoteRepository? = null,
+    private val noteSyncReceiptStore: NoteSyncReceiptStore? = null,
     private val noteSyncBatchCodec: NoteSyncBatchCodec = NoteSyncBatchCodec(),
     private val noteBatchIdProvider: () -> String = { UUID.randomUUID().toString() },
     private val clock: () -> Long = System::currentTimeMillis,
@@ -223,6 +226,15 @@ class LocalSyncRouter(
                 require(requestingDeviceId == batch.sourceDeviceId)
             }
             val result = repository.mergeRemoteBatch(batch)
+            noteSyncReceiptStore?.save(
+                NoteSyncReceipt(
+                    completedAtEpochMillis = clock(),
+                    peerDeviceId = batch.sourceDeviceId,
+                    receivedBatchId = batch.batchId,
+                    changedCount = result.acceptedRemoteCount + result.conflictCount,
+                    conflictCount = result.conflictCount,
+                ),
+            )
             val response = LocalApiResponse.json(
                 statusCode = 202,
                 body = JSONObject()

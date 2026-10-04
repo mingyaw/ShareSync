@@ -187,6 +187,10 @@
     <string name="notes_untitled">未命名</string>
     <string name="notes_no_body">沒有其他內容</string>
     <string name="notes_local_only">變更會保存在此手機，直到 Mac 執行記事同步。</string>
+    <string name="notes_sync_waiting">等待第一次 Mac 同步</string>
+    <string name="notes_sync_waiting_body">讓此手機保持 ShareSync 可用，再從 Mac 同步共享記事。</string>
+    <string name="notes_sync_complete">記事已同步</string>
+    <string name="notes_sync_summary">上次同步 %1$s · %2$d 筆變更 · %3$d 筆衝突</string>
     <string name="notes_saved">記事已儲存</string>
     <string name="notes_deleted">記事已刪除</string>
     <string name="notes_save_failed">此記事在儲存前已變更，請重新開啟後再試一次。</string>

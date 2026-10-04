@@ -131,7 +131,10 @@ the signed local server. It supports the same create, edit, tag, and tombstone
 delete operations and refreshes while visible so a completed Mac merge appears
 without restarting the app. The process-wide repository provider and coroutine
 mutex serialize UI mutations with incoming network batches; a concurrent-write
-test verifies that no note is lost.
+test verifies that no note is lost. A successful inbound Mac batch also writes
+an atomic, versioned Android receipt with the peer, batch, completion time, and
+merge counts. The Notes destination restores and displays that receipt after an
+app restart; invalid receipts never replace or erase the note database.
 
 Android 已透過需簽章的 `GET /v1/notes` 與 `POST /v1/notes` 提供此契約。`GET` 會以新
 batch ID 建立完整 repository 快照；`POST` 會驗證簽章裝置 ID 與批次來源相同，合併並
@@ -155,4 +158,6 @@ tombstone。自動照片檢查可選擇一併同步記事，選單列的「立�
 Android 現在也有正式的「記事」分頁，與簽章本機伺服器共用同一個 Repository，可新增、
 編輯、加標籤及 tombstone 刪除；分頁顯示期間會定期刷新，Mac 完成合併後不必重開 App。
 程序內 Repository provider 與 coroutine mutex 會序列化 UI 操作及網路批次，並以併發
-寫入測試確認記事不會遺失。
+寫入測試確認記事不會遺失。成功接收 Mac 批次後，Android 也會原子寫入版本化收據，
+保存對端、batch、完成時間與合併統計；App 重啟後記事頁會還原並顯示此狀態。無效收據
+不會取代或清除記事資料庫。

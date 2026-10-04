@@ -24,6 +24,9 @@ import com.sharesync.android.pairing.MacPairingOfferParser
 import com.sharesync.android.pairing.PairingPayloadPersonalizer
 import com.sharesync.android.notes.NoteRepository
 import com.sharesync.android.notes.NoteRepositoryProvider
+import com.sharesync.android.notes.FileNoteSyncReceiptStore
+import com.sharesync.android.notes.NoteSyncReceipt
+import com.sharesync.android.notes.NoteSyncReceiptStore
 import com.sharesync.android.notes.VersionedNote
 import com.sharesync.android.runtime.PhotoSharingCoordinator
 import com.sharesync.android.runtime.PhotoSharingCoordinatorEvent
@@ -56,6 +59,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var sharingCoordinator: PhotoSharingCoordinator
     private lateinit var deviceCredentialStore: SharedPreferencesDeviceCredentialStore
     private lateinit var noteRepository: NoteRepository
+    private lateinit var noteSyncReceiptStore: NoteSyncReceiptStore
     private var isServerRunning = false
     private var isServerStarting = false
     private var currentServerPort: Int? = null
@@ -76,6 +80,7 @@ class MainActivity : ComponentActivity() {
     private var settingsUiState by mutableStateOf(SettingsUiState())
     private var feedbackMessage by mutableStateOf<String?>(null)
     private var currentNotes by mutableStateOf<List<VersionedNote>>(emptyList())
+    private var currentNoteSyncReceipt by mutableStateOf<NoteSyncReceipt?>(null)
     @Volatile private var notesRefreshInFlight = false
     private var startSharingAfterPermission = false
     private var pendingMacPairingOffer: MacPairingOffer? = null
@@ -122,6 +127,7 @@ class MainActivity : ComponentActivity() {
         val deviceIdentityStore = SharedPreferencesDeviceIdentityStore(this)
         val identity = SuspendBridge.runBlocking { deviceIdentityStore.getOrCreate() }
         noteRepository = NoteRepositoryProvider.get(filesDir = filesDir, deviceId = identity.deviceId)
+        noteSyncReceiptStore = FileNoteSyncReceiptStore(FileNoteSyncReceiptStore.defaultFile(filesDir))
         refreshNotesBlocking()
         sharingCoordinator = PhotoSharingCoordinator(
             context = applicationContext,
@@ -166,6 +172,7 @@ class MainActivity : ComponentActivity() {
                         activity = activityUiState,
                         settings = settingsUiState,
                         notes = currentNotes,
+                        noteSyncReceipt = currentNoteSyncReceipt,
                         feedbackMessage = feedbackMessage,
                         onFeedbackShown = { feedbackMessage = null },
                         onDestinationChange = {
@@ -285,6 +292,7 @@ class MainActivity : ComponentActivity() {
     private fun refreshNotesBlocking() {
         currentNotes = SuspendBridge.runBlocking { noteRepository.allNotes() }
             .sortedWith(compareByDescending<VersionedNote> { it.updatedAtEpochMillis }.thenBy { it.id })
+        currentNoteSyncReceipt = runCatching { noteSyncReceiptStore.load() }.getOrNull()
     }
 
     private fun refreshNotesAsync() {
@@ -295,8 +303,10 @@ class MainActivity : ComponentActivity() {
                 SuspendBridge.runBlocking { noteRepository.allNotes() }
                     .sortedWith(compareByDescending<VersionedNote> { it.updatedAtEpochMillis }.thenBy { it.id })
             }.getOrNull()
+            val receipt = runCatching { noteSyncReceiptStore.load() }.getOrNull()
             runOnUiThread {
                 if (notes != null) currentNotes = notes
+                if (receipt != null) currentNoteSyncReceipt = receipt
                 notesRefreshInFlight = false
             }
         }.start()

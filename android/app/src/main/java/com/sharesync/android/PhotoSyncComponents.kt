@@ -5,6 +5,7 @@ import com.sharesync.android.scanner.media.MediaStoreMediaScanner
 import com.sharesync.android.scanner.media.MediaStreamProvider
 import com.sharesync.android.pairing.PairingRegistrationWindow
 import com.sharesync.android.notes.NoteRepositoryProvider
+import com.sharesync.android.notes.FileNoteSyncReceiptStore
 import com.sharesync.android.security.SharedPreferencesDeviceCredentialStore
 import com.sharesync.android.sync.FileSyncEventStore
 import com.sharesync.android.sync.FileSyncResultStore
@@ -76,6 +77,9 @@ class PhotoSyncComponents private constructor(
                 filesDir = context.applicationContext.filesDir,
                 deviceId = deviceId,
             )
+            val noteSyncReceiptStore = FileNoteSyncReceiptStore(
+                FileNoteSyncReceiptStore.defaultFile(context.applicationContext.filesDir),
+            )
 
             return PhotoSyncComponents(
                 mediaScanner = mediaScanner,
@@ -98,6 +102,7 @@ class PhotoSyncComponents private constructor(
                     pairingRegistrationWindow = pairingRegistrationWindow,
                     requestActivityTracker = requestActivityTracker,
                     noteRepository = noteRepository,
+                    noteSyncReceiptStore = noteSyncReceiptStore,
                 ),
             )
         }

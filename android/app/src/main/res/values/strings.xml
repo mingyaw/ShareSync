@@ -187,6 +187,10 @@
     <string name="notes_untitled">Untitled</string>
     <string name="notes_no_body">No additional text</string>
     <string name="notes_local_only">Changes remain on this phone until Mac runs note sync.</string>
+    <string name="notes_sync_waiting">Waiting for first Mac sync</string>
+    <string name="notes_sync_waiting_body">Keep ShareSync available on this phone, then sync shared notes from your Mac.</string>
+    <string name="notes_sync_complete">Notes are up to date</string>
+    <string name="notes_sync_summary">Last synced %1$s · %2$d changed · %3$d conflicts</string>
     <string name="notes_saved">Note saved</string>
     <string name="notes_deleted">Note deleted</string>
     <string name="notes_save_failed">The note changed before it could be saved. Open it again and retry.</string>
