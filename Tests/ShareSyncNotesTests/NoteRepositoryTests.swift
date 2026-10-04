@@ -3,6 +3,21 @@ import XCTest
 @testable import ShareSyncNotes
 
 final class NoteRepositoryTests: XCTestCase {
+    func testAllNotesHidesTombstonesByDefault() throws {
+        let store = InMemoryNoteStore()
+        let repository = try NoteRepository(
+            store: store,
+            deviceID: "mac-studio",
+            now: { 1_000 },
+            newID: { "note-001" }
+        )
+        let note = try repository.create(title: "Private", markdownBody: "Body")
+        _ = try repository.delete(id: note.id, expectedRevision: note.revision)
+
+        XCTAssertTrue(try repository.allNotes().isEmpty)
+        XCTAssertEqual(try repository.allNotes(includeDeleted: true).map(\.id), ["note-001"])
+    }
+
     func testLocalMutationsCreateRevisionLineageAndTombstone() throws {
         let store = InMemoryNoteStore()
         var timestamp: Int64 = 1_000

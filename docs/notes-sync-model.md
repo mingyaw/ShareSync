@@ -115,6 +115,11 @@ Support, and retains them when the Android pairing is removed. The Android HTTP
 reader consumes request bodies by UTF-8 byte length, so CJK note content matches
 the signed bytes and is not truncated.
 
+The Mac product surface also supports creating, editing, tagging, and deleting
+notes. Deleted notes become hidden tombstones rather than disappearing from the
+store, so the next sync can propagate the deletion. Removing a paired phone does
+not remove these notes or tombstones.
+
 Android 已透過需簽章的 `GET /v1/notes` 與 `POST /v1/notes` 提供此契約。`GET` 會以新
 batch ID 建立完整 repository 快照；`POST` 會驗證簽章裝置 ID 與批次來源相同，合併並
 持久化所有 revision，再回傳彙總結果。正式組裝使用
@@ -125,3 +130,7 @@ Android 端點、下載並合併簽章快照，再以相同裝置憑證回推 Ma
 狀態與照片傳輸狀態彼此獨立，資料保存在 Application Support，解除 Android 配對時也
 不會刪除。Android HTTP 讀取器依 UTF-8 位元組長度接收 body，因此繁中記事不會被截斷，
 簽章內容也能保持一致。
+
+Mac 產品介面亦可新增、編輯、加標籤與刪除記事。刪除後會轉為隱藏 tombstone，而非直接
+從資料庫消失，所以下次同步能將刪除狀態傳到另一端；解除手機配對也不會清除記事或
+tombstone。

@@ -5,6 +5,9 @@ struct MacContentView: View {
     @State private var showingPairing = false
     @State private var confirmUnpair = false
     @State private var isSidebarVisible = true
+    @State private var showingNoteEditor = false
+    @State private var editingNote: VersionedNote?
+    @State private var notePendingDeletion: VersionedNote?
 
     var body: some View {
         HStack(spacing: 0) {
@@ -21,6 +24,10 @@ struct MacContentView: View {
         .background(MacBrand.canvas)
         .sheet(isPresented: $showingPairing) {
             PairingSheet(isPresented: $showingPairing)
+                .environmentObject(model)
+        }
+        .sheet(isPresented: $showingNoteEditor) {
+            NoteEditorSheet(note: editingNote, isPresented: $showingNoteEditor)
                 .environmentObject(model)
         }
         .toolbar {
@@ -63,6 +70,20 @@ struct MacContentView: View {
             Button("mac.action.unpair", role: .destructive) {
                 model.forgetDevice()
                 showingPairing = true
+            }
+        }
+        .confirmationDialog(
+            "mac.notes.delete_confirm",
+            isPresented: Binding(
+                get: { notePendingDeletion != nil },
+                set: { if !$0 { notePendingDeletion = nil } }
+            )
+        ) {
+            Button("mac.notes.delete", role: .destructive) {
+                if let notePendingDeletion {
+                    model.deleteNote(notePendingDeletion)
+                }
+                notePendingDeletion = nil
             }
         }
     }
@@ -210,8 +231,19 @@ struct MacContentView: View {
 
     private var notesOverview: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("mac.notes.title")
-                .font(.headline)
+            HStack {
+                Text("mac.notes.title")
+                    .font(.headline)
+                Spacer()
+                Button {
+                    editingNote = nil
+                    model.clearNoteMutationError()
+                    showingNoteEditor = true
+                } label: {
+                    Label("mac.notes.new", systemImage: "plus")
+                }
+                .help("mac.notes.new")
+            }
 
             HStack(spacing: 14) {
                 Image(systemName: "note.text")
@@ -253,8 +285,64 @@ struct MacContentView: View {
                     .stroke(.separator.opacity(0.7), lineWidth: 1)
             }
 
+            if !model.notes.isEmpty {
+                VStack(spacing: 0) {
+                    ForEach(Array(model.notes.prefix(4).enumerated()), id: \.element.id) { index, note in
+                        if index > 0 { Divider() }
+                        noteRow(note)
+                    }
+                }
+                .background(.background, in: RoundedRectangle(cornerRadius: 8))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(.separator.opacity(0.7), lineWidth: 1)
+                }
+            }
+
             noteSyncStatus
+            if let error = model.noteMutationError {
+                Label(error, systemImage: "exclamationmark.triangle.fill")
+                    .font(.callout)
+                    .foregroundStyle(MacBrand.handoff)
+            }
         }
+    }
+
+    private func noteRow(_ note: VersionedNote) -> some View {
+        HStack(spacing: 12) {
+            Button {
+                editingNote = note
+                model.clearNoteMutationError()
+                showingNoteEditor = true
+            } label: {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(note.title.isEmpty ? String(localized: "mac.notes.untitled") : note.title)
+                        .fontWeight(.medium)
+                        .lineLimit(1)
+                    Text(note.markdownBody.isEmpty ? String(localized: "mac.notes.no_body") : note.markdownBody)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Text(Date(timeIntervalSince1970: Double(note.updatedAtEpochMillis) / 1_000), style: .relative)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Button(role: .destructive) {
+                notePendingDeletion = note
+            } label: {
+                Image(systemName: "trash")
+            }
+            .buttonStyle(.borderless)
+            .help("mac.notes.delete")
+        }
+        .padding(.horizontal, 14)
+        .frame(minHeight: 58)
     }
 
     @ViewBuilder
@@ -626,6 +714,97 @@ private struct PairingSheet: View {
         .onChange(of: model.isPaired) { paired in
             if paired { isPresented = false }
         }
+    }
+}
+
+private struct NoteEditorSheet: View {
+    @EnvironmentObject private var model: MacPhotoSyncViewModel
+    let note: VersionedNote?
+    @Binding var isPresented: Bool
+    @State private var title: String
+    @State private var markdownBody: String
+    @State private var tags: String
+
+    init(note: VersionedNote?, isPresented: Binding<Bool>) {
+        self.note = note
+        self._isPresented = isPresented
+        self._title = State(initialValue: note?.title ?? "")
+        self._markdownBody = State(initialValue: note?.markdownBody ?? "")
+        self._tags = State(initialValue: note?.tags.joined(separator: ", ") ?? "")
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(note == nil ? "mac.notes.editor.new_title" : "mac.notes.editor.edit_title")
+                        .font(.title2.weight(.semibold))
+                    Text("mac.notes.editor.subtitle")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "note.text")
+                    .font(.title2)
+                    .foregroundStyle(MacBrand.vault)
+            }
+
+            TextField("mac.notes.editor.title", text: $title)
+                .textFieldStyle(.roundedBorder)
+
+            TextEditor(text: $markdownBody)
+                .font(.body)
+                .scrollContentBackground(.hidden)
+                .padding(10)
+                .frame(minHeight: 220)
+                .background(.background, in: RoundedRectangle(cornerRadius: 7))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 7)
+                        .stroke(.separator, lineWidth: 1)
+                }
+
+            TextField("mac.notes.editor.tags", text: $tags)
+                .textFieldStyle(.roundedBorder)
+
+            if let error = model.noteMutationError {
+                Label(error, systemImage: "exclamationmark.triangle.fill")
+                    .font(.callout)
+                    .foregroundStyle(MacBrand.handoff)
+            }
+
+            HStack {
+                Spacer()
+                Button("mac.action.cancel") {
+                    isPresented = false
+                }
+                .keyboardShortcut(.cancelAction)
+
+                Button("mac.notes.editor.save") {
+                    let parsedTags = tags
+                        .split(separator: ",")
+                        .map(String.init)
+                    if model.saveNote(
+                        existing: note,
+                        title: title,
+                        markdownBody: markdownBody,
+                        tags: parsedTags
+                    ) {
+                        isPresented = false
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(MacBrand.bridge)
+                .keyboardShortcut(.defaultAction)
+                .disabled(
+                    title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+                        markdownBody.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                )
+            }
+        }
+        .padding(26)
+        .frame(width: 600)
+        .frame(minHeight: 450)
+        .onDisappear { model.clearNoteMutationError() }
     }
 }
 

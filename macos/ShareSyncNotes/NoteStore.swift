@@ -229,6 +229,11 @@ public final class NoteRepository {
         )
     }
 
+    public func allNotes(includeDeleted: Bool = false) throws -> [VersionedNote] {
+        let notes = try store.all()
+        return includeDeleted ? notes : notes.filter { !$0.isDeleted }
+    }
+
     public func createSyncBatch(
         batchID: String,
         generatedAtEpochMillis: Int64? = nil

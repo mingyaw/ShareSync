@@ -51,6 +51,8 @@ final class MacPhotoSyncViewModel: ObservableObject {
     @Published private(set) var recentSyncHistory: [SyncHistorySummary] = []
     @Published private(set) var noteSyncState: NoteSyncState = .idle
     @Published private(set) var noteCount = 0
+    @Published private(set) var notes: [VersionedNote] = []
+    @Published private(set) var noteMutationError: String?
     @Published var keepRunning: Bool {
         didSet { defaults.set(keepRunning, forKey: MacPreferenceKeys.keepRunning) }
     }
@@ -402,6 +404,58 @@ final class MacPhotoSyncViewModel: ObservableObject {
             }
             self.noteSyncTask = nil
         }
+    }
+
+    @discardableResult
+    func saveNote(
+        existing: VersionedNote?,
+        title: String,
+        markdownBody: String,
+        tags: [String]
+    ) -> Bool {
+        let normalizedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedBody = markdownBody.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedTitle.isEmpty || !normalizedBody.isEmpty else {
+            noteMutationError = text("mac.notes.empty_error")
+            return false
+        }
+        do {
+            if let existing {
+                _ = try noteRepository.update(
+                    id: existing.id,
+                    expectedRevision: existing.revision,
+                    title: normalizedTitle,
+                    markdownBody: markdownBody,
+                    tags: tags
+                )
+            } else {
+                _ = try noteRepository.create(
+                    title: normalizedTitle,
+                    markdownBody: markdownBody,
+                    tags: tags
+                )
+            }
+            noteMutationError = nil
+            refreshNoteCount()
+            return true
+        } catch {
+            noteMutationError = text("mac.notes.save_error")
+            return false
+        }
+    }
+
+    func deleteNote(_ note: VersionedNote) {
+        do {
+            _ = try noteRepository.delete(id: note.id, expectedRevision: note.revision)
+            noteMutationError = nil
+            refreshNoteCount()
+        } catch {
+            noteMutationError = text("mac.notes.save_error")
+        }
+    }
+
+    func clearNoteMutationError() {
+        noteMutationError = nil
     }
 
     private func syncScheduledBatch() {
@@ -850,9 +904,13 @@ final class MacPhotoSyncViewModel: ObservableObject {
     }
 
     private func refreshNoteCount() {
-        noteCount = ((try? noteRepository.createSyncBatch(batchID: "local-count").notes) ?? [])
-            .filter { !$0.isDeleted }
-            .count
+        notes = ((try? noteRepository.allNotes()) ?? []).sorted {
+            if $0.updatedAtEpochMillis != $1.updatedAtEpochMillis {
+                return $0.updatedAtEpochMillis > $1.updatedAtEpochMillis
+            }
+            return $0.id < $1.id
+        }
+        noteCount = notes.count
     }
 
     private static func makeNoteRepository(deviceID: String) -> NoteRepository {
