@@ -73,3 +73,6 @@ release and any later connector must satisfy all of the following:
 - Image delivery is at-most-once across app restarts: definite Telegram
   rejections may retry, while an unconfirmed network result is persisted and
   skipped on the next pass to avoid silently duplicating private media.
+- Text delivery follows the same at-most-once boundary. Definite Telegram
+  rejections may retry, while ambiguous transport results remain locally
+  unconfirmed and are skipped rather than automatically resent.

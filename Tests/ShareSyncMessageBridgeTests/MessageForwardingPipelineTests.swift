@@ -199,9 +199,46 @@ final class MessageForwardingPipelineTests: XCTestCase {
         XCTAssertEqual(retry.deliveredAttachmentCount, 0)
         XCTAssertEqual(retry.duplicateAttachmentCount, 0)
         XCTAssertEqual(retry.confirmedAttachmentCount, 0)
+        XCTAssertEqual(retry.unconfirmedMessageCount, 0)
         XCTAssertEqual(retry.duplicateCount, 1)
         XCTAssertEqual(connector.deliveredGUIDs, ["first", "second"])
         XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 2))
+    }
+
+    func testAmbiguousTextFailureIsNotResentAndAdvancesOnNextPass() throws {
+        let fixture = try MessageBridgeFixture()
+        try fixture.insertHandle(identifier: "allowed")
+        try fixture.insertMessage(guid: "ambiguous", body: "one")
+        let store = try makeStore()
+        try store.store.save(MessageCursor(rowID: 0))
+        let connector = AmbiguousFailOnceConnector()
+        let ledger = InMemoryMessageDeliveryLedgerStore()
+        let pipeline = MessageForwardingPipeline(
+            reader: MessageEventReader(databaseURL: fixture.databaseURL),
+            cursorStore: store.store,
+            policy: MessageForwardingPolicy(allowedSenderIdentifiers: ["allowed"]),
+            connector: connector,
+            deliveryLedger: ledger
+        )
+
+        XCTAssertThrowsError(try pipeline.run()) { error in
+            XCTAssertEqual(
+                error as? MessageForwardingPipelineError,
+                .deliveryUnconfirmed
+            )
+        }
+        XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 0))
+        XCTAssertEqual(connector.attemptCount, 1)
+
+        let retry = try pipeline.run()
+
+        XCTAssertEqual(retry.deliveredCount, 0)
+        XCTAssertEqual(retry.duplicateCount, 0)
+        XCTAssertEqual(retry.unconfirmedMessageCount, 1)
+        XCTAssertEqual(connector.attemptCount, 1)
+        XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 1))
+        XCTAssertTrue(ledger.records.keys.allSatisfy { $0.count == 64 })
+        XCTAssertFalse(ledger.records.keys.contains { $0.contains("ambiguous") })
     }
 
     func testAmbiguousAttachmentFailureIsNotResentAndAdvancesOnNextPass() throws {
@@ -346,15 +383,23 @@ private final class FailOnceConnector: MessageForwardingConnector {
         let syntheticGUID = envelope.body == "two" ? "second" : "first"
         if syntheticGUID == failingGUID && !hasFailed {
             hasFailed = true
-            throw TestError.failed
+            throw TelegramBotConnectorError.apiFailure(
+                code: 500,
+                description: "definite rejection"
+            )
         }
         guard deliveredKeys.insert(envelope.deliveryKey).inserted else { return .duplicate }
         deliveredGUIDs.append(syntheticGUID)
         return .delivered
     }
+}
 
-    private enum TestError: Error {
-        case failed
+private final class AmbiguousFailOnceConnector: MessageForwardingConnector {
+    private(set) var attemptCount = 0
+
+    func deliver(_ envelope: MessageConnectorEnvelope) throws -> MessageDeliveryOutcome {
+        attemptCount += 1
+        throw TelegramBotConnectorError.transportFailure
     }
 }
 

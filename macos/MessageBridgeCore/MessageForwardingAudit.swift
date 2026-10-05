@@ -7,6 +7,7 @@ public enum MessageForwardingAuditOutcome: String, Codable, Equatable, Sendable 
     case rateLimited
     case attachmentRejected
     case attachmentDeliveryUnconfirmed
+    case messageDeliveryUnconfirmed
     case failed
 }
 
@@ -16,6 +17,7 @@ extension MessageForwardingAuditOutcome {
         case MessageForwardingRuntimeBlock.paused: return .paused
         case MessageForwardingRuntimeBlock.outsideSchedule: return .outsideSchedule
         case MessageForwardingPipelineError.rateLimited: return .rateLimited
+        case MessageForwardingPipelineError.deliveryUnconfirmed: return .messageDeliveryUnconfirmed
         case TelegramBotConnectorError.rateLimited: return .rateLimited
         case is MessageAttachmentValidationError,
              is MessageAttachmentAccessError,
@@ -36,6 +38,7 @@ public struct MessageForwardingAuditRecord: Codable, Equatable, Sendable {
     public let eligibleCount: Int
     public let deliveredCount: Int
     public let duplicateCount: Int
+    public let unconfirmedMessageCount: Int
     public let deliveredAttachmentCount: Int
     public let duplicateAttachmentCount: Int
     public let unconfirmedAttachmentCount: Int
@@ -53,6 +56,7 @@ public struct MessageForwardingAuditRecord: Codable, Equatable, Sendable {
         eligibleCount: Int = 0,
         deliveredCount: Int = 0,
         duplicateCount: Int = 0,
+        unconfirmedMessageCount: Int = 0,
         deliveredAttachmentCount: Int = 0,
         duplicateAttachmentCount: Int = 0,
         unconfirmedAttachmentCount: Int = 0,
@@ -65,6 +69,7 @@ public struct MessageForwardingAuditRecord: Codable, Equatable, Sendable {
         self.eligibleCount = eligibleCount
         self.deliveredCount = deliveredCount
         self.duplicateCount = duplicateCount
+        self.unconfirmedMessageCount = unconfirmedMessageCount
         self.deliveredAttachmentCount = deliveredAttachmentCount
         self.duplicateAttachmentCount = duplicateAttachmentCount
         self.unconfirmedAttachmentCount = unconfirmedAttachmentCount
@@ -73,7 +78,7 @@ public struct MessageForwardingAuditRecord: Codable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case id, timestamp, outcome, inspectedCount, eligibleCount, deliveredCount
-        case duplicateCount, deliveredAttachmentCount, duplicateAttachmentCount
+        case duplicateCount, unconfirmedMessageCount, deliveredAttachmentCount, duplicateAttachmentCount
         case unconfirmedAttachmentCount, deniedCounts
     }
 
@@ -86,6 +91,10 @@ public struct MessageForwardingAuditRecord: Codable, Equatable, Sendable {
         eligibleCount = try container.decode(Int.self, forKey: .eligibleCount)
         deliveredCount = try container.decode(Int.self, forKey: .deliveredCount)
         duplicateCount = try container.decode(Int.self, forKey: .duplicateCount)
+        unconfirmedMessageCount = try container.decodeIfPresent(
+            Int.self,
+            forKey: .unconfirmedMessageCount
+        ) ?? 0
         deliveredAttachmentCount = try container.decodeIfPresent(
             Int.self,
             forKey: .deliveredAttachmentCount
@@ -200,6 +209,7 @@ public struct AuditedMessageForwardingRunner {
                 eligibleCount: result.eligibleCount,
                 deliveredCount: result.deliveredCount,
                 duplicateCount: result.duplicateCount,
+                unconfirmedMessageCount: result.unconfirmedMessageCount,
                 deliveredAttachmentCount: result.deliveredAttachmentCount,
                 duplicateAttachmentCount: result.duplicateAttachmentCount,
                 unconfirmedAttachmentCount: result.unconfirmedAttachmentCount,

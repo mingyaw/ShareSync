@@ -1354,6 +1354,12 @@ struct MessageBridgePermissionView: View {
                 ) {
                     validationMetric("bridge.preview.metric.inspected", value: result.inspectedCount)
                     validationMetric("bridge.telegram.metric.sent", value: result.deliveredCount)
+                    if result.unconfirmedMessageCount > 0 {
+                        validationMetric(
+                            "bridge.telegram.metric.messages_unconfirmed",
+                            value: result.unconfirmedMessageCount
+                        )
+                    }
                     validationMetric(
                         "bridge.telegram.metric.attachments",
                         value: result.confirmedAttachmentCount

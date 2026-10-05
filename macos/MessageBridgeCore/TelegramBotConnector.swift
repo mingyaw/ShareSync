@@ -46,6 +46,17 @@ public enum TelegramBotConnectorError: Error, Equatable, Sendable {
     case rateLimited(retryAfter: TimeInterval)
 }
 
+extension TelegramBotConnectorError {
+    var isDefinitiveRejection: Bool {
+        switch self {
+        case .invalidToken, .invalidChatID, .apiFailure, .rateLimited:
+            return true
+        case .invalidResponse, .requestTimedOut, .transportFailure:
+            return false
+        }
+    }
+}
+
 public struct TelegramBotHTTPResponse: Equatable, Sendable {
     public let statusCode: Int
     public let data: Data

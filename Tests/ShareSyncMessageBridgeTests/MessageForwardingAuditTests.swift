@@ -83,6 +83,7 @@ final class MessageForwardingAuditTests: XCTestCase {
 
         let record = try decoder.decode(MessageForwardingAuditRecord.self, from: data)
 
+        XCTAssertEqual(record.unconfirmedMessageCount, 0)
         XCTAssertEqual(record.deliveredAttachmentCount, 0)
         XCTAssertEqual(record.duplicateAttachmentCount, 0)
         XCTAssertEqual(record.unconfirmedAttachmentCount, 0)
@@ -128,6 +129,15 @@ final class MessageForwardingAuditTests: XCTestCase {
                 MessageAttachmentDeliveryError.deliveryUnconfirmed
             ),
             .attachmentDeliveryUnconfirmed
+        )
+    }
+
+    func testUnconfirmedTextHasDedicatedAuditOutcome() {
+        XCTAssertEqual(
+            MessageForwardingAuditOutcome.classify(
+                MessageForwardingPipelineError.deliveryUnconfirmed
+            ),
+            .messageDeliveryUnconfirmed
         )
     }
 

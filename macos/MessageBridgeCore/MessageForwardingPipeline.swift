@@ -101,6 +101,7 @@ public struct MessageForwardingRunResult: Equatable, Sendable {
     public let eligibleCount: Int
     public let deliveredCount: Int
     public let duplicateCount: Int
+    public let unconfirmedMessageCount: Int
     public let deliveredAttachmentCount: Int
     public let duplicateAttachmentCount: Int
     public let unconfirmedAttachmentCount: Int
@@ -116,6 +117,7 @@ public struct MessageForwardingRunResult: Equatable, Sendable {
         eligibleCount: Int,
         deliveredCount: Int,
         duplicateCount: Int,
+        unconfirmedMessageCount: Int = 0,
         deliveredAttachmentCount: Int = 0,
         duplicateAttachmentCount: Int = 0,
         unconfirmedAttachmentCount: Int = 0,
@@ -126,6 +128,7 @@ public struct MessageForwardingRunResult: Equatable, Sendable {
         self.eligibleCount = eligibleCount
         self.deliveredCount = deliveredCount
         self.duplicateCount = duplicateCount
+        self.unconfirmedMessageCount = unconfirmedMessageCount
         self.deliveredAttachmentCount = deliveredAttachmentCount
         self.duplicateAttachmentCount = duplicateAttachmentCount
         self.unconfirmedAttachmentCount = unconfirmedAttachmentCount
@@ -140,6 +143,7 @@ public struct MessageForwardingRunResult: Equatable, Sendable {
 
 public enum MessageForwardingPipelineError: Error, Equatable, Sendable {
     case rateLimited(retryAfter: TimeInterval)
+    case deliveryUnconfirmed
 }
 
 public struct MessageForwardingPipeline {
@@ -191,6 +195,7 @@ public struct MessageForwardingPipeline {
         var eligibleCount = 0
         var deliveredCount = 0
         var duplicateCount = 0
+        var unconfirmedMessageCount = 0
         var deliveredAttachmentCount = 0
         var duplicateAttachmentCount = 0
         var unconfirmedAttachmentCount = 0
@@ -210,6 +215,13 @@ public struct MessageForwardingPipeline {
                 duplicateCount += 1
                 continue
             }
+            let hasAttachmentDelivery = attachmentDeliveryCoordinator != nil
+                && event.contentKinds.contains(.attachment)
+            if try deliveryLedger.record(for: event.deliveryKey)?.state == .pending,
+               !hasAttachmentDelivery {
+                unconfirmedMessageCount += 1
+                continue
+            }
             let deliveryDate = now()
             if let rateLimiter,
                case .limited(let retryAfter) = rateLimiter.reserve(at: deliveryDate) {
@@ -217,12 +229,22 @@ public struct MessageForwardingPipeline {
             }
             try deliveryLedger.markPending(deliveryKey: event.deliveryKey, at: deliveryDate)
             let envelope = envelopeBuilder.build(from: event)
-            if let attachmentDeliveryCoordinator,
-               event.contentKinds.contains(.attachment) {
+            if let attachmentDeliveryCoordinator, hasAttachmentDelivery {
                 let textPartKey = MessageDeliveryPartKey.text(messageKey: event.deliveryKey)
-                if try deliveryLedger.record(for: textPartKey)?.state != .delivered {
+                let textState = try deliveryLedger.record(for: textPartKey)?.state
+                if textState == .pending {
+                    unconfirmedMessageCount += 1
+                } else if textState != .delivered {
                     try deliveryLedger.markPending(deliveryKey: textPartKey, at: deliveryDate)
-                    _ = try connector.deliver(envelope)
+                    do {
+                        _ = try connector.deliver(envelope)
+                    } catch let error as TelegramBotConnectorError where error.isDefinitiveRejection {
+                        try deliveryLedger.remove(deliveryKey: textPartKey)
+                        try deliveryLedger.remove(deliveryKey: event.deliveryKey)
+                        throw error
+                    } catch {
+                        throw MessageForwardingPipelineError.deliveryUnconfirmed
+                    }
                     try deliveryLedger.markDelivered(deliveryKey: textPartKey, at: now())
                 }
                 let attachmentResult = try attachmentDeliveryCoordinator.deliverAttachments(
@@ -237,11 +259,18 @@ public struct MessageForwardingPipeline {
                 try deliveryLedger.markDelivered(deliveryKey: event.deliveryKey, at: now())
                 continue
             }
-            switch try connector.deliver(envelope) {
-            case .delivered:
-                deliveredCount += 1
-            case .duplicate:
-                duplicateCount += 1
+            do {
+                switch try connector.deliver(envelope) {
+                case .delivered:
+                    deliveredCount += 1
+                case .duplicate:
+                    duplicateCount += 1
+                }
+            } catch let error as TelegramBotConnectorError where error.isDefinitiveRejection {
+                try deliveryLedger.remove(deliveryKey: event.deliveryKey)
+                throw error
+            } catch {
+                throw MessageForwardingPipelineError.deliveryUnconfirmed
             }
             try deliveryLedger.markDelivered(deliveryKey: event.deliveryKey, at: now())
         }
@@ -254,6 +283,7 @@ public struct MessageForwardingPipeline {
             eligibleCount: eligibleCount,
             deliveredCount: deliveredCount,
             duplicateCount: duplicateCount,
+            unconfirmedMessageCount: unconfirmedMessageCount,
             deliveredAttachmentCount: deliveredAttachmentCount,
             duplicateAttachmentCount: duplicateAttachmentCount,
             unconfirmedAttachmentCount: unconfirmedAttachmentCount,

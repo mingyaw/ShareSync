@@ -20,8 +20,15 @@ Forwarding is opt-in and starts from an explicit baseline, so existing Messages
 history is not sent. Manual forwarding and a 10-second app-lifetime polling mode share
 the same cursor, opaque delivery ledger, sensitive-content policy, rate limiter,
 and aggregate audit store. The connector accepts only Telegram's fixed HTTPS
-host and rejects HTTP redirects. Attachments are summarized by count and MIME
-type in this phase; attachment files are not uploaded.
+host and rejects HTTP redirects. Attachment metadata is a separate opt-in, and
+an additional versioned consent can enable bounded JPEG/PNG uploads from allowed
+senders. Other file types are never uploaded.
+
+Text and image delivery use an at-most-once recovery rule. A definite Telegram
+rejection removes the pending record so a later pass can retry. A timeout,
+transport failure, or invalid response remains locally marked as unconfirmed
+and is skipped on the next pass, preventing a possibly successful send from
+being silently duplicated.
 
 Telegram-to-iMessage replies are deliberately narrower than forwarding. The
 configured Chat ID must be a private chat whose user ID matches the update

@@ -65,7 +65,7 @@
 "bridge.telegram.paused" = "訊息轉發已暫停；新訊息會留在本機佇列，恢復後再處理。";
 "bridge.telegram.outside_schedule" = "目前不在允許轉發時段；新訊息會保留到下一個允許時段。";
 "bridge.telegram.invalid" = "請檢查 Bot Token、數字 Chat ID 與寄件者白名單。";
-"bridge.telegram.failed" = "Telegram 傳送失敗；訊息游標未前移，可安全重試。";
+"bridge.telegram.failed" = "Telegram 傳送失敗。明確拒絕可重試；結果不確定時會保留狀態，避免重複訊息。";
 "bridge.telegram.attachment_rejected" = "附件被本機安全規則阻擋。請檢查「訊息」檔案權限、圖片格式與大小；訊息游標未前移。";
 "bridge.telegram.attachment_unconfirmed" = "Telegram 未確認圖片是否上傳成功。ShareSync 不會自動重送這張圖片，以避免可能的重複。";
 "bridge.telegram.token.placeholder" = "Bot Token（留空會沿用已保存的 Token）";
@@ -96,6 +96,7 @@
 "bridge.telegram.schedule.to" = "到";
 "bridge.telegram.schedule.detail" = "每日依 Mac 當前時區執行；開始與結束時間相同代表全天允許。";
 "bridge.telegram.metric.sent" = "已傳送";
+"bridge.telegram.metric.messages_unconfirmed" = "訊息未確認";
 "bridge.telegram.metric.attachments" = "圖片已確認";
 "bridge.telegram.metric.attachments_unconfirmed" = "圖片未確認";
 "bridge.telegram.metric.loop_prevented" = "已防止迴圈";
