@@ -51,6 +51,9 @@ public final class FileTelegramReplyRouteStore: TelegramReplyRouteStoring {
     }
 
     public func save(_ route: TelegramReplyRoute) throws {
+        guard Self.isValid(route) else {
+            throw MessageBridgePersistentStateError.invalidData
+        }
         lock.lock()
         defer { lock.unlock() }
         var envelope = try loadUnlocked()
@@ -99,7 +102,19 @@ public final class FileTelegramReplyRouteStore: TelegramReplyRouteStoring {
             throw MessageBridgePersistentStateError.invalidData
         }
         guard envelope.version == 1 else { throw TelegramReplyBridgeError.unsupportedState }
+        guard envelope.routes.allSatisfy(Self.isValid) else {
+            throw MessageBridgePersistentStateError.invalidData
+        }
         return envelope
+    }
+
+    private static func isValid(_ route: TelegramReplyRoute) -> Bool {
+        guard let chatID = Int64(route.telegramChatID), chatID > 0,
+              route.telegramMessageID > 0,
+              !route.recipientHandle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return false
+        }
+        return route.createdAt.timeIntervalSinceReferenceDate.isFinite
     }
 
     private func saveUnlocked(_ envelope: Envelope) throws {

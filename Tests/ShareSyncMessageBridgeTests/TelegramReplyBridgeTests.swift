@@ -293,6 +293,30 @@ final class TelegramReplyBridgeTests: XCTestCase {
         XCTAssertFalse(cursorStore.hasStoredCursor)
     }
 
+    func testRouteStoreRejectsInvalidRoutesOnSaveAndLoad() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let routeURL = directory.appendingPathComponent("routes.json")
+        let store = FileTelegramReplyRouteStore(fileURL: routeURL)
+        let invalidRoute = TelegramReplyRoute(
+            telegramChatID: "42",
+            telegramMessageID: 0,
+            recipientHandle: " "
+        )
+
+        XCTAssertThrowsError(try store.save(invalidRoute)) { error in
+            XCTAssertTrue(error is MessageBridgePersistentStateFailure)
+        }
+        try Data(
+            #"{"version":1,"routes":[{"telegramChatID":"42","telegramMessageID":0,"recipientHandle":"","createdAt":0}]}"#.utf8
+        ).write(to: routeURL)
+        XCTAssertThrowsError(try store.route(chatID: "42", messageID: 1)) { error in
+            XCTAssertTrue(error is MessageBridgePersistentStateFailure)
+        }
+    }
+
     func testSeparateRouteStoreInstancesDoNotLoseConcurrentRoutes() throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
@@ -308,7 +332,7 @@ final class TelegramReplyBridgeTests: XCTestCase {
             do {
                 try stores[index % stores.count].save(TelegramReplyRoute(
                     telegramChatID: "42",
-                    telegramMessageID: Int64(index),
+                    telegramMessageID: Int64(index + 1),
                     recipientHandle: "person-\(index)@example.com"
                 ))
             } catch {
@@ -322,7 +346,7 @@ final class TelegramReplyBridgeTests: XCTestCase {
         let reader = FileTelegramReplyRouteStore(fileURL: fileURL, maximumRoutes: 100)
         for index in 0..<100 {
             XCTAssertEqual(
-                try reader.route(chatID: "42", messageID: Int64(index))?.recipientHandle,
+                try reader.route(chatID: "42", messageID: Int64(index + 1))?.recipientHandle,
                 "person-\(index)@example.com"
             )
         }
