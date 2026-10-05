@@ -25,6 +25,37 @@ final class MessageForwardingAuditTests: XCTestCase {
         XCTAssertFalse(raw.contains("conversation"))
     }
 
+    func testSeparateAuditStoreInstancesDoNotLoseConcurrentRecords() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let fileURL = directory.appendingPathComponent("audit.json")
+        let stores = (0..<4).map { _ in
+            FileMessageForwardingAuditStore(fileURL: fileURL, maximumRecords: 100)
+        }
+        let errorLock = NSLock()
+        var errors: [Error] = []
+
+        DispatchQueue.concurrentPerform(iterations: 100) { index in
+            do {
+                try stores[index % stores.count].append(MessageForwardingAuditRecord(
+                    timestamp: Date(timeIntervalSince1970: Double(index)),
+                    outcome: .completed,
+                    inspectedCount: index
+                ))
+            } catch {
+                errorLock.lock()
+                errors.append(error)
+                errorLock.unlock()
+            }
+        }
+
+        XCTAssertTrue(errors.isEmpty)
+        let records = try stores[0].recent(limit: 100)
+        XCTAssertEqual(records.count, 100)
+        XCTAssertEqual(Set(records.map(\.inspectedCount)), Set(0..<100))
+    }
+
     func testAuditedRunnerRecordsAggregateDenialReasons() throws {
         let fixture = try MessageBridgeFixture()
         try fixture.insertHandle(identifier: "not-allowed")

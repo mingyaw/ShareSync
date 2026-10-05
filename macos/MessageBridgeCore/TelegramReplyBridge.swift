@@ -33,11 +33,12 @@ public final class FileTelegramReplyRouteStore: TelegramReplyRouteStoring {
 
     private let fileURL: URL
     private let maximumRoutes: Int
-    private let lock = NSLock()
+    private let lock: NSLock
 
     public init(fileURL: URL, maximumRoutes: Int = 1_000) {
         self.fileURL = fileURL
         self.maximumRoutes = max(maximumRoutes, 1)
+        self.lock = MessageBridgeFileLockRegistry.lock(for: fileURL)
     }
 
     public func save(_ route: TelegramReplyRoute) throws {
@@ -213,32 +214,44 @@ public protocol TelegramUpdateCursorStoring: AnyObject {
 public final class FileTelegramUpdateCursorStore: TelegramUpdateCursorStoring {
     private struct Envelope: Codable { let version: Int; let offset: Int64 }
     private let fileURL: URL
+    private let lock: NSLock
 
-    public init(fileURL: URL) { self.fileURL = fileURL }
+    public init(fileURL: URL) {
+        self.fileURL = fileURL
+        self.lock = MessageBridgeFileLockRegistry.lock(for: fileURL)
+    }
 
     public var hasStoredCursor: Bool {
-        FileManager.default.fileExists(atPath: fileURL.path)
+        withMessageBridgeFileLock(lock) {
+            FileManager.default.fileExists(atPath: fileURL.path)
+        }
     }
 
     public func load() throws -> Int64 {
-        guard FileManager.default.fileExists(atPath: fileURL.path) else { return 0 }
-        let value = try JSONDecoder().decode(Envelope.self, from: Data(contentsOf: fileURL))
-        guard value.version == 1 else { throw TelegramReplyBridgeError.unsupportedState }
-        return value.offset
+        try withMessageBridgeFileLock(lock) {
+            guard FileManager.default.fileExists(atPath: fileURL.path) else { return 0 }
+            let value = try JSONDecoder().decode(Envelope.self, from: Data(contentsOf: fileURL))
+            guard value.version == 1 else { throw TelegramReplyBridgeError.unsupportedState }
+            return value.offset
+        }
     }
 
     public func save(_ offset: Int64) throws {
-        try FileManager.default.createDirectory(
-            at: fileURL.deletingLastPathComponent(),
-            withIntermediateDirectories: true
-        )
-        try JSONEncoder().encode(Envelope(version: 1, offset: offset))
-            .write(to: fileURL, options: .atomic)
+        try withMessageBridgeFileLock(lock) {
+            try FileManager.default.createDirectory(
+                at: fileURL.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            try JSONEncoder().encode(Envelope(version: 1, offset: offset))
+                .write(to: fileURL, options: .atomic)
+        }
     }
 
     public func clear() throws {
-        guard FileManager.default.fileExists(atPath: fileURL.path) else { return }
-        try FileManager.default.removeItem(at: fileURL)
+        try withMessageBridgeFileLock(lock) {
+            guard FileManager.default.fileExists(atPath: fileURL.path) else { return }
+            try FileManager.default.removeItem(at: fileURL)
+        }
     }
 }
 

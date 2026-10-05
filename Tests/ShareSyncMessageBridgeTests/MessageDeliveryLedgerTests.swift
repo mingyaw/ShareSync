@@ -80,4 +80,33 @@ final class MessageDeliveryLedgerTests: XCTestCase {
 
         XCTAssertNil(try FileMessageDeliveryLedgerStore(fileURL: fileURL).record(for: "retryable"))
     }
+
+    func testSeparateFileLedgerInstancesDoNotLoseConcurrentUpdates() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let fileURL = directory.appendingPathComponent("ledger.json")
+        let stores = (0..<4).map { _ in FileMessageDeliveryLedgerStore(fileURL: fileURL) }
+        let errorLock = NSLock()
+        var errors: [Error] = []
+
+        DispatchQueue.concurrentPerform(iterations: 100) { index in
+            do {
+                try stores[index % stores.count].markDelivered(
+                    deliveryKey: "key-\(index)",
+                    at: Date(timeIntervalSince1970: Double(index))
+                )
+            } catch {
+                errorLock.lock()
+                errors.append(error)
+                errorLock.unlock()
+            }
+        }
+
+        XCTAssertTrue(errors.isEmpty)
+        let reader = FileMessageDeliveryLedgerStore(fileURL: fileURL)
+        for index in 0..<100 {
+            XCTAssertEqual(try reader.record(for: "key-\(index)")?.state, .delivered)
+        }
+    }
 }

@@ -199,6 +199,41 @@ final class TelegramReplyBridgeTests: XCTestCase {
         XCTAssertFalse(cursorStore.hasStoredCursor)
     }
 
+    func testSeparateRouteStoreInstancesDoNotLoseConcurrentRoutes() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let fileURL = directory.appendingPathComponent("routes.json")
+        let stores = (0..<4).map { _ in
+            FileTelegramReplyRouteStore(fileURL: fileURL, maximumRoutes: 100)
+        }
+        let errorLock = NSLock()
+        var errors: [Error] = []
+
+        DispatchQueue.concurrentPerform(iterations: 100) { index in
+            do {
+                try stores[index % stores.count].save(TelegramReplyRoute(
+                    telegramChatID: "42",
+                    telegramMessageID: Int64(index),
+                    recipientHandle: "person-\(index)@example.com"
+                ))
+            } catch {
+                errorLock.lock()
+                errors.append(error)
+                errorLock.unlock()
+            }
+        }
+
+        XCTAssertTrue(errors.isEmpty)
+        let reader = FileTelegramReplyRouteStore(fileURL: fileURL, maximumRoutes: 100)
+        for index in 0..<100 {
+            XCTAssertEqual(
+                try reader.route(chatID: "42", messageID: Int64(index))?.recipientHandle,
+                "person-\(index)@example.com"
+            )
+        }
+    }
+
     func testProcessorAdvancesPastUnsupportedTelegramUpdates() throws {
         let cursor = MemoryUpdateCursor()
         let processor = TelegramReplyProcessor(

@@ -28,4 +28,29 @@ final class MessageCursorStoreTests: XCTestCase {
             XCTAssertEqual(error as? MessageCursorStoreError, .unsupportedVersion(99))
         }
     }
+
+    func testSeparateCursorInstancesSerializeConcurrentReadsAndWrites() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let fileURL = directory.appendingPathComponent("cursor.json")
+        let stores = (0..<4).map { _ in FileMessageCursorStore(fileURL: fileURL) }
+        let errorLock = NSLock()
+        var errors: [Error] = []
+
+        DispatchQueue.concurrentPerform(iterations: 100) { index in
+            do {
+                let store = stores[index % stores.count]
+                try store.save(MessageCursor(rowID: Int64(index)))
+                _ = try store.load()
+            } catch {
+                errorLock.lock()
+                errors.append(error)
+                errorLock.unlock()
+            }
+        }
+
+        XCTAssertTrue(errors.isEmpty)
+        XCTAssertNotNil(try FileMessageCursorStore(fileURL: fileURL).load())
+    }
 }

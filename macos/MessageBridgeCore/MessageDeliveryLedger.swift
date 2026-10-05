@@ -1,5 +1,27 @@
 import Foundation
 
+enum MessageBridgeFileLockRegistry {
+    private static let registryLock = NSLock()
+    private static var locks: [String: NSLock] = [:]
+
+    static func lock(for fileURL: URL) -> NSLock {
+        registryLock.lock()
+        defer { registryLock.unlock() }
+        let key = fileURL.standardizedFileURL.path
+        if let lock = locks[key] { return lock }
+        let lock = NSLock()
+        locks[key] = lock
+        return lock
+    }
+}
+
+@discardableResult
+func withMessageBridgeFileLock<T>(_ lock: NSLock, _ body: () throws -> T) rethrows -> T {
+    lock.lock()
+    defer { lock.unlock() }
+    return try body()
+}
+
 public enum MessageDeliveryState: String, Codable, Equatable, Sendable {
     case pending
     case delivered
@@ -61,49 +83,61 @@ public final class FileMessageDeliveryLedgerStore: MessageDeliveryLedgerStore {
     private let fileManager: FileManager
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
+    private let lock: NSLock
 
     public init(fileURL: URL, fileManager: FileManager = .default) {
         self.fileURL = fileURL
         self.fileManager = fileManager
+        self.lock = MessageBridgeFileLockRegistry.lock(for: fileURL)
         encoder.dateEncodingStrategy = .millisecondsSince1970
         decoder.dateDecodingStrategy = .millisecondsSince1970
     }
 
     public func record(for deliveryKey: String) throws -> MessageDeliveryRecord? {
-        try load().records[deliveryKey]
+        try withMessageBridgeFileLock(lock) { try load().records[deliveryKey] }
     }
 
     public func markPending(deliveryKey: String, at date: Date) throws {
-        var envelope = try load()
-        if envelope.records[deliveryKey]?.state != .delivered {
-            envelope.records[deliveryKey] = MessageDeliveryRecord(state: .pending, updatedAt: date)
-            try save(envelope)
+        try withMessageBridgeFileLock(lock) {
+            var envelope = try load()
+            if envelope.records[deliveryKey]?.state != .delivered {
+                envelope.records[deliveryKey] = MessageDeliveryRecord(state: .pending, updatedAt: date)
+                try save(envelope)
+            }
         }
     }
 
     public func markDelivered(deliveryKey: String, at date: Date) throws {
-        var envelope = try load()
-        envelope.records[deliveryKey] = MessageDeliveryRecord(state: .delivered, updatedAt: date)
-        try save(envelope)
+        try withMessageBridgeFileLock(lock) {
+            var envelope = try load()
+            envelope.records[deliveryKey] = MessageDeliveryRecord(state: .delivered, updatedAt: date)
+            try save(envelope)
+        }
     }
 
     public func remove(deliveryKey: String) throws {
-        var envelope = try load()
-        guard envelope.records.removeValue(forKey: deliveryKey) != nil else { return }
-        try save(envelope)
+        try withMessageBridgeFileLock(lock) {
+            var envelope = try load()
+            guard envelope.records.removeValue(forKey: deliveryKey) != nil else { return }
+            try save(envelope)
+        }
     }
 
     public func pruneDelivered(before date: Date) throws {
-        var envelope = try load()
-        envelope.records = envelope.records.filter { _, record in
-            record.state != .delivered || record.updatedAt >= date
+        try withMessageBridgeFileLock(lock) {
+            var envelope = try load()
+            envelope.records = envelope.records.filter { _, record in
+                record.state != .delivered || record.updatedAt >= date
+            }
+            try save(envelope)
         }
-        try save(envelope)
     }
 
     public func clear() throws {
-        guard fileManager.fileExists(atPath: fileURL.path) else { return }
-        try fileManager.removeItem(at: fileURL)
+        try withMessageBridgeFileLock(lock) {
+            guard fileManager.fileExists(atPath: fileURL.path) else { return }
+            try fileManager.removeItem(at: fileURL)
+        }
     }
 
     private func load() throws -> Envelope {

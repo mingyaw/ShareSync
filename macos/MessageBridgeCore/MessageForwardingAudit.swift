@@ -128,6 +128,7 @@ public final class FileMessageForwardingAuditStore: MessageForwardingAuditStore 
     private let fileManager: FileManager
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
+    private let lock: NSLock
 
     public init(
         fileURL: URL,
@@ -137,27 +138,34 @@ public final class FileMessageForwardingAuditStore: MessageForwardingAuditStore 
         self.fileURL = fileURL
         self.maximumRecords = max(maximumRecords, 1)
         self.fileManager = fileManager
+        self.lock = MessageBridgeFileLockRegistry.lock(for: fileURL)
         encoder.dateEncodingStrategy = .millisecondsSince1970
         decoder.dateDecodingStrategy = .millisecondsSince1970
     }
 
     public func append(_ record: MessageForwardingAuditRecord) throws {
-        var envelope = try load()
-        envelope.records.append(record)
-        if envelope.records.count > maximumRecords {
-            envelope.records.removeFirst(envelope.records.count - maximumRecords)
+        try withMessageBridgeFileLock(lock) {
+            var envelope = try load()
+            envelope.records.append(record)
+            if envelope.records.count > maximumRecords {
+                envelope.records.removeFirst(envelope.records.count - maximumRecords)
+            }
+            try save(envelope)
         }
-        try save(envelope)
     }
 
     public func recent(limit: Int) throws -> [MessageForwardingAuditRecord] {
-        let boundedLimit = min(max(limit, 0), maximumRecords)
-        return Array(try load().records.suffix(boundedLimit).reversed())
+        try withMessageBridgeFileLock(lock) {
+            let boundedLimit = min(max(limit, 0), maximumRecords)
+            return Array(try load().records.suffix(boundedLimit).reversed())
+        }
     }
 
     public func clear() throws {
-        guard fileManager.fileExists(atPath: fileURL.path) else { return }
-        try fileManager.removeItem(at: fileURL)
+        try withMessageBridgeFileLock(lock) {
+            guard fileManager.fileExists(atPath: fileURL.path) else { return }
+            try fileManager.removeItem(at: fileURL)
+        }
     }
 
     private func load() throws -> Envelope {
