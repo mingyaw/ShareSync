@@ -27,6 +27,7 @@
 "mac.notes.items" = "則有效記事";
 "mac.notes.sync" = "同步記事";
 "mac.notes.detail" = "雙向合併 Android 與 Mac 記事，資料不經過雲端中繼。";
+"mac.notes.pending" = "這台 Mac 的變更正在等待同步。";
 "mac.notes.syncing" = "正在合併 Android 與 Mac 記事...";
 "mac.notes.updated" = "本次更新";
 "mac.notes.conflicts" = "已保留衝突";

@@ -65,6 +65,7 @@ public enum NoteSyncReceiptError: Error, Equatable {
 public protocol NoteSyncReceiptStore {
     func load() throws -> NoteSyncReceipt?
     func save(_ receipt: NoteSyncReceipt) throws
+    func clear() throws
 }
 
 public final class FileNoteSyncReceiptStore: NoteSyncReceiptStore {
@@ -93,6 +94,13 @@ public final class FileNoteSyncReceiptStore: NoteSyncReceiptStore {
             let encoder = JSONEncoder()
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             try encoder.encode(receipt).write(to: fileURL, options: [.atomic])
+        }
+    }
+
+    public func clear() throws {
+        try lock.withReceiptLock {
+            guard fileManager.fileExists(atPath: fileURL.path) else { return }
+            try fileManager.removeItem(at: fileURL)
         }
     }
 

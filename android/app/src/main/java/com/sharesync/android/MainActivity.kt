@@ -333,8 +333,10 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 }
+                noteSyncReceiptStore.clear()
             }
             runOnUiThread {
+                if (result.isSuccess) currentNoteSyncReceipt = null
                 refreshNotesAsync()
                 refreshUi(getString(if (result.isSuccess) R.string.notes_saved else R.string.notes_save_failed))
             }
@@ -350,8 +352,10 @@ class MainActivity : ComponentActivity() {
         Thread {
             val result = runCatching {
                 SuspendBridge.runBlocking { noteRepository.delete(note.id, note.revision) }
+                noteSyncReceiptStore.clear()
             }
             runOnUiThread {
+                if (result.isSuccess) currentNoteSyncReceipt = null
                 refreshNotesAsync()
                 refreshUi(getString(if (result.isSuccess) R.string.notes_deleted else R.string.notes_save_failed))
             }

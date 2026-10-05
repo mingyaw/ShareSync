@@ -146,6 +146,9 @@ Before a downloaded snapshot can modify the Mac repository, its source device
 ID must match the Android device stored by pairing. A stale or incorrectly
 resolved endpoint therefore fails before merge and before any snapshot is sent
 back.
+The latest-sync receipt describes only the snapshot that completed that cycle.
+Creating, editing, or deleting a note clears the receipt on that device, so the
+product returns to a waiting-to-sync state instead of showing stale success.
 
 Android 已透過需簽章的 `GET /v1/notes` 與 `POST /v1/notes` 提供此契約。`GET` 會以新
 batch ID 建立完整 repository 快照；`POST` 會驗證簽章裝置 ID 與批次來源相同，合併並
@@ -179,3 +182,5 @@ Android 現在也有正式的「記事」分頁，與簽章本機伺服器共用
 tombstone 保留規則。
 下載的快照必須先確認來源裝置 ID 與配對保存的 Android 裝置一致，才能修改 Mac 的
 記事資料；過期或錯誤解析的端點會在合併與回傳任何快照之前中止。
+最近同步收據只代表該次完成的快照；新增、修改或刪除記事後會撤銷該裝置上的舊收據，
+畫面會回到等待同步狀態，不會繼續顯示過期的成功結果。

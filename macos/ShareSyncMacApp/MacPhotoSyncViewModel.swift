@@ -29,6 +29,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
 
     enum NoteSyncState: Equatable {
         case idle
+        case pending
         case syncing
         case completed(Date, changedCount: Int, conflictCount: Int)
         case failed(String)
@@ -413,7 +414,9 @@ final class MacPhotoSyncViewModel: ObservableObject {
                     tags: tags
                 )
             }
+            try noteSyncReceiptStore.clear()
             noteMutationError = nil
+            noteSyncState = .pending
             refreshNoteCount()
             return true
         } catch {
@@ -425,7 +428,9 @@ final class MacPhotoSyncViewModel: ObservableObject {
     func deleteNote(_ note: VersionedNote) {
         do {
             _ = try noteRepository.delete(id: note.id, expectedRevision: note.revision)
+            try noteSyncReceiptStore.clear()
             noteMutationError = nil
+            noteSyncState = .pending
             refreshNoteCount()
         } catch {
             noteMutationError = text("mac.notes.save_error")
@@ -949,7 +954,10 @@ final class MacPhotoSyncViewModel: ObservableObject {
     }
 
     private func restoreNoteSyncReceipt() {
-        guard let receipt = try? noteSyncReceiptStore.load() else { return }
+        guard let receipt = try? noteSyncReceiptStore.load() else {
+            if !notes.isEmpty { noteSyncState = .pending }
+            return
+        }
         noteSyncState = .completed(
             Date(timeIntervalSince1970: Double(receipt.completedAtEpochMillis) / 1_000),
             changedCount: receipt.changedCount,

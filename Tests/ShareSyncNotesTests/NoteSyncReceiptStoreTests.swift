@@ -46,4 +46,26 @@ final class NoteSyncReceiptStoreTests: XCTestCase {
             XCTAssertEqual(error as? NoteSyncReceiptError, .unsupportedSchemaVersion(99))
         }
     }
+
+    func testClearRemovesPersistedReceipt() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShareSyncNoteReceipt-\(UUID().uuidString)")
+        let fileURL = directory.appendingPathComponent("receipt.json")
+        let store = FileNoteSyncReceiptStore(fileURL: fileURL)
+        let receipt = try NoteSyncReceipt(
+            completedAtEpochMillis: 1_800_000_000_000,
+            peerDeviceId: "android-primary",
+            pulledBatchId: "android-batch-001",
+            pushedBatchId: "mac-batch-001",
+            changedCount: 0,
+            conflictCount: 0
+        )
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        try store.save(receipt)
+        try store.clear()
+
+        XCTAssertNil(try FileNoteSyncReceiptStore(fileURL: fileURL).load())
+        XCTAssertNoThrow(try store.clear())
+    }
 }

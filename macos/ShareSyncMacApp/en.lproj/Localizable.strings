@@ -27,6 +27,7 @@
 "mac.notes.items" = "active notes";
 "mac.notes.sync" = "Sync notes";
 "mac.notes.detail" = "Merge notes in both directions without sending them through a cloud relay.";
+"mac.notes.pending" = "Changes on this Mac are waiting to sync.";
 "mac.notes.syncing" = "Merging Android and Mac notes...";
 "mac.notes.updated" = "Updated";
 "mac.notes.conflicts" = "Conflicts preserved";

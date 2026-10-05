@@ -385,6 +385,10 @@ struct MacContentView: View {
             Text("mac.notes.detail")
                 .font(.callout)
                 .foregroundStyle(.secondary)
+        case .pending:
+            Label("mac.notes.pending", systemImage: "arrow.triangle.2.circlepath")
+                .font(.callout)
+                .foregroundStyle(MacBrand.bridge)
         case .syncing:
             Text("mac.notes.syncing")
                 .font(.callout)

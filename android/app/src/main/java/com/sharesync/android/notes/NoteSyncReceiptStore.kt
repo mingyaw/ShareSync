@@ -29,6 +29,7 @@ data class NoteSyncReceipt(
 interface NoteSyncReceiptStore {
     fun load(): NoteSyncReceipt?
     fun save(receipt: NoteSyncReceipt)
+    fun clear()
 }
 
 class InMemoryNoteSyncReceiptStore(initialReceipt: NoteSyncReceipt? = null) : NoteSyncReceiptStore {
@@ -40,6 +41,11 @@ class InMemoryNoteSyncReceiptStore(initialReceipt: NoteSyncReceipt? = null) : No
     @Synchronized
     override fun save(receipt: NoteSyncReceipt) {
         this.receipt = receipt
+    }
+
+    @Synchronized
+    override fun clear() {
+        receipt = null
     }
 }
 
@@ -66,6 +72,12 @@ class FileNoteSyncReceiptStore(private val file: File) : NoteSyncReceiptStore {
             Files.move(temporary.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING)
         }
         Unit
+    }
+
+    override fun clear() = synchronized(lock) {
+        if (file.exists() && !file.delete()) {
+            error("Unable to clear note sync receipt")
+        }
     }
 
     private fun encode(receipt: NoteSyncReceipt): String = JSONObject()

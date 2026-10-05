@@ -53,4 +53,28 @@ class NoteSyncReceiptStoreTest {
             directory.deleteRecursively()
         }
     }
+
+    @Test
+    fun clearRemovesPersistedReceipt() {
+        val directory = Files.createTempDirectory("sharesync-note-receipt").toFile()
+        val file = File(directory, "receipt.json")
+        val store = FileNoteSyncReceiptStore(file)
+        val receipt = NoteSyncReceipt(
+            completedAtEpochMillis = 1_800_000_000_000,
+            peerDeviceId = "mac-device-001",
+            receivedBatchId = "mac-batch-001",
+            changedCount = 0,
+            conflictCount = 0,
+        )
+
+        try {
+            store.save(receipt)
+            store.clear()
+
+            assertEquals(null, FileNoteSyncReceiptStore(file).load())
+            store.clear()
+        } finally {
+            directory.deleteRecursively()
+        }
+    }
 }
