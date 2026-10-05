@@ -228,7 +228,9 @@ public final class TelegramBotUpdateClient: TelegramBotUpdateFetching {
                 description: payload.description ?? "Telegram update request failed"
             )
         }
-        let source = payload.result ?? []
+        guard let source = payload.result else {
+            throw TelegramBotConnectorError.invalidResponse
+        }
         let updates = source.compactMap { update -> TelegramBotUpdate? in
             guard let message = update.message else { return nil }
             return TelegramBotUpdate(

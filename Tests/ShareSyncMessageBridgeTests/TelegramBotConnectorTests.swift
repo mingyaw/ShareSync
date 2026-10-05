@@ -110,6 +110,27 @@ final class TelegramBotConnectorTests: XCTestCase {
         }
     }
 
+    func testUpdateClientRejectsSuccessfulResponseWithoutResultArray() throws {
+        let configuration = try TelegramBotConfiguration(
+            token: "123456:abcdefghijklmnopqrstuvwxyz_ABC",
+            chatID: "42"
+        )
+        for responseBody in [#"{"ok":true}"#, #"{"ok":true,"result":null}"#] {
+            let transport = RecordingTelegramTransport(
+                response: TelegramBotHTTPResponse(
+                    statusCode: 200,
+                    data: Data(responseBody.utf8)
+                )
+            )
+
+            XCTAssertThrowsError(
+                try TelegramBotUpdateClient(configuration: configuration, transport: transport).fetch(after: 7)
+            ) { error in
+                XCTAssertEqual(error as? TelegramBotConnectorError, .invalidResponse)
+            }
+        }
+    }
+
     func testSuccessfulDeliveryStoresLocalReplyRouteFromTelegramMessageID() throws {
         let data = try JSONSerialization.data(withJSONObject: [
             "ok": true,
