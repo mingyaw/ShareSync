@@ -53,6 +53,9 @@ Messages Automation is bounded to 15 seconds. Launch, permission, and missing
 recipient failures are definitive and may retry. A timeout, nonzero script exit,
 or unknown sender error is treated as an ambiguous side effect: the pending
 record remains and the reply is not automatically sent again.
+The next reply pass advances past that update without resending it and reports
+an explicit unconfirmed count, so the warning remains visible instead of being
+folded into the generic ignored count.
 
 Confirmed text, image, and reply delivery records are retained for 90 days and
 then pruned during normal polling. Pending records are never age-pruned because

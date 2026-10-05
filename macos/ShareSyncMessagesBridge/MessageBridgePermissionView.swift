@@ -712,7 +712,11 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                         try processor.run()
                     }.value
                     telegramReplyResult = result
-                    telegramReplyState = result.sentCount > 0 ? .sent : .noReplies
+                    if result.unconfirmedCount > 0 {
+                        telegramReplyState = .deliveryUnconfirmed
+                    } else {
+                        telegramReplyState = result.sentCount > 0 ? .sent : .noReplies
+                    }
                 } catch MessagesAutomationSender.AutomationError.permissionDenied {
                     telegramReplyState = .automationPermissionRequired
                 } catch MessagesAutomationSender.AutomationError.recipientUnavailable {
@@ -1585,6 +1589,12 @@ struct MessageBridgePermissionView: View {
                     validationMetric("bridge.telegram.reply.metric.checked", value: result.inspectedCount)
                     validationMetric("bridge.telegram.reply.metric.sent", value: result.sentCount)
                     validationMetric("bridge.telegram.reply.metric.ignored", value: result.ignoredCount)
+                    if result.unconfirmedCount > 0 {
+                        validationMetric(
+                            "bridge.telegram.reply.metric.unconfirmed",
+                            value: result.unconfirmedCount
+                        )
+                    }
                 }
             }
 

@@ -42,6 +42,7 @@ final class TelegramReplyBridgeTests: XCTestCase {
         XCTAssertEqual(sender.messages, [.init(text: "reply", handle: "+886912345678")])
         XCTAssertEqual(result.sentCount, 1)
         XCTAssertEqual(result.ignoredCount, 1)
+        XCTAssertEqual(result.unconfirmedCount, 0)
         XCTAssertEqual(try cursor.load(), 12)
     }
 
@@ -146,6 +147,7 @@ final class TelegramReplyBridgeTests: XCTestCase {
 
         XCTAssertEqual(retry.sentCount, 0)
         XCTAssertEqual(retry.ignoredCount, 1)
+        XCTAssertEqual(retry.unconfirmedCount, 1)
         XCTAssertEqual(sender.attemptCount, 1)
         XCTAssertEqual(try cursor.load(), 6)
     }
@@ -185,6 +187,7 @@ final class TelegramReplyBridgeTests: XCTestCase {
         XCTAssertTrue(sender.messages.isEmpty)
         XCTAssertEqual(result.sentCount, 0)
         XCTAssertEqual(result.ignoredCount, 1)
+        XCTAssertEqual(result.unconfirmedCount, 1)
         XCTAssertEqual(try cursor.load(), 6)
     }
 

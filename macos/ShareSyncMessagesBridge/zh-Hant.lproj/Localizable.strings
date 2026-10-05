@@ -133,3 +133,4 @@
 "bridge.telegram.reply.metric.checked" = "已檢查";
 "bridge.telegram.reply.metric.sent" = "已回覆";
 "bridge.telegram.reply.metric.ignored" = "已忽略";
+"bridge.telegram.reply.metric.unconfirmed" = "未確認";

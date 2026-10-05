@@ -301,6 +301,7 @@ public struct TelegramReplyRunResult: Equatable, Sendable {
     public let inspectedCount: Int
     public let sentCount: Int
     public let ignoredCount: Int
+    public let unconfirmedCount: Int
 }
 
 public struct TelegramReplyProcessor {
@@ -346,6 +347,7 @@ public struct TelegramReplyProcessor {
         let batch = try updates.fetch(after: offset)
         var sent = 0
         var ignored = 0
+        var unconfirmed = 0
         for update in batch.updates.sorted(by: { $0.updateID < $1.updateID }) {
             let nextOffset = update.updateID + 1
             guard update.chatID == authorizedPrivateChatID,
@@ -360,8 +362,11 @@ public struct TelegramReplyProcessor {
                 continue
             }
             let deliveryKey = Self.deliveryKey(for: update)
-            if try deliveryLedger.record(for: deliveryKey) != nil {
+            if let record = try deliveryLedger.record(for: deliveryKey) {
                 ignored += 1
+                if record.state == .pending {
+                    unconfirmed += 1
+                }
                 try cursorStore.save(nextOffset)
                 continue
             }
@@ -387,7 +392,8 @@ public struct TelegramReplyProcessor {
         return TelegramReplyRunResult(
             inspectedCount: batch.updates.count,
             sentCount: sent,
-            ignoredCount: ignored
+            ignoredCount: ignored,
+            unconfirmedCount: unconfirmed
         )
     }
 

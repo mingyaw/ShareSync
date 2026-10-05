@@ -133,3 +133,4 @@
 "bridge.telegram.reply.metric.checked" = "Checked";
 "bridge.telegram.reply.metric.sent" = "Replied";
 "bridge.telegram.reply.metric.ignored" = "Ignored";
+"bridge.telegram.reply.metric.unconfirmed" = "Unconfirmed";
