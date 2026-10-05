@@ -162,6 +162,8 @@ interruption without requiring a new pairing.
 - Telegram forwarding accepts a persisted multi-sender allowlist. Existing
   single-sender settings migrate automatically and removing the final sender
   disables automatic forwarding.
+- Sender matching canonicalizes email case and common phone punctuation while
+  preserving country-code semantics and exact matching for opaque identifiers.
 - Manual pause and an optional daily local-time schedule stop before reading
   queued rows, preserve the cursor, and resume without dropping messages.
 - Automatic forwarding now uses the polling planner for immediate batch

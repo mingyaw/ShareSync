@@ -42,6 +42,25 @@ final class MessageForwardingPipelineTests: XCTestCase {
         XCTAssertFalse(policy.permits(normalizer.normalize(makeEvent(sender: "third"))))
     }
 
+    func testPolicyMatchesCommonEmailAndPhoneFormattingDifferences() {
+        let policy = MessageForwardingPolicy(
+            allowedSenderIdentifiers: ["Person@Example.COM", "+886 912-345-678"]
+        )
+        let normalizer = MessageEventNormalizer()
+
+        XCTAssertTrue(policy.permits(normalizer.normalize(makeEvent(sender: "person@example.com"))))
+        XCTAssertTrue(policy.permits(normalizer.normalize(makeEvent(sender: "+886912345678"))))
+        XCTAssertFalse(policy.permits(normalizer.normalize(makeEvent(sender: "886912345678"))))
+    }
+
+    func testPolicyDoesNotRewriteOpaqueSenderIdentifiers() {
+        let policy = MessageForwardingPolicy(allowedSenderIdentifiers: ["Case-Sensitive-ID"])
+        let normalizer = MessageEventNormalizer()
+
+        XCTAssertTrue(policy.permits(normalizer.normalize(makeEvent(sender: "Case-Sensitive-ID"))))
+        XCTAssertFalse(policy.permits(normalizer.normalize(makeEvent(sender: "case-sensitive-id"))))
+    }
+
     func testPolicyCanRestrictAnAllowedSenderToSpecificConversation() {
         let normalizer = MessageEventNormalizer()
         let policy = MessageForwardingPolicy(

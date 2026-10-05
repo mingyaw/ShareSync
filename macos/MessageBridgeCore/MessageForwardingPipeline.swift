@@ -18,7 +18,9 @@ public struct MessageForwardingPolicy: Equatable, Sendable {
         blockedBodyTerms: Set<String> = [],
         blockLikelyOneTimeCodes: Bool = true
     ) {
-        self.allowedSenderIdentifiers = allowedSenderIdentifiers
+        self.allowedSenderIdentifiers = Set(
+            allowedSenderIdentifiers.map(MessageSenderIdentifier.canonical)
+        )
         self.allowedConversationIdentifiers = allowedConversationIdentifiers
         self.allowedServices = allowedServices
         self.incomingOnly = incomingOnly
@@ -34,7 +36,9 @@ public struct MessageForwardingPolicy: Equatable, Sendable {
     public func evaluate(_ event: NormalizedMessageEvent) -> MessageForwardingDecision {
         if incomingOnly && event.direction != .incoming { return .deny(.outgoingMessage) }
         guard let sender = event.senderIdentifier,
-              allowedSenderIdentifiers.contains(sender) else { return .deny(.senderNotAllowed) }
+              allowedSenderIdentifiers.contains(MessageSenderIdentifier.canonical(sender)) else {
+            return .deny(.senderNotAllowed)
+        }
         guard let service = event.service,
               allowedServices.contains(service) else { return .deny(.serviceNotAllowed) }
         if let allowedConversationIdentifiers,

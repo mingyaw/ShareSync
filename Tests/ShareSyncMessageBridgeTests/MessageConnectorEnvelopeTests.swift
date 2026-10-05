@@ -30,6 +30,20 @@ final class MessageConnectorEnvelopeTests: XCTestCase {
         XCTAssertTrue(envelope.attachmentMIMETypes.isEmpty)
     }
 
+    func testBuilderFindsReplyLabelAcrossPhoneFormattingDifferences() {
+        let envelope = MessageConnectorEnvelopeBuilder(
+            senderLabels: ["+886 900-000-000": "+886900000000"]
+        ).build(from: makeEvent(sender: "+886900000000"))
+
+        XCTAssertEqual(envelope.senderLabel, "+886900000000")
+    }
+
+    func testCanonicalizerHandlesEmailPhoneAndOpaqueIdentifiersConservatively() {
+        XCTAssertEqual(MessageSenderIdentifier.canonical(" Person@Example.COM "), "person@example.com")
+        XCTAssertEqual(MessageSenderIdentifier.canonical("+886 (912) 345-678"), "+886912345678")
+        XCTAssertEqual(MessageSenderIdentifier.canonical("Case-Sensitive-ID"), "Case-Sensitive-ID")
+    }
+
     private func makeEvent(sender: String, attachmentCount: Int = 0) -> NormalizedMessageEvent {
         NormalizedMessageEvent(
             deliveryKey: "opaque-key",

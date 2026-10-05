@@ -158,7 +158,12 @@ final class TelegramBotSettingsStore {
     }
 
     private func normalizedSenders(_ identifiers: [String]) -> [String] {
-        normalizedIdentifiers(identifiers)
+        var seen: Set<String> = []
+        return identifiers.compactMap { identifier in
+            let canonical = MessageSenderIdentifier.canonical(identifier)
+            guard !canonical.isEmpty, seen.insert(canonical).inserted else { return nil }
+            return canonical
+        }
     }
 
     private func normalizedIdentifiers(_ identifiers: [String]) -> [String] {
