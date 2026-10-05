@@ -169,6 +169,8 @@ interruption without requiring a new pairing.
 - Automatic forwarding now uses the polling planner for immediate batch
   continuation, bounded failure backoff, Telegram rate-limit delays, and reset
   on wake or network recovery. Reply polling remains independent.
+- Reply polling also honors Telegram `retry_after` limits and rejects update
+  cursors that cannot advance, while stale updates cannot move state backward.
 - Telegram forwarding can optionally persist an exact conversation allowlist.
   When configured, both sender and conversation must match; events without
   conversation context fail closed and the aggregate audit records the denial.

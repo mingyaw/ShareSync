@@ -136,6 +136,14 @@ public protocol TelegramBotUpdateFetching: AnyObject {
 
 public final class TelegramBotUpdateClient: TelegramBotUpdateFetching {
     private struct Response: Decodable {
+        struct Parameters: Decodable {
+            let retryAfter: Int?
+
+            enum CodingKeys: String, CodingKey {
+                case retryAfter = "retry_after"
+            }
+        }
+
         struct Update: Decodable {
             struct Message: Decodable {
                 struct Chat: Decodable { let id: Int64 }
@@ -171,9 +179,10 @@ public final class TelegramBotUpdateClient: TelegramBotUpdateFetching {
         let result: [Update]?
         let errorCode: Int?
         let description: String?
+        let parameters: Parameters?
 
         enum CodingKeys: String, CodingKey {
-            case ok, result, description
+            case ok, result, description, parameters
             case errorCode = "error_code"
         }
     }
@@ -190,6 +199,7 @@ public final class TelegramBotUpdateClient: TelegramBotUpdateFetching {
     }
 
     public func fetch(after offset: Int64) throws -> TelegramBotUpdateBatch {
+        guard offset >= 0 else { throw TelegramBotConnectorError.invalidResponse }
         let endpoint = "https://api.telegram.org/bot\(configuration.token)/getUpdates"
         guard let url = URL(string: endpoint), url.scheme == "https", url.host == "api.telegram.org" else {
             throw TelegramBotConnectorError.invalidToken
@@ -206,6 +216,11 @@ public final class TelegramBotUpdateClient: TelegramBotUpdateFetching {
         let response = try transport.execute(request)
         guard let payload = try? JSONDecoder().decode(Response.self, from: response.data) else {
             throw TelegramBotConnectorError.invalidResponse
+        }
+        if response.statusCode == 429 || payload.errorCode == 429 {
+            throw TelegramBotConnectorError.rateLimited(
+                retryAfter: TimeInterval(payload.parameters?.retryAfter ?? 60)
+            )
         }
         guard payload.ok, (200..<300).contains(response.statusCode) else {
             throw TelegramBotConnectorError.apiFailure(
@@ -225,7 +240,11 @@ public final class TelegramBotUpdateClient: TelegramBotUpdateFetching {
                 replyToMessageID: message.replyToMessage?.messageID
             )
         }
-        let next = max(offset, (source.map(\.updateID).max() ?? (offset - 1)) + 1)
+        let highestUpdateID = source.map(\.updateID).max()
+        guard highestUpdateID != Int64.max else {
+            throw TelegramBotConnectorError.invalidResponse
+        }
+        let next = highestUpdateID.map { max(offset, $0 + 1) } ?? offset
         return TelegramBotUpdateBatch(updates: updates, nextOffset: next)
     }
 }
@@ -349,6 +368,13 @@ public struct TelegramReplyProcessor {
         var ignored = 0
         var unconfirmed = 0
         for update in batch.updates.sorted(by: { $0.updateID < $1.updateID }) {
+            guard update.updateID >= offset else {
+                ignored += 1
+                continue
+            }
+            guard update.updateID < Int64.max else {
+                throw TelegramBotConnectorError.invalidResponse
+            }
             let nextOffset = update.updateID + 1
             guard update.chatID == authorizedPrivateChatID,
                   update.senderUserID == authorizedPrivateChatID,

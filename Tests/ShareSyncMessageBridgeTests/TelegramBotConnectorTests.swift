@@ -60,6 +60,56 @@ final class TelegramBotConnectorTests: XCTestCase {
         }
     }
 
+    func testUpdateClientMapsTelegramRateLimitDelay() throws {
+        let data = try JSONSerialization.data(withJSONObject: [
+            "ok": false,
+            "error_code": 429,
+            "description": "Too Many Requests",
+            "parameters": ["retry_after": 27],
+        ])
+        let transport = RecordingTelegramTransport(
+            response: TelegramBotHTTPResponse(statusCode: 429, data: data)
+        )
+        let configuration = try TelegramBotConfiguration(
+            token: "123456:abcdefghijklmnopqrstuvwxyz_ABC",
+            chatID: "42"
+        )
+
+        XCTAssertThrowsError(
+            try TelegramBotUpdateClient(configuration: configuration, transport: transport).fetch(after: 0)
+        ) { error in
+            XCTAssertEqual(error as? TelegramBotConnectorError, .rateLimited(retryAfter: 27))
+        }
+    }
+
+    func testUpdateClientRejectsUpdateIDThatCannotAdvance() throws {
+        let data = try JSONSerialization.data(withJSONObject: [
+            "ok": true,
+            "result": [[
+                "update_id": Int64.max,
+                "message": [
+                    "message_id": 1,
+                    "chat": ["id": 42],
+                    "from": ["id": 42],
+                    "text": "reply",
+                ],
+            ]],
+        ])
+        let transport = RecordingTelegramTransport(
+            response: TelegramBotHTTPResponse(statusCode: 200, data: data)
+        )
+        let configuration = try TelegramBotConfiguration(
+            token: "123456:abcdefghijklmnopqrstuvwxyz_ABC",
+            chatID: "42"
+        )
+
+        XCTAssertThrowsError(
+            try TelegramBotUpdateClient(configuration: configuration, transport: transport).fetch(after: 0)
+        ) { error in
+            XCTAssertEqual(error as? TelegramBotConnectorError, .invalidResponse)
+        }
+    }
+
     func testSuccessfulDeliveryStoresLocalReplyRouteFromTelegramMessageID() throws {
         let data = try JSONSerialization.data(withJSONObject: [
             "ok": true,

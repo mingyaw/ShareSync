@@ -72,6 +72,35 @@ final class TelegramReplyBridgeTests: XCTestCase {
         XCTAssertEqual(try cursor.load(), 4)
     }
 
+    func testProcessorIgnoresStaleUpdateWithoutMovingCursorBackward() throws {
+        let cursor = MemoryUpdateCursor()
+        try cursor.save(10)
+        let sender = RecordingReplySender()
+        let result = try TelegramReplyProcessor(
+            updates: FixedBatchFetcher(batch: TelegramBotUpdateBatch(
+                updates: [
+                    TelegramBotUpdate(
+                        updateID: 9,
+                        messageID: 8,
+                        chatID: "42",
+                        senderUserID: "42",
+                        text: "stale",
+                        replyToMessageID: 7
+                    ),
+                ],
+                nextOffset: 10
+            )),
+            cursorStore: cursor,
+            routeStore: MemoryRouteStore(),
+            sender: sender,
+            authorizedPrivateChatID: "42"
+        ).run()
+
+        XCTAssertEqual(result.ignoredCount, 1)
+        XCTAssertTrue(sender.messages.isEmpty)
+        XCTAssertEqual(try cursor.load(), 10)
+    }
+
     func testSendFailureDoesNotAdvanceCursor() throws {
         let routeStore = MemoryRouteStore()
         try routeStore.save(TelegramReplyRoute(
