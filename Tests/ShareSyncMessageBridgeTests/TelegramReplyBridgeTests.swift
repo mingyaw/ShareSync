@@ -247,6 +247,23 @@ final class TelegramReplyBridgeTests: XCTestCase {
         XCTAssertTrue(sender.messages.isEmpty)
     }
 
+    func testBaselineRejectsCursorRegression() throws {
+        let cursor = MemoryUpdateCursor()
+        try cursor.save(20)
+        let processor = TelegramReplyProcessor(
+            updates: FixedBatchFetcher(batch: TelegramBotUpdateBatch(updates: [], nextOffset: 19)),
+            cursorStore: cursor,
+            routeStore: MemoryRouteStore(),
+            sender: RecordingReplySender(),
+            authorizedPrivateChatID: "42"
+        )
+
+        XCTAssertThrowsError(try processor.establishBaseline()) { error in
+            XCTAssertEqual(error as? TelegramBotConnectorError, .invalidResponse)
+        }
+        XCTAssertEqual(try cursor.load(), 20)
+    }
+
     func testFileStoresPersistRouteAndCursorAndClearThem() throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
@@ -387,6 +404,23 @@ final class TelegramReplyBridgeTests: XCTestCase {
         XCTAssertThrowsError(
             try FileTelegramUpdateCursorStore(fileURL: cursorURL).load()
         ) { error in
+            XCTAssertTrue(error is MessageBridgePersistentStateFailure)
+        }
+    }
+
+    func testFileCursorStoreRejectsNegativeOffsets() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let cursorURL = directory.appendingPathComponent("cursor.json")
+        let store = FileTelegramUpdateCursorStore(fileURL: cursorURL)
+
+        XCTAssertThrowsError(try store.save(-1)) { error in
+            XCTAssertTrue(error is MessageBridgePersistentStateFailure)
+        }
+        try Data(#"{"version":1,"offset":-1}"#.utf8).write(to: cursorURL)
+        XCTAssertThrowsError(try store.load()) { error in
             XCTAssertTrue(error is MessageBridgePersistentStateFailure)
         }
     }

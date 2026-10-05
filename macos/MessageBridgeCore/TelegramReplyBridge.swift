@@ -283,11 +283,13 @@ public final class FileTelegramUpdateCursorStore: TelegramUpdateCursorStoring {
                 throw MessageBridgePersistentStateError.invalidData
             }
             guard value.version == 1 else { throw TelegramReplyBridgeError.unsupportedState }
+            guard value.offset >= 0 else { throw MessageBridgePersistentStateError.invalidData }
             return value.offset
         }
     }
 
     public func save(_ offset: Int64) throws {
+        guard offset >= 0 else { throw MessageBridgePersistentStateError.invalidData }
         try withMessageBridgeFileLock(lock) {
             try FileManager.default.createDirectory(
                 at: fileURL.deletingLastPathComponent(),
@@ -356,7 +358,11 @@ public struct TelegramReplyProcessor {
     }
 
     public func establishBaseline() throws {
-        let batch = try updates.fetch(after: try cursorStore.load())
+        let offset = try cursorStore.load()
+        let batch = try updates.fetch(after: offset)
+        guard batch.nextOffset >= offset else {
+            throw TelegramBotConnectorError.invalidResponse
+        }
         try cursorStore.save(batch.nextOffset)
     }
 
