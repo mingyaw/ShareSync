@@ -126,10 +126,13 @@ public final class FileMessageDeliveryLedgerStore: MessageDeliveryLedgerStore {
     public func pruneDelivered(before date: Date) throws {
         try withMessageBridgeFileLock(lock) {
             var envelope = try load()
+            let originalCount = envelope.records.count
             envelope.records = envelope.records.filter { _, record in
                 record.state != .delivered || record.updatedAt >= date
             }
-            try save(envelope)
+            if envelope.records.count != originalCount {
+                try save(envelope)
+            }
         }
     }
 

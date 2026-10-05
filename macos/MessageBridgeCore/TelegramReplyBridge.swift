@@ -33,11 +33,20 @@ public final class FileTelegramReplyRouteStore: TelegramReplyRouteStoring {
 
     private let fileURL: URL
     private let maximumRoutes: Int
+    private let maximumAge: TimeInterval
+    private let now: () -> Date
     private let lock: NSLock
 
-    public init(fileURL: URL, maximumRoutes: Int = 1_000) {
+    public init(
+        fileURL: URL,
+        maximumRoutes: Int = 1_000,
+        maximumAge: TimeInterval = 30 * 24 * 60 * 60,
+        now: @escaping () -> Date = Date.init
+    ) {
         self.fileURL = fileURL
         self.maximumRoutes = max(maximumRoutes, 1)
+        self.maximumAge = max(maximumAge, 1)
+        self.now = now
         self.lock = MessageBridgeFileLockRegistry.lock(for: fileURL)
     }
 
@@ -45,6 +54,9 @@ public final class FileTelegramReplyRouteStore: TelegramReplyRouteStoring {
         lock.lock()
         defer { lock.unlock() }
         var envelope = try loadUnlocked()
+        envelope.routes.removeAll {
+            $0.createdAt < now().addingTimeInterval(-maximumAge)
+        }
         envelope.routes.removeAll {
             $0.telegramChatID == route.telegramChatID && $0.telegramMessageID == route.telegramMessageID
         }
@@ -56,7 +68,15 @@ public final class FileTelegramReplyRouteStore: TelegramReplyRouteStoring {
     public func route(chatID: String, messageID: Int64) throws -> TelegramReplyRoute? {
         lock.lock()
         defer { lock.unlock() }
-        return try loadUnlocked().routes.last {
+        var envelope = try loadUnlocked()
+        let originalCount = envelope.routes.count
+        envelope.routes.removeAll {
+            $0.createdAt < now().addingTimeInterval(-maximumAge)
+        }
+        if envelope.routes.count != originalCount {
+            try saveUnlocked(envelope)
+        }
+        return envelope.routes.last {
             $0.telegramChatID == chatID && $0.telegramMessageID == messageID
         }
     }
@@ -272,6 +292,7 @@ public struct TelegramReplyProcessor {
     private let sender: any IMessageReplySending
     private let deliveryLedger: any MessageDeliveryLedgerStore
     private let authorizedPrivateChatID: String
+    private let deliveredRecordRetention: TimeInterval
     private let now: () -> Date
 
     public init(
@@ -281,6 +302,7 @@ public struct TelegramReplyProcessor {
         sender: any IMessageReplySending,
         authorizedPrivateChatID: String,
         deliveryLedger: any MessageDeliveryLedgerStore = InMemoryMessageDeliveryLedgerStore(),
+        deliveredRecordRetention: TimeInterval = 90 * 24 * 60 * 60,
         now: @escaping () -> Date = Date.init
     ) {
         self.updates = updates
@@ -289,6 +311,7 @@ public struct TelegramReplyProcessor {
         self.sender = sender
         self.deliveryLedger = deliveryLedger
         self.authorizedPrivateChatID = authorizedPrivateChatID
+        self.deliveredRecordRetention = max(deliveredRecordRetention, 1)
         self.now = now
     }
 
@@ -298,6 +321,9 @@ public struct TelegramReplyProcessor {
     }
 
     public func run() throws -> TelegramReplyRunResult {
+        try deliveryLedger.pruneDelivered(
+            before: now().addingTimeInterval(-deliveredRecordRetention)
+        )
         let offset = try cursorStore.load()
         let batch = try updates.fetch(after: offset)
         var sent = 0

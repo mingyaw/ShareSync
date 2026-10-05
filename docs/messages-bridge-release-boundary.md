@@ -76,3 +76,5 @@ release and any later connector must satisfy all of the following:
 - Text delivery follows the same at-most-once boundary. Definite Telegram
   rejections may retry, while ambiguous transport results remain locally
   unconfirmed and are skipped rather than automatically resent.
+- Confirmed delivery records are retained for 90 days; pending records are not
+  age-pruned. Telegram-to-iMessage reply routes expire after 30 days.

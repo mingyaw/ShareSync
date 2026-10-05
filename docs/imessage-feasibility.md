@@ -49,6 +49,12 @@ retried. Reset removes all three stores. Reply polling runs only while ShareSync
 running and automatic Telegram polling is enabled, or when the user checks
 manually.
 
+Confirmed text, image, and reply delivery records are retained for 90 days and
+then pruned during normal polling. Pending records are never age-pruned because
+they represent an ambiguous external side effect that must not be repeated.
+Telegram reply routes expire after 30 days, limiting how long an old forwarded
+Bot message can authorize a new iMessage reply.
+
 The unified Mac app owns the Messages model for its full process lifetime, not
 the main window lifetime. Explicit automatic-forwarding and secure-reply choices
 are stored locally and restored after the Messages permission check succeeds.

@@ -331,6 +331,31 @@ final class MessageForwardingPipelineTests: XCTestCase {
         }
     }
 
+    func testPipelinePrunesOnlyExpiredDeliveredRecords() throws {
+        let fixture = try MessageBridgeFixture()
+        let store = try makeStore()
+        try store.store.save(MessageCursor(rowID: 0))
+        let ledger = InMemoryMessageDeliveryLedgerStore()
+        try ledger.markDelivered(deliveryKey: "expired", at: Date(timeIntervalSince1970: 10))
+        try ledger.markDelivered(deliveryKey: "recent", at: Date(timeIntervalSince1970: 950))
+        try ledger.markPending(deliveryKey: "uncertain", at: Date(timeIntervalSince1970: 10))
+        let pipeline = MessageForwardingPipeline(
+            reader: MessageEventReader(databaseURL: fixture.databaseURL),
+            cursorStore: store.store,
+            policy: MessageForwardingPolicy(allowedSenderIdentifiers: []),
+            connector: InMemoryMessageForwardingConnector(),
+            deliveryLedger: ledger,
+            deliveredRecordRetention: 100,
+            now: { Date(timeIntervalSince1970: 1_000) }
+        )
+
+        _ = try pipeline.run()
+
+        XCTAssertNil(try ledger.record(for: "expired"))
+        XCTAssertNotNil(try ledger.record(for: "recent"))
+        XCTAssertEqual(try ledger.record(for: "uncertain")?.state, .pending)
+    }
+
     private func makeEvent(
         rowID: Int64 = 1,
         guid: String = "guid",

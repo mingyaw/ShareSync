@@ -157,6 +157,7 @@ public struct MessageForwardingPipeline {
     private let rateLimiter: MessageDeliveryRateLimiter?
     private let envelopeBuilder: MessageConnectorEnvelopeBuilder
     private let attachmentDeliveryCoordinator: MessageAttachmentDeliveryCoordinator?
+    private let deliveredRecordRetention: TimeInterval
     private let now: () -> Date
 
     public init(
@@ -170,6 +171,7 @@ public struct MessageForwardingPipeline {
         rateLimiter: MessageDeliveryRateLimiter? = nil,
         envelopeBuilder: MessageConnectorEnvelopeBuilder = MessageConnectorEnvelopeBuilder(),
         attachmentDeliveryCoordinator: MessageAttachmentDeliveryCoordinator? = nil,
+        deliveredRecordRetention: TimeInterval = 90 * 24 * 60 * 60,
         now: @escaping () -> Date = Date.init
     ) {
         self.reader = reader
@@ -182,6 +184,7 @@ public struct MessageForwardingPipeline {
         self.rateLimiter = rateLimiter
         self.envelopeBuilder = envelopeBuilder
         self.attachmentDeliveryCoordinator = attachmentDeliveryCoordinator
+        self.deliveredRecordRetention = max(deliveredRecordRetention, 1)
         self.now = now
     }
 
@@ -190,6 +193,9 @@ public struct MessageForwardingPipeline {
         guard let cursor = try cursorStore.load() else {
             throw MessageValidationSessionError.baselineRequired
         }
+        try deliveryLedger.pruneDelivered(
+            before: now().addingTimeInterval(-deliveredRecordRetention)
+        )
 
         let batch = try reader.events(after: cursor, limit: limit)
         var eligibleCount = 0

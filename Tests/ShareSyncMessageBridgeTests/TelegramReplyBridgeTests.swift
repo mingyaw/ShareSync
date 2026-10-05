@@ -234,6 +234,64 @@ final class TelegramReplyBridgeTests: XCTestCase {
         }
     }
 
+    func testExpiredReplyRouteIsRemovedAndCannotBeResolved() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let fileURL = directory.appendingPathComponent("routes.json")
+        let now = Date(timeIntervalSince1970: 1_000)
+        let initialStore = FileTelegramReplyRouteStore(
+            fileURL: fileURL,
+            maximumAge: 100,
+            now: { Date(timeIntervalSince1970: 500) }
+        )
+        try initialStore.save(TelegramReplyRoute(
+            telegramChatID: "42",
+            telegramMessageID: 1,
+            recipientHandle: "old@example.com",
+            createdAt: Date(timeIntervalSince1970: 500)
+        ))
+        try initialStore.save(TelegramReplyRoute(
+            telegramChatID: "42",
+            telegramMessageID: 2,
+            recipientHandle: "fresh@example.com",
+            createdAt: Date(timeIntervalSince1970: 950)
+        ))
+        let store = FileTelegramReplyRouteStore(
+            fileURL: fileURL,
+            maximumAge: 100,
+            now: { now }
+        )
+
+        XCTAssertNil(try store.route(chatID: "42", messageID: 1))
+        XCTAssertEqual(
+            try store.route(chatID: "42", messageID: 2)?.recipientHandle,
+            "fresh@example.com"
+        )
+        XCTAssertFalse(try String(contentsOf: fileURL).contains("old@example.com"))
+    }
+
+    func testReplyProcessorPrunesDeliveredButRetainsPendingLedgerRecords() throws {
+        let ledger = InMemoryMessageDeliveryLedgerStore()
+        try ledger.markDelivered(deliveryKey: "expired", at: Date(timeIntervalSince1970: 10))
+        try ledger.markPending(deliveryKey: "uncertain", at: Date(timeIntervalSince1970: 10))
+        let processor = TelegramReplyProcessor(
+            updates: FixedUpdateFetcher(updates: []),
+            cursorStore: MemoryUpdateCursor(),
+            routeStore: MemoryRouteStore(),
+            sender: RecordingReplySender(),
+            authorizedPrivateChatID: "42",
+            deliveryLedger: ledger,
+            deliveredRecordRetention: 100,
+            now: { Date(timeIntervalSince1970: 1_000) }
+        )
+
+        _ = try processor.run()
+
+        XCTAssertNil(try ledger.record(for: "expired"))
+        XCTAssertEqual(try ledger.record(for: "uncertain")?.state, .pending)
+    }
+
     func testProcessorAdvancesPastUnsupportedTelegramUpdates() throws {
         let cursor = MemoryUpdateCursor()
         let processor = TelegramReplyProcessor(
