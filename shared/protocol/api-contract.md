@@ -192,7 +192,9 @@ with aggregate `acceptedRemoteCount`, `keptLocalCount`, `unchangedCount`,
 For a signed `POST`, `X-Device-Id` must equal the payload's `sourceDeviceId`.
 Malformed batches or a source mismatch return `SS-REQ-001`. A build without a
 configured note repository returns `SS-NOTES-503`; it never exposes an empty
-placeholder snapshot.
+placeholder snapshot. A local note-store or receipt persistence failure also
+returns `SS-NOTES-503`, allowing the Mac to retry without misclassifying local
+storage damage as a malformed remote batch.
 
 ## M0 Scope
 

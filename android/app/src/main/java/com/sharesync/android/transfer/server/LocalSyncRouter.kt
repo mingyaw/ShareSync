@@ -19,6 +19,7 @@ import com.sharesync.android.sync.SyncResultStore
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.UUID
+import java.util.concurrent.CancellationException
 
 class LocalSyncRouter(
     private val deviceId: String,
@@ -192,14 +193,19 @@ class LocalSyncRouter(
             requestActivityTracker?.record("notes-get", response.statusCode)
             return response
         }
-        val response = LocalApiResponse.json(
-            body = noteSyncBatchCodec.encode(
-                repository.createSyncBatch(
-                    batchId = noteBatchIdProvider(),
-                    generatedAtEpochMillis = clock(),
+        val response = try {
+            LocalApiResponse.json(
+                body = noteSyncBatchCodec.encode(
+                    repository.createSyncBatch(
+                        batchId = noteBatchIdProvider(),
+                        generatedAtEpochMillis = clock(),
+                    ),
                 ),
-            ),
-        )
+            )
+        } catch (error: Exception) {
+            if (error is CancellationException) throw error
+            LocalApiResponse.jsonError(statusCode = 503, errorCode = "SS-NOTES-503")
+        }
         requestActivityTracker?.record("notes-get", response.statusCode)
         return response
     }
@@ -220,11 +226,22 @@ class LocalSyncRouter(
             requestActivityTracker?.record("notes-post", response.statusCode)
             return response
         }
-        return try {
+        val batch = try {
             val batch = noteSyncBatchCodec.decode(body)
             headers.valueFor(RequestSignatureValidator.DEVICE_ID_HEADER)?.let { requestingDeviceId ->
                 require(requestingDeviceId == batch.sourceDeviceId)
             }
+            batch
+        } catch (_: JSONException) {
+            val response = LocalApiResponse.jsonError(statusCode = 400, errorCode = "SS-REQ-001")
+            requestActivityTracker?.record("notes-post", response.statusCode)
+            return response
+        } catch (_: IllegalArgumentException) {
+            val response = LocalApiResponse.jsonError(statusCode = 400, errorCode = "SS-REQ-001")
+            requestActivityTracker?.record("notes-post", response.statusCode)
+            return response
+        }
+        return try {
             val result = repository.mergeRemoteBatch(batch)
             noteSyncReceiptStore?.save(
                 NoteSyncReceipt(
@@ -249,12 +266,9 @@ class LocalSyncRouter(
             )
             requestActivityTracker?.record("notes-post", response.statusCode)
             response
-        } catch (_: JSONException) {
-            val response = LocalApiResponse.jsonError(statusCode = 400, errorCode = "SS-REQ-001")
-            requestActivityTracker?.record("notes-post", response.statusCode)
-            response
-        } catch (_: IllegalArgumentException) {
-            val response = LocalApiResponse.jsonError(statusCode = 400, errorCode = "SS-REQ-001")
+        } catch (error: Exception) {
+            if (error is CancellationException) throw error
+            val response = LocalApiResponse.jsonError(statusCode = 503, errorCode = "SS-NOTES-503")
             requestActivityTracker?.record("notes-post", response.statusCode)
             response
         }

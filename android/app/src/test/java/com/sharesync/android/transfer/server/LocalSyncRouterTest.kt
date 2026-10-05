@@ -5,6 +5,7 @@ import com.sharesync.android.notes.InMemoryNoteStore
 import com.sharesync.android.notes.InMemoryNoteSyncReceiptStore
 import com.sharesync.android.notes.NoteRepository
 import com.sharesync.android.notes.NoteRevision
+import com.sharesync.android.notes.NoteStore
 import com.sharesync.android.notes.NoteSyncBatch
 import com.sharesync.android.notes.NoteSyncBatchCodec
 import com.sharesync.android.notes.VersionedNote
@@ -19,6 +20,7 @@ import com.sharesync.android.sync.MediaType
 import com.sharesync.android.sync.SyncManifest
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.io.IOException
 import java.time.Instant
 
 class LocalSyncRouterTest {
@@ -53,6 +55,19 @@ class LocalSyncRouterTest {
     }
 
     @Test
+    fun notesSnapshotReportsUnavailableWhenLocalStoreCannotBeRead() {
+        val response = SuspendBridge.runBlocking {
+            router(
+                noteRepository = noteRepository(ThrowingNoteStore()),
+                authorizationPolicy = AuthorizationPolicy.SignedRequestsWithPairingTokenFallback,
+            ).noteSnapshot(headers = pairingHeaders())
+        }
+
+        assertEquals(503, response.statusCode)
+        assertEquals("""{"errorCode":"SS-NOTES-503"}""", response.body)
+    }
+
+    @Test
     fun notesPostMergesRemoteBatchAndReportsAggregateResult() {
         val store = InMemoryNoteStore()
         val receiptStore = InMemoryNoteSyncReceiptStore()
@@ -80,6 +95,25 @@ class LocalSyncRouterTest {
         assertEquals("mac-notes-001", receiptStore.load()?.receivedBatchId)
         assertEquals(3_000L, receiptStore.load()?.completedAtEpochMillis)
         assertEquals(1, receiptStore.load()?.changedCount)
+    }
+
+    @Test
+    fun notesPostReportsUnavailableWhenLocalStoreCannotBeRead() {
+        val batch = NoteSyncBatch(
+            batchId = "mac-notes-001",
+            sourceDeviceId = "mac-device-001",
+            generatedAtEpochMillis = 2_000L,
+            notes = listOf(note(deviceId = "mac-device-001")),
+        )
+        val response = SuspendBridge.runBlocking {
+            router(
+                noteRepository = noteRepository(ThrowingNoteStore()),
+                authorizationPolicy = AuthorizationPolicy.SignedRequestsWithPairingTokenFallback,
+            ).mergeNotes(body = NoteSyncBatchCodec().encode(batch), headers = pairingHeaders())
+        }
+
+        assertEquals(503, response.statusCode)
+        assertEquals("""{"errorCode":"SS-NOTES-503"}""", response.body)
     }
 
     @Test
@@ -951,7 +985,7 @@ class LocalSyncRouterTest {
         )
     }
 
-    private fun noteRepository(store: InMemoryNoteStore = InMemoryNoteStore()): NoteRepository {
+    private fun noteRepository(store: NoteStore = InMemoryNoteStore()): NoteRepository {
         return NoteRepository(store = store, deviceId = "android-device-001", now = { 1_000L })
     }
 
@@ -997,4 +1031,10 @@ class LocalSyncRouterTest {
     private companion object {
         const val PAIRING_TOKEN = "expected-token"
     }
+}
+
+private class ThrowingNoteStore : NoteStore {
+    override suspend fun all(): List<VersionedNote> = throw IOException("unavailable")
+    override suspend fun get(id: String): VersionedNote? = throw IOException("unavailable")
+    override suspend fun replace(notes: List<VersionedNote>) = throw IOException("unavailable")
 }
