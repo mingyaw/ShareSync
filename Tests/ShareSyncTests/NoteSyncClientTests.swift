@@ -38,7 +38,8 @@ final class NoteSyncClientTests: XCTestCase {
                 deviceId: "mac-device-001",
                 sessionId: "mac-notes-v1",
                 secret: "device-secret"
-            )
+            ),
+            expectedPeerDeviceID: "android-device-001"
         )
 
         XCTAssertEqual(result.pushedBatchID, "mac-batch-001")
@@ -97,7 +98,8 @@ final class NoteSyncClientTests: XCTestCase {
                 deviceId: "mac-device-001",
                 sessionId: "mac-notes-v1",
                 secret: "device-secret"
-            )
+            ),
+            expectedPeerDeviceID: "android-device-001"
         )
 
         XCTAssertEqual(result.pulledBatchID, "android-batch-001")
@@ -113,6 +115,45 @@ final class NoteSyncClientTests: XCTestCase {
         XCTAssertEqual(pushed.sourceDeviceId, "mac-device-001")
         XCTAssertEqual(pushed.generatedAtEpochMillis, 3_000)
         XCTAssertEqual(pushed.notes.map(\.id), ["android-note", "mac-note"])
+    }
+
+    func testSynchronizeRejectsUnexpectedPeerBeforeMergingOrPushing() async throws {
+        let remoteBatch = try NoteSyncBatch(
+            batchId: "unexpected-batch",
+            sourceDeviceId: "different-android-device",
+            generatedAtEpochMillis: 2_000,
+            notes: [try note(id: "foreign-note", deviceID: "different-android-device")]
+        )
+        let session = StubNoteSyncSession(
+            responses: [(try NoteSyncBatchCodec().encode(remoteBatch), 200)]
+        )
+        let repository = try NoteRepository(
+            store: InMemoryNoteStore(
+                initialNotes: [try note(id: "mac-note", deviceID: "mac-device-001")]
+            ),
+            deviceID: "mac-device-001"
+        )
+
+        do {
+            _ = try await NoteSyncClient(session: session).synchronize(
+                repository: repository,
+                host: "192.168.1.10",
+                port: 48291,
+                signingContext: RequestSigningContext(
+                    deviceId: "mac-device-001",
+                    sessionId: "mac-notes-v1",
+                    secret: "device-secret"
+                ),
+                expectedPeerDeviceID: "android-device-001"
+            )
+            XCTFail("Expected synchronize to reject the unexpected peer")
+        } catch {
+            XCTAssertEqual(error as? NoteSyncClientError, .unexpectedPeerDeviceID)
+        }
+
+        XCTAssertEqual(try repository.allNotes().map(\.id), ["mac-note"])
+        XCTAssertEqual(session.requests.count, 1)
+        XCTAssertEqual(session.requests.first?.httpMethod, "GET")
     }
 
     func testFetchSnapshotRejectsNonSuccessfulResponse() async {

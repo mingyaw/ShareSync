@@ -142,6 +142,10 @@ oversized snapshot before upload or immediately after download, while Android
 returns `413 SS-NOTES-413` before reading an oversized request body.
 Both product surfaces search active notes locally across title, body, and tags;
 searching does not alter sync payloads or tombstone retention.
+Before a downloaded snapshot can modify the Mac repository, its source device
+ID must match the Android device stored by pairing. A stale or incorrectly
+resolved endpoint therefore fails before merge and before any snapshot is sent
+back.
 
 Android 已透過需簽章的 `GET /v1/notes` 與 `POST /v1/notes` 提供此契約。`GET` 會以新
 batch ID 建立完整 repository 快照；`POST` 會驗證簽章裝置 ID 與批次來源相同，合併並
@@ -173,3 +177,5 @@ Android 現在也有正式的「記事」分頁，與簽章本機伺服器共用
 回傳 `413 SS-NOTES-413`。
 兩端產品介面皆可在本機依標題、內容與標籤搜尋有效記事；搜尋不會修改同步快照或
 tombstone 保留規則。
+下載的快照必須先確認來源裝置 ID 與配對保存的 Android 裝置一致，才能修改 Mac 的
+記事資料；過期或錯誤解析的端點會在合併與回傳任何快照之前中止。

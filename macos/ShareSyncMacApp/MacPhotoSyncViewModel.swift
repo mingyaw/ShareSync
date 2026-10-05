@@ -462,6 +462,9 @@ final class MacPhotoSyncViewModel: ObservableObject {
             guard let signingContext else {
                 throw NoteSyncClientError.unacceptableStatusCode(401)
             }
+            guard let expectedPeerDeviceID = pairedDevice?.deviceId else {
+                throw NoteSyncClientError.unexpectedPeerDeviceID
+            }
             let result = try await noteSyncClient.synchronize(
                 repository: noteRepository,
                 host: endpoint.host,
@@ -471,6 +474,7 @@ final class MacPhotoSyncViewModel: ObservableObject {
                     sessionId: "mac-notes-v1",
                     secret: signingContext.secret
                 ),
+                expectedPeerDeviceID: expectedPeerDeviceID,
                 transportSecurity: pairedDevice?.transportSecurity
             )
             guard !Task.isCancelled else { return }

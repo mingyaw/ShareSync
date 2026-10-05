@@ -8,6 +8,7 @@ enum NoteSyncClientError: Error, Equatable {
     case nonHTTPResponse
     case unacceptableStatusCode(Int)
     case mismatchedBatchID
+    case unexpectedPeerDeviceID
     case payloadTooLarge(Int)
 }
 
@@ -114,6 +115,7 @@ final class NoteSyncClient {
         host: String,
         port: Int,
         signingContext: RequestSigningContext,
+        expectedPeerDeviceID: String,
         transportSecurity: PairingTransportSecurity? = nil,
         maximumAttempts: Int = 2
     ) async throws -> NoteSyncCycleResult {
@@ -125,6 +127,7 @@ final class NoteSyncClient {
                     host: host,
                     port: port,
                     signingContext: signingContext,
+                    expectedPeerDeviceID: expectedPeerDeviceID,
                     transportSecurity: transportSecurity
                 )
             } catch {
@@ -140,6 +143,7 @@ final class NoteSyncClient {
         host: String,
         port: Int,
         signingContext: RequestSigningContext,
+        expectedPeerDeviceID: String,
         transportSecurity: PairingTransportSecurity?
     ) async throws -> NoteSyncCycleResult {
         let remoteBatch = try await fetchSnapshot(
@@ -148,6 +152,9 @@ final class NoteSyncClient {
             signingContext: signingContext,
             transportSecurity: transportSecurity
         )
+        guard remoteBatch.sourceDeviceId == expectedPeerDeviceID else {
+            throw NoteSyncClientError.unexpectedPeerDeviceID
+        }
         let pullMerge = try repository.mergeRemoteBatch(remoteBatch)
         let localBatch = try repository.createSyncBatch(
             batchID: batchIDProvider(),
