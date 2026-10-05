@@ -35,24 +35,50 @@ public struct MessageConnectorEnvelope: Equatable, Sendable {
     public let body: String?
     public let timestamp: Date
     public let senderLabel: String?
+    public let replyRecipientHandle: String?
     public let hasAttachments: Bool
     public let attachmentCount: Int
     public let attachmentMIMETypes: Set<String>
     public let containsRichText: Bool
+
+    public init(
+        deliveryKey: String,
+        body: String?,
+        timestamp: Date,
+        senderLabel: String?,
+        replyRecipientHandle: String? = nil,
+        hasAttachments: Bool,
+        attachmentCount: Int,
+        attachmentMIMETypes: Set<String>,
+        containsRichText: Bool
+    ) {
+        self.deliveryKey = deliveryKey
+        self.body = body
+        self.timestamp = timestamp
+        self.senderLabel = senderLabel
+        self.replyRecipientHandle = replyRecipientHandle
+        self.hasAttachments = hasAttachments
+        self.attachmentCount = attachmentCount
+        self.attachmentMIMETypes = attachmentMIMETypes
+        self.containsRichText = containsRichText
+    }
 }
 
 public struct MessageConnectorEnvelopeBuilder: Sendable {
     private let senderLabels: [String: String]
     private let includeAttachmentSummary: Bool
+    private let includeReplyRouting: Bool
 
     public init(
         senderLabels: [String: String] = [:],
-        includeAttachmentSummary: Bool = true
+        includeAttachmentSummary: Bool = true,
+        includeReplyRouting: Bool = false
     ) {
         self.senderLabels = senderLabels.reduce(into: [:]) { result, entry in
             result[MessageSenderIdentifier.canonical(entry.key)] = entry.value
         }
         self.includeAttachmentSummary = includeAttachmentSummary
+        self.includeReplyRouting = includeReplyRouting
     }
 
     public func build(from event: NormalizedMessageEvent) -> MessageConnectorEnvelope {
@@ -63,6 +89,10 @@ public struct MessageConnectorEnvelopeBuilder: Sendable {
             senderLabel: event.senderIdentifier.flatMap {
                 senderLabels[MessageSenderIdentifier.canonical($0)]
             },
+            replyRecipientHandle: includeReplyRouting ? event.senderIdentifier.flatMap {
+                let canonical = MessageSenderIdentifier.canonical($0)
+                return canonical.isEmpty ? nil : canonical
+            } : nil,
             hasAttachments: event.contentKinds.contains(.attachment),
             attachmentCount: includeAttachmentSummary ? event.attachmentCount : 0,
             attachmentMIMETypes: includeAttachmentSummary ? event.attachmentMIMETypes : [],

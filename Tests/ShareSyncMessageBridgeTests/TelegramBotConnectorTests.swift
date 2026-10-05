@@ -132,7 +132,8 @@ final class TelegramBotConnectorTests: XCTestCase {
             deliveryKey: "opaque",
             body: "hello",
             timestamp: Date(timeIntervalSince1970: 1_000),
-            senderLabel: "+886912345678",
+            senderLabel: "On-call",
+            replyRecipientHandle: "+886912345678",
             hasAttachments: false,
             attachmentCount: 0,
             attachmentMIMETypes: [],
@@ -144,6 +145,37 @@ final class TelegramBotConnectorTests: XCTestCase {
         XCTAssertEqual(routes.routes.first?.telegramMessageID, 321)
         XCTAssertEqual(routes.routes.first?.recipientHandle, "+886912345678")
         XCTAssertEqual(routes.routes.first?.telegramChatID, "42")
+        let requestBody = try XCTUnwrap(transport.requests.first?.httpBody)
+        let requestJSON = try XCTUnwrap(JSONSerialization.jsonObject(with: requestBody) as? [String: Any])
+        XCTAssertTrue((requestJSON["text"] as? String)?.contains("From: On-call") == true)
+        XCTAssertFalse((requestJSON["text"] as? String)?.contains("+886912345678") == true)
+    }
+
+    func testDisplayLabelAloneDoesNotCreateReplyRoute() throws {
+        let routes = RecordingRouteStore()
+        let configuration = try TelegramBotConfiguration(
+            token: "123456:abcdefghijklmnopqrstuvwxyz_ABC",
+            chatID: "42"
+        )
+        let connector = TelegramBotConnector(
+            configuration: configuration,
+            transport: RecordingTelegramTransport(response: successResponse()),
+            replyRouteStore: routes
+        )
+        let envelope = MessageConnectorEnvelope(
+            deliveryKey: "opaque",
+            body: "hello",
+            timestamp: Date(timeIntervalSince1970: 1_000),
+            senderLabel: "On-call",
+            hasAttachments: false,
+            attachmentCount: 0,
+            attachmentMIMETypes: [],
+            containsRichText: false
+        )
+
+        _ = try connector.deliver(envelope)
+
+        XCTAssertTrue(routes.routes.isEmpty)
     }
 
     func testSuccessfulResponseWithoutMessageIDIsNotAcceptedAsDelivered() throws {

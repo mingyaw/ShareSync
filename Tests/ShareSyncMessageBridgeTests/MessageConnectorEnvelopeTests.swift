@@ -17,6 +17,18 @@ final class MessageConnectorEnvelopeTests: XCTestCase {
         XCTAssertFalse(String(reflecting: envelope).contains("+886900000000"))
     }
 
+    func testBuilderSeparatesDisplayAliasFromReplyRecipient() {
+        let source = makeEvent(sender: "+886 (900) 000-000")
+
+        let envelope = MessageConnectorEnvelopeBuilder(
+            senderLabels: ["+886900000000": "On-call"],
+            includeReplyRouting: true
+        ).build(from: source)
+
+        XCTAssertEqual(envelope.senderLabel, "On-call")
+        XCTAssertEqual(envelope.replyRecipientHandle, "+886900000000")
+    }
+
     func testUnknownSenderHasNoLabelAndAttachmentSummaryCanBeDisabled() {
         let source = makeEvent(sender: "unknown", attachmentCount: 2)
 

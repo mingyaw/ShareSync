@@ -178,7 +178,7 @@ public final class TelegramBotConnector: MessageForwardingConnector {
 
     public func deliver(_ envelope: MessageConnectorEnvelope) throws -> MessageDeliveryOutcome {
         let messageID = try send(text: formatter.message(for: envelope))
-        if let recipientHandle = envelope.senderLabel,
+        if let recipientHandle = envelope.replyRecipientHandle,
            !recipientHandle.isEmpty,
            let replyRouteStore {
             try replyRouteStore.save(TelegramReplyRoute(

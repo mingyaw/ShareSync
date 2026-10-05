@@ -485,6 +485,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             let rateLimiter = telegramRateLimiter
             let includeAttachmentSummary = isTelegramAttachmentSummaryEnabled
             let attachmentUploadsEnabled = isTelegramAttachmentUploadEnabled
+            let replyRoutingEnabled = isTelegramReplyEnabled
             telegramState = .forwarding
             defer { refreshTelegramAudit() }
             do {
@@ -530,7 +531,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                         rateLimiter: rateLimiter,
                         envelopeBuilder: MessageConnectorEnvelopeBuilder(
                             senderLabels: senderLabels,
-                            includeAttachmentSummary: includeAttachmentSummary
+                            includeAttachmentSummary: includeAttachmentSummary,
+                            includeReplyRouting: replyRoutingEnabled
                         ),
                         attachmentDeliveryCoordinator: attachmentDeliveryCoordinator
                     )
