@@ -241,6 +241,36 @@ final class MessageForwardingPipelineTests: XCTestCase {
         XCTAssertFalse(ledger.records.keys.contains { $0.contains("ambiguous") })
     }
 
+    func testPersistentStateFailureIsPreservedWithoutAllowingResend() throws {
+        let fixture = try MessageBridgeFixture()
+        try fixture.insertHandle(identifier: "allowed")
+        try fixture.insertMessage(guid: "route-state-failure", body: "one")
+        let store = try makeStore()
+        try store.store.save(MessageCursor(rowID: 0))
+        let connector = PersistentStateFailingConnector()
+        let ledger = InMemoryMessageDeliveryLedgerStore()
+        let pipeline = MessageForwardingPipeline(
+            reader: MessageEventReader(databaseURL: fixture.databaseURL),
+            cursorStore: store.store,
+            policy: MessageForwardingPolicy(allowedSenderIdentifiers: ["allowed"]),
+            connector: connector,
+            deliveryLedger: ledger
+        )
+
+        XCTAssertThrowsError(try pipeline.run()) { error in
+            XCTAssertTrue(error is MessageBridgePersistentStateFailure)
+        }
+        XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 0))
+        XCTAssertEqual(connector.attemptCount, 1)
+        XCTAssertEqual(ledger.records.values.first?.state, .pending)
+
+        let retry = try pipeline.run()
+
+        XCTAssertEqual(retry.unconfirmedMessageCount, 1)
+        XCTAssertEqual(connector.attemptCount, 1)
+        XCTAssertEqual(try store.store.load(), MessageCursor(rowID: 1))
+    }
+
     func testAmbiguousAttachmentFailureIsNotResentAndAdvancesOnNextPass() throws {
         let fixture = try MessageBridgeFixture()
         try fixture.insertHandle(identifier: "allowed")
@@ -425,6 +455,15 @@ private final class AmbiguousFailOnceConnector: MessageForwardingConnector {
     func deliver(_ envelope: MessageConnectorEnvelope) throws -> MessageDeliveryOutcome {
         attemptCount += 1
         throw TelegramBotConnectorError.transportFailure
+    }
+}
+
+private final class PersistentStateFailingConnector: MessageForwardingConnector {
+    private(set) var attemptCount = 0
+
+    func deliver(_ envelope: MessageConnectorEnvelope) throws -> MessageDeliveryOutcome {
+        attemptCount += 1
+        throw MessageBridgePersistentStateError.invalidData
     }
 }
 

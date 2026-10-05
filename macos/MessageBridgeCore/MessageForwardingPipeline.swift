@@ -244,6 +244,8 @@ public struct MessageForwardingPipeline {
                     try deliveryLedger.markPending(deliveryKey: textPartKey, at: deliveryDate)
                     do {
                         _ = try connector.deliver(envelope)
+                    } catch let error as MessageBridgePersistentStateFailure {
+                        throw error
                     } catch let error as TelegramBotConnectorError where error.isDefinitiveRejection {
                         try deliveryLedger.remove(deliveryKey: textPartKey)
                         try deliveryLedger.remove(deliveryKey: event.deliveryKey)
@@ -272,6 +274,8 @@ public struct MessageForwardingPipeline {
                 case .duplicate:
                     duplicateCount += 1
                 }
+            } catch let error as MessageBridgePersistentStateFailure {
+                throw error
             } catch let error as TelegramBotConnectorError where error.isDefinitiveRejection {
                 try deliveryLedger.remove(deliveryKey: event.deliveryKey)
                 throw error
