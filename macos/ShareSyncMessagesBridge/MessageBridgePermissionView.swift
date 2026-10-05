@@ -98,6 +98,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         case privateChatRequired
         case automationPermissionRequired
         case recipientUnavailable
+        case deliveryUnconfirmed
         case localStateCorrupted
         case failed
     }
@@ -716,6 +717,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                     telegramReplyState = .automationPermissionRequired
                 } catch MessagesAutomationSender.AutomationError.recipientUnavailable {
                     telegramReplyState = .recipientUnavailable
+                } catch IMessageReplyDeliveryError.deliveryUnconfirmed {
+                    telegramReplyState = .deliveryUnconfirmed
                 } catch is MessageBridgePersistentStateFailure {
                     stopTelegramRepliesForCorruptedState()
                 } catch {
@@ -1646,6 +1649,7 @@ struct MessageBridgePermissionView: View {
         case .privateChatRequired: return "bridge.telegram.reply.private_chat"
         case .automationPermissionRequired: return "bridge.telegram.reply.automation_permission"
         case .recipientUnavailable: return "bridge.telegram.reply.recipient_unavailable"
+        case .deliveryUnconfirmed: return "bridge.telegram.reply.delivery_unconfirmed"
         case .localStateCorrupted: return "bridge.telegram.reply.local_state_corrupted"
         case .failed: return "bridge.telegram.reply.failed"
         }

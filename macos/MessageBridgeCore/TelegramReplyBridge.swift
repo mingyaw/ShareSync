@@ -289,6 +289,14 @@ public protocol IMessageReplySending: AnyObject {
     func send(text: String, to recipientHandle: String) throws
 }
 
+public protocol IMessageReplySendFailure: Error {
+    var isDefinitiveFailure: Bool { get }
+}
+
+public enum IMessageReplyDeliveryError: Error, Equatable, Sendable {
+    case deliveryUnconfirmed
+}
+
 public struct TelegramReplyRunResult: Equatable, Sendable {
     public let inspectedCount: Int
     public let sentCount: Int
@@ -360,9 +368,13 @@ public struct TelegramReplyProcessor {
             try deliveryLedger.markPending(deliveryKey: deliveryKey, at: now())
             do {
                 try sender.send(text: text, to: route.recipientHandle)
-            } catch {
+            } catch let error as MessageBridgePersistentStateFailure {
+                throw error
+            } catch let error as IMessageReplySendFailure where error.isDefinitiveFailure {
                 try? deliveryLedger.remove(deliveryKey: deliveryKey)
                 throw error
+            } catch {
+                throw IMessageReplyDeliveryError.deliveryUnconfirmed
             }
             try deliveryLedger.markDelivered(deliveryKey: deliveryKey, at: now())
             sent += 1

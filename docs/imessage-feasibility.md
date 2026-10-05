@@ -44,10 +44,15 @@ cursor and at most 1,000 reply routes persist locally so the app can resume afte
 a restart. A separate durable reply-delivery ledger is written before invoking
 Messages Automation. If cursor persistence fails after a successful send, the
 pending ledger entry prevents an ambiguous retry from sending the same iMessage
-twice; a known Automation send failure removes the entry so the update can be
-retried. Reset removes all three stores. Reply polling runs only while ShareSync is
+twice; a definitive pre-send Automation failure removes the entry so the update
+can be retried. Reset removes all three stores. Reply polling runs only while ShareSync is
 running and automatic Telegram polling is enabled, or when the user checks
 manually.
+
+Messages Automation is bounded to 15 seconds. Launch, permission, and missing
+recipient failures are definitive and may retry. A timeout, nonzero script exit,
+or unknown sender error is treated as an ambiguous side effect: the pending
+record remains and the reply is not automatically sent again.
 
 Confirmed text, image, and reply delivery records are retained for 90 days and
 then pruned during normal polling. Pending records are never age-pruned because

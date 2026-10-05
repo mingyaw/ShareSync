@@ -105,6 +105,51 @@ final class TelegramReplyBridgeTests: XCTestCase {
         XCTAssertNil(try ledger.record(for: TelegramReplyProcessor.deliveryKey(for: update)))
     }
 
+    func testAmbiguousSendFailureKeepsPendingAndPreventsResend() throws {
+        let routeStore = MemoryRouteStore()
+        try routeStore.save(TelegramReplyRoute(
+            telegramChatID: "42",
+            telegramMessageID: 7,
+            recipientHandle: "person@example.com"
+        ))
+        let update = TelegramBotUpdate(
+            updateID: 5,
+            messageID: 8,
+            chatID: "42",
+            senderUserID: "42",
+            text: "send once",
+            replyToMessageID: 7
+        )
+        let cursor = MemoryUpdateCursor()
+        let sender = AmbiguousReplySender()
+        let ledger = InMemoryMessageDeliveryLedgerStore()
+        let processor = TelegramReplyProcessor(
+            updates: FixedUpdateFetcher(updates: [update]),
+            cursorStore: cursor,
+            routeStore: routeStore,
+            sender: sender,
+            authorizedPrivateChatID: "42",
+            deliveryLedger: ledger
+        )
+
+        XCTAssertThrowsError(try processor.run()) { error in
+            XCTAssertEqual(error as? IMessageReplyDeliveryError, .deliveryUnconfirmed)
+        }
+        XCTAssertEqual(try cursor.load(), 0)
+        XCTAssertEqual(sender.attemptCount, 1)
+        XCTAssertEqual(
+            try ledger.record(for: TelegramReplyProcessor.deliveryKey(for: update))?.state,
+            .pending
+        )
+
+        let retry = try processor.run()
+
+        XCTAssertEqual(retry.sentCount, 0)
+        XCTAssertEqual(retry.ignoredCount, 1)
+        XCTAssertEqual(sender.attemptCount, 1)
+        XCTAssertEqual(try cursor.load(), 6)
+    }
+
     func testPendingReplyLedgerPreventsAmbiguousResendAndAdvancesCursor() throws {
         let routeStore = MemoryRouteStore()
         try routeStore.save(TelegramReplyRoute(
@@ -376,6 +421,18 @@ private final class RecordingReplySender: IMessageReplySending {
     func send(text: String, to recipientHandle: String) throws {
         if shouldFail { throw TestError.failed }
         messages.append(.init(text: text, handle: recipientHandle))
+    }
+    private enum TestError: IMessageReplySendFailure {
+        case failed
+        var isDefinitiveFailure: Bool { true }
+    }
+}
+
+private final class AmbiguousReplySender: IMessageReplySending {
+    private(set) var attemptCount = 0
+    func send(text: String, to recipientHandle: String) throws {
+        attemptCount += 1
+        throw TestError.failed
     }
     private enum TestError: Error { case failed }
 }

@@ -123,6 +123,7 @@
 "bridge.telegram.reply.private_chat" = "Replies require a positive Telegram private Chat ID. Groups and channels are not supported.";
 "bridge.telegram.reply.automation_permission" = "macOS has not allowed ShareSync to control Messages. Allow access and check again; this reply remains available for retry.";
 "bridge.telegram.reply.recipient_unavailable" = "Messages could not find the original iMessage recipient. Confirm that the address is still available in Messages.";
+"bridge.telegram.reply.delivery_unconfirmed" = "Messages did not confirm whether the reply was sent. ShareSync will not send it again automatically, preventing a possible duplicate.";
 "bridge.telegram.reply.failed" = "The reply could not be processed. Check the network, Telegram bot settings, and Messages automation permission.";
 "bridge.telegram.reply.action.enable" = "Enable Secure Replies";
 "bridge.telegram.reply.action.check" = "Check Telegram Replies";

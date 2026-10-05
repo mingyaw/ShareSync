@@ -123,6 +123,7 @@
 "bridge.telegram.reply.private_chat" = "反向回覆僅支援正數的 Telegram 私人 Chat ID，不支援群組或頻道。";
 "bridge.telegram.reply.automation_permission" = "macOS 尚未允許 ShareSync 控制 Messages。允許後再檢查一次，此則回覆仍會保留供重試。";
 "bridge.telegram.reply.recipient_unavailable" = "Messages 找不到原始 iMessage 收件人。請確認該帳號仍可在 Messages 中使用。";
+"bridge.telegram.reply.delivery_unconfirmed" = "Messages 未確認回覆是否送出。ShareSync 不會自動再次傳送，以避免可能的重複訊息。";
 "bridge.telegram.reply.failed" = "無法處理回覆。請確認網路、Telegram Bot 設定，以及 Messages 自動化權限。";
 "bridge.telegram.reply.action.enable" = "啟用安全回覆";
 "bridge.telegram.reply.action.check" = "檢查 Telegram 回覆";

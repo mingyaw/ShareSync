@@ -6,6 +6,14 @@ final class MessagesAutomationSender: IMessageReplySending {
         case permissionDenied
         case recipientUnavailable
         case sendFailed(Int32)
+        case timedOut
+
+        var isDefinitiveFailure: Bool {
+            switch self {
+            case .launchFailed, .permissionDenied, .recipientUnavailable: return true
+            case .sendFailed, .timedOut: return false
+            }
+        }
     }
 
     private static let script = """
@@ -20,19 +28,30 @@ final class MessagesAutomationSender: IMessageReplySending {
     end run
     """
 
+    private let timeout: TimeInterval
+
+    init(timeout: TimeInterval = 15) {
+        self.timeout = max(timeout, 1)
+    }
+
     func send(text: String, to recipientHandle: String) throws {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
         process.arguments = ["-e", Self.script, recipientHandle, text]
-        process.standardOutput = Pipe()
+        process.standardOutput = FileHandle.nullDevice
         let errorPipe = Pipe()
         process.standardError = errorPipe
+        let completion = DispatchSemaphore(value: 0)
+        process.terminationHandler = { _ in completion.signal() }
         do {
             try process.run()
         } catch {
             throw AutomationError.launchFailed
         }
-        process.waitUntilExit()
+        guard completion.wait(timeout: .now() + timeout) == .success else {
+            process.terminate()
+            throw AutomationError.timedOut
+        }
         let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
         let errorOutput = String(data: errorData, encoding: .utf8) ?? ""
         guard process.terminationStatus == 0 else {
@@ -46,3 +65,5 @@ final class MessagesAutomationSender: IMessageReplySending {
         }
     }
 }
+
+extension MessagesAutomationSender.AutomationError: IMessageReplySendFailure {}

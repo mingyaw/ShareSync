@@ -78,3 +78,5 @@ release and any later connector must satisfy all of the following:
   unconfirmed and are skipped rather than automatically resent.
 - Confirmed delivery records are retained for 90 days; pending records are not
   age-pruned. Telegram-to-iMessage reply routes expire after 30 days.
+- Messages Automation has a 15-second bound. Ambiguous timeout or script-exit
+  results remain pending and are not resent automatically.
