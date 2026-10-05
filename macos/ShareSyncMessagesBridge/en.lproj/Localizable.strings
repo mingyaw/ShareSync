@@ -102,6 +102,15 @@
 "bridge.telegram.metric.attachments_unconfirmed" = "Images unconfirmed";
 "bridge.telegram.metric.loop_prevented" = "Loops stopped";
 "bridge.telegram.loop_prevention.detail" = "Outgoing Messages events were kept on this Mac and were not forwarded back to Telegram.";
+"bridge.telegram.history.title" = "Recent forwarding activity";
+"bridge.telegram.history.completed" = "Completed";
+"bridge.telegram.history.paused" = "Paused";
+"bridge.telegram.history.outside_schedule" = "Outside schedule";
+"bridge.telegram.history.rate_limited" = "Telegram rate limited";
+"bridge.telegram.history.attachment_rejected" = "Image blocked";
+"bridge.telegram.history.attachment_unconfirmed" = "Image delivery unconfirmed";
+"bridge.telegram.history.message_unconfirmed" = "Message delivery unconfirmed";
+"bridge.telegram.history.failed" = "Failed";
 "bridge.reset.telegram.title" = "Remove Telegram settings? The Keychain token, baseline, and local delivery history will be deleted.";
 "bridge.telegram.reply.title" = "Reply to iMessage from Telegram";
 "bridge.telegram.reply.disabled" = "Only your private Chat ID is accepted, and you must reply to a message forwarded by ShareSync. A recipient cannot be entered manually.";

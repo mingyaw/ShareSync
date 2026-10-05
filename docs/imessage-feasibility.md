@@ -65,6 +65,11 @@ delivery remains pending to prevent a resend while the original persistent
 state error is preserved for the UI. This stops automation and directs the user
 to reset rather than masking local corruption as an ordinary network failure.
 
+The Telegram panel exposes the five most recent forwarding audit outcomes with
+timestamps and aggregate inspected/delivered counts. This local history never
+contains message bodies, sender identifiers, conversation identifiers, or Chat
+IDs.
+
 The unified Mac app owns the Messages model for its full process lifetime, not
 the main window lifetime. Explicit automatic-forwarding and secure-reply choices
 are stored locally and restored after the Messages permission check succeeds.

@@ -102,6 +102,15 @@
 "bridge.telegram.metric.attachments_unconfirmed" = "圖片未確認";
 "bridge.telegram.metric.loop_prevented" = "已防止迴圈";
 "bridge.telegram.loop_prevention.detail" = "由 Messages 送出的事件已留在這台 Mac，不會再次轉發回 Telegram。";
+"bridge.telegram.history.title" = "近期轉發活動";
+"bridge.telegram.history.completed" = "已完成";
+"bridge.telegram.history.paused" = "已暫停";
+"bridge.telegram.history.outside_schedule" = "不在排程時段";
+"bridge.telegram.history.rate_limited" = "Telegram 已限流";
+"bridge.telegram.history.attachment_rejected" = "圖片已阻擋";
+"bridge.telegram.history.attachment_unconfirmed" = "圖片交付未確認";
+"bridge.telegram.history.message_unconfirmed" = "訊息交付未確認";
+"bridge.telegram.history.failed" = "失敗";
 "bridge.reset.telegram.title" = "要移除 Telegram 設定嗎？鑰匙圈 Token、基準點與本機交付紀錄將被刪除。";
 "bridge.telegram.reply.title" = "從 Telegram 回覆 iMessage";
 "bridge.telegram.reply.disabled" = "只接受此私人 Chat ID 的本人帳號，且必須回覆 ShareSync 已轉發的訊息；不能任意指定收件人。";

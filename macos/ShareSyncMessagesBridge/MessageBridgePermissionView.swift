@@ -28,6 +28,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
     @Published private(set) var isTelegramAttachmentUploadEnabled = false
     @Published private(set) var telegramState: TelegramState = .unconfigured
     @Published private(set) var telegramResult: MessageForwardingRunResult?
+    @Published private(set) var telegramAuditRecords: [MessageForwardingAuditRecord] = []
     @Published private(set) var isTelegramAutoForwarding = false
     @Published private(set) var telegramReplyState: TelegramReplyState = .disabled
     @Published private(set) var telegramReplyResult: TelegramReplyRunResult?
@@ -204,6 +205,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             state = .available(fingerprint)
             refreshValidationState()
             refreshPreviewState()
+            refreshTelegramAudit()
             resumeTelegramAutomationIfNeeded()
         case .permissionRequired:
             state = .permissionRequired
@@ -483,6 +485,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             let includeAttachmentSummary = isTelegramAttachmentSummaryEnabled
             let attachmentUploadsEnabled = isTelegramAttachmentUploadEnabled
             telegramState = .forwarding
+            defer { refreshTelegramAudit() }
             do {
                 let result = try await Task.detached(priority: .utility) {
                     let forwardingPolicy = MessageForwardingPolicy(
@@ -751,6 +754,17 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         telegramReplyState = .localStateCorrupted
     }
 
+    private func refreshTelegramAudit() {
+        do {
+            telegramAuditRecords = try telegramAuditStore().recent(limit: 5)
+        } catch is MessageBridgePersistentStateFailure {
+            telegramAuditRecords = []
+            stopTelegramAutomationForCorruptedState()
+        } catch {
+            telegramAuditRecords = []
+        }
+    }
+
     func resetTelegram() {
         setTelegramAutoForwarding(false)
         do {
@@ -774,6 +788,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             telegramScheduleStartMinute = 8 * 60
             telegramScheduleEndMinute = 22 * 60
             telegramResult = nil
+            telegramAuditRecords = []
             telegramReplyResult = nil
             isTelegramReplyEnabled = false
             telegramReplyState = .disabled
@@ -1508,6 +1523,45 @@ struct MessageBridgePermissionView: View {
                 }
             }
 
+            if !model.telegramAuditRecords.isEmpty {
+                DisclosureGroup("bridge.telegram.history.title") {
+                    VStack(spacing: 0) {
+                        ForEach(model.telegramAuditRecords, id: \.id) { record in
+                            HStack(spacing: 10) {
+                                Image(systemName: auditOutcomeSymbol(record.outcome))
+                                    .foregroundStyle(auditOutcomeColor(record.outcome))
+                                    .frame(width: 18)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(auditOutcomeKey(record.outcome))
+                                        .font(.callout.weight(.medium))
+                                    Text(record.timestamp, style: .time)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Label {
+                                    Text(record.inspectedCount, format: .number)
+                                } icon: {
+                                    Image(systemName: "doc.text.magnifyingglass")
+                                }
+                                .help("bridge.preview.metric.inspected")
+                                Label {
+                                    Text(record.deliveredCount, format: .number)
+                                } icon: {
+                                    Image(systemName: "paperplane")
+                                }
+                                .help("bridge.telegram.metric.sent")
+                            }
+                            .padding(.vertical, 7)
+                            if record.id != model.telegramAuditRecords.last?.id {
+                                Divider()
+                            }
+                        }
+                    }
+                    .padding(.top, 6)
+                }
+            }
+
             Divider()
 
             HStack(alignment: .top, spacing: 10) {
@@ -1594,6 +1648,41 @@ struct MessageBridgePermissionView: View {
         case .recipientUnavailable: return "bridge.telegram.reply.recipient_unavailable"
         case .localStateCorrupted: return "bridge.telegram.reply.local_state_corrupted"
         case .failed: return "bridge.telegram.reply.failed"
+        }
+    }
+
+    private func auditOutcomeKey(_ outcome: MessageForwardingAuditOutcome) -> LocalizedStringKey {
+        switch outcome {
+        case .completed: return "bridge.telegram.history.completed"
+        case .paused: return "bridge.telegram.history.paused"
+        case .outsideSchedule: return "bridge.telegram.history.outside_schedule"
+        case .rateLimited: return "bridge.telegram.history.rate_limited"
+        case .attachmentRejected: return "bridge.telegram.history.attachment_rejected"
+        case .attachmentDeliveryUnconfirmed: return "bridge.telegram.history.attachment_unconfirmed"
+        case .messageDeliveryUnconfirmed: return "bridge.telegram.history.message_unconfirmed"
+        case .failed: return "bridge.telegram.history.failed"
+        }
+    }
+
+    private func auditOutcomeSymbol(_ outcome: MessageForwardingAuditOutcome) -> String {
+        switch outcome {
+        case .completed: return "checkmark.circle.fill"
+        case .paused, .outsideSchedule: return "pause.circle.fill"
+        case .rateLimited: return "clock.badge.exclamationmark.fill"
+        case .attachmentRejected: return "photo.badge.exclamationmark"
+        case .attachmentDeliveryUnconfirmed, .messageDeliveryUnconfirmed:
+            return "questionmark.circle.fill"
+        case .failed: return "exclamationmark.triangle.fill"
+        }
+    }
+
+    private func auditOutcomeColor(_ outcome: MessageForwardingAuditOutcome) -> Color {
+        switch outcome {
+        case .completed: return .green
+        case .paused, .outsideSchedule: return .secondary
+        case .rateLimited, .attachmentDeliveryUnconfirmed, .messageDeliveryUnconfirmed:
+            return .orange
+        case .attachmentRejected, .failed: return .red
         }
     }
 
