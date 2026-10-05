@@ -49,6 +49,10 @@ can be retried. Reset removes all three stores. Reply polling runs only while Sh
 running and automatic Telegram polling is enabled, or when the user checks
 manually.
 
+Automatic reply polling uses the same bounded recovery planner as forwarding:
+10-second idle checks, immediate continuation for full batches, exponential
+failure backoff from 2 seconds to 5 minutes, and Telegram `retry_after` handling.
+
 Messages Automation is bounded to 15 seconds. Launch, permission, and missing
 recipient failures are definitive and may retry. A timeout, nonzero script exit,
 or unknown sender error is treated as an ambiguous side effect: the pending

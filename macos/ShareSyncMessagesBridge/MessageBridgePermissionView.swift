@@ -607,10 +607,18 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         telegramReplyPollingTask = nil
         guard isTelegramAutoForwarding, isTelegramReplyEnabled else { return }
         telegramReplyPollingTask = Task { [weak self] in
+            var planner = MessagePollingPlanner(configuration: MessagePollingConfiguration(
+                idleInterval: 10,
+                initialFailureDelay: 2,
+                maximumFailureDelay: 300
+            ))
             while !Task.isCancelled {
-                self?.checkTelegramReplies()
+                guard let self else { return }
+                let outcome = await self.runTelegramReplyPass()
+                let delay = planner.nextDelay(after: outcome)
+                guard delay > 0 else { continue }
                 do {
-                    try await Task.sleep(for: .seconds(10))
+                    try await Task.sleep(for: .seconds(delay))
                 } catch {
                     return
                 }
@@ -692,13 +700,19 @@ final class MessageBridgePermissionViewModel: ObservableObject {
     }
 
     func checkTelegramReplies() {
-        guard isTelegramReplyEnabled, telegramReplyState != .checking else { return }
+        Task { [weak self] in
+            _ = await self?.runTelegramReplyPass()
+        }
+    }
+
+    private func runTelegramReplyPass() async -> MessagePollingOutcome {
+        guard isTelegramReplyEnabled, telegramReplyState != .checking else { return .idle }
         do {
             let configuration = try telegramConfiguration()
             guard let chatID = Int64(telegramChatID), chatID > 0 else {
                 telegramReplyState = .privateChatRequired
                 isTelegramReplyEnabled = false
-                return
+                return .failed
             }
             let processor = telegramReplyProcessor(
                 configuration: configuration,
@@ -706,31 +720,38 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                 cursorStore: telegramUpdateCursorStore()
             )
             telegramReplyState = .checking
-            Task {
-                do {
-                    let result = try await Task.detached(priority: .utility) {
-                        try processor.run()
-                    }.value
-                    telegramReplyResult = result
-                    if result.unconfirmedCount > 0 {
-                        telegramReplyState = .deliveryUnconfirmed
-                    } else {
-                        telegramReplyState = result.sentCount > 0 ? .sent : .noReplies
-                    }
-                } catch MessagesAutomationSender.AutomationError.permissionDenied {
-                    telegramReplyState = .automationPermissionRequired
-                } catch MessagesAutomationSender.AutomationError.recipientUnavailable {
-                    telegramReplyState = .recipientUnavailable
-                } catch IMessageReplyDeliveryError.deliveryUnconfirmed {
+            do {
+                let result = try await Task.detached(priority: .utility) {
+                    try processor.run()
+                }.value
+                telegramReplyResult = result
+                if result.unconfirmedCount > 0 {
                     telegramReplyState = .deliveryUnconfirmed
-                } catch is MessageBridgePersistentStateFailure {
-                    stopTelegramRepliesForCorruptedState()
-                } catch {
-                    telegramReplyState = .failed
+                } else {
+                    telegramReplyState = result.sentCount > 0 ? .sent : .noReplies
                 }
+                return TelegramReplyPollingOutcomeMapper().outcome(result: result)
+            } catch MessagesAutomationSender.AutomationError.permissionDenied {
+                telegramReplyState = .automationPermissionRequired
+                return .failed
+            } catch MessagesAutomationSender.AutomationError.recipientUnavailable {
+                telegramReplyState = .recipientUnavailable
+                return .failed
+            } catch IMessageReplyDeliveryError.deliveryUnconfirmed {
+                telegramReplyState = .deliveryUnconfirmed
+                return TelegramReplyPollingOutcomeMapper().outcome(
+                    error: IMessageReplyDeliveryError.deliveryUnconfirmed
+                )
+            } catch is MessageBridgePersistentStateFailure {
+                stopTelegramRepliesForCorruptedState()
+                return .idle
+            } catch {
+                telegramReplyState = .failed
+                return TelegramReplyPollingOutcomeMapper().outcome(error: error)
             }
         } catch {
             telegramReplyState = .failed
+            return TelegramReplyPollingOutcomeMapper().outcome(error: error)
         }
     }
 

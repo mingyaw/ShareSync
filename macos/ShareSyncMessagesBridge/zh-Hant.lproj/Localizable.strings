@@ -90,7 +90,7 @@
 "bridge.telegram.action.baseline" = "建立基準點";
 "bridge.telegram.action.forward" = "立即轉發";
 "bridge.telegram.auto" = "自動";
-"bridge.telegram.auto.detail" = "每 10 秒檢查；待處理批次會立即續跑，失敗時自動延長重試間隔";
+"bridge.telegram.auto.detail" = "每 10 秒檢查轉發與回覆；待處理批次會立即續跑，失敗時自動延長重試間隔";
 "bridge.telegram.pause" = "暫停訊息轉發";
 "bridge.telegram.schedule" = "只在指定時段轉發";
 "bridge.telegram.schedule.from" = "從";

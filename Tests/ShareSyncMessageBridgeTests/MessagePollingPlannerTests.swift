@@ -72,4 +72,31 @@ final class MessagePollingPlannerTests: XCTestCase {
             .rateLimited(retryAfter: 14)
         )
     }
+
+    func testReplyOutcomeMapperContinuesFullAndUnconfirmedBatches() {
+        let mapper = TelegramReplyPollingOutcomeMapper(batchLimit: 2)
+        let full = TelegramReplyRunResult(
+            inspectedCount: 2,
+            sentCount: 0,
+            ignoredCount: 2,
+            unconfirmedCount: 0
+        )
+        let partial = TelegramReplyRunResult(
+            inspectedCount: 1,
+            sentCount: 0,
+            ignoredCount: 1,
+            unconfirmedCount: 0
+        )
+
+        XCTAssertEqual(mapper.outcome(result: full), .workRemaining)
+        XCTAssertEqual(mapper.outcome(result: partial), .idle)
+        XCTAssertEqual(
+            mapper.outcome(error: IMessageReplyDeliveryError.deliveryUnconfirmed),
+            .workRemaining
+        )
+        XCTAssertEqual(
+            mapper.outcome(error: TelegramBotConnectorError.rateLimited(retryAfter: 20)),
+            .rateLimited(retryAfter: 20)
+        )
+    }
 }

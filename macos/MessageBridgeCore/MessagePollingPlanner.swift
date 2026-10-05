@@ -76,3 +76,22 @@ public struct MessagePollingOutcomeMapper {
         return .failed
     }
 }
+
+public struct TelegramReplyPollingOutcomeMapper {
+    private let batchLimit: Int
+
+    public init(batchLimit: Int = 100) {
+        self.batchLimit = min(max(batchLimit, 1), 100)
+    }
+
+    public func outcome(result: TelegramReplyRunResult) -> MessagePollingOutcome {
+        result.inspectedCount >= batchLimit ? .workRemaining : .idle
+    }
+
+    public func outcome(error: Error) -> MessagePollingOutcome {
+        if error is IMessageReplyDeliveryError {
+            return .workRemaining
+        }
+        return MessagePollingOutcomeMapper(batchLimit: batchLimit).outcome(error: error)
+    }
+}

@@ -90,7 +90,7 @@
 "bridge.telegram.action.baseline" = "Establish Baseline";
 "bridge.telegram.action.forward" = "Forward Now";
 "bridge.telegram.auto" = "Automatic";
-"bridge.telegram.auto.detail" = "Checks every 10 seconds, continues full batches immediately, and backs off after failures";
+"bridge.telegram.auto.detail" = "Checks forwarding and replies every 10 seconds, continues full batches immediately, and backs off after failures";
 "bridge.telegram.pause" = "Pause message forwarding";
 "bridge.telegram.schedule" = "Only forward during these hours";
 "bridge.telegram.schedule.from" = "From";
