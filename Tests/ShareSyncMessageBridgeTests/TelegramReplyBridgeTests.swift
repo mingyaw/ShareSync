@@ -292,6 +292,28 @@ final class TelegramReplyBridgeTests: XCTestCase {
         XCTAssertEqual(try ledger.record(for: "uncertain")?.state, .pending)
     }
 
+    func testMalformedReplyStoresReportPersistentStateFailure() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let routeURL = directory.appendingPathComponent("routes.json")
+        let cursorURL = directory.appendingPathComponent("cursor.json")
+        try Data("invalid".utf8).write(to: routeURL)
+        try Data("invalid".utf8).write(to: cursorURL)
+
+        XCTAssertThrowsError(
+            try FileTelegramReplyRouteStore(fileURL: routeURL).route(chatID: "42", messageID: 1)
+        ) { error in
+            XCTAssertTrue(error is MessageBridgePersistentStateFailure)
+        }
+        XCTAssertThrowsError(
+            try FileTelegramUpdateCursorStore(fileURL: cursorURL).load()
+        ) { error in
+            XCTAssertTrue(error is MessageBridgePersistentStateFailure)
+        }
+    }
+
     func testProcessorAdvancesPastUnsupportedTelegramUpdates() throws {
         let cursor = MemoryUpdateCursor()
         let processor = TelegramReplyProcessor(

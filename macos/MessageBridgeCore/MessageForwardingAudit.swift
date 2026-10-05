@@ -172,7 +172,12 @@ public final class FileMessageForwardingAuditStore: MessageForwardingAuditStore 
         guard fileManager.fileExists(atPath: fileURL.path) else {
             return Envelope(version: 1, records: [])
         }
-        let envelope = try decoder.decode(Envelope.self, from: Data(contentsOf: fileURL))
+        let envelope: Envelope
+        do {
+            envelope = try decoder.decode(Envelope.self, from: Data(contentsOf: fileURL))
+        } catch is DecodingError {
+            throw MessageBridgePersistentStateError.invalidData
+        }
         guard envelope.version == 1 else {
             throw MessageForwardingAuditStoreError.unsupportedVersion(envelope.version)
         }
@@ -188,7 +193,7 @@ public final class FileMessageForwardingAuditStore: MessageForwardingAuditStore 
     }
 }
 
-public enum MessageForwardingAuditStoreError: Error, Equatable {
+public enum MessageForwardingAuditStoreError: MessageBridgePersistentStateFailure, Equatable {
     case unsupportedVersion(Int)
 }
 

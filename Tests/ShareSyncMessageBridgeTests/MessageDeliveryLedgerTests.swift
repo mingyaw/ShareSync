@@ -109,4 +109,19 @@ final class MessageDeliveryLedgerTests: XCTestCase {
             XCTAssertEqual(try reader.record(for: "key-\(index)")?.state, .delivered)
         }
     }
+
+    func testMalformedFileLedgerReportsPersistentStateFailure() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let fileURL = directory.appendingPathComponent("ledger.json")
+        try Data("not-json".utf8).write(to: fileURL)
+        let store = FileMessageDeliveryLedgerStore(fileURL: fileURL)
+
+        XCTAssertThrowsError(try store.record(for: "key")) { error in
+            XCTAssertEqual(error as? MessageBridgePersistentStateError, .invalidData)
+            XCTAssertTrue(error is MessageBridgePersistentStateFailure)
+        }
+    }
 }

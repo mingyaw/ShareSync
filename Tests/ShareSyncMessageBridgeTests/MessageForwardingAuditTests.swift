@@ -56,6 +56,21 @@ final class MessageForwardingAuditTests: XCTestCase {
         XCTAssertEqual(Set(records.map(\.inspectedCount)), Set(0..<100))
     }
 
+    func testMalformedAuditReportsPersistentStateFailure() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let fileURL = directory.appendingPathComponent("audit.json")
+        try Data("[]".utf8).write(to: fileURL)
+        let store = FileMessageForwardingAuditStore(fileURL: fileURL)
+
+        XCTAssertThrowsError(try store.recent(limit: 1)) { error in
+            XCTAssertEqual(error as? MessageBridgePersistentStateError, .invalidData)
+            XCTAssertTrue(error is MessageBridgePersistentStateFailure)
+        }
+    }
+
     func testAuditedRunnerRecordsAggregateDenialReasons() throws {
         let fixture = try MessageBridgeFixture()
         try fixture.insertHandle(identifier: "not-allowed")

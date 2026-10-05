@@ -68,6 +68,7 @@
 "bridge.telegram.failed" = "Telegram 傳送失敗。明確拒絕可重試；結果不確定時會保留狀態，避免重複訊息。";
 "bridge.telegram.attachment_rejected" = "附件被本機安全規則阻擋。請檢查「訊息」檔案權限、圖片格式與大小；訊息游標未前移。";
 "bridge.telegram.attachment_unconfirmed" = "Telegram 未確認圖片是否上傳成功。ShareSync 不會自動重送這張圖片，以避免可能的重複。";
+"bridge.telegram.local_state_corrupted" = "無法讀取本機 Telegram 狀態，已停止自動轉發。請重設 Telegram 設定以重建本機狀態。";
 "bridge.telegram.token.placeholder" = "Bot Token（留空會沿用已保存的 Token）";
 "bridge.telegram.chat_id.placeholder" = "目的地 Chat ID，例如 -1001234567890";
 "bridge.telegram.sender.placeholder" = "允許的 iMessage 寄件者帳號或電話";
@@ -109,6 +110,7 @@
 "bridge.telegram.reply.checking" = "正在檢查符合路由與帳號限制的新回覆...";
 "bridge.telegram.reply.sent" = "已透過 Mac 的 Messages 傳送符合條件的回覆。";
 "bridge.telegram.reply.none" = "沒有新的有效回覆；一般 Bot 指令與未知訊息已忽略。";
+"bridge.telegram.reply.local_state_corrupted" = "無法讀取本機回覆狀態，已停用安全回覆。請重設 Telegram 設定以重建本機狀態。";
 "bridge.telegram.reply.private_chat" = "反向回覆僅支援正數的 Telegram 私人 Chat ID，不支援群組或頻道。";
 "bridge.telegram.reply.automation_permission" = "macOS 尚未允許 ShareSync 控制 Messages。允許後再檢查一次，此則回覆仍會保留供重試。";
 "bridge.telegram.reply.recipient_unavailable" = "Messages 找不到原始 iMessage 收件人。請確認該帳號仍可在 Messages 中使用。";

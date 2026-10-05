@@ -53,4 +53,18 @@ final class MessageCursorStoreTests: XCTestCase {
         XCTAssertTrue(errors.isEmpty)
         XCTAssertNotNil(try FileMessageCursorStore(fileURL: fileURL).load())
     }
+
+    func testMalformedCursorReportsPersistentStateFailure() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let fileURL = directory.appendingPathComponent("cursor.json")
+        try Data("{".utf8).write(to: fileURL)
+
+        XCTAssertThrowsError(try FileMessageCursorStore(fileURL: fileURL).load()) { error in
+            XCTAssertEqual(error as? MessageBridgePersistentStateError, .invalidData)
+            XCTAssertTrue(error is MessageBridgePersistentStateFailure)
+        }
+    }
 }

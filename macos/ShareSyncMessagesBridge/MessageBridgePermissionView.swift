@@ -82,6 +82,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         case outsideSchedule
         case attachmentRejected
         case attachmentDeliveryUnconfirmed
+        case localStateCorrupted
         case invalidConfiguration
         case failed
     }
@@ -96,6 +97,7 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         case privateChatRequired
         case automationPermissionRequired
         case recipientUnavailable
+        case localStateCorrupted
         case failed
     }
 
@@ -341,6 +343,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             ).activate()
             telegramResult = nil
             telegramState = telegramRestingState()
+        } catch is MessageBridgePersistentStateFailure {
+            stopTelegramAutomationForCorruptedState()
         } catch {
             telegramState = .invalidConfiguration
         }
@@ -556,10 +560,16 @@ final class MessageBridgePermissionViewModel: ObservableObject {
             } catch MessageAttachmentDeliveryError.deliveryUnconfirmed {
                 telegramState = .attachmentDeliveryUnconfirmed
                 return .failed
+            } catch is MessageBridgePersistentStateFailure {
+                stopTelegramAutomationForCorruptedState()
+                return .idle
             } catch {
                 telegramState = .failed
                 return MessagePollingOutcomeMapper(batchLimit: 50).outcome(error: error)
             }
+        } catch is MessageBridgePersistentStateFailure {
+            stopTelegramAutomationForCorruptedState()
+            return .idle
         } catch {
             telegramState = .invalidConfiguration
             return .failed
@@ -625,6 +635,9 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                 telegramState = .baselineRequired
                 return
             }
+        } catch is MessageBridgePersistentStateFailure {
+            stopTelegramAutomationForCorruptedState()
+            return
         } catch {
             telegramState = .invalidConfiguration
             return
@@ -662,6 +675,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                     telegramSettingsStore.setRepliesEnabled(true)
                     telegramReplyState = .ready
                     startTelegramReplyPollingIfNeeded()
+                } catch is MessageBridgePersistentStateFailure {
+                    stopTelegramRepliesForCorruptedState()
                 } catch {
                     isTelegramReplyEnabled = false
                     telegramReplyState = .failed
@@ -698,6 +713,8 @@ final class MessageBridgePermissionViewModel: ObservableObject {
                     telegramReplyState = .automationPermissionRequired
                 } catch MessagesAutomationSender.AutomationError.recipientUnavailable {
                     telegramReplyState = .recipientUnavailable
+                } catch is MessageBridgePersistentStateFailure {
+                    stopTelegramRepliesForCorruptedState()
                 } catch {
                     telegramReplyState = .failed
                 }
@@ -714,6 +731,24 @@ final class MessageBridgePermissionViewModel: ObservableObject {
         telegramSettingsStore.setRepliesEnabled(false)
         telegramReplyResult = nil
         telegramReplyState = .disabled
+    }
+
+    private func stopTelegramAutomationForCorruptedState() {
+        telegramPollingTask?.cancel()
+        telegramPollingTask = nil
+        telegramReplyPollingTask?.cancel()
+        telegramReplyPollingTask = nil
+        isTelegramAutoForwarding = false
+        telegramSettingsStore.setAutomaticForwardingEnabled(false)
+        telegramState = .localStateCorrupted
+    }
+
+    private func stopTelegramRepliesForCorruptedState() {
+        telegramReplyPollingTask?.cancel()
+        telegramReplyPollingTask = nil
+        isTelegramReplyEnabled = false
+        telegramSettingsStore.setRepliesEnabled(false)
+        telegramReplyState = .localStateCorrupted
     }
 
     func resetTelegram() {
@@ -1540,6 +1575,7 @@ struct MessageBridgePermissionView: View {
         case .outsideSchedule: return "bridge.telegram.outside_schedule"
         case .attachmentRejected: return "bridge.telegram.attachment_rejected"
         case .attachmentDeliveryUnconfirmed: return "bridge.telegram.attachment_unconfirmed"
+        case .localStateCorrupted: return "bridge.telegram.local_state_corrupted"
         case .invalidConfiguration: return "bridge.telegram.invalid"
         case .failed: return "bridge.telegram.failed"
         }
@@ -1556,6 +1592,7 @@ struct MessageBridgePermissionView: View {
         case .privateChatRequired: return "bridge.telegram.reply.private_chat"
         case .automationPermissionRequired: return "bridge.telegram.reply.automation_permission"
         case .recipientUnavailable: return "bridge.telegram.reply.recipient_unavailable"
+        case .localStateCorrupted: return "bridge.telegram.reply.local_state_corrupted"
         case .failed: return "bridge.telegram.reply.failed"
         }
     }

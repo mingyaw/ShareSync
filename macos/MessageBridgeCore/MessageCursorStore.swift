@@ -27,7 +27,12 @@ public final class FileMessageCursorStore: MessageCursorStore {
     public func load() throws -> MessageCursor? {
         try withMessageBridgeFileLock(lock) {
             guard fileManager.fileExists(atPath: fileURL.path) else { return nil }
-            let envelope = try decoder.decode(Envelope.self, from: Data(contentsOf: fileURL))
+            let envelope: Envelope
+            do {
+                envelope = try decoder.decode(Envelope.self, from: Data(contentsOf: fileURL))
+            } catch is DecodingError {
+                throw MessageBridgePersistentStateError.invalidData
+            }
             guard envelope.version == 1 else {
                 throw MessageCursorStoreError.unsupportedVersion(envelope.version)
             }
@@ -54,6 +59,6 @@ public final class FileMessageCursorStore: MessageCursorStore {
     }
 }
 
-public enum MessageCursorStoreError: Error, Equatable {
+public enum MessageCursorStoreError: MessageBridgePersistentStateFailure, Equatable {
     case unsupportedVersion(Int)
 }

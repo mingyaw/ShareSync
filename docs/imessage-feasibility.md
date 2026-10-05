@@ -55,6 +55,11 @@ they represent an ambiguous external side effect that must not be repeated.
 Telegram reply routes expire after 30 days, limiting how long an old forwarded
 Bot message can authorize a new iMessage reply.
 
+Malformed or unsupported local cursor, ledger, route, or audit state fails
+closed. ShareSync stops the affected automatic Telegram flow and asks the user
+to reset Telegram settings instead of repeatedly polling or guessing past the
+corrupted state.
+
 The unified Mac app owns the Messages model for its full process lifetime, not
 the main window lifetime. Explicit automatic-forwarding and secure-reply choices
 are stored locally and restored after the Messages permission check succeeds.

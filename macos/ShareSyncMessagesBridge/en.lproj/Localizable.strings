@@ -68,6 +68,7 @@
 "bridge.telegram.failed" = "Telegram delivery failed. Definite rejections can retry; uncertain deliveries are held to prevent duplicate messages.";
 "bridge.telegram.attachment_rejected" = "An attachment was blocked by the local safety policy. Check Messages file access, image format, and size. The message cursor was not advanced.";
 "bridge.telegram.attachment_unconfirmed" = "Telegram did not confirm an image upload. ShareSync will not resend that image automatically, preventing a possible duplicate.";
+"bridge.telegram.local_state_corrupted" = "Local Telegram state cannot be read. Automatic forwarding was stopped. Reset Telegram settings to rebuild local state.";
 "bridge.telegram.token.placeholder" = "Bot token (leave blank to keep saved token)";
 "bridge.telegram.chat_id.placeholder" = "Destination Chat ID, for example -1001234567890";
 "bridge.telegram.sender.placeholder" = "Allowed iMessage sender address or phone number";
@@ -109,6 +110,7 @@
 "bridge.telegram.reply.checking" = "Checking new replies against the saved route and account restrictions...";
 "bridge.telegram.reply.sent" = "Eligible replies were sent through Messages on this Mac.";
 "bridge.telegram.reply.none" = "No new eligible replies. Bot commands and unknown messages were ignored.";
+"bridge.telegram.reply.local_state_corrupted" = "Local reply state cannot be read. Secure replies were disabled. Reset Telegram settings to rebuild local state.";
 "bridge.telegram.reply.private_chat" = "Replies require a positive Telegram private Chat ID. Groups and channels are not supported.";
 "bridge.telegram.reply.automation_permission" = "macOS has not allowed ShareSync to control Messages. Allow access and check again; this reply remains available for retry.";
 "bridge.telegram.reply.recipient_unavailable" = "Messages could not find the original iMessage recipient. Confirm that the address is still available in Messages.";

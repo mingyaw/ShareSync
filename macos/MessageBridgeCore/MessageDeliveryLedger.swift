@@ -1,5 +1,11 @@
 import Foundation
 
+public protocol MessageBridgePersistentStateFailure: Error {}
+
+public enum MessageBridgePersistentStateError: MessageBridgePersistentStateFailure, Equatable {
+    case invalidData
+}
+
 enum MessageBridgeFileLockRegistry {
     private static let registryLock = NSLock()
     private static var locks: [String: NSLock] = [:]
@@ -147,7 +153,12 @@ public final class FileMessageDeliveryLedgerStore: MessageDeliveryLedgerStore {
         guard fileManager.fileExists(atPath: fileURL.path) else {
             return Envelope(version: 1, records: [:])
         }
-        let envelope = try decoder.decode(Envelope.self, from: Data(contentsOf: fileURL))
+        let envelope: Envelope
+        do {
+            envelope = try decoder.decode(Envelope.self, from: Data(contentsOf: fileURL))
+        } catch is DecodingError {
+            throw MessageBridgePersistentStateError.invalidData
+        }
         guard envelope.version == 1 else {
             throw MessageDeliveryLedgerError.unsupportedVersion(envelope.version)
         }
@@ -163,6 +174,6 @@ public final class FileMessageDeliveryLedgerStore: MessageDeliveryLedgerStore {
     }
 }
 
-public enum MessageDeliveryLedgerError: Error, Equatable {
+public enum MessageDeliveryLedgerError: MessageBridgePersistentStateFailure, Equatable {
     case unsupportedVersion(Int)
 }

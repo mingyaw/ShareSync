@@ -92,7 +92,12 @@ public final class FileTelegramReplyRouteStore: TelegramReplyRouteStoring {
         guard FileManager.default.fileExists(atPath: fileURL.path) else {
             return Envelope(version: 1, routes: [])
         }
-        let envelope = try JSONDecoder().decode(Envelope.self, from: Data(contentsOf: fileURL))
+        let envelope: Envelope
+        do {
+            envelope = try JSONDecoder().decode(Envelope.self, from: Data(contentsOf: fileURL))
+        } catch is DecodingError {
+            throw MessageBridgePersistentStateError.invalidData
+        }
         guard envelope.version == 1 else { throw TelegramReplyBridgeError.unsupportedState }
         return envelope
     }
@@ -250,7 +255,12 @@ public final class FileTelegramUpdateCursorStore: TelegramUpdateCursorStoring {
     public func load() throws -> Int64 {
         try withMessageBridgeFileLock(lock) {
             guard FileManager.default.fileExists(atPath: fileURL.path) else { return 0 }
-            let value = try JSONDecoder().decode(Envelope.self, from: Data(contentsOf: fileURL))
+            let value: Envelope
+            do {
+                value = try JSONDecoder().decode(Envelope.self, from: Data(contentsOf: fileURL))
+            } catch is DecodingError {
+                throw MessageBridgePersistentStateError.invalidData
+            }
             guard value.version == 1 else { throw TelegramReplyBridgeError.unsupportedState }
             return value.offset
         }
@@ -374,6 +384,6 @@ public struct TelegramReplyProcessor {
     }
 }
 
-public enum TelegramReplyBridgeError: Error, Equatable {
+public enum TelegramReplyBridgeError: MessageBridgePersistentStateFailure, Equatable {
     case unsupportedState
 }
