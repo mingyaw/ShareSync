@@ -96,6 +96,25 @@ final class TelegramBotConnectorTests: XCTestCase {
         XCTAssertEqual(routes.routes.first?.telegramChatID, "42")
     }
 
+    func testSuccessfulResponseWithoutMessageIDIsNotAcceptedAsDelivered() throws {
+        let transport = RecordingTelegramTransport(
+            response: TelegramBotHTTPResponse(
+                statusCode: 200,
+                data: Data(#"{"ok":true,"result":{}}"#.utf8)
+            )
+        )
+        let configuration = try TelegramBotConfiguration(
+            token: "123456:abcdefghijklmnopqrstuvwxyz_ABC",
+            chatID: "42"
+        )
+
+        XCTAssertThrowsError(
+            try TelegramBotConnector(configuration: configuration, transport: transport).verifyDelivery()
+        ) { error in
+            XCTAssertEqual(error as? TelegramBotConnectorError, .invalidResponse)
+        }
+    }
+
     func testFormatterRespectsTelegramTextLimitAndSummarizesAttachments() {
         let formatter = TelegramBotMessageFormatter(maximumLength: 128)
         let envelope = MessageConnectorEnvelope(

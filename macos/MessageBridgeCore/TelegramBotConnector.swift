@@ -178,8 +178,7 @@ public final class TelegramBotConnector: MessageForwardingConnector {
 
     public func deliver(_ envelope: MessageConnectorEnvelope) throws -> MessageDeliveryOutcome {
         let messageID = try send(text: formatter.message(for: envelope))
-        if let messageID,
-           let recipientHandle = envelope.senderLabel,
+        if let recipientHandle = envelope.senderLabel,
            !recipientHandle.isEmpty,
            let replyRouteStore {
             try replyRouteStore.save(TelegramReplyRoute(
@@ -191,7 +190,7 @@ public final class TelegramBotConnector: MessageForwardingConnector {
         return .delivered
     }
 
-    private func send(text: String) throws -> Int64? {
+    private func send(text: String) throws -> Int64 {
         let endpoint = "https://api.telegram.org/bot\(configuration.token)/sendMessage"
         guard let url = URL(string: endpoint), url.scheme == "https", url.host == "api.telegram.org" else {
             throw TelegramBotConnectorError.invalidToken
@@ -211,7 +210,10 @@ public final class TelegramBotConnector: MessageForwardingConnector {
             throw TelegramBotConnectorError.invalidResponse
         }
         if payload.ok, (200..<300).contains(response.statusCode) {
-            return payload.result?.messageID
+            guard let messageID = payload.result?.messageID else {
+                throw TelegramBotConnectorError.invalidResponse
+            }
+            return messageID
         }
         if response.statusCode == 429 || payload.errorCode == 429 {
             throw TelegramBotConnectorError.rateLimited(
